@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Citadel College – Nulmeting Schermontwerpen</title>
+  <style>
+    /* ── Museo font (lokaal) ─────────────────────────────────── */
+    @font-face { font-family:"Museo"; src:url("public/fonts/Museo-300.otf"); font-weight:300; }
+    @font-face { font-family:"Museo"; src:url("public/fonts/Museo-500.otf"); font-weight:500; }
+    @font-face { font-family:"Museo"; src:url("public/fonts/Museo-700.otf"); font-weight:700; }
+    @font-face { font-family:"Museo"; src:url("public/fonts/Museo-900.otf"); font-weight:900; }
+
+    /* ── Gallerypagina ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+    body {
+      font-family:"Museo", "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      color: #3c3c3b;
+    }
+
+    /* Gallerykop */
+    .gallery-header {
+      background: #3c3c3b;
+      color: #fff;
+      padding: 48px 64px 40px;
+      display: flex;
+      align-items: flex-end;
+      gap: 32px;
+    }
+    .gallery-header img { height: 52px; filter: brightness(0) invert(1); }
+    .gallery-header .titles { flex: 1; }
+    .gallery-header h1 { font-size: 2rem; font-weight:900; letter-spacing:-.02em; }
+    .gallery-header p  { font-size: 1rem; font-weight:300; opacity:.75; margin-top:4px; }
+    .badge { background:#fff2; border:1px solid #fff3; border-radius:99px;
+             padding:4px 14px; font-size:.78rem; font-weight:500; color:#fff; }
+
+    /* Grid van 4 schermen */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    /* Elk schermpaneel */
+    .screen-panel {
+      position: relative;
+      overflow: hidden;
+      min-height: 720px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Label strip bovenaan elk paneel ─── */
+    .panel-label {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      font-size: .8rem;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .panel-label .nr {
+      width:24px; height:24px;
+      border-radius:50%;
+      background:#fff;
+      display:grid; place-items:center;
+      font-size:.75rem; font-weight:900;
+    }
+    .panel-label .logo-thumb { height:28px; margin-left:auto; }
+
+    /* ════════════════════════════════════════════════════
+       SCHERM 1 — WELKOMSTSCHERM  (sandCoral / Logo 1)
+       primary:#DED4BA  secondary:#EF735C  tertiary:#662482
+    ════════════════════════════════════════════════════ */
+    .s1 {
+      background: #FBF7ED;
+    }
+    .s1 .bg-blob {
+      position:absolute; inset:0; overflow:hidden; pointer-events:none;
+    }
+    .s1 .bg-blob::before {
+      content:"";
+      position:absolute;
+      width:520px; height:480px;
+      background: radial-gradient(ellipse, #DED4BA 0%, transparent 70%);
+      top:-60px; right:-80px;
+      border-radius:60% 40% 50% 30% / 50% 60% 40% 60%;
+    }
+    .s1 .bg-blob::after {
+      content:"";
+      position:absolute;
+      width:260px; height:220px;
+      background: radial-gradient(ellipse, #EF735C44 0%, transparent 70%);
+      bottom:60px; left:-40px;
+      border-radius:50%;
+    }
+    .s1 .screen-body {
+      position:relative; z-index:1;
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding: 72px 56px 48px;
+      gap: 0;
+    }
+    .s1 .school-logo { height:60px; margin-bottom:36px; }
+    .s1 h2 {
+      font-size:2.1rem; font-weight:900; color:#3c3c3b;
+      text-align:center; line-height:1.2; margin-bottom:8px;
+    }
+    .s1 .sub {
+      font-size:1rem; font-weight:300; color:#7a6a5a;
+      text-align:center; margin-bottom:40px;
+    }
+    .s1 .card {
+      background:#fff;
+      border-radius:20px;
+      padding: 36px 40px;
+      width:100%; max-width:380px;
+      box-shadow: 0 4px 32px #DED4BA88;
+      display:flex; flex-direction:column; gap:16px;
+    }
+    .s1 .card label { font-size:.85rem; font-weight:700; color:#3c3c3b; }
+    .s1 .card input {
+      border: 2px solid #DED4BA;
+      border-radius:12px;
+      padding: 14px 18px;
+      font-size:1.3rem;
+      font-family:inherit;
+      font-weight:700;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:#3c3c3b;
+      outline:none;
+      transition: border-color .2s;
+    }
+    .s1 .card input:focus { border-color:#EF735C; }
+    .s1 .card input::placeholder { color:#c0b8a8; font-size:1rem; letter-spacing:.04em; font-weight:300; }
+    .s1 .btn-primary {
+      background: linear-gradient(135deg, #EF735C 0%, #D05540 100%);
+      color:#fff;
+      border:none; border-radius:14px;
+      padding:16px 32px;
+      font-size:1rem; font-weight:700; font-family:inherit;
+      cursor:pointer;
+      box-shadow: 0 4px 20px #EF735C55;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .s1 .admin-link {
+      margin-top:auto;
+      font-size:.78rem; color:#7a6a5a; font-weight:300;
+      text-align:center;
+    }
+    .s1 .slinger {
+      position:absolute; bottom:0; left:0; right:0;
+      width:100%; height:80px; object-fit:cover; object-position:center top;
+      opacity:.4;
+    }
+    /* Voortgangsdots decoratief */
+    .s1 .dots { display:flex; gap:6px; justify-content:center; margin-top:28px; }
+    .s1 .dot { width:8px; height:8px; border-radius:50%; background:#DED4BA; }
+    .s1 .dot.active { background:#EF735C; width:24px; border-radius:4px; }
+
+
+    /* ════════════════════════════════════════════════════
+       SCHERM 2 — MEERKEUZEVRAAG  (mintPink / Logo 2)
+       primary:#9ED7C7  secondary:#E51C73  tertiary:#662482
+    ════════════════════════════════════════════════════ */
+    .s2 {
+      background: #F4FBF8;
+      border-left: 1px solid #e0ece8;
+    }
+    .s2 .bg-blob {
+      position:absolute; inset:0; overflow:hidden; pointer-events:none;
+    }
+    .s2 .bg-blob::before {
+      content:"";
+      position:absolute;
+      width:400px; height:360px;
+      background: radial-gradient(ellipse, #9ED7C733 0%, transparent 70%);
+      bottom:-80px; right:-60px;
+      border-radius:40% 60% 30% 70% / 60% 40% 70% 30%;
+    }
+    .s2 .screen-body {
+      position:relative; z-index:1;
+      flex:1; display:flex; flex-direction:column;
+      padding: 72px 48px 32px;
+    }
+
+    /* Topbar with progress */
+    .s2 .topbar {
+      display:flex; align-items:center; gap:16px; margin-bottom:32px;
+    }
+    .s2 .topbar img { height:32px; }
+    .s2 .progress-wrap { flex:1; }
+    .s2 .progress-label { font-size:.75rem; font-weight:700; color:#662482; margin-bottom:5px; }
+    .s2 .progress-bar { height:8px; background:#e0f0ea; border-radius:99px; overflow:hidden; }
+    .s2 .progress-fill { height:100%; width:35%; background:linear-gradient(90deg,#9ED7C7,#E51C73); border-radius:99px; }
+    .s2 .q-counter { font-size:.78rem; font-weight:700; color:#3c3c3b;
+      background:#fff; border:2px solid #9ED7C7; border-radius:99px; padding:4px 14px; white-space:nowrap; }
+
+    /* Sectietag */
+    .s2 .section-tag {
+      display:inline-flex; align-items:center; gap:6px;
+      background:#9ED7C722; border:1.5px solid #9ED7C7; border-radius:99px;
+      padding:4px 14px; font-size:.78rem; font-weight:700; color:#1a7a64;
+      margin-bottom:16px;
+      width:fit-content;
+    }
+    .s2 .section-tag .dot { width:8px;height:8px;border-radius:50%;background:#9ED7C7; }
+
+    .s2 .vraag {
+      font-size:1.25rem; font-weight:700; color:#3c3c3b;
+      line-height:1.45; margin-bottom:28px;
+    }
+
+    /* Antwoordopties */
+    .s2 .opties { display:flex; flex-direction:column; gap:10px; flex:1; }
+    .s2 .optie {
+      background:#fff;
+      border: 2px solid #e0f0ea;
+      border-radius:14px;
+      padding:14px 18px;
+      display:flex; align-items:center; gap:14px;
+      cursor:pointer;
+      transition: all .15s;
+    }
+    .s2 .optie:hover { border-color:#9ED7C7; background:#f4fdf9; }
+    .s2 .optie.selected {
+      border-color:#E51C73;
+      background:#fff5fa;
+      box-shadow:0 0 0 4px #E51C7318;
+    }
+    .s2 .optie-letter {
+      width:32px; height:32px;
+      border-radius:10px;
+      background:#9ED7C733;
+      display:grid; place-items:center;
+      font-weight:900; font-size:.9rem; color:#1a7a64;
+      flex-shrink:0;
+    }
+    .s2 .optie.selected .optie-letter { background:#E51C73; color:#fff; }
+    .s2 .optie-text { font-size:.92rem; font-weight:500; color:#3c3c3b; }
+
+    .s2 .nav-row {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top:24px;
+    }
+    .s2 .btn-terug {
+      background:none; border:2px solid #c0d8ce; border-radius:12px;
+      padding:12px 22px; font-size:.9rem; font-weight:700; font-family:inherit;
+      color:#3c3c3b; cursor:pointer;
+    }
+    .s2 .btn-volgende {
+      background:linear-gradient(135deg,#E51C73,#662482);
+      color:#fff; border:none; border-radius:12px;
+      padding:12px 28px; font-size:.9rem; font-weight:700; font-family:inherit;
+      cursor:pointer; box-shadow:0 4px 18px #E51C7344;
+      display:flex; align-items:center; gap:8px;
+    }
+
+    /* Blokken indicator */
+    .s2 .blokken {
+      display:flex; gap:4px; margin-bottom:10px;
+    }
+    .s2 .blok { height:4px; flex:1; border-radius:2px; background:#e0ece8; }
+    .s2 .blok.done { background:#9ED7C7; }
+    .s2 .blok.active { background:#E51C73; }
+
+
+    /* ════════════════════════════════════════════════════
+       SCHERM 3 — SIMULATIETAAK EMAIL  (skyOrange / Logo 3)
+       primary:#8BD0EA  secondary:#FFDE00  tertiary:#F7B033
+    ════════════════════════════════════════════════════ */
+    .s3 {
+      background: #F0FAFD;
+      border-top: 1px solid #daeef7;
+    }
+    .s3 .bg-blob {
+      position:absolute; inset:0; overflow:hidden; pointer-events:none;
+    }
+    .s3 .bg-blob::before {
+      content:"";
+      position:absolute;
+      width:460px; height:420px;
+      background: radial-gradient(ellipse, #8BD0EA44 0%, transparent 70%);
+      top:-80px; left:-80px;
+      border-radius:50% 60% 40% 70%;
+    }
+    .s3 .screen-body {
+      position:relative; z-index:1;
+      flex:1; display:flex; flex-direction:column;
+      padding: 72px 0 0;
+    }
+
+    /* Instructie banner */
+    .s3 .instruc-bar {
+      background:linear-gradient(90deg, #8BD0EA, #b8e5f5);
+      padding:14px 24px 14px 48px;
+      display:flex; align-items:center; gap:14px;
+      border-radius:0;
+    }
+    .s3 .instruc-bar .icon { font-size:1.4rem; }
+    .s3 .instruc-text { flex:1; }
+    .s3 .instruc-text strong { display:block; font-size:.85rem; font-weight:900; color:#3c3c3b; }
+    .s3 .instruc-text span { font-size:.8rem; font-weight:300; color:#3c3c3b; opacity:.8; }
+    .s3 .instruc-bar img { height:28px; }
+
+    /* Fake Outlook venster */
+    .s3 .outlook-wrap { flex:1; padding:16px 24px 24px; display:flex; flex-direction:column; gap:10px; }
+    .s3 .outlook-window {
+      flex:1;
+      background:#fff;
+      border-radius:12px;
+      box-shadow: 0 4px 32px #8BD0EA55;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      border: 1px solid #cce9f5;
+    }
+    .s3 .outlook-titlebar {
+      background:#1570A6;
+      padding:8px 14px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .s3 .outlook-titlebar .dots-row { display:flex; gap:5px; }
+    .s3 .outlook-titlebar .dots-row span { width:10px;height:10px;border-radius:50%;background:#ffffff44; }
+    .s3 .outlook-titlebar .title-text { color:#fff; font-size:.78rem; font-weight:700; margin-left:8px; }
+
+    .s3 .outlook-ribbon {
+      background:#f0f8fc;
+      border-bottom:1px solid #d0e8f5;
+      padding:6px 14px;
+      display:flex; align-items:center; gap:16px;
+    }
+    .s3 .ribbon-btn {
+      background:#8BD0EA33;
+      border:none; border-radius:6px;
+      padding:4px 10px; font-size:.72rem; font-weight:700;
+      color:#1570A6; cursor:pointer; font-family:inherit;
+    }
+    .s3 .ribbon-btn.highlight {
+      background:linear-gradient(135deg,#FFDE00,#F7B033);
+      color:#3c3c3b;
+    }
+
+    .s3 .outlook-body { flex:1; padding:14px; display:flex; flex-direction:column; gap:8px; }
+    .s3 .mail-field {
+      display:flex; align-items:center;
+      border-bottom:1px solid #e8f4fb;
+      padding:7px 0;
+    }
+    .s3 .mail-field label { font-size:.78rem; font-weight:700; color:#888; width:48px; }
+    .s3 .mail-field .value { font-size:.85rem; color:#3c3c3b; font-weight:500; }
+    .s3 .mail-field .chip {
+      background:#8BD0EA22; border:1px solid #8BD0EA; border-radius:99px;
+      padding:2px 10px; font-size:.75rem; font-weight:700; color:#1570A6;
+    }
+    .s3 .mail-subject { font-size:.95rem; font-weight:700; color:#3c3c3b; padding:7px 0; border-bottom:1px solid #e8f4fb; }
+    .s3 .mail-body { flex:1; font-size:.83rem; font-weight:300; color:#5a6a6a; line-height:1.6; padding-top:8px; }
+
+    .s3 .outlook-footer {
+      padding:10px 14px;
+      display:flex; justify-content:space-between; align-items:center;
+      border-top:1px solid #e0f0f8;
+      background:#f8fcfe;
+    }
+    .s3 .attach-info { font-size:.75rem; color:#888; display:flex; align-items:center; gap:6px; }
+    .s3 .btn-send {
+      background:linear-gradient(135deg,#F7B033,#E8890F);
+      color:#fff; border:none; border-radius:10px;
+      padding:10px 22px; font-size:.85rem; font-weight:700; font-family:inherit; cursor:pointer;
+      box-shadow:0 3px 14px #F7B03355;
+      display:flex; align-items:center; gap:6px;
+    }
+
+    .s3 .progress-strip {
+      padding:0 24px 16px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .s3 .progress-strip span { font-size:.75rem; font-weight:700; color:#1570A6; }
+    .s3 .progress-strip .bar { flex:1; height:6px; background:#d0e8f5; border-radius:99px; overflow:hidden; }
+    .s3 .progress-strip .fill { width:55%; height:100%; background:linear-gradient(90deg,#8BD0EA,#F7B033); }
+
+
+    /* ════════════════════════════════════════════════════
+       SCHERM 4 — RESULTATEN  (limeTeal / Logo 4)
+       primary:#C8D900  secondary:#009E96  tertiary:#0075BA
+    ════════════════════════════════════════════════════ */
+    .s4 {
+      background: #F4F9E8;
+      border-top: 1px solid #e0ecd0;
+      border-left: 1px solid #daeacc;
+    }
+    .s4 .bg-blob {
+      position:absolute; inset:0; overflow:hidden; pointer-events:none;
+    }
+    .s4 .bg-blob::before {
+      content:"";
+      position:absolute;
+      width:360px; height:320px;
+      background: radial-gradient(ellipse, #C8D90033 0%, transparent 70%);
+      top:-60px; right:-40px;
+      border-radius:50%;
+    }
+    .s4 .bg-blob::after {
+      content:"";
+      position:absolute;
+      width:220px; height:200px;
+      background: radial-gradient(ellipse, #009E9633 0%, transparent 70%);
+      bottom:40px; left:20px;
+      border-radius:50%;
+    }
+    .s4 .screen-body {
+      position:relative; z-index:1;
+      flex:1; display:flex; flex-direction:column;
+      padding: 72px 48px 32px;
+    }
+    .s4 .topbar {
+      display:flex; align-items:center; gap:12px; margin-bottom:24px;
+    }
+    .s4 .topbar img { height:32px; }
+    .s4 .topbar h2 { font-size:1.1rem; font-weight:900; color:#3c3c3b; flex:1; }
+    .s4 .topbar .badge-done {
+      background:#009E9622; border:1.5px solid #009E96; border-radius:99px;
+      padding:4px 14px; font-size:.75rem; font-weight:700; color:#007870;
+    }
+
+    /* Grote score ring */
+    .s4 .score-hero {
+      display:flex; align-items:center; gap:32px; margin-bottom:28px;
+    }
+    .s4 .score-ring {
+      width:110px; height:110px;
+      border-radius:50%;
+      background: conic-gradient(#C8D900 0% 72%, #e0edd0 72% 100%);
+      display:grid; place-items:center;
+      flex-shrink:0;
+      box-shadow:0 4px 24px #C8D90055;
+    }
+    .s4 .score-ring-inner {
+      width:80px; height:80px;
+      background:#F4F9E8;
+      border-radius:50%;
+      display:grid; place-items:center;
+      flex-direction:column;
+    }
+    .s4 .score-ring-inner .score-num { font-size:1.6rem; font-weight:900; color:#3c3c3b; line-height:1; }
+    .s4 .score-ring-inner .score-sub { font-size:.65rem; font-weight:500; color:#777; }
+    .s4 .score-info h3 { font-size:1.1rem; font-weight:900; color:#3c3c3b; margin-bottom:4px; }
+    .s4 .score-info p { font-size:.82rem; font-weight:300; color:#5a6a4a; line-height:1.5; }
+
+    /* Domein kaarten */
+    .s4 .domeinen { display:flex; flex-direction:column; gap:8px; flex:1; }
+    .s4 .domein-card {
+      background:#fff;
+      border-radius:14px;
+      padding:12px 16px;
+      display:flex; align-items:center; gap:14px;
+      border: 1.5px solid #e0edd0;
+    }
+    .s4 .domein-icon {
+      width:36px; height:36px; border-radius:10px;
+      background:#C8D90022;
+      display:grid; place-items:center; font-size:1rem; flex-shrink:0;
+    }
+    .s4 .domein-name { flex:1; font-size:.85rem; font-weight:700; color:#3c3c3b; }
+    .s4 .domein-bar-wrap { width:100px; }
+    .s4 .domein-bar { height:7px; background:#e8f0d8; border-radius:99px; overflow:hidden; }
+    .s4 .domein-bar-fill { height:100%; border-radius:99px; }
+    .s4 .domein-score { font-size:.8rem; font-weight:900; color:#3c3c3b; min-width:36px; text-align:right; }
+
+    .s4 .action-row {
+      display:flex; gap:10px; margin-top:20px;
+    }
+    .s4 .btn-pdf {
+      background:linear-gradient(135deg,#009E96,#0075BA);
+      color:#fff; border:none; border-radius:12px;
+      padding:12px 22px; font-size:.85rem; font-weight:700; font-family:inherit; cursor:pointer;
+      box-shadow:0 4px 18px #009E9644;
+      display:flex; align-items:center; gap:7px; flex:1; justify-content:center;
+    }
+    .s4 .btn-opnieuw {
+      background:#fff; border:2px solid #C8D900; border-radius:12px;
+      padding:12px 22px; font-size:.85rem; font-weight:700; font-family:inherit; cursor:pointer;
+      color:#3c3c3b; display:flex; align-items:center; gap:7px;
+    }
+
+    /* ── Galleryfooter ─────────────────────────────── */
+    .gallery-footer {
+      background:#3c3c3b; color:#fff8;
+      text-align:center; padding:20px;
+      font-size:.78rem; font-weight:300;
+    }
+    .gallery-footer strong { color:#fff; }
+
+    /* Schermtitel onderaan elk paneel (uitgeklapt op hover) */
+    .panel-meta {
+      position:absolute; bottom:0; left:0; right:0;
+      background:rgba(60,60,59,.9);
+      backdrop-filter:blur(8px);
+      padding:10px 20px;
+      display:flex; align-items:center; gap:12px;
+      color:#fff; font-size:.78rem; font-weight:300;
+      z-index:9;
+    }
+    .panel-meta strong { font-weight:700; }
+    .panel-meta .theme-chips { display:flex; gap:5px; margin-left:auto; }
+    .theme-chip {
+      width:16px; height:16px; border-radius:50%;
+      border:2px solid rgba(255,255,255,.4);
+    }
+
+    /* Responsive: op kleine schermen stapelen */
+    @media (max-width:1024px) {
+      .gallery-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ HEADER ══════════════════════════════ -->
+<header class="gallery-header">
+  <img src="public/brand/logos/citadel-1-rgb.png" alt="Citadel College" />
+  <div class="titles">
+    <h1>Nulmeting Digitale Geletterdheid</h1>
+    <p>Schermontwerpen — 4 varianten gekoppeld aan de Citadel-logo's</p>
+  </div>
+  <span class="badge">Design Voorbeelden 2025</span>
+</header>
+
+<!-- ══════════════════════════════ GRID ══════════════════════════════ -->
+<main class="gallery-grid">
+
+  <!-- ─────────────────────────────────────────────
+       SCHERM 1 · WELKOMSTSCHERM · sandCoral (Logo 1)
+  ───────────────────────────────────────────── -->
+  <section class="screen-panel s1">
+    <div class="bg-blob"></div>
+
+    <div class="panel-label">
+      <span class="nr" style="color:#EF735C;">1</span>
+      Welkomstscherm
+      <img class="logo-thumb" src="public/brand/logos/citadel-1-rgb.png" alt="Logo 1" />
+    </div>
+
+    <div class="screen-body">
+      <img class="school-logo" src="public/brand/logos/citadel-1-rgb.png" alt="Citadel College" />
+
+      <h2>Welkom bij de<br>Nulmeting</h2>
+      <p class="sub">Digitale Geletterdheid · Leerjaar 1</p>
+
+      <div class="card">
+        <label>Jouw leerlingcode</label>
+        <input type="text" placeholder="Voer code in…" value="LJ1-042" readonly />
+        <button class="btn-primary">
+          Start meting
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="dots" style="margin-top:28px;">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+
+      <p class="admin-link" style="margin-top:20px;">Beheerder? <span style="color:#662482;font-weight:700;cursor:pointer;">Klik hier</span></p>
+    </div>
+
+    <div class="panel-meta">
+      <strong>Scherm 1</strong>
+      <span>Leerling voert code in en start de meting</span>
+      <div class="theme-chips">
+        <div class="theme-chip" style="background:#DED4BA;"></div>
+        <div class="theme-chip" style="background:#EF735C;"></div>
+        <div class="theme-chip" style="background:#662482;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       SCHERM 2 · MEERKEUZEVRAAG · mintPink (Logo 2)
+  ───────────────────────────────────────────── -->
+  <section class="screen-panel s2">
+    <div class="bg-blob"></div>
+
+    <div class="panel-label">
+      <span class="nr" style="color:#E51C73;">2</span>
+      Meerkeuzevraag
+      <img class="logo-thumb" src="public/brand/logos/citadel-2-rgb.png" alt="Logo 2" />
+    </div>
+
+    <div class="screen-body">
+      <div class="topbar">
+        <img src="public/brand/logos/citadel-2-rgb.png" alt="" />
+        <div class="progress-wrap">
+          <div class="progress-label">Vraag 7 van 20</div>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+        <span class="q-counter">35%</span>
+      </div>
+
+      <div class="blokken">
+        <div class="blok done"></div>
+        <div class="blok done"></div>
+        <div class="blok active"></div>
+        <div class="blok"></div>
+        <div class="blok"></div>
+      </div>
+
+      <div class="section-tag">
+        <span class="dot"></span>
+        Informatievaardigheid
+      </div>
+
+      <p class="vraag">
+        Welke actie is de <em>beste</em> eerste stap als je informatie zoekt voor een schoolopdracht?
+      </p>
+
+      <div class="opties">
+        <div class="optie">
+          <div class="optie-letter">A</div>
+          <span class="optie-text">Direct de eerste zoekresultaat openen en kopiëren</span>
+        </div>
+        <div class="optie selected">
+          <div class="optie-letter">B</div>
+          <span class="optie-text">Zoekwoorden kiezen die passen bij je vraag</span>
+        </div>
+        <div class="optie">
+          <div class="optie-letter">C</div>
+          <span class="optie-text">Alleen Wikipedia raadplegen</span>
+        </div>
+        <div class="optie">
+          <div class="optie-letter">D</div>
+          <span class="optie-text">Je vraag letterlijk in de zoekbalk intypen</span>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn-terug">← Terug</button>
+        <button class="btn-volgende">
+          Volgende
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-meta">
+      <strong>Scherm 2</strong>
+      <span>Meerkeuze vraag met voortgangsbalk en sectie-indicator</span>
+      <div class="theme-chips">
+        <div class="theme-chip" style="background:#9ED7C7;"></div>
+        <div class="theme-chip" style="background:#E51C73;"></div>
+        <div class="theme-chip" style="background:#662482;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       SCHERM 3 · E-MAIL SIMULATIE · skyOrange (Logo 3)
+  ───────────────────────────────────────────── -->
+  <section class="screen-panel s3">
+    <div class="bg-blob"></div>
+
+    <div class="panel-label">
+      <span class="nr" style="color:#F7B033;">3</span>
+      Simulatietaak: E-mail
+      <img class="logo-thumb" src="public/brand/logos/citadel-3-rgb.png" alt="Logo 3" />
+    </div>
+
+    <div class="screen-body">
+      <div class="instruc-bar">
+        <span class="icon">📧</span>
+        <div class="instruc-text">
+          <strong>Opdracht: Stuur een e-mail naar de bibliotheek</strong>
+          <span>Vraag naar de openingstijden en voeg je naam toe als bijlage</span>
+        </div>
+        <img src="public/brand/logos/citadel-3-rgb.png" alt="" />
+      </div>
+
+      <div class="outlook-wrap">
+        <div class="outlook-window">
+          <div class="outlook-titlebar">
+            <div class="dots-row">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="title-text">Nieuwe e-mail — Microsoft Outlook</span>
+          </div>
+
+          <div class="outlook-ribbon">
+            <button class="ribbon-btn highlight">✉ Verzenden</button>
+            <button class="ribbon-btn">Bijlage</button>
+            <button class="ribbon-btn">Opmaak</button>
+            <button class="ribbon-btn">Opties</button>
+          </div>
+
+          <div class="outlook-body">
+            <div class="mail-field">
+              <label>Aan:</label>
+              <span class="chip">bibliotheek@citadelcollege.nl</span>
+            </div>
+            <div class="mail-field">
+              <label>CC:</label>
+              <span class="value" style="color:#bbb;font-weight:300;">toevoegen...</span>
+            </div>
+            <div class="mail-field">
+              <label>Onderwerp:</label>
+              <span class="value">Vraag over openingstijden</span>
+            </div>
+            <div class="mail-subject"></div>
+            <div class="mail-body">
+              Beste bibliotheekmedewerker,<br><br>
+              Ik zou graag willen weten wanneer de bibliotheek open is deze week.
+              Kunt u mij de <span style="background:#FFDE0044;padding:0 3px;border-radius:3px;">openingstijden</span> doorgeven?<br><br>
+              Met vriendelijke groet,<br>
+              <strong>Leerling LJ1-042</strong>
+            </div>
+          </div>
+
+          <div class="outlook-footer">
+            <div class="attach-info">
+              📎 <span>naamkaartje.docx (bijlage vereist)</span>
+            </div>
+            <button class="btn-send">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M2 8l12-6-6 12V9L2 8z" fill="currentColor"/>
+              </svg>
+              Verzenden
+            </button>
+          </div>
+        </div>
+
+        <div class="progress-strip">
+          <span>Taak 3/8</span>
+          <div class="bar"><div class="fill"></div></div>
+          <span>55%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-meta">
+      <strong>Scherm 3</strong>
+      <span>Outlook simulatie: e-mail opstellen en verzenden</span>
+      <div class="theme-chips">
+        <div class="theme-chip" style="background:#8BD0EA;"></div>
+        <div class="theme-chip" style="background:#FFDE00;"></div>
+        <div class="theme-chip" style="background:#F7B033;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       SCHERM 4 · RESULTATEN · limeTeal (Logo 4)
+  ───────────────────────────────────────────── -->
+  <section class="screen-panel s4">
+    <div class="bg-blob"></div>
+
+    <div class="panel-label">
+      <span class="nr" style="color:#009E96;">4</span>
+      Resultaten
+      <img class="logo-thumb" src="public/brand/logos/citadel-4-rgb.png" alt="Logo 4" />
+    </div>
+
+    <div class="screen-body">
+      <div class="topbar">
+        <img src="public/brand/logos/citadel-4-rgb.png" alt="" />
+        <h2>Jouw resultaten</h2>
+        <span class="badge-done">✓ Voltooid</span>
+      </div>
+
+      <div class="score-hero">
+        <div class="score-ring">
+          <div class="score-ring-inner">
+            <span class="score-num">72%</span>
+            <span class="score-sub">totaal</span>
+          </div>
+        </div>
+        <div class="score-info">
+          <h3>Goed gedaan!</h3>
+          <p>Je hebt de nulmeting afgerond.<br>
+          Je scoort <strong>bovengemiddeld</strong> op<br>
+          informatievaardigheid.</p>
+        </div>
+      </div>
+
+      <div class="domeinen">
+        <div class="domein-card">
+          <div class="domein-icon">🔍</div>
+          <span class="domein-name">Informatievaardigheid</span>
+          <div class="domein-bar-wrap">
+            <div class="domein-bar">
+              <div class="domein-bar-fill" style="width:84%;background:linear-gradient(90deg,#C8D900,#009E96);"></div>
+            </div>
+          </div>
+          <span class="domein-score">84%</span>
+        </div>
+
+        <div class="domein-card">
+          <div class="domein-icon">🛡️</div>
+          <span class="domein-name">Digitale veiligheid</span>
+          <div class="domein-bar-wrap">
+            <div class="domein-bar">
+              <div class="domein-bar-fill" style="width:65%;background:linear-gradient(90deg,#C8D900,#009E96);"></div>
+            </div>
+          </div>
+          <span class="domein-score">65%</span>
+        </div>
+
+        <div class="domein-card">
+          <div class="domein-icon">💬</div>
+          <span class="domein-name">Communicatie & samenwerken</span>
+          <div class="domein-bar-wrap">
+            <div class="domein-bar">
+              <div class="domein-bar-fill" style="width:78%;background:linear-gradient(90deg,#C8D900,#009E96);"></div>
+            </div>
+          </div>
+          <span class="domein-score">78%</span>
+        </div>
+
+        <div class="domein-card">
+          <div class="domein-icon">💡</div>
+          <span class="domein-name">Probleemoplossend denken</span>
+          <div class="domein-bar-wrap">
+            <div class="domein-bar">
+              <div class="domein-bar-fill" style="width:60%;background:linear-gradient(90deg,#C8D900,#009E96);"></div>
+            </div>
+          </div>
+          <span class="domein-score">60%</span>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-opnieuw">
+          ↩ Opnieuw
+        </button>
+        <button class="btn-pdf">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="1" width="10" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M5 6h6M5 9h4M9 1v4h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Download PDF-rapport
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-meta">
+      <strong>Scherm 4</strong>
+      <span>Resultaatoverzicht per domein met PDF-export</span>
+      <div class="theme-chips">
+        <div class="theme-chip" style="background:#C8D900;"></div>
+        <div class="theme-chip" style="background:#009E96;"></div>
+        <div class="theme-chip" style="background:#0075BA;"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════ FOOTER ══════════════════════════════ -->
+<footer class="gallery-footer">
+  <strong>Citadel College</strong> — Nulmeting Digitale Geletterdheid &nbsp;·&nbsp;
+  Design voorbeelden op basis van het Citadel 1830 Huisstijlhandboek &nbsp;·&nbsp;
+  4 kleurvarianten passend bij citadel-1 t/m citadel-4-rgb logo's
+</footer>
+
+</body>
+</html>
