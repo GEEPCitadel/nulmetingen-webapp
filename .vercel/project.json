@@ -1,1 +1,16 @@
-{"projectId":"prj_2E8p1wodYt6Dt2FmIWfv12CDFYYa","orgId":"team_krkiBBarbvhtiOrQBKAUheug","projectName":"nulmetingen-webapp"}
+{
+  "projectId": "prj_pFdzcyLyrXMgAkokUX72Psezh3oJ",
+  "orgId": "team_krkiBBarbvhtiOrQBKAUheug",
+  "projectName": "nulmetingen-webapp-vite",
+  "settings": {
+    "createdAt": 1778175178001,
+    "framework": null,
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

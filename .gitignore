@@ -134,3 +134,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Local Codex/Vercel workspace artifacts
+.vercel/
+.codex_spreadsheet_build/
+nulmetingen-webapp/
+devserver-*.log
+devserver*.log
+design-voorbeelden.html
+
+.vercel

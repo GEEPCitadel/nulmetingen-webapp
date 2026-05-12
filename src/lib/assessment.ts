@@ -342,11 +342,47 @@ const scorePowerPointTask = (item: AssessmentItem, selectedAnswer: SelectedAnswe
   };
 };
 
+const actionTypesFromAnswer = (selectedAnswer: SelectedAnswer) => {
+  const state = answerRecord(selectedAnswer);
+  const actionLog = Array.isArray(state.actionLog) ? state.actionLog : [];
+  return actionLog
+    .map((entry) =>
+      entry && typeof entry === "object" && "actionType" in entry
+        ? String((entry as { actionType?: unknown }).actionType ?? "")
+        : "",
+    )
+    .filter(Boolean);
+};
+
+const hasOrderedActions = (actions: string[], expectedActions: string[]) => {
+  let cursor = 0;
+  for (const action of actions) {
+    if (action === expectedActions[cursor]) {
+      cursor += 1;
+      if (cursor === expectedActions.length) {
+        return true;
+      }
+    }
+  }
+  return expectedActions.length === 0;
+};
+
 const scoreTeamsTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => {
   const state = answerRecord(selectedAnswer);
   const rules = item.teamsTask?.rules ?? [];
   const selectedWindow = String(state.selectedWindow ?? "");
+  const actionTypes = actionTypesFromAnswer(selectedAnswer);
+  const correctSequence = ["clicked_share", "clicked_window", "selected_windows_media_player"];
   const conditionMatches = (condition: string) => {
+    if (condition === "clicked_share") {
+      return actionTypes.includes("clicked_share");
+    }
+    if (condition === "clicked_window") {
+      return hasOrderedActions(actionTypes, ["clicked_share", "clicked_window"]);
+    }
+    if (condition === "selected_windows_media_player" || condition === "correctSequence") {
+      return hasOrderedActions(actionTypes, correctSequence);
+    }
     if (condition === "shareOpened") {
       return state.shareOpened === true;
     }

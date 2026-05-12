@@ -162,6 +162,28 @@ const formatTime = (totalSeconds: number) => {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 };
 
+const cleanQuestionTitle = (title: string) =>
+  title.replace(/^(PT|SR)\d+\s*-\s*/i, "").trim();
+
+const QuestionHeader = ({
+  questionNumber,
+  title,
+  instruction,
+  children,
+}: {
+  questionNumber: number;
+  title: string;
+  instruction?: string;
+  children?: ReactNode;
+}) => (
+  <div className="stack-xs">
+    <span className="section-tag">Vraag {questionNumber}</span>
+    <h2 className="question-title">{cleanQuestionTitle(title)}</h2>
+    {instruction ? <p className="helper-text">{instruction}</p> : null}
+    {children}
+  </div>
+);
+
 const getEntryTheme = (view: EntryView) => {
   if (view === "admin") {
     return themes.sandCoral;
@@ -686,6 +708,7 @@ const AssessmentScreen = ({
   }
 
   const progress = Math.round(((stepIndex + 1) / stepCount) * 100);
+  const questionNumber = stepIndex + 1;
 
   return (
     <section className="stack-lg">
@@ -705,6 +728,7 @@ const AssessmentScreen = ({
         <SelfAssessmentView
           section={section}
           item={item}
+          questionNumber={questionNumber}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
@@ -712,6 +736,7 @@ const AssessmentScreen = ({
       {item.type === "file_task_simulation" ? (
         <FileTaskWorkspace
           item={item}
+          questionNumber={questionNumber}
           state={session.pt1States[item.id]}
           onChange={(nextState) => onUpdateFileTaskState(item, nextState)}
           onFinish={() => onFinishFileTask(section, item)}
@@ -719,42 +744,74 @@ const AssessmentScreen = ({
       ) : null}
 
       {item.type === "outlook_mail_simulation" ? (
-        <MailTaskView section={section} item={item} onSubmit={onSubmitAnswer} />
+        <MailTaskView
+          section={section}
+          item={item}
+          questionNumber={questionNumber}
+          onSubmit={onSubmitAnswer}
+        />
       ) : null}
 
       {item.type === "account_security_simulation" ? (
         <InteractionTaskView
           section={section}
           item={item}
+          questionNumber={questionNumber}
           task={item.securityTask}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
 
       {item.type === "excel_download_task" ? (
-        <ExcelDownloadTaskView section={section} item={item} onSubmit={onSubmitAnswer} />
+        <ExcelDownloadTaskView
+          section={section}
+          item={item}
+          questionNumber={questionNumber}
+          onSubmit={onSubmitAnswer}
+        />
       ) : null}
 
       {item.type === "office_format_download_task" ? (
-        <OfficeFormatTaskView section={section} item={item} onSubmit={onSubmitAnswer} />
+        <OfficeFormatTaskView
+          section={section}
+          item={item}
+          questionNumber={questionNumber}
+          onSubmit={onSubmitAnswer}
+        />
       ) : null}
 
       {item.type === "powerpoint_design_task" ? (
-        <PowerPointDesignTaskView section={section} item={item} onSubmit={onSubmitAnswer} />
+        <PowerPointDesignTaskView
+          section={section}
+          item={item}
+          questionNumber={questionNumber}
+          onSubmit={onSubmitAnswer}
+        />
       ) : null}
 
       {item.type === "teams_share_simulation" ? (
-        <TeamsShareTaskView section={section} item={item} onSubmit={onSubmitAnswer} />
+        <FakeTeamsTask
+          section={section}
+          item={item}
+          questionNumber={questionNumber}
+          onSubmit={onSubmitAnswer}
+        />
       ) : null}
 
       {item.type === "block_programming_task" ? (
-        <BlockProgrammingTaskView section={section} item={item} onSubmit={onSubmitAnswer} />
+        <BlockProgrammingTaskView
+          section={section}
+          item={item}
+          questionNumber={questionNumber}
+          onSubmit={onSubmitAnswer}
+        />
       ) : null}
 
       {item.type === "social_action_simulation" ? (
         <InteractionTaskView
           section={section}
           item={item}
+          questionNumber={questionNumber}
           task={item.socialTask}
           onSubmit={onSubmitAnswer}
         />
@@ -764,7 +821,7 @@ const AssessmentScreen = ({
         <ChoiceItemView
           section={section}
           item={item}
-          questionNumber={stepIndex + 1}
+          questionNumber={questionNumber}
           presentedOrder={getPresentedOrder(session, section.id, item.id)}
           onSubmit={onSubmitAnswer}
         />
@@ -776,23 +833,25 @@ const AssessmentScreen = ({
 const SelfAssessmentView = ({
   section,
   item,
+  questionNumber,
   onSubmit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
+  questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
   const [value, setValue] = useState(50);
 
   return (
     <section className="panel stack-lg">
-      <span className="section-tag">{item.title}</span>
-      <div className="stack-xs">
-        <h2 className="question-title">{item.instruction}</h2>
+      <QuestionHeader questionNumber={questionNumber} title={item.title}>
         <p className="slider-instruction">
+          {item.instruction}
+          <br />
           Schuif het bolletje naar de score die het best bij jouw eigen inschatting past.
         </p>
-      </div>
+      </QuestionHeader>
       <div className="slider-card">
         <input
           type="range"
@@ -837,10 +896,12 @@ const SelfAssessmentView = ({
 const MailTaskView = ({
   section,
   item,
+  questionNumber,
   onSubmit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
+  questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
   type AddressField = "to" | "cc" | "bcc";
@@ -1019,11 +1080,11 @@ const MailTaskView = ({
 
   return (
     <section className="panel stack-lg">
-      <div className="stack-xs">
-        <span className="section-tag">{section.title}</span>
-        <h2 className="question-title">{item.title}</h2>
-        <p className="helper-text">{item.instruction}</p>
-      </div>
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={item.instruction}
+      />
 
       <div className="mail-window">
         <div className="mail-titlebar">Nieuw bericht</div>
@@ -1197,11 +1258,13 @@ const MailTaskView = ({
 const InteractionTaskView = ({
   section,
   item,
+  questionNumber,
   task,
   onSubmit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
+  questionNumber: number;
   task: AssessmentItem["securityTask"] | AssessmentItem["socialTask"];
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
@@ -1224,11 +1287,11 @@ const InteractionTaskView = ({
 
   return (
     <section className="panel stack-lg">
-      <div className="stack-xs">
-        <span className="section-tag">{section.title}</span>
-        <h2 className="question-title">{item.title}</h2>
-        <p className="helper-text">{item.instruction}</p>
-      </div>
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={item.instruction}
+      />
 
       <div className="task-screen-grid">
         {task.screens.map((screen) => (
@@ -1374,10 +1437,12 @@ const InteractionGroupControl = ({
 const ExcelDownloadTaskView = ({
   section,
   item,
+  questionNumber,
   onSubmit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
+  questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -1388,11 +1453,11 @@ const ExcelDownloadTaskView = ({
 
   return (
     <section className="panel stack-lg">
-      <div className="stack-xs">
-        <span className="section-tag">{section.title}</span>
-        <h2 className="question-title">{item.title}</h2>
-        <p className="helper-text">{item.instruction}</p>
-      </div>
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={item.instruction}
+      />
 
       <div className="download-card">
         <div>
@@ -1445,10 +1510,12 @@ const ExcelDownloadTaskView = ({
 const OfficeFormatTaskView = ({
   section,
   item,
+  questionNumber,
   onSubmit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
+  questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
   const [code, setCode] = useState("");
@@ -1460,11 +1527,11 @@ const OfficeFormatTaskView = ({
 
   return (
     <section className="panel stack-lg">
-      <div className="stack-xs">
-        <span className="section-tag">{section.title}</span>
-        <h2 className="question-title">{item.title}</h2>
-        <p className="helper-text">{item.instruction}</p>
-      </div>
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={item.instruction}
+      />
 
       <div className="download-card">
         <div>
@@ -1520,10 +1587,12 @@ const OfficeFormatTaskView = ({
 const PowerPointDesignTaskView = ({
   section,
   item,
+  questionNumber,
   onSubmit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
+  questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
   const [state, setState] = useState<Record<string, string>>({});
@@ -1539,11 +1608,11 @@ const PowerPointDesignTaskView = ({
 
   return (
     <section className="panel stack-lg">
-      <div className="stack-xs">
-        <span className="section-tag">{section.title}</span>
-        <h2 className="question-title">{item.title}</h2>
-        <p className="helper-text">{item.instruction}</p>
-      </div>
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={item.instruction}
+      />
 
       <div className="powerpoint-window">
         <div className="powerpoint-titlebar">PowerPoint - Presentatie1</div>
@@ -1621,20 +1690,91 @@ const PowerPointDesignTaskView = ({
   );
 };
 
-const TeamsShareTaskView = ({
+type TeamsActionLogEntry = {
+  actionType: string;
+  timestamp: string;
+};
+
+type TeamsIconName = "camera" | "mic" | "chat" | "people" | "reaction" | "share" | "more";
+
+const requiredTeamsSequence = [
+  "clicked_share",
+  "clicked_window",
+  "selected_windows_media_player",
+];
+
+const hasCompletedTeamsSequence = (actionLog: TeamsActionLogEntry[]) => {
+  let cursor = 0;
+  for (const entry of actionLog) {
+    if (entry.actionType === requiredTeamsSequence[cursor]) {
+      cursor += 1;
+      if (cursor === requiredTeamsSequence.length) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+const TeamsIcon = ({ name }: { name: TeamsIconName }) => {
+  const paths = {
+    camera: "M4 7h11v10H4z M15 10l5-3v10l-5-3z",
+    mic: "M9 4h6v9a3 3 0 0 1-6 0z M5 11a7 7 0 0 0 14 0 M12 18v3 M8 21h8",
+    chat: "M4 5h16v11H8l-4 4z M8 9h8 M8 12h5",
+    people: "M9 11a3 3 0 1 0 0-6a3 3 0 0 0 0 6z M17 11a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5z M3.5 19c.8-3 2.8-4.5 5.5-4.5s4.7 1.5 5.5 4.5 M14 15.5c2.2.1 3.8 1.2 4.5 3.5",
+    reaction: "M12 20a8 8 0 1 0 0-16a8 8 0 0 0 0 16z M8.5 10h.1 M15.4 10h.1 M8.5 14c1 1.3 2.1 2 3.5 2s2.5-.7 3.5-2",
+    share: "M12 16V4 M7 9l5-5l5 5 M5 14v5h14v-5",
+    more: "M5 12h.1 M12 12h.1 M19 12h.1",
+  };
+
+  return (
+    <svg className="teams-inline-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d={paths[name]} />
+    </svg>
+  );
+};
+
+const iconNameForTeamsButton = (button: string): TeamsIconName => {
+  if (button === "Camera") {
+    return "camera";
+  }
+  if (button === "Microfoon") {
+    return "mic";
+  }
+  if (button === "Chat") {
+    return "chat";
+  }
+  if (button === "Deelnemers") {
+    return "people";
+  }
+  if (button === "Reageren") {
+    return "reaction";
+  }
+  if (button === "Delen") {
+    return "share";
+  }
+  return "more";
+};
+
+const actionName = (label: string) =>
+  `clicked_${label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")}`;
+
+const FakeTeamsTask = ({
   section,
   item,
+  questionNumber,
   onSubmit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
+  questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
   const [state, setState] = useState({
     shareOpened: false,
-    shareMode: "",
-    computerSound: false,
+    windowPickerOpen: false,
     selectedWindow: "",
+    actionLog: [] as TeamsActionLogEntry[],
     skipped: false,
   });
   const task = item.teamsTask;
@@ -1642,24 +1782,132 @@ const TeamsShareTaskView = ({
     return null;
   }
 
-  return (
-    <section className="panel stack-lg">
-      <div className="stack-xs">
-        <span className="section-tag">{section.title}</span>
-        <h2 className="question-title">{item.title}</h2>
-        <p className="helper-text">{item.instruction}</p>
-        <div className="notice-banner">{task.scenario}</div>
-      </div>
+  const logAction = (actionType: string, updates: Partial<typeof state> = {}) => {
+    setState((current) => ({
+      ...current,
+      ...updates,
+      actionLog: [
+        ...current.actionLog,
+        {
+          actionType,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    }));
+  };
 
-      <div className="teams-window teams-screenshot">
-        <div className="teams-topbar">Teams-vergadering</div>
-        <div className="teams-stage">
-          <div className="video-tile">Sanne</div>
-          <div className="video-tile muted">Vergadering</div>
-          <div className="video-tile muted">Chat</div>
-          <div className="video-tile">Docent</div>
+  const submit = (skipped = false) => {
+    onSubmit({
+      section,
+      item,
+      selectedAnswer: {
+        shareOpened: state.shareOpened,
+        windowPickerOpen: state.windowPickerOpen,
+        selectedWindow: state.selectedWindow,
+        actionLog: state.actionLog,
+        completedSequence: hasCompletedTeamsSequence(state.actionLog),
+        skipped,
+      },
+      shownOptionOrder: [],
+    });
+  };
+
+  return (
+    <section className="panel stack-lg fake-teams-task-panel">
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={item.instruction}
+      >
+        <div className="notice-banner">{task.scenario}</div>
+      </QuestionHeader>
+
+      <div className="fake-teams-shell" aria-label="Fake Teams-vergadering">
+        <div className="fake-teams-titlebar">
+          <div className="fake-teams-appmark">T</div>
+          <span>Microsoft Teams</span>
+          <span className="fake-teams-meeting-title">Nulmeting DG</span>
         </div>
-        <div className="teams-controls">
+
+        <div className="fake-teams-content">
+          <aside className="fake-teams-side">
+            <strong>Vergadering</strong>
+            <span>Nu bezig</span>
+            <div className="fake-participant active">Leerling Anoniem</div>
+            <div className="fake-participant">Docent</div>
+          </aside>
+
+          <div className="fake-teams-main">
+            <div className="fake-teams-stage">
+              <div className="fake-video-tile learner">
+                <div className="fake-avatar">LA</div>
+                <span>Leerling Anoniem</span>
+              </div>
+              <div className="fake-video-tile muted">
+                <div className="fake-avatar small">D</div>
+                <span>Docent</span>
+              </div>
+            </div>
+
+            {state.shareOpened ? (
+              <div className="fake-share-menu" role="menu" aria-label="Deelmenu">
+                <strong>Delen</strong>
+                <div className="fake-share-options">
+                  {task.shareOptions.map((option) => (
+                    <button
+                      className={option === "Venster" && state.windowPickerOpen ? "selected" : ""}
+                      key={option}
+                      type="button"
+                      onClick={() => {
+                        if (option === "Venster") {
+                          logAction("clicked_window", { windowPickerOpen: true });
+                          return;
+                        }
+                        logAction(actionName(option), {
+                          windowPickerOpen: false,
+                          selectedWindow: option,
+                        });
+                      }}
+                    >
+                      <span className="fake-share-icon" aria-hidden="true" />
+                      <span>{option}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {state.windowPickerOpen ? (
+              <div className="fake-window-picker" aria-label="Venster selecteren">
+                <strong>Kies een venster</strong>
+                <div className="fake-window-grid">
+                  {task.windows.map((windowName) => (
+                    <button
+                      className={state.selectedWindow === windowName ? "selected" : ""}
+                      key={windowName}
+                      type="button"
+                      onClick={() => {
+                        logAction(
+                          windowName === task.correctWindow
+                            ? "selected_windows_media_player"
+                            : `selected_${actionName(windowName).replace(/^clicked_/, "")}`,
+                          { selectedWindow: windowName },
+                        );
+                      }}
+                    >
+                      <span className="fake-window-preview" aria-hidden="true">
+                        {windowName === "Windows Media Player" ? ">" : ""}
+                      </span>
+                      <span>{windowName}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="fake-teams-toolbar">
           {task.buttons.map((button) => (
             <button
               className={button === "Delen" && state.shareOpened ? "active" : ""}
@@ -1667,65 +1915,23 @@ const TeamsShareTaskView = ({
               type="button"
               onClick={() => {
                 if (button === "Delen") {
-                  setState((current) => ({ ...current, shareOpened: true }));
+                  logAction("clicked_share", { shareOpened: true, windowPickerOpen: false });
+                  return;
                 }
+                logAction(actionName(button));
               }}
             >
+              <TeamsIcon name={iconNameForTeamsButton(button)} />
               {button}
             </button>
           ))}
         </div>
-        {state.shareOpened ? (
-          <div className="share-tray">
-            <div className="segmented-control">
-              {task.shareOptions.map((option) => (
-                <button
-                  className={
-                    state.shareMode === option || state.selectedWindow === option ? "active" : ""
-                  }
-                  key={option}
-                  type="button"
-                  onClick={() =>
-                    setState((current) => ({
-                      ...current,
-                      shareMode: option,
-                      selectedWindow: option === "Hele scherm" ? option : current.selectedWindow,
-                    }))
-                  }
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-            {state.shareMode === "Vensterweergave" ? (
-              <button
-                className={`toggle-button ${state.computerSound ? "active" : ""}`}
-                type="button"
-                onClick={() =>
-                  setState((current) => ({ ...current, computerSound: !current.computerSound }))
-                }
-              >
-                Met computergeluid {state.computerSound ? "aan" : "uit"}
-              </button>
-            ) : null}
-            <div className="window-grid">
-              {state.shareMode === "Vensterweergave"
-                ? task.windows.map((windowName) => (
-                    <button
-                      className={`window-tile ${
-                        state.selectedWindow === windowName ? "selected" : ""
-                      }`}
-                      key={windowName}
-                      type="button"
-                      onClick={() =>
-                        setState((current) => ({ ...current, selectedWindow: windowName }))
-                      }
-                    >
-                      {windowName}
-                    </button>
-                  ))
-                : null}
-            </div>
+
+        {state.selectedWindow ? (
+          <div className="fake-teams-status">
+            {state.selectedWindow === task.correctWindow
+              ? "Windows Media Player wordt gedeeld"
+              : `${state.selectedWindow} is geselecteerd`}
           </div>
         ) : null}
       </div>
@@ -1734,28 +1940,14 @@ const TeamsShareTaskView = ({
         <button
           className="primary-button"
           type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: state,
-              shownOptionOrder: [],
-            })
-          }
+          onClick={() => submit(false)}
         >
           Taak afronden
         </button>
         <button
           className="ghost-button"
           type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: { ...state, skipped: true },
-              shownOptionOrder: [],
-            })
-          }
+          onClick={() => submit(true)}
         >
           Sla over
         </button>
@@ -1794,10 +1986,12 @@ const emptyProgramRunEffects: ProgramRunEffects = {
 const BlockProgrammingTaskView = ({
   section,
   item,
+  questionNumber,
   onSubmit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
+  questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
   const [program, setProgram] = useState<ProgramBlock[]>([]);
@@ -2068,10 +2262,11 @@ const BlockProgrammingTaskView = ({
 
   return (
     <section className="panel stack-lg">
-      <div className="stack-xs">
-        <span className="section-tag">{section.title}</span>
-        <h2 className="question-title">{item.title}</h2>
-        {task.intro ? <p className="helper-text">{task.intro}</p> : null}
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={task.intro}
+      >
         <p className="helper-text">{item.instruction}</p>
         {task.codingSteps ? (
           <ol className="coding-steps">
@@ -2080,7 +2275,7 @@ const BlockProgrammingTaskView = ({
             ))}
           </ol>
         ) : null}
-      </div>
+      </QuestionHeader>
 
       <div className="block-programming-layout">
         <div className="program-stage">
@@ -2265,11 +2460,11 @@ const ChoiceItemView = ({
 
   return (
     <section className="panel stack-md">
-      <div className="stack-xs">
-        <span className="section-tag">Vraag {questionNumber}</span>
-        <h2 className="question-title">{item.title}</h2>
-        <p className="helper-text">{item.instruction}</p>
-      </div>
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={item.instruction}
+      />
 
       {item.mockup ? <MockupCardView item={item} /> : null}
 
@@ -2397,11 +2592,13 @@ const MockupCardView = ({ item }: { item: AssessmentItem }) => {
 
 const FileTaskWorkspace = ({
   item,
+  questionNumber,
   state,
   onChange,
   onFinish,
 }: {
   item: AssessmentItem;
+  questionNumber: number;
   state: Pt1State;
   onChange: (nextState: Pt1State) => void;
   onFinish: () => void;
@@ -2531,10 +2728,11 @@ const FileTaskWorkspace = ({
 
   return (
     <section className="panel stack-lg">
-      <div className="stack-xs">
-        <span className="section-tag">{item.title}</span>
-        <h2 className="question-title">{item.instruction}</h2>
-      </div>
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={item.instruction}
+      />
 
       <div className="pt1-layout">
         <aside className="pt1-tasks">

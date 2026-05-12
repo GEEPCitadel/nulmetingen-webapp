@@ -420,28 +420,24 @@ const buildAssessment = (spec: VersionSpec): AssessmentVersion => {
   };
 };
 
-const shareRules = (privateContext = false): TeamsTaskConfig["rules"] => [
+const shareRules = (): TeamsTaskConfig["rules"] => [
   {
     id: "share-opened",
-    description: "Delen geopend.",
+    description: "op Delen geklikt.",
     points: 1,
-    conditions: ["shareOpened"],
+    conditions: ["clicked_share"],
   },
   {
-    id: "sound-on",
-    description: "Met computergeluid aan.",
+    id: "window-opened",
+    description: "na Delen voor Venster gekozen.",
     points: 1,
-    conditions: ["computerSoundOn"],
+    conditions: ["clicked_window"],
   },
   {
-    id: "media-window",
-    description: privateContext
-      ? "Mediaspeler gekozen en niet hele scherm."
-      : "Mediaspeler gekozen.",
+    id: "media-window-selected",
+    description: "Windows Media Player in de juiste volgorde geselecteerd.",
     points: 1,
-    conditions: privateContext
-      ? ["mediaPlayerSelected", "notWholeScreen"]
-      : ["mediaPlayerSelected"],
+    conditions: ["selected_windows_media_player"],
   },
 ];
 
@@ -476,6 +472,72 @@ const mailButtons = [
   "Concept opslaan",
   "Verwijderen",
 ];
+
+const reportMailInstruction =
+  "Je moet een verslag voor Nederlands naar je mentor sturen. Stel hieronder een e-mail op. Let op de volgende punten:\n- Zet het juiste mailadres op de juiste plek.\n- Gebruik als onderwerp: 'Verslag Nederlands'.\n- Voeg het juiste bestand toe aan de mail.\n- Als je mail klaar is, klik op 'Verzenden'.";
+
+const createReportMailConfig = (): MailTaskConfig => ({
+  visibleButtons: mailButtons,
+  contacts: [
+    "mentor@school.nl",
+    "vriend@school.nl",
+    "klasgroep@school.nl",
+    "administratie@school.nl",
+  ],
+  files: [
+    "Verslag_Nederlands.docx",
+    "Foto_vakantie.jpg",
+    "Rooster.pdf",
+    "Muziek.mp3",
+  ],
+  rules: [
+    {
+      id: "to-mentor",
+      description: "juiste mailadres staat in Aan.",
+      points: 1,
+      conditions: [{ field: "to", operator: "includes", value: "mentor@school.nl" }],
+    },
+    {
+      id: "subject",
+      description: "onderwerp is exact Verslag Nederlands.",
+      points: 1,
+      conditions: [{ field: "subject", operator: "equals", value: "Verslag Nederlands" }],
+    },
+    {
+      id: "attachment",
+      description: "juiste bestand is toegevoegd.",
+      points: 1,
+      conditions: [
+        { field: "attachments", operator: "includes", value: "Verslag_Nederlands.docx" },
+      ],
+    },
+    {
+      id: "sent",
+      description: "mail is verzonden.",
+      points: 1,
+      conditions: [{ field: "sent", operator: "true" }],
+    },
+  ],
+});
+
+const fakeTeamsInstruction =
+  "Voer in de Teams-vergadering het juiste klikpad uit: klik op Delen, kies Venster en selecteer Windows Media Player.";
+
+const createFakeTeamsConfig = (): TeamsTaskConfig => ({
+  scenario:
+    "Je zit in een Teams-achtige vergadering als Leerling Anoniem. Deel alleen het venster van Windows Media Player.",
+  buttons: ["Camera", "Microfoon", "Chat", "Deelnemers", "Reageren", "Delen", "Meer"],
+  shareOptions: ["Scherm", "Venster"],
+  windows: [
+    "Windows Media Player",
+    "Browser - schoolsite",
+    "Word - Verslag Nederlands",
+    "Excel - Cijferlijst",
+    "Teams chat",
+  ],
+  correctWindow: "Windows Media Player",
+  rules: shareRules(),
+});
 
 const versionSpecs: VersionSpec[] = [
   {
@@ -533,52 +595,9 @@ const versionSpecs: VersionSpec[] = [
     pt2: {
       id: "lj1v-pt2-mail",
       title: "Mail opstellen",
-      instruction:
-        "Stel de mail op.\n- Zet mentor@school.nl bij Aan.\n- Gebruik als onderwerp: Verslag Nederlands.\n- Voeg Verslag_Nederlands.docx toe.\n- Klik op Verzenden.\nKlik daarna op Taak afronden.",
+      instruction: reportMailInstruction,
       kerndoel: "21A, 23B",
-      config: {
-        visibleButtons: mailButtons,
-        contacts: [
-          "mentor@school.nl",
-          "vriend@school.nl",
-          "klasgroep@school.nl",
-          "administratie@school.nl",
-        ],
-        files: [
-          "Verslag_Nederlands.docx",
-          "Foto_vakantie.jpg",
-          "Rooster.pdf",
-          "Muziek.mp3",
-        ],
-        rules: [
-          {
-            id: "to-mentor",
-            description: "mentor staat in Aan.",
-            points: 1,
-            conditions: [{ field: "to", operator: "includes", value: "mentor@school.nl" }],
-          },
-          {
-            id: "subject",
-            description: "onderwerp is exact Verslag Nederlands.",
-            points: 1,
-            conditions: [{ field: "subject", operator: "equals", value: "Verslag Nederlands" }],
-          },
-          {
-            id: "attachment",
-            description: "bijlage Verslag_Nederlands.docx is toegevoegd en zichtbaar.",
-            points: 1,
-            conditions: [
-              { field: "attachments", operator: "includes", value: "Verslag_Nederlands.docx" },
-            ],
-          },
-          {
-            id: "sent",
-            description: "mail is verzonden.",
-            points: 1,
-            conditions: [{ field: "sent", operator: "true" }],
-          },
-        ],
-      },
+      config: createReportMailConfig(),
     },
     pt4: {
       id: "lj1v-pt4-excel",
@@ -605,19 +624,10 @@ const versionSpecs: VersionSpec[] = [
     pt6: {
       id: "lj1v-pt6-meeting",
       title: "PT6 - Videovergadering en schermdelen",
-      instruction:
-        "Kies wat Sanne moet aanklikken in Teams.\nOpen Delen.\nKies hoe zij de video deelt.\nZet geluid aan als dat nodig is.\nKlik daarna op Taak afronden.",
+      instruction: fakeTeamsInstruction,
       kerndoel: "21A, 23B",
       ankerItemFlag: true,
-      config: {
-        scenario:
-          "Sanne wil een muziekvideo laten zien én laten horen. Ze wil alleen de video delen, niet haar hele scherm.",
-        buttons: ["Chat", "Reacties", "Meer", "Camera", "Microfoon", "Delen"],
-        shareOptions: ["Hele scherm", "Vensterweergave"],
-        windows: ["Mediaspeler", "Word document", "Excel bestand", "Browser"],
-        correctWindow: "Mediaspeler",
-        rules: shareRules(),
-      },
+      config: createFakeTeamsConfig(),
     },
     pt7: {
       id: "lj1v-pt7-programming",
@@ -982,53 +992,9 @@ const versionSpecs: VersionSpec[] = [
     pt2: {
       id: "lj1h-pt2-mail",
       title: "Mail opstellen",
-      instruction:
-        "Stel de mail op.\n- Zet mentor@school.nl bij Aan.\n- Zet noor@school.nl bij Cc.\n- Gebruik als onderwerp: Presentatie klaar.\n- Voeg Presentatie_Biologie.pptx toe.\n- Klik op Verzenden.\nKlik daarna op Taak afronden.",
+      instruction: reportMailInstruction,
       kerndoel: "21A, 23B",
-      config: {
-        visibleButtons: mailButtons,
-        contacts: [
-          "mentor@school.nl",
-          "noor@school.nl",
-          "klasgroep@school.nl",
-          "administratie@school.nl",
-        ],
-        files: [
-          "Presentatie_Biologie.pptx",
-          "Foto_museum.jpg",
-          "Planning.xlsx",
-          "Muziek.mp3",
-        ],
-        rules: [
-          {
-            id: "to-mentor",
-            description: "mentor in Aan.",
-            points: 1,
-            conditions: [{ field: "to", operator: "includes", value: "mentor@school.nl" }],
-          },
-          {
-            id: "cc-noor",
-            description: "Noor in Cc.",
-            points: 1,
-            conditions: [{ field: "cc", operator: "includes", value: "noor@school.nl" }],
-          },
-          {
-            id: "subject",
-            description: "onderwerp exact Presentatie klaar.",
-            points: 1,
-            conditions: [{ field: "subject", operator: "equals", value: "Presentatie klaar" }],
-          },
-          {
-            id: "attachment-sent",
-            description: "juiste bijlage toegevoegd, zichtbaar en verzonden.",
-            points: 1,
-            conditions: [
-              { field: "attachments", operator: "includes", value: "Presentatie_Biologie.pptx" },
-              { field: "sent", operator: "true" },
-            ],
-          },
-        ],
-      },
+      config: createReportMailConfig(),
     },
     pt4: {
       id: "lj1h-pt4-excel",
@@ -1055,19 +1021,10 @@ const versionSpecs: VersionSpec[] = [
     pt6: {
       id: "lj1h-pt6-meeting",
       title: "PT6 - Videovergadering en schermdelen",
-      instruction:
-        "Kies wat Sanne moet aanklikken in Teams.\nOpen Delen.\nKies hoe zij de video deelt.\nZet geluid aan als dat nodig is.\nKlik daarna op Taak afronden.",
+      instruction: fakeTeamsInstruction,
       kerndoel: "21A, 23B",
       ankerItemFlag: true,
-      config: {
-        scenario:
-          "Sanne wil een muziekvideo tonen en laten horen. Ze wil niet haar hele scherm delen.",
-        buttons: ["Chat", "Reacties", "Meer", "Camera", "Microfoon", "Delen"],
-        shareOptions: ["Hele scherm", "Vensterweergave"],
-        windows: ["Mediaspeler", "Word document", "Excel bestand", "Browser", "Chatvenster"],
-        correctWindow: "Mediaspeler",
-        rules: shareRules(),
-      },
+      config: createFakeTeamsConfig(),
     },
     pt7: {
       id: "lj1h-pt7-programming",
@@ -1402,53 +1359,9 @@ const versionSpecs: VersionSpec[] = [
     pt2: {
       id: "lj3v-pt2-mail",
       title: "Mail opstellen",
-      instruction:
-        "Stel de mail op.\n- Zet mentor@school.nl bij Aan.\n- Zet teamleider@school.nl bij Cc.\n- Voeg Flyer_activiteit.pdf toe.\n- Laat prioriteit op Normaal.\n- Klik op Verzenden.\nKlik daarna op Taak afronden.",
+      instruction: reportMailInstruction,
       kerndoel: "21A, 23B",
-      config: {
-        visibleButtons: mailButtons,
-        contacts: [
-          "mentor@school.nl",
-          "teamleider@school.nl",
-          "klasgroep@school.nl",
-          "stagebedrijf@mail.nl",
-        ],
-        files: [
-          "Flyer_activiteit.pdf",
-          "Planning_stage.xlsx",
-          "Foto_stage.jpg",
-          "Concept_tekst.docx",
-        ],
-        rules: [
-          {
-            id: "to-mentor",
-            description: "mentor in Aan.",
-            points: 1,
-            conditions: [{ field: "to", operator: "includes", value: "mentor@school.nl" }],
-          },
-          {
-            id: "cc-teamleider",
-            description: "teamleider in Cc.",
-            points: 1,
-            conditions: [{ field: "cc", operator: "includes", value: "teamleider@school.nl" }],
-          },
-          {
-            id: "attachment",
-            description: "juiste bijlage zichtbaar.",
-            points: 1,
-            conditions: [{ field: "attachments", operator: "includes", value: "Flyer_activiteit.pdf" }],
-          },
-          {
-            id: "normal-priority-sent",
-            description: "prioriteit niet aangezet en mail verzonden.",
-            points: 1,
-            conditions: [
-              { field: "priority", operator: "equals", value: "Normaal" },
-              { field: "sent", operator: "true" },
-            ],
-          },
-        ],
-      },
+      config: createReportMailConfig(),
     },
     pt3: {
       id: "lj3v-pt3-security",
@@ -1558,25 +1471,10 @@ const versionSpecs: VersionSpec[] = [
     pt6: {
       id: "lj3v-pt6-meeting",
       title: "PT6 - Videovergadering en schermdelen",
-      instruction:
-        "Kies wat Sanne moet aanklikken in Teams.\nOpen Delen.\nKies de deeloptie die de privéchat niet toont.\nZet geluid aan als dat nodig is.\nKlik daarna op Taak afronden.",
+      instruction: fakeTeamsInstruction,
       kerndoel: "21A, 23B, 23A",
       ankerItemFlag: true,
-      config: {
-        scenario:
-          "Sanne wil een video laten zien en horen. Op haar scherm staat ook een privéchat open. Zij wil niet dat anderen die chat zien.",
-        buttons: ["Chat", "Reacties", "Meer", "Camera", "Microfoon", "Delen"],
-        shareOptions: ["Hele scherm", "Vensterweergave"],
-        windows: [
-          "Hele scherm",
-          "Mediaspeler",
-          "Excel: Data_werkstuk",
-          "Word: Document1",
-          "Privéchat",
-        ],
-        correctWindow: "Mediaspeler",
-        rules: shareRules(true),
-      },
+      config: createFakeTeamsConfig(),
     },
     pt7: {
       id: "lj3v-pt7-programming",
@@ -1875,73 +1773,9 @@ const versionSpecs: VersionSpec[] = [
     pt2: {
       id: "lj3h-pt2-mail",
       title: "Mail opstellen",
-      instruction:
-        "Stel de mail op.\n- Zet mentor@school.nl bij Cc.\n- Zet ouder1@mail.nl, ouder2@mail.nl en ouder3@mail.nl bij Bcc.\n- Zet ouders niet bij Aan of Cc.\n- Voeg Agenda_informatieavond.pdf toe.\n- Voeg de link https://school.nl/informatieavond toe.\n- Klik op Verzenden.\nKlik daarna op Taak afronden.",
+      instruction: reportMailInstruction,
       kerndoel: "21A, 23A, 23B",
-      config: {
-        visibleButtons: mailButtons,
-        contacts: [
-          "mentor@school.nl",
-          "ouder1@mail.nl",
-          "ouder2@mail.nl",
-          "ouder3@mail.nl",
-          "klasgroep@school.nl",
-          "teamleider@school.nl",
-        ],
-        files: [
-          "Agenda_informatieavond.pdf",
-          "Cijfers_klas.xlsx",
-          "Foto_leerlingen.jpg",
-          "Concept_uitnodiging.docx",
-        ],
-        rules: [
-          {
-            id: "cc-mentor",
-            description: "mentor in Cc.",
-            points: 1,
-            conditions: [{ field: "cc", operator: "includes", value: "mentor@school.nl" }],
-          },
-          {
-            id: "bcc-parents",
-            description: "alle ouders in Bcc en geen ouder in Aan/Cc.",
-            points: 1,
-            conditions: [
-              {
-                field: "bcc",
-                operator: "allInclude",
-                value: ["ouder1@mail.nl", "ouder2@mail.nl", "ouder3@mail.nl"],
-              },
-              {
-                field: "to",
-                operator: "noneInclude",
-                value: ["ouder1@mail.nl", "ouder2@mail.nl", "ouder3@mail.nl"],
-              },
-              {
-                field: "cc",
-                operator: "noneInclude",
-                value: ["ouder1@mail.nl", "ouder2@mail.nl", "ouder3@mail.nl"],
-              },
-            ],
-          },
-          {
-            id: "attachment",
-            description: "juiste bijlage zichtbaar.",
-            points: 1,
-            conditions: [
-              { field: "attachments", operator: "includes", value: "Agenda_informatieavond.pdf" },
-            ],
-          },
-          {
-            id: "link-sent",
-            description: "hyperlink zichtbaar in body en mail verzonden.",
-            points: 1,
-            conditions: [
-              { field: "links", operator: "includes", value: "https://school.nl/informatieavond" },
-              { field: "sent", operator: "true" },
-            ],
-          },
-        ],
-      },
+      config: createReportMailConfig(),
     },
     pt3: {
       id: "lj3h-pt3-security",
@@ -2059,26 +1893,10 @@ const versionSpecs: VersionSpec[] = [
     pt6: {
       id: "lj3h-pt6-meeting",
       title: "PT6 - Videovergadering en schermdelen",
-      instruction:
-        "Kies wat je moet aanklikken in Teams.\nOpen Delen.\nKies de deeloptie die het privébericht en de cijferlijst niet toont.\nZet geluid aan als dat nodig is.\nKlik daarna op Taak afronden.",
+      instruction: fakeTeamsInstruction,
       kerndoel: "21A, 23A, 23B",
       ankerItemFlag: true,
-      config: {
-        scenario:
-          "Je wilt een video laten zien en horen. Op je scherm staat ook een privébericht en een cijferlijst open. Anderen mogen die niet zien.",
-        buttons: ["Chat", "Reacties", "Meer", "Camera", "Microfoon", "Delen"],
-        shareOptions: ["Hele scherm", "Vensterweergave"],
-        windows: [
-          "Hele scherm",
-          "Mediaspeler",
-          "Excel: Cijferlijst",
-          "Browser: Privébericht",
-          "Word: Werkstuk",
-          "Teams chat",
-        ],
-        correctWindow: "Mediaspeler",
-        rules: shareRules(true),
-      },
+      config: createFakeTeamsConfig(),
     },
     pt7: {
       id: "lj3h-pt7-programming",

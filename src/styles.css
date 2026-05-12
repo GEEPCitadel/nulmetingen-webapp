@@ -295,6 +295,7 @@ main {
 }
 
 .field input,
+.field select,
 .field textarea,
 .admin-row input,
 .admin-row textarea {
@@ -1213,6 +1214,254 @@ main {
   outline: 3px solid color-mix(in srgb, var(--theme-secondary) 50%, white);
 }
 
+.fake-teams-task-panel {
+  max-width: min(1180px, calc(100vw - 36px));
+}
+
+.fake-teams-shell {
+  overflow: hidden;
+  min-height: min(720px, 78vh);
+  border: 1px solid #242233;
+  border-radius: 10px;
+  background: #1f1f2f;
+  color: #ffffff;
+  box-shadow: 0 18px 44px rgba(31, 31, 47, 0.22);
+}
+
+.fake-teams-titlebar {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 16px;
+  background: #464775;
+  font-weight: 800;
+}
+
+.fake-teams-appmark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: #6264a7;
+  font-weight: 900;
+}
+
+.fake-teams-meeting-title {
+  justify-self: end;
+  min-width: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.92rem;
+}
+
+.fake-teams-content {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: min(590px, calc(78vh - 130px));
+}
+
+.fake-teams-side {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: #292a3f;
+}
+
+.fake-teams-side span {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.fake-participant {
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+
+.fake-participant.active {
+  box-shadow: inset 3px 0 0 #7b83eb;
+}
+
+.fake-teams-main {
+  position: relative;
+  display: grid;
+  align-content: stretch;
+  min-width: 0;
+  background: #202124;
+}
+
+.fake-teams-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.65fr);
+  gap: 14px;
+  padding: 22px;
+}
+
+.fake-video-tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 330px;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 28% 24%, rgba(123, 131, 235, 0.2), transparent 34%),
+    #2f3246;
+}
+
+.fake-video-tile.muted {
+  min-height: 210px;
+  background: #343846;
+}
+
+.fake-video-tile span {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.38);
+  font-weight: 800;
+}
+
+.fake-avatar {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #6264a7;
+  color: #ffffff;
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.fake-avatar.small {
+  width: 72px;
+  font-size: 1.35rem;
+  background: #697386;
+}
+
+.fake-share-menu,
+.fake-window-picker {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 4;
+  display: grid;
+  gap: 14px;
+  width: min(420px, calc(100% - 48px));
+  border: 1px solid #dadce8;
+  border-radius: 10px;
+  padding: 16px;
+  background: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.28);
+}
+
+.fake-window-picker {
+  right: 470px;
+  width: min(500px, calc(100% - 520px));
+}
+
+.fake-share-options,
+.fake-window-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.fake-share-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fake-window-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fake-share-options button,
+.fake-window-grid button,
+.fake-teams-toolbar button {
+  border: 1px solid rgba(31, 41, 55, 0.14);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2937;
+  font-weight: 800;
+}
+
+.fake-share-options button,
+.fake-window-grid button {
+  display: grid;
+  gap: 8px;
+  min-height: 86px;
+  padding: 12px;
+  text-align: left;
+}
+
+.fake-share-options button:hover,
+.fake-share-options button.selected,
+.fake-window-grid button:hover,
+.fake-window-grid button.selected {
+  border-color: #6264a7;
+  background: #f0f1ff;
+}
+
+.fake-share-icon,
+.fake-window-preview {
+  display: grid;
+  place-items: center;
+  height: 42px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #e9ecff, #f8fafc);
+  color: #464775;
+  font-family: "Courier New", monospace;
+  font-weight: 900;
+}
+
+.fake-teams-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  min-height: 82px;
+  padding: 14px;
+  background: #f5f5f8;
+}
+
+.fake-teams-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 13px;
+}
+
+.fake-teams-toolbar button:hover,
+.fake-teams-toolbar button.active {
+  border-color: #6264a7;
+  background: #e8e9ff;
+}
+
+.teams-inline-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fake-teams-status {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: #173b2f;
+  color: #d8f8e8;
+  font-weight: 900;
+}
+
 .block-programming-layout {
   display: grid;
   grid-template-columns: 280px 300px minmax(0, 1fr);
@@ -1783,6 +2032,114 @@ main {
   gap: 14px;
 }
 
+.admin-import-panel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--theme-panel) 92%, white);
+}
+
+.admin-import-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.import-preview {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-student-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.student-table {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--theme-tertiary) 20%, transparent);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.student-table-row {
+  display: grid;
+  grid-template-columns: 120px 120px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.student-management-table .student-table-row {
+  grid-template-columns: 120px 90px minmax(160px, 1fr) 110px 160px 90px 110px;
+}
+
+.student-table-row:last-child {
+  border-bottom: 0;
+}
+
+.student-table-head {
+  font-weight: 900;
+  background: #f6f8fa;
+}
+
+.compact-student-table .student-table-row {
+  grid-template-columns: 120px minmax(0, 1fr);
+}
+
+.results-table .student-table-row {
+  grid-template-columns: 100px 100px 180px minmax(0, 1fr);
+}
+
+.result-row-button {
+  width: 100%;
+  border: 0;
+  background: #ffffff;
+  color: inherit;
+  text-align: left;
+}
+
+.result-row-button:hover {
+  background: #f6f8fa;
+}
+
+.compact-action {
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.result-detail-modal {
+  width: min(960px, 100%);
+  max-height: min(780px, 90vh);
+  overflow: auto;
+}
+
+.domain-table .student-table-row {
+  grid-template-columns: minmax(0, 1fr) 120px;
+}
+
+.item-table .student-table-row {
+  grid-template-columns: 180px 170px 100px minmax(0, 1fr);
+}
+
+.success-banner {
+  padding: 12px 14px;
+  border-radius: 14px;
+  color: #155d3b;
+  background: #e7f6ed;
+  font-weight: 700;
+}
+
 .admin-row {
   display: grid;
   gap: 12px;
@@ -1917,8 +2274,23 @@ main {
   .mail-tools-grid,
   .block-programming-layout,
   .powerpoint-task-layout,
-  .teams-stage {
+  .teams-stage,
+  .fake-teams-content,
+  .fake-teams-stage,
+  .fake-share-options,
+  .fake-window-grid {
     grid-template-columns: 1fr;
+  }
+
+  .fake-teams-side {
+    display: none;
+  }
+
+  .fake-share-menu,
+  .fake-window-picker {
+    position: static;
+    width: auto;
+    margin: 0 16px 16px;
   }
 
   .powerpoint-preview,

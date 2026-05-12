@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.git/
+.codex_spreadsheet_build/
+nulmetingen-webapp/
+*.log
+*.tsbuildinfo

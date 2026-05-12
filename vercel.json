@@ -1,8 +1,8 @@
 {
-  "experimentalServices": {
-    "web": {
-      "entrypoint": ".",
-      "routePrefix": "/"
+  "rewrites": [
+    {
+      "source": "/((?!api/.*).*)",
+      "destination": "/index.html"
     }
-  }
+  ]
 }

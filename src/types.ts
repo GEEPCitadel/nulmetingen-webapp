@@ -183,7 +183,16 @@ export interface TeamsScoringRule {
   id: string;
   description: string;
   points: number;
-  conditions: Array<"shareOpened" | "computerSoundOn" | "mediaPlayerSelected" | "notWholeScreen">;
+  conditions: Array<
+    | "clicked_share"
+    | "clicked_window"
+    | "selected_windows_media_player"
+    | "correctSequence"
+    | "shareOpened"
+    | "computerSoundOn"
+    | "mediaPlayerSelected"
+    | "notWholeScreen"
+  >;
 }
 
 export interface TeamsTaskConfig {
@@ -328,6 +337,8 @@ export interface CodeMapping {
 
 export interface SessionMetadata {
   learnerCode?: string;
+  accessCode?: string;
+  classCode?: string;
   anonymousCode: string;
 }
 
