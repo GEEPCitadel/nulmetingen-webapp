@@ -236,6 +236,10 @@ button {
   font-weight: 700;
 }
 
+.question-tag {
+  background: color-mix(in srgb, #ffde00 58%, white);
+}
+
 main {
   position: relative;
   z-index: 1;

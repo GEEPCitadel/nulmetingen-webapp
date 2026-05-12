@@ -163,21 +163,23 @@ const formatTime = (totalSeconds: number) => {
 };
 
 const cleanQuestionTitle = (title: string) =>
-  title.replace(/^(PT|SR)\d+\s*-\s*/i, "").trim();
+  title.replace(/^(PT|SR)\d+\s*[-–—]\s*/i, "").trim();
 
 const QuestionHeader = ({
   questionNumber,
+  label,
   title,
   instruction,
   children,
 }: {
-  questionNumber: number;
+  questionNumber?: number;
+  label?: string;
   title: string;
   instruction?: string;
   children?: ReactNode;
 }) => (
   <div className="stack-xs">
-    <span className="section-tag">Vraag {questionNumber}</span>
+    <span className="section-tag question-tag">{label ?? `Vraag ${questionNumber}`}</span>
     <h2 className="question-title">{cleanQuestionTitle(title)}</h2>
     {instruction ? <p className="helper-text">{instruction}</p> : null}
     {children}
@@ -707,8 +709,15 @@ const AssessmentScreen = ({
     return null;
   }
 
+  const steps = getStepDescriptors(assessment);
+  const questionSteps = steps.filter((candidateStep) => {
+    const candidateItem = getItemByStep(assessment, candidateStep);
+    return candidateItem?.type !== "self_assessment";
+  });
+  const questionIndex = questionSteps.findIndex((candidateStep) => candidateStep.key === step.key);
+  const questionNumber = questionIndex >= 0 ? questionIndex + 1 : undefined;
+  const questionCount = questionSteps.length;
   const progress = Math.round(((stepIndex + 1) / stepCount) * 100);
-  const questionNumber = stepIndex + 1;
 
   return (
     <section className="stack-lg">
@@ -716,7 +725,9 @@ const AssessmentScreen = ({
         <div className="progress-meta">
           <strong>Voortgang</strong>
           <span>
-            Vraag {stepIndex + 1} van {stepCount}
+            {questionNumber
+              ? `Vraag ${questionNumber} van ${questionCount}`
+              : `Zelfinschatting · stap ${stepIndex + 1} van ${stepCount}`}
           </span>
         </div>
         <div className="progress-bar">
@@ -728,7 +739,7 @@ const AssessmentScreen = ({
         <SelfAssessmentView
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
@@ -736,7 +747,7 @@ const AssessmentScreen = ({
       {item.type === "file_task_simulation" ? (
         <FileTaskWorkspace
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           state={session.pt1States[item.id]}
           onChange={(nextState) => onUpdateFileTaskState(item, nextState)}
           onFinish={() => onFinishFileTask(section, item)}
@@ -747,7 +758,7 @@ const AssessmentScreen = ({
         <MailTaskView
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
@@ -756,7 +767,7 @@ const AssessmentScreen = ({
         <InteractionTaskView
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           task={item.securityTask}
           onSubmit={onSubmitAnswer}
         />
@@ -766,7 +777,7 @@ const AssessmentScreen = ({
         <ExcelDownloadTaskView
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
@@ -775,7 +786,7 @@ const AssessmentScreen = ({
         <OfficeFormatTaskView
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
@@ -784,7 +795,7 @@ const AssessmentScreen = ({
         <PowerPointDesignTaskView
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
@@ -793,7 +804,7 @@ const AssessmentScreen = ({
         <FakeTeamsTask
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
@@ -802,7 +813,7 @@ const AssessmentScreen = ({
         <BlockProgrammingTaskView
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
@@ -811,7 +822,7 @@ const AssessmentScreen = ({
         <InteractionTaskView
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           task={item.socialTask}
           onSubmit={onSubmitAnswer}
         />
@@ -821,7 +832,7 @@ const AssessmentScreen = ({
         <ChoiceItemView
           section={section}
           item={item}
-          questionNumber={questionNumber}
+          questionNumber={questionNumber ?? 1}
           presentedOrder={getPresentedOrder(session, section.id, item.id)}
           onSubmit={onSubmitAnswer}
         />
@@ -845,7 +856,7 @@ const SelfAssessmentView = ({
 
   return (
     <section className="panel stack-lg">
-      <QuestionHeader questionNumber={questionNumber} title={item.title}>
+      <QuestionHeader label="Zelfinschatting" title={item.title}>
         <p className="slider-instruction">
           {item.instruction}
           <br />
