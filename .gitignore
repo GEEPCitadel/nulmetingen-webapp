@@ -136,6 +136,7 @@ dist
 .pnp.*
 
 # Local Codex/Vercel workspace artifacts
+.vite/
 .vercel/
 .codex_spreadsheet_build/
 nulmetingen-webapp/

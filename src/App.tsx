@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import {
-  ADMIN_CODE,
   assessmentMap,
   defaultCodeMappings,
   themes,
@@ -10,10 +9,8 @@ import {
   calculateResult,
   completeSession,
   createSession,
-  findAssessmentForCode,
   getAssessment,
   getItemByStep,
-  getMappingCodes,
   getPresentedOrder,
   getSectionById,
   getStepDescriptors,
@@ -32,16 +29,13 @@ import {
 } from "./lib/pt1";
 import {
   readActiveSession,
-  readCodeMappings,
   saveActiveSession,
-  saveCodeMappings,
 } from "./lib/storage";
 import type {
   AssessmentItem,
   AssessmentSection,
   AssessmentSession,
   AssessmentVersion,
-  CodeMapping,
   EventLog,
   InteractionGroup,
   Pt1Node,
@@ -64,7 +58,50 @@ type SubmitAnswerPayload = {
   shownOptionOrder: string[];
 };
 
+type ApiStudent = {
+  studentNumber: string;
+  accessCode: string;
+  classCode: string;
+  versionId: AssessmentVersion["id"];
+  importBatch?: string;
+  status?: "not_started" | "in_progress" | "completed";
+  resultSessionId?: string | null;
+  totalScore?: number | null;
+  maxScore?: number | null;
+  percentage?: number | null;
+  completedAt?: string | null;
+  updatedAt?: string | null;
+};
+
+type StudentLoginResponse = {
+  ok: boolean;
+  status: "not_started" | "in_progress" | "completed";
+  student: ApiStudent;
+  session?: AssessmentSession;
+};
+
+type StudentsResponse = {
+  ok: boolean;
+  students: ApiStudent[];
+  importedCount?: number;
+};
+
 const defaultTheme = themes.skyOrange;
+
+const requestJson = async <T,>(url: string, options: RequestInit = {}): Promise<T> => {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers ?? {}),
+    },
+  });
+  const data = (await response.json().catch(() => ({}))) as { error?: string };
+  if (!response.ok) {
+    throw new Error(data.error ?? "De server gaf geen geldige reactie.");
+  }
+  return data as T;
+};
 
 const downloadFile = (filename: string, content: string, type: string) => {
   const blob = new Blob([content], { type });
@@ -165,6 +202,39 @@ const formatTime = (totalSeconds: number) => {
 const cleanQuestionTitle = (title: string) =>
   title.replace(/^(PT|SR)\d+\s*[-–—]\s*/i, "").trim();
 
+const shuffleItems = <T,>(items: T[]): T[] => {
+  const clone = [...items];
+  for (let index = clone.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [clone[index], clone[randomIndex]] = [clone[randomIndex], clone[index]];
+  }
+  return clone;
+};
+
+const interactionOrderKey = (screenId: string, groupId: string, kind: "cards" | "options") =>
+  `${screenId}:${groupId}:${kind}`;
+
+const createInteractionOrders = (
+  task: AssessmentItem["securityTask"] | AssessmentItem["socialTask"],
+) => {
+  const orders: Record<string, string[]> = {};
+  task?.screens.forEach((screen) => {
+    screen.groups.forEach((group) => {
+      if (group.cards) {
+        orders[interactionOrderKey(screen.id, group.id, "cards")] = shuffleItems(
+          group.cards.map((card) => card.id),
+        );
+      }
+      if (group.options) {
+        orders[interactionOrderKey(screen.id, group.id, "options")] = shuffleItems(
+          group.options.map((option) => option.id),
+        );
+      }
+    });
+  });
+  return orders;
+};
+
 const QuestionHeader = ({
   questionNumber,
   label,
@@ -204,13 +274,14 @@ const App = () => {
   const [session, setSession] = useState<AssessmentSession | null>(() =>
     readActiveSession(),
   );
-  const [codeMappings, setCodeMappings] = useState<CodeMapping[]>(() =>
-    readCodeMappings(),
-  );
   const [learnerCode, setLearnerCode] = useState("");
+  const [learnerClassCode, setLearnerClassCode] = useState("");
   const [learnerCodeError, setLearnerCodeError] = useState("");
   const [adminCode, setAdminCode] = useState("");
+  const [adminToken, setAdminToken] = useState("");
   const [adminError, setAdminError] = useState("");
+  const [isStarting, setIsStarting] = useState(false);
+  const [isUnlockingAdmin, setIsUnlockingAdmin] = useState(false);
   const [stepStartedAt, setStepStartedAt] = useState(Date.now());
   const [now, setNow] = useState(Date.now());
 
@@ -225,11 +296,24 @@ const App = () => {
 
   useEffect(() => {
     saveActiveSession(session);
-  }, [session]);
 
-  useEffect(() => {
-    saveCodeMappings(codeMappings);
-  }, [codeMappings]);
+    if (!session?.metadata.classCode) {
+      return;
+    }
+
+    if (session.completedAt && result) {
+      void requestJson<{ ok: boolean }>("/api/results", {
+        method: "POST",
+        body: JSON.stringify({ session, result }),
+      }).catch(() => undefined);
+      return;
+    }
+
+    void requestJson<{ ok: boolean }>("/api/sessions", {
+      method: "POST",
+      body: JSON.stringify({ session }),
+    }).catch(() => undefined);
+  }, [session, result]);
 
   useEffect(() => {
     setStepStartedAt(Date.now());
@@ -240,31 +324,72 @@ const App = () => {
     return () => window.clearInterval(timer);
   }, []);
 
-  const startAssessment = () => {
-    const assessment = findAssessmentForCode(learnerCode, codeMappings);
-    if (!assessment) {
-      setLearnerCodeError("Deze code is niet bekend. Vraag om hulp.");
+  const startAssessment = async () => {
+    const accessCode = learnerCode.trim();
+    const classCode = learnerClassCode.trim().toLowerCase();
+    if (!/^\d{4}$/.test(accessCode) || !classCode) {
+      setLearnerCodeError("Vul je viercijferige leerlingnummer en klas in.");
       return;
     }
 
-    const metadata: SessionMetadata = {
-      learnerCode: learnerCode.trim(),
-      anonymousCode: learnerCode.trim(),
-    };
-
-    setSession(createSession(assessment, learnerCode.trim(), metadata));
-    setLearnerCodeError("");
+    setIsStarting(true);
+    try {
+      const data = await requestJson<StudentLoginResponse>("/api/student-login", {
+        method: "POST",
+        body: JSON.stringify({ code: accessCode, classCode }),
+      });
+      const student = data.student;
+      const assessment = assessmentMap[student.versionId];
+      if (data.session) {
+        setSession({
+          ...data.session,
+          metadata: {
+            ...data.session.metadata,
+            learnerCode: accessCode,
+            accessCode,
+            classCode,
+            anonymousCode: data.session.metadata?.anonymousCode ?? `${classCode}-${accessCode}`,
+          },
+        });
+      } else {
+        const metadata: SessionMetadata = {
+          learnerCode: accessCode,
+          accessCode,
+          classCode,
+          anonymousCode: `${classCode}-${accessCode}`,
+        };
+        setSession(createSession(assessment, accessCode, metadata));
+      }
+      setLearnerCodeError("");
+    } catch {
+      setLearnerCodeError("Deze leerling is niet gevonden. Controleer je nummer en klas.");
+    } finally {
+      setIsStarting(false);
+    }
   };
 
-  const unlockAdmin = () => {
-    if (adminCode.trim().toLowerCase() !== ADMIN_CODE) {
+  const unlockAdmin = async () => {
+    const password = adminCode.trim();
+    if (!password) {
       setAdminError("De beheercode klopt niet.");
       return;
     }
 
-    setAdminError("");
-    setAdminCode("");
-    setEntryView("admin");
+    setIsUnlockingAdmin(true);
+    try {
+      await requestJson<{ ok: boolean }>("/api/admin-login", {
+        method: "POST",
+        body: JSON.stringify({ password }),
+      });
+      setAdminToken(password);
+      setAdminError("");
+      setAdminCode("");
+      setEntryView("admin");
+    } catch {
+      setAdminError("De beheercode klopt niet of de serverconfiguratie ontbreekt.");
+    } finally {
+      setIsUnlockingAdmin(false);
+    }
   };
 
   const advanceAfterAnswer = (nextSession: AssessmentSession) => {
@@ -361,6 +486,7 @@ const App = () => {
     setSession(null);
     setEntryView("intro");
     setLearnerCode("");
+    setLearnerClassCode("");
     setLearnerCodeError("");
     setAdminCode("");
     setAdminError("");
@@ -388,7 +514,7 @@ const App = () => {
             : entryView === "adminAccess"
               ? "Beheer opent met een aparte code."
               : entryView === "admin"
-                ? "Pas per leerjaar de leerlingcodes aan. Alles blijft lokaal in deze browser bewaard."
+                ? "Importeer leerlingcodes en bekijk voortgang vanuit de gekoppelde Neon database."
                 : "Deze vragenlijst geeft een beeld van jouw digitale geletterdheid. Het invullen duurt ongeveer dertig minuten."
       }
       timer={
@@ -406,9 +532,15 @@ const App = () => {
       {!session && entryView === "intro" ? (
         <StudentStartScreen
           learnerCode={learnerCode}
+          classCode={learnerClassCode}
           error={learnerCodeError}
+          isStarting={isStarting}
           onLearnerCodeChange={(value) => {
             setLearnerCode(value);
+            setLearnerCodeError("");
+          }}
+          onClassCodeChange={(value) => {
+            setLearnerClassCode(value);
             setLearnerCodeError("");
           }}
           onStart={startAssessment}
@@ -423,6 +555,7 @@ const App = () => {
         <AdminAccessScreen
           code={adminCode}
           error={adminError}
+          isLoading={isUnlockingAdmin}
           onCodeChange={(value) => {
             setAdminError("");
             setAdminCode(value);
@@ -434,10 +567,8 @@ const App = () => {
 
       {!session && entryView === "admin" ? (
         <AdminScreen
-          mappings={codeMappings}
-          onChange={setCodeMappings}
+          adminPassword={adminToken}
           onBack={() => setEntryView("intro")}
-          onRestoreDefaults={() => setCodeMappings(defaultCodeMappings)}
         />
       ) : null}
 
@@ -519,14 +650,20 @@ const AppShell = ({
 
 const StudentStartScreen = ({
   learnerCode,
+  classCode,
   error,
+  isStarting,
   onLearnerCodeChange,
+  onClassCodeChange,
   onStart,
   onOpenAdmin,
 }: {
   learnerCode: string;
+  classCode: string;
   error: string;
+  isStarting: boolean;
   onLearnerCodeChange: (value: string) => void;
+  onClassCodeChange: (value: string) => void;
   onStart: () => void;
   onOpenAdmin: () => void;
 }) => (
@@ -547,11 +684,24 @@ const StudentStartScreen = ({
       </p>
     </div>
     <label className="field">
-      <span>Leerlingcode</span>
+      <span>Leerlingnummer</span>
       <input
         value={learnerCode}
         onChange={(event) => onLearnerCodeChange(event.target.value)}
-        placeholder="Vul je leerlingcode in"
+        placeholder="Bijvoorbeeld 1234"
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            onStart();
+          }
+        }}
+      />
+    </label>
+    <label className="field">
+      <span>Klas</span>
+      <input
+        value={classCode}
+        onChange={(event) => onClassCodeChange(event.target.value)}
+        placeholder="Bijvoorbeeld vmbo1a"
         onKeyDown={(event) => {
           if (event.key === "Enter") {
             onStart();
@@ -561,8 +711,8 @@ const StudentStartScreen = ({
     </label>
     {error ? <div className="error-banner">{error}</div> : null}
     <div className="actions start-actions">
-      <button className="primary-button" type="button" onClick={onStart}>
-        Start
+      <button className="primary-button" type="button" onClick={onStart} disabled={isStarting}>
+        {isStarting ? "Controleren..." : "Start"}
       </button>
     </div>
     <div className="teacher-entry">
@@ -576,12 +726,14 @@ const StudentStartScreen = ({
 const AdminAccessScreen = ({
   code,
   error,
+  isLoading,
   onCodeChange,
   onUnlock,
   onBack,
 }: {
   code: string;
   error: string;
+  isLoading: boolean;
   onCodeChange: (value: string) => void;
   onUnlock: () => void;
   onBack: () => void;
@@ -590,7 +742,7 @@ const AdminAccessScreen = ({
     <div className="stack-sm">
       <span className="section-tag">Beheer</span>
       <h2>Voer de beheercode in</h2>
-      <p>Met de beheercode open je de lokale omgeving voor leerlingcodes.</p>
+      <p>Met de beheercode open je de beheeromgeving met de gekoppelde database.</p>
     </div>
     <label className="field">
       <span>Beheercode</span>
@@ -607,8 +759,8 @@ const AdminAccessScreen = ({
     </label>
     {error ? <div className="error-banner">{error}</div> : null}
     <div className="actions">
-      <button className="primary-button" type="button" onClick={onUnlock}>
-        Open beheer
+      <button className="primary-button" type="button" onClick={onUnlock} disabled={isLoading}>
+        {isLoading ? "Controleren..." : "Open beheer"}
       </button>
       <button className="ghost-button" type="button" onClick={onBack}>
         Terug naar leerlingstart
@@ -618,64 +770,209 @@ const AdminAccessScreen = ({
 );
 
 const AdminScreen = ({
-  mappings,
-  onChange,
+  adminPassword,
   onBack,
-  onRestoreDefaults,
 }: {
-  mappings: CodeMapping[];
-  onChange: (mappings: CodeMapping[]) => void;
+  adminPassword: string;
   onBack: () => void;
-  onRestoreDefaults: () => void;
 }) => {
-  const updateCodes = (instrumentId: CodeMapping["instrumentId"], nextValue: string) => {
-    const codes = nextValue
-      .split(/[\n,;]/)
-      .map((code) => code.trim())
-      .filter(Boolean);
-    onChange(
-      mappings.map((mapping) =>
-        mapping.instrumentId === instrumentId ? { ...mapping, codes } : mapping,
-      ),
-    );
+  const [students, setStudents] = useState<ApiStudent[]>([]);
+  const [versionId, setVersionId] = useState<AssessmentVersion["id"]>("lj1-vmbo");
+  const [importBatch, setImportBatch] = useState("");
+  const [importText, setImportText] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const adminHeaders = { "x-admin-password": adminPassword };
+
+  const loadStudents = async () => {
+    setIsLoading(true);
+    try {
+      const data = await requestJson<StudentsResponse>("/api/students", {
+        method: "GET",
+        headers: adminHeaders,
+      });
+      setStudents(data.students);
+      setError("");
+    } catch {
+      setError("Leerlingen ophalen is niet gelukt. Controleer de databasekoppeling.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadStudents();
+  }, []);
+
+  const parseImportRows = () =>
+    importText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [first = "", second = ""] = line.split(/[,\t; ]+/).map((part) => part.trim());
+        const accessCode = /^\d{4}$/.test(first) ? first : second;
+        const classCode = /^\d{4}$/.test(first) ? second : first;
+        return { accessCode, classCode };
+      });
+
+  const importStudents = async () => {
+    const rows = parseImportRows();
+    if (rows.length === 0) {
+      setError("Plak eerst leerlingregels, bijvoorbeeld: vmbo1a 1234.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const data = await requestJson<StudentsResponse>("/api/students", {
+        method: "POST",
+        headers: adminHeaders,
+        body: JSON.stringify({
+          versionId,
+          importBatch,
+          students: rows,
+        }),
+      });
+      setStudents(data.students);
+      setMessage(`${data.importedCount ?? rows.length} leerlingen geimporteerd.`);
+      setError("");
+      setImportText("");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Importeren is niet gelukt.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const reopenStudent = async (student: ApiStudent) => {
+    setIsLoading(true);
+    try {
+      const data = await requestJson<StudentsResponse>("/api/students", {
+        method: "PATCH",
+        headers: adminHeaders,
+        body: JSON.stringify({
+          action: "reopen",
+          accessCode: student.accessCode,
+          classCode: student.classCode,
+        }),
+      });
+      setStudents(data.students);
+      setMessage(`${student.classCode} ${student.accessCode} is opnieuw opengezet.`);
+      setError("");
+    } catch {
+      setError("Opnieuw openzetten is niet gelukt.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const statusLabel = (status?: ApiStudent["status"]) => {
+    if (status === "completed") return "Afgerond";
+    if (status === "in_progress") return "Bezig";
+    return "Niet gestart";
   };
 
   return (
     <section className="panel stack-lg">
       <div className="stack-sm">
         <span className="section-tag">Beheer</span>
-        <h2>Leerlingcodes per leerjaar</h2>
+        <h2>Leerlingcodes en resultaten</h2>
         <p>
-          Plak per leerjaar de leerlingcodes. Eentje per regel werkt het duidelijkst.
-          De beheercode blijft vast op <strong>{ADMIN_CODE}</strong>.
+          Importeer leerlingnummers per klas. Voortgang en resultaten worden uit de Neon database gelezen.
         </p>
       </div>
-      <div className="admin-list">
-        {defaultCodeMappings.map((defaultMapping) => {
-          const current = mappings.find(
-            (mapping) => mapping.instrumentId === defaultMapping.instrumentId,
-          );
-          return (
-            <div className="admin-row compact-admin-row" key={defaultMapping.instrumentId}>
-              <div className="admin-label">
-                <strong>{defaultMapping.label}</strong>
-                <span>{assessmentMap[defaultMapping.instrumentId].level}</span>
-              </div>
-              <textarea
-                value={getMappingCodes(current ?? defaultMapping).join("\n")}
-                onChange={(event) =>
-                  updateCodes(defaultMapping.instrumentId, event.target.value)
-                }
-                placeholder={defaultMapping.codes.join("\n")}
-              />
+      <div className="admin-import-panel">
+        <div className="admin-import-controls">
+          <label className="field">
+            <span>Nulmeting</span>
+            <select
+              value={versionId}
+              onChange={(event) => setVersionId(event.target.value as AssessmentVersion["id"])}
+            >
+              {defaultCodeMappings.map((mapping) => (
+                <option key={mapping.instrumentId} value={mapping.instrumentId}>
+                  {mapping.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>Importnaam</span>
+            <input
+              value={importBatch}
+              onChange={(event) => setImportBatch(event.target.value)}
+              placeholder="Bijvoorbeeld VMBO klas 1"
+            />
+          </label>
+          <div className="field">
+            <span>Actie</span>
+            <button className="primary-button" type="button" onClick={importStudents} disabled={isLoading}>
+              Importeren
+            </button>
+          </div>
+        </div>
+        <label className="field">
+          <span>Leerlingen</span>
+          <textarea
+            value={importText}
+            onChange={(event) => setImportText(event.target.value)}
+            placeholder={"Een leerling per regel, bijvoorbeeld:\nvmbo1a 1234\nvmbo1a 1235"}
+          />
+        </label>
+      </div>
+      {message ? <div className="success-banner">{message}</div> : null}
+      {error ? <div className="error-banner">{error}</div> : null}
+      <div className="admin-student-heading">
+        <h3>Leerlingen</h3>
+        <button className="secondary-button" type="button" onClick={loadStudents} disabled={isLoading}>
+          Vernieuwen
+        </button>
+      </div>
+      <div className="student-table student-management-table">
+        <div className="student-table-row student-table-head">
+          <span>Klas</span>
+          <span>Nummer</span>
+          <span>Nulmeting</span>
+          <span>Status</span>
+          <span>Score</span>
+          <span>Import</span>
+          <span>Actie</span>
+        </div>
+        {students.length === 0 ? (
+          <div className="student-table-row">
+            <span>Nog geen leerlingen in de database.</span>
+          </div>
+        ) : (
+          students.map((student) => (
+            <div className="student-table-row" key={`${student.classCode}-${student.accessCode}`}>
+              <span>{student.classCode}</span>
+              <span>{student.accessCode}</span>
+              <span>{assessmentMap[student.versionId]?.level ?? student.versionId}</span>
+              <span>{statusLabel(student.status)}</span>
+              <span>
+                {typeof student.totalScore === "number" && typeof student.maxScore === "number"
+                  ? `${student.totalScore}/${student.maxScore} (${student.percentage ?? 0}%)`
+                  : "-"}
+              </span>
+              <span>{student.importBatch || "-"}</span>
+              <span>
+                <button
+                  className="ghost-button compact-action"
+                  type="button"
+                  onClick={() => reopenStudent(student)}
+                  disabled={isLoading}
+                >
+                  Heropen
+                </button>
+              </span>
             </div>
-          );
-        })}
+          ))
+        )}
       </div>
       <div className="actions">
-        <button className="secondary-button" type="button" onClick={onRestoreDefaults}>
-          Standaardcodes herstellen
-        </button>
         <button className="ghost-button" type="button" onClick={onBack}>
           Terug naar leerlingstart
         </button>
@@ -1280,9 +1577,30 @@ const InteractionTaskView = ({
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
   const [state, setState] = useState<Record<string, unknown>>({});
+  const [optionOrders] = useState(() => createInteractionOrders(task));
   if (!task) {
     return null;
   }
+
+  const orderFor = (
+    screenId: string,
+    group: InteractionGroup,
+    kind: "cards" | "options",
+  ) => optionOrders[interactionOrderKey(screenId, group.id, kind)] ?? [];
+  const orderedEntries = (entries: NonNullable<InteractionGroup["options"]>, order: string[]) =>
+    (order.length > 0 ? order : entries.map((entry) => entry.id))
+      .map((id) => entries.find((entry) => entry.id === id))
+      .filter(Boolean) as NonNullable<InteractionGroup["options"]>;
+  const orderedGroup = (screenId: string, group: InteractionGroup): InteractionGroup => ({
+    ...group,
+    cards: group.cards
+      ? orderedEntries(group.cards, orderFor(screenId, group, "cards"))
+      : undefined,
+    options: group.options
+      ? orderedEntries(group.options, orderFor(screenId, group, "options"))
+      : undefined,
+  });
+  const shownOptionOrder = Object.values(optionOrders).flat();
 
   const setGroupValue = (groupId: string, value: unknown) => {
     setState((current) => ({ ...current, [groupId]: value }));
@@ -1293,7 +1611,7 @@ const InteractionTaskView = ({
       section,
       item,
       selectedAnswer: state,
-      shownOptionOrder: [],
+      shownOptionOrder,
     });
 
   return (
@@ -1315,7 +1633,7 @@ const InteractionTaskView = ({
             {screen.groups.map((group) => (
             <InteractionGroupControl
               key={group.id}
-              group={group}
+              group={orderedGroup(screen.id, group)}
               value={state[group.id]}
               allowSkip={item.type === "social_action_simulation"}
               onChange={(value) => setGroupValue(group.id, value)}
@@ -1706,6 +2024,16 @@ type TeamsActionLogEntry = {
   timestamp: string;
 };
 
+type TeamsChatMessage = {
+  id: number;
+  text: string;
+};
+
+type TeamsReactionBurst = {
+  id: number;
+  emoji: string;
+};
+
 type TeamsIconName = "camera" | "mic" | "chat" | "people" | "reaction" | "share" | "more";
 
 const requiredTeamsSequence = [
@@ -1770,6 +2098,35 @@ const iconNameForTeamsButton = (button: string): TeamsIconName => {
 const actionName = (label: string) =>
   `clicked_${label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")}`;
 
+const teamsPortraitImage = "/teams/meeting-portraits.png";
+
+const TeamsVideoTile = ({
+  person,
+  initials,
+  cameraOn,
+  photoSide,
+  small = false,
+  blurred = false,
+}: {
+  person: string;
+  initials: string;
+  cameraOn: boolean;
+  photoSide: "learner" | "teacher";
+  small?: boolean;
+  blurred?: boolean;
+}) => (
+  <div className={`fake-video-tile ${small ? "compact" : ""} ${cameraOn ? "camera-on" : ""}`}>
+    {cameraOn ? (
+      <div className={`fake-video-photo ${photoSide} ${blurred ? "blurred" : ""}`}>
+        <img src={teamsPortraitImage} alt="" draggable="false" />
+      </div>
+    ) : (
+      <div className={`fake-avatar ${small ? "small" : ""}`}>{initials}</div>
+    )}
+    <span>{person}</span>
+  </div>
+);
+
 const FakeTeamsTask = ({
   section,
   item,
@@ -1787,6 +2144,18 @@ const FakeTeamsTask = ({
     selectedWindow: "",
     actionLog: [] as TeamsActionLogEntry[],
     skipped: false,
+    cameraOn: true,
+    micMuted: false,
+    chatOpen: false,
+    chatInput: "",
+    chatMessages: [] as TeamsChatMessage[],
+    participantsOpen: true,
+    reactionsOpen: false,
+    reactionBursts: [] as TeamsReactionBurst[],
+    moreOpen: false,
+    backgroundBlurred: false,
+    captionsVisible: false,
+    computerSoundOn: false,
   });
   const task = item.teamsTask;
   if (!task) {
@@ -1807,6 +2176,53 @@ const FakeTeamsTask = ({
     }));
   };
 
+  const appendAction = (current: typeof state, actionType: string) => ({
+    ...current,
+    actionLog: [
+      ...current.actionLog,
+      {
+        actionType,
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  });
+
+  const sendChatMessage = () => {
+    const text = state.chatInput.trim();
+    if (!text) {
+      return;
+    }
+    setState((current) => ({
+      ...appendAction(current, "sent_chat_message"),
+      chatInput: "",
+      chatMessages: [
+        ...current.chatMessages,
+        {
+          id: Date.now(),
+          text,
+        },
+      ],
+    }));
+  };
+
+  const sendReaction = (emoji: string) => {
+    const reaction = {
+      id: Date.now(),
+      emoji,
+    };
+    setState((current) => ({
+      ...appendAction(current, `sent_reaction_${emoji}`),
+      reactionsOpen: false,
+      reactionBursts: [...current.reactionBursts.slice(-5), reaction],
+    }));
+    window.setTimeout(() => {
+      setState((current) => ({
+        ...current,
+        reactionBursts: current.reactionBursts.filter((item) => item.id !== reaction.id),
+      }));
+    }, 2200);
+  };
+
   const submit = (skipped = false) => {
     onSubmit({
       section,
@@ -1817,6 +2233,7 @@ const FakeTeamsTask = ({
         selectedWindow: state.selectedWindow,
         actionLog: state.actionLog,
         completedSequence: hasCompletedTeamsSequence(state.actionLog),
+        computerSoundOn: state.computerSoundOn,
         skipped,
       },
       shownOptionOrder: [],
@@ -1840,29 +2257,65 @@ const FakeTeamsTask = ({
           <span className="fake-teams-meeting-title">Nulmeting DG</span>
         </div>
 
-        <div className="fake-teams-content">
-          <aside className="fake-teams-side">
-            <strong>Vergadering</strong>
-            <span>Nu bezig</span>
-            <div className="fake-participant active">Leerling Anoniem</div>
-            <div className="fake-participant">Docent</div>
-          </aside>
+        <div className={`fake-teams-content ${state.participantsOpen ? "" : "participants-hidden"}`}>
+          {state.participantsOpen ? (
+            <aside className="fake-teams-side">
+              <strong>Vergadering</strong>
+              <span>Nu bezig</span>
+              <div className="fake-participant active">Leerling Anoniem</div>
+              <div className="fake-participant">Docent</div>
+              <button
+                className="fake-invite-button"
+                type="button"
+                onClick={() => logAction("clicked_invite_participants")}
+              >
+                Deelnemers uitnodigen
+              </button>
+            </aside>
+          ) : null}
 
           <div className="fake-teams-main">
             <div className="fake-teams-stage">
-              <div className="fake-video-tile learner">
-                <div className="fake-avatar">LA</div>
-                <span>Leerling Anoniem</span>
-              </div>
-              <div className="fake-video-tile muted">
-                <div className="fake-avatar small">D</div>
-                <span>Docent</span>
-              </div>
+              <TeamsVideoTile
+                person="Leerling Anoniem"
+                initials="LA"
+                cameraOn={state.cameraOn}
+                photoSide="learner"
+                blurred={state.backgroundBlurred}
+              />
+              <TeamsVideoTile person="Docent" initials="D" cameraOn photoSide="teacher" small />
             </div>
+
+            {state.reactionBursts.map((reaction, index) => (
+              <span
+                className="fake-reaction-float"
+                key={reaction.id}
+                style={{ left: `${24 + index * 11}%` }}
+                aria-hidden="true"
+              >
+                {reaction.emoji}
+              </span>
+            ))}
+
+            {state.captionsVisible ? (
+              <div className="fake-captions">Ondertiteling: de vergadering is gestart.</div>
+            ) : null}
 
             {state.shareOpened ? (
               <div className="fake-share-menu" role="menu" aria-label="Deelmenu">
                 <strong>Delen</strong>
+                <label className="fake-sound-toggle">
+                  <input
+                    type="checkbox"
+                    checked={state.computerSoundOn}
+                    onChange={(event) =>
+                      logAction("toggled_computer_sound", {
+                        computerSoundOn: event.target.checked,
+                      })
+                    }
+                  />
+                  <span>Met computergeluid</span>
+                </label>
                 <div className="fake-share-options">
                   {task.shareOptions.map((option) => (
                     <button
@@ -1915,18 +2368,123 @@ const FakeTeamsTask = ({
                 </div>
               </div>
             ) : null}
+
+            {state.chatOpen ? (
+              <div className="fake-chat-panel" aria-label="Chatvenster">
+                <div className="fake-panel-heading">
+                  <strong>Chat</strong>
+                  <button type="button" onClick={() => logAction("closed_chat", { chatOpen: false })}>
+                    Sluiten
+                  </button>
+                </div>
+                <div className="fake-chat-messages" aria-live="polite">
+                  <div className="fake-chat-message received">Welkom bij de nulmeting.</div>
+                  {state.chatMessages.map((message) => (
+                    <div className="fake-chat-message sent" key={message.id}>
+                      {message.text}
+                    </div>
+                  ))}
+                </div>
+                <form
+                  className="fake-chat-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    sendChatMessage();
+                  }}
+                >
+                  <input
+                    aria-label="Chatbericht"
+                    value={state.chatInput}
+                    onChange={(event) => setState((current) => ({ ...current, chatInput: event.target.value }))}
+                    placeholder="Typ een bericht"
+                  />
+                  <button type="submit">Verstuur</button>
+                </form>
+              </div>
+            ) : null}
+
+            {state.reactionsOpen ? (
+              <div className="fake-reaction-menu" aria-label="Reactie kiezen">
+                {["👍", "👏", "❤️", "😊", "✋"].map((emoji) => (
+                  <button key={emoji} type="button" onClick={() => sendReaction(emoji)}>
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {state.moreOpen ? (
+              <div className="fake-more-menu" aria-label="Meer opties">
+                <button
+                  type="button"
+                  onClick={() =>
+                    logAction("toggled_background_blur", {
+                      backgroundBlurred: !state.backgroundBlurred,
+                      moreOpen: false,
+                    })
+                  }
+                >
+                  Achtergrond vervagen
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    logAction("toggled_captions", {
+                      captionsVisible: !state.captionsVisible,
+                      moreOpen: false,
+                    })
+                  }
+                >
+                  Ondertiteling {state.captionsVisible ? "uit" : "aan"}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
 
         <div className="fake-teams-toolbar">
           {task.buttons.map((button) => (
             <button
-              className={button === "Delen" && state.shareOpened ? "active" : ""}
+              className={[
+                button === "Delen" && state.shareOpened ? "active" : "",
+                button === "Camera" && !state.cameraOn ? "inactive" : "",
+                button === "Microfoon" && state.micMuted ? "muted" : "",
+                button === "Chat" && state.chatOpen ? "active" : "",
+                button === "Deelnemers" && state.participantsOpen ? "active" : "",
+                button === "Reageren" && state.reactionsOpen ? "active" : "",
+                button === "Meer" && state.moreOpen ? "active" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               key={button}
               type="button"
               onClick={() => {
                 if (button === "Delen") {
                   logAction("clicked_share", { shareOpened: true, windowPickerOpen: false });
+                  return;
+                }
+                if (button === "Camera") {
+                  logAction("toggled_camera", { cameraOn: !state.cameraOn });
+                  return;
+                }
+                if (button === "Microfoon") {
+                  logAction("toggled_microphone", { micMuted: !state.micMuted });
+                  return;
+                }
+                if (button === "Chat") {
+                  logAction("clicked_chat", { chatOpen: !state.chatOpen });
+                  return;
+                }
+                if (button === "Deelnemers") {
+                  logAction("clicked_participants", { participantsOpen: !state.participantsOpen });
+                  return;
+                }
+                if (button === "Reageren") {
+                  logAction("clicked_reactions", { reactionsOpen: !state.reactionsOpen });
+                  return;
+                }
+                if (button === "Meer") {
+                  logAction("clicked_more", { moreOpen: !state.moreOpen });
                   return;
                 }
                 logAction(actionName(button));
@@ -2015,6 +2573,7 @@ const BlockProgrammingTaskView = ({
     emptyProgramRunEffects,
   );
   const task = item.blockTask;
+  const [paletteBlocks] = useState(() => shuffleItems(item.blockTask?.blocks ?? []));
   if (!task) {
     return null;
   }
@@ -2363,7 +2922,7 @@ const BlockProgrammingTaskView = ({
 
         <div className="block-palette">
           <strong>Blokken</strong>
-          {task.blocks.map((block) => (
+          {paletteBlocks.map((block) => (
             <button
               className={`program-block ${block.isContainer ? "container-block" : ""}`}
               key={block.label}
@@ -2431,7 +2990,7 @@ const BlockProgrammingTaskView = ({
               section,
               item,
               selectedAnswer: { program, executed, aPresses, temperature, windowOpen, runEffects },
-              shownOptionOrder: [],
+              shownOptionOrder: paletteBlocks.map((block) => block.label),
             })
           }
         >
@@ -2623,14 +3182,17 @@ const FileTaskWorkspace = ({
     targetParentId: string;
   } | null>(null);
   const [clipboard, setClipboard] = useState<ExplorerClipboard>(null);
+  const [lastNodeClick, setLastNodeClick] = useState<{
+    nodeId: string;
+    timestamp: number;
+  } | null>(null);
 
   if (!item.fileTask || !state) {
     return null;
   }
 
   const selectedNode = selectedNodeId ? getNodeById(state.nodes, selectedNodeId) : null;
-  const activeFolderId =
-    selectedNode?.type === "folder" ? selectedNode.id : contextFolderId;
+  const activeFolderId = contextFolderId;
   const activeFolder = getNodeById(state.nodes, activeFolderId);
   const activeItems = getChildren(state.nodes, activeFolderId);
   const clipboardNode = clipboard ? getNodeById(state.nodes, clipboard.nodeId) : null;
@@ -2695,6 +3257,27 @@ const FileTaskWorkspace = ({
     const nextName = window.prompt("Nieuwe naam:", selectedNode.name);
     if (nextName) {
       onChange(renameNode(state, selectedNodeId, nextName));
+    }
+  };
+
+  const handleNodeClick = (node: Pt1Node, clickCount: number) => {
+    const now = Date.now();
+    const isSecondSingleClick =
+      selectedNodeId === node.id &&
+      node.parentId !== null &&
+      clickCount === 1 &&
+      lastNodeClick?.nodeId === node.id &&
+      now - lastNodeClick.timestamp > 450 &&
+      now - lastNodeClick.timestamp < 3000;
+
+    setSelectedNodeId(node.id);
+    setLastNodeClick({ nodeId: node.id, timestamp: now });
+
+    if (isSecondSingleClick) {
+      const nextName = window.prompt("Nieuwe naam:", node.name);
+      if (nextName) {
+        onChange(renameNode(state, node.id, nextName));
+      }
     }
   };
 
@@ -2918,12 +3501,7 @@ const FileTaskWorkspace = ({
                       key={node.id}
                       type="button"
                       role="row"
-                      onClick={() => {
-                        setSelectedNodeId(node.id);
-                        if (node.type === "folder") {
-                          setContextFolderId(node.id);
-                        }
-                      }}
+                      onClick={(event) => handleNodeClick(node, event.detail)}
                       onDoubleClick={() => {
                         if (node.type === "folder") {
                           setContextFolderId(node.id);
@@ -2962,7 +3540,7 @@ const FileTaskWorkspace = ({
               <div className="explorer-hint">
                 {clipboard && clipboardNode
                   ? `${clipboard.mode === "cut" ? "Geknipt" : "Gekopieerd"}: ${clipboardNode.name}. Kies een map en klik op Plakken.`
-                  : "Tip: kies eerst een bestand of map. Gebruik daarna de knoppen bovenaan."}
+                  : "Instructie: kies eerst een bestand of map. Gebruik daarna de knoppen bovenaan. Hernoemen kan ook door een geselecteerd item nog een keer aan te klikken."}
               </div>
             </div>
           </div>

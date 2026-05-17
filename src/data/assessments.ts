@@ -520,8 +520,65 @@ const createReportMailConfig = (): MailTaskConfig => ({
   ],
 });
 
+const advancedMailInstruction =
+  "Je werkt met twee klasgenoten aan een onderzoeksverslag. Stel hieronder een e-mail op. Let op de volgende punten:\n- Stuur de mail aan je mentor.\n- Zet je projectgroep in CC.\n- Gebruik als onderwerp: 'Onderzoeksverslag mediawijsheid'.\n- Voeg het juiste verslag toe en klik op 'Verzenden'.";
+
+const createAdvancedMailConfig = (): MailTaskConfig => ({
+  visibleButtons: mailButtons,
+  contacts: [
+    "mentor@school.nl",
+    "projectgroep@school.nl",
+    "klasgroep@school.nl",
+    "administratie@school.nl",
+  ],
+  files: [
+    "Onderzoeksverslag_mediawijsheid.docx",
+    "Bronnenlijst.xlsx",
+    "Foto_vakantie.jpg",
+    "Rooster.pdf",
+  ],
+  rules: [
+    {
+      id: "to-mentor",
+      description: "juiste mailadres staat in Aan.",
+      points: 1,
+      conditions: [{ field: "to", operator: "includes", value: "mentor@school.nl" }],
+    },
+    {
+      id: "cc-projectgroup",
+      description: "projectgroep staat in CC.",
+      points: 1,
+      conditions: [{ field: "cc", operator: "includes", value: "projectgroep@school.nl" }],
+    },
+    {
+      id: "subject",
+      description: "onderwerp is exact Onderzoeksverslag mediawijsheid.",
+      points: 1,
+      conditions: [
+        { field: "subject", operator: "equals", value: "Onderzoeksverslag mediawijsheid" },
+      ],
+    },
+    {
+      id: "attachment-and-sent",
+      description: "juiste bestand is toegevoegd en mail is verzonden.",
+      points: 1,
+      conditions: [
+        {
+          field: "attachments",
+          operator: "includes",
+          value: "Onderzoeksverslag_mediawijsheid.docx",
+        },
+        { field: "sent", operator: "true" },
+      ],
+    },
+  ],
+});
+
 const fakeTeamsInstruction =
   "Voer in de Teams-vergadering het juiste klikpad uit: klik op Delen, kies Venster en selecteer Windows Media Player.";
+
+const excelInstruction = (filename: string) =>
+  `Download ${filename}. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.`;
 
 const createFakeTeamsConfig = (): TeamsTaskConfig => ({
   scenario:
@@ -549,7 +606,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1v-pt1-files",
       title: "PT1 - Bestanden en mappen",
       instruction:
-        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten links.\nLet goed op de bestandsnamen.\nKlik daarna op Taak afronden.",
+        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op de bestandsnamen.\nKlik daarna op Taak afronden.",
       startFolders: [
         "Thuis/OneDrive",
         "Thuis/Downloads",
@@ -567,7 +624,7 @@ const versionSpecs: VersionSpec[] = [
       tasks: [
         {
           id: "lj1v-pt1-schoolwerk",
-          description: "Maak in OneDrive een map Schoolwerk.",
+          description: "Maak in OneDrive de map Schoolwerk.",
           expectedPath: "Thuis/OneDrive/Schoolwerk",
           points: 1,
         },
@@ -586,7 +643,7 @@ const versionSpecs: VersionSpec[] = [
         },
         {
           id: "lj1v-pt1-fotos",
-          description: "Maak in Schoolwerk een map Fotos en verplaats Foto_project.jpg daarnaartoe.",
+          description: "Maak in Schoolwerk de map Fotos en verplaats Foto_project.jpg daarheen.",
           expectedPath: "Thuis/OneDrive/Schoolwerk/Fotos/Foto_project.jpg",
           points: 1,
         },
@@ -602,7 +659,7 @@ const versionSpecs: VersionSpec[] = [
     pt4: {
       id: "lj1v-pt4-excel",
       title: "PT4 - Excel/data sorteren en filteren",
-      instruction: "Download LJ1_VMBO_Liedjes.xlsx. Open het in Excel.",
+      instruction: excelInstruction("LJ1_VMBO_Liedjes.xlsx"),
       filename: "LJ1_VMBO_Liedjes.xlsx",
       sheetName: "Liedjes",
       questions: [
@@ -635,7 +692,7 @@ const versionSpecs: VersionSpec[] = [
       intro:
         "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
       instruction:
-        "Maak een programma. Als er op afspelen wordt geklikt, zegt Bizzy Hoi!, gaat 1 meter vooruit en draait naar 180 graden.",
+        "Maak een programma dat dit doet: na klikken op Afspelen zegt Bizzy Hoi!, gaat hij 1 meter vooruit en draait hij naar 180 graden.",
       config: {
         device: "bizzy",
         codingSteps: [
@@ -704,7 +761,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1v-pt8-online",
       title: "PT8 - Online gedrag: delen en pesten",
       instruction:
-        "Maak beide schermen af.\nScherm 1: kies per kaartje wie het mag zien.\nScherm 2: kies twee veilige acties.",
+        "Maak beide schermen af.\nScherm 1: kies wie de informatie mag zien.\nScherm 2: kies twee veilige acties.",
       kerndoel: "23A, 23B",
       config: {
         screens: [
@@ -720,7 +777,7 @@ const versionSpecs: VersionSpec[] = [
                 cards: fixedOptions([
                   "Wachtwoord voor Magister",
                   "Groepsplanning voor project",
-                  "Poster voor open dag",
+                  "Poster voor de openbare open dag",
                 ]),
                 options: fixedOptions([
                   "Niet delen",
@@ -767,7 +824,7 @@ const versionSpecs: VersionSpec[] = [
             correctMatches: {
               "Wachtwoord voor Magister": "Niet delen",
               "Groepsplanning voor project": "Alleen projectgroep",
-              "Poster voor open dag": "Openbaar",
+              "Poster voor de openbare open dag": "Openbaar",
             },
           },
           {
@@ -856,12 +913,12 @@ const versionSpecs: VersionSpec[] = [
         question:
           "Je leest koppen op internet. Welke kop lijkt het meest betrouwbaar?",
         options: [
-          "Gemeente Nijmegen geeft geld aan jeugdsportclubs, met datum en bron.",
+          "Stadskrant Lentia, 10 juni 2026: Gemeente Lentia geeft geld aan jeugdsportclubs.",
           "ONGELOOFLIJK!! Stadhuis Nijmegen schenkt geld weg!!!",
           "Mijn mening over de gemeente",
           "Jongeren zeggen op TikTok dat...",
         ],
-        correct: "Gemeente Nijmegen geeft geld aan jeugdsportclubs, met datum en bron.",
+        correct: "Stadskrant Lentia, 10 juni 2026: Gemeente Lentia geeft geld aan jeugdsportclubs.",
       },
       {
         id: "lj1v-sr6-algorithm",
@@ -879,7 +936,7 @@ const versionSpecs: VersionSpec[] = [
       },
       {
         id: "lj1v-sr7-hallucination",
-        title: "SR7 - AI-hallucinatie",
+        title: "SR7 - AI controleren",
         kerndoel: "21D",
         question:
           "Een AI-tool noemt een naam van een persoon. Je kunt die persoon nergens anders vinden. Wat is het meest waarschijnlijk?",
@@ -887,7 +944,7 @@ const versionSpecs: VersionSpec[] = [
           "De AI heeft de naam verzonnen.",
           "Die persoon bestaat zeker, maar is niet beroemd.",
           "De AI zegt altijd alleen kloppende dingen.",
-          "Het is een geheime persoon.",
+          "De persoon staat alleen in betaalde bronnen.",
         ],
         correct: "De AI heeft de naam verzonnen.",
         aiSnelVeranderendFlag: true,
@@ -924,14 +981,14 @@ const versionSpecs: VersionSpec[] = [
         id: "lj1v-sr10-energy",
         title: "SR10 - Energie en duurzaamheid",
         kerndoel: "23C",
-        question: "Wat verbruikt van deze opties meestal de meeste energie?",
+        question: "Welke optie verbruikt de meeste energie?",
         options: [
-          "Een uur video streamen.",
-          "Een tekstbericht versturen.",
-          "Een foto in WhatsApp delen.",
-          "Een wekkergeluid laten klinken.",
+          "Een uur video streamen in hoge kwaliteit.",
+          "Een kort tekstbericht versturen.",
+          "Een foto opslaan in je galerij.",
+          "Een wekker instellen op je telefoon.",
         ],
-        correct: "Een uur video streamen.",
+        correct: "Een uur video streamen in hoge kwaliteit.",
       },
     ],
   },
@@ -944,7 +1001,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1h-pt1-files",
       title: "PT1 - Bestanden en mappen",
       instruction:
-        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten links.\nLet goed op de bestandsnamen.\nKlik daarna op Taak afronden.",
+        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op de bestandsnamen.\nKlik daarna op Taak afronden.",
       startFolders: [
         "Thuis/OneDrive",
         "Thuis/Downloads",
@@ -962,7 +1019,7 @@ const versionSpecs: VersionSpec[] = [
       tasks: [
         {
           id: "lj1h-pt1-schoolwerk",
-          description: "Maak map Schoolwerk.",
+          description: "Maak de map Schoolwerk.",
           expectedPath: "Thuis/OneDrive/Schoolwerk",
           points: 1,
         },
@@ -999,7 +1056,7 @@ const versionSpecs: VersionSpec[] = [
     pt4: {
       id: "lj1h-pt4-excel",
       title: "PT4 - Excel/data sorteren en filteren",
-      instruction: "Download LJ1_HV_Bibliotheek.xlsx. Open het in Excel.",
+      instruction: excelInstruction("LJ1_HV_Bibliotheek.xlsx"),
       filename: "LJ1_HV_Bibliotheek.xlsx",
       sheetName: "Boeken",
       questions: [
@@ -1032,7 +1089,7 @@ const versionSpecs: VersionSpec[] = [
       intro:
         "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
       instruction:
-        "Maak een programma. Als er op afspelen wordt geklikt, begroet Bizzy de kijker en beweegt drie keer vooruit.",
+        "Maak een programma dat dit doet: na klikken op Afspelen zegt Bizzy Hoi! en beweegt hij drie keer vooruit.",
       config: {
         device: "bizzy",
         codingSteps: [
@@ -1106,15 +1163,15 @@ const versionSpecs: VersionSpec[] = [
     },
     pt8: {
       id: "lj1h-pt8-online",
-      title: "PT8 - Online gedrag: dark pattern",
+      title: "PT8 - Online gedrag: misleidende appmelding",
       instruction:
-        "Kies wat Silke moet doen.\nOpen de instellingen.\nKies een veilige meldingsinstelling.\nKlik daarna op Taak afronden.",
+        "Een app probeert Silke steeds naar dezelfde keuze te sturen.\nOpen de instellingen.\nKies een veilige meldingsinstelling.\nKlik daarna op Taak afronden.",
       kerndoel: "23B, 21B, 23A",
       config: {
         screens: [
           {
             id: "feeblemind",
-            title: "Dark pattern",
+            title: "Misleidende appmelding",
             instruction:
               'Op je telefoon vraagt de app Feeblemind steeds opnieuw: "Zet notificaties aan". Silke heeft al drie keer op "Nu niet" geklikt, maar de melding blijft terugkeren.',
             body:
@@ -1188,12 +1245,12 @@ const versionSpecs: VersionSpec[] = [
         kerndoel: "23A",
         question: "Aan welk teken zie je dat een verbinding versleuteld is?",
         options: [
-          "Het slotje in de adresbalk en de prefix https://.",
+          "Het slotje in de adresbalk of https:// voor het webadres.",
           "De website laadt sneller.",
           "De website heeft .nl in de naam.",
           "De website heeft kleurrijke afbeeldingen.",
         ],
-        correct: "Het slotje in de adresbalk en de prefix https://.",
+        correct: "Het slotje in de adresbalk of https:// voor het webadres.",
       },
       {
         id: "lj1h-sr3-access",
@@ -1227,7 +1284,7 @@ const versionSpecs: VersionSpec[] = [
         title: "SR5 - Steekproef en generaliseerbaarheid",
         kerndoel: "21C, 23C",
         question:
-          "Een dataset bevat alleen antwoorden van leerlingen uit een klas. Waar moet je voor oppassen?",
+          "Een dataset bevat alleen antwoorden van leerlingen uit 1 klas. Waar moet je voor oppassen?",
         options: [
           "Je kunt niet zomaar zeggen dat dit voor alle leerlingen geldt.",
           "Een klas is altijd genoeg om iets over heel Nederland te zeggen.",
@@ -1267,17 +1324,17 @@ const versionSpecs: VersionSpec[] = [
       },
       {
         id: "lj1h-sr8-hallucination",
-        title: "SR8 - AI-hallucinatie",
+        title: "SR8 - AI controleren",
         kerndoel: "21D",
         question:
           "Een AI-chatbot noemt een wetenschappelijk artikel dat je nergens kunt vinden. Wat is het meest waarschijnlijk?",
         options: [
-          "De AI heeft het artikel verzonnen (hallucinatie).",
-          "Het artikel is geheim.",
-          "Het artikel staat alleen op papier.",
-          "Je hebt verkeerd gezocht.",
+          "De AI heeft het artikel waarschijnlijk verzonnen.",
+          "Het artikel staat misschien in een onbekend tijdschrift.",
+          "Het artikel is mogelijk nog niet openbaar gepubliceerd.",
+          "Je zoekterm kan te breed of te smal zijn.",
         ],
-        correct: "De AI heeft het artikel verzonnen (hallucinatie).",
+        correct: "De AI heeft het artikel waarschijnlijk verzonnen.",
         aiSnelVeranderendFlag: true,
       },
       {
@@ -1319,7 +1376,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3v-pt1-files",
       title: "PT1 - Bestanden en mappen",
       instruction:
-        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten links.\nLet goed op mappen en bestandsnamen.\nKlik daarna op Taak afronden.",
+        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op mappen en bestandsnamen.\nKlik daarna op Taak afronden.",
       startFolders: ["Thuis/OneDrive", "Thuis/OneDrive/Project_stage"],
       startFiles: [
         "Thuis/OneDrive/Project_stage/Plan_stage_v1.docx",
@@ -1331,7 +1388,7 @@ const versionSpecs: VersionSpec[] = [
       tasks: [
         {
           id: "lj3v-pt1-archief",
-          description: "Maak in Project_stage de map Archief.",
+          description: "Maak de map Archief in Project_stage.",
           expectedPath: "Thuis/OneDrive/Project_stage/Archief",
           points: 1,
         },
@@ -1350,7 +1407,7 @@ const versionSpecs: VersionSpec[] = [
         },
         {
           id: "lj3v-pt1-images",
-          description: "Verplaats Foto_stage.jpg naar een nieuwe map Beelden.",
+          description: "Maak de map Beelden en verplaats Foto_stage.jpg daarheen.",
           expectedPath: "Thuis/OneDrive/Project_stage/Beelden/Foto_stage.jpg",
           points: 1,
         },
@@ -1366,14 +1423,14 @@ const versionSpecs: VersionSpec[] = [
     pt3: {
       id: "lj3v-pt3-security",
       title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Reageer veilig op verdachte update- en loginmeldingen.",
+      instruction: "Kies veilige acties bij twee meldingen op je telefoon.",
       kerndoel: "23A, 21A",
       config: {
         screens: [
           {
             id: "update",
             title: "Scherm 1 - Verdachte update",
-            instruction: "Je videospeler is verouderd. Klik hier om update.exe te downloaden.",
+            instruction: "Je krijgt deze melding op je telefoon: je videospeler is verouderd. Klik hier om update.exe te downloaden.",
             groups: [
               {
                 id: "updateActions",
@@ -1391,7 +1448,7 @@ const versionSpecs: VersionSpec[] = [
           {
             id: "login",
             title: "Scherm 2 - Verdachte login",
-            instruction: "Nieuwe login op je schoolaccount vanaf onbekend apparaat.",
+            instruction: "Je krijgt deze melding op je telefoon: nieuwe login op je schoolaccount vanaf onbekend apparaat.",
             groups: [
               {
                 id: "loginActions",
@@ -1448,7 +1505,7 @@ const versionSpecs: VersionSpec[] = [
     pt4: {
       id: "lj3v-pt4-excel",
       title: "PT4 - Excel/data sorteren en filteren",
-      instruction: "Download LJ3_VMBO_Bestellingen.xlsx. Open het in Excel.",
+      instruction: excelInstruction("LJ3_VMBO_Bestellingen.xlsx"),
       filename: "LJ3_VMBO_Bestellingen.xlsx",
       sheetName: "Bestellingen",
       questions: [
@@ -1555,7 +1612,7 @@ const versionSpecs: VersionSpec[] = [
     pt8: {
       id: "lj3v-pt8-online",
       title: "PT8 - Online gedrag: deepfake/pesten",
-      instruction: "Beoordeel de afbeelding.\nKies twee signalen.\nKies twee veilige acties.",
+      instruction: "Bekijk de situatie.\nKies twee signalen.\nKies twee veilige acties.",
       kerndoel: "21D, 23A, 23B",
       aiSnelVeranderendFlag: true,
       config: {
@@ -1564,7 +1621,7 @@ const versionSpecs: VersionSpec[] = [
             id: "deepfake",
             title: "Deepfake/pesten",
             instruction:
-              'In de klassenapp van klas 3V2 (24 leerlingen) verschijnt een AI-gemaakte afbeelding van een leerling in een beschamende situatie. Iemand schrijft: "Dit is echt, stuur door." Je ziet dat de handen vreemd zijn en dat de leerling reageert: "Dit ben ik niet."',
+              'In de klassenapp van klas 3V2 verschijnt een AI-gemaakte afbeelding van een leerling in een beschamende situatie. Iemand schrijft: "Dit is echt, stuur door." De handen zien er vreemd uit. De leerling reageert: "Dit ben ik niet."',
             body:
               "Rapporteren = via de meld-knop in de app aan de beheerder of het platform melden.\nBewijs bewaren = de afbeelding/het bericht opslaan voor je het bericht verlaat, zodat het later getoond kan worden.",
             groups: [
@@ -1692,7 +1749,7 @@ const versionSpecs: VersionSpec[] = [
         id: "lj3v-sr5-copyright",
         title: "SR5 - Auteursrecht en bronvermelding",
         kerndoel: "22A",
-        question: "Je gebruikt een foto in je werkstuk. Hoe ga je correct met de bron om?",
+        question: "Je gebruikt een foto in je werkstuk. Wat moet je doen?",
         options: [
           "Maker noemen en bron vermelden.",
           "Foto bewerken zodat je hem als eigen werk kan gebruiken.",
@@ -1725,7 +1782,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3h-pt1-files",
       title: "PT1 - Bestanden en mappen",
       instruction:
-        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten links.\nLet goed op mappen en bestandsnamen.\nKlik daarna op Taak afronden.",
+        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op mappen en bestandsnamen.\nKlik daarna op Taak afronden.",
       startFolders: ["Thuis/OneDrive", "Thuis/OneDrive/Onderzoek"],
       startFiles: [
         "Thuis/OneDrive/Onderzoek/Onderzoek_v1.docx",
@@ -1738,7 +1795,7 @@ const versionSpecs: VersionSpec[] = [
       tasks: [
         {
           id: "lj3h-pt1-archief",
-          description: "Maak map Archief.",
+          description: "Maak de map Archief.",
           expectedPath: "Thuis/OneDrive/Onderzoek/Archief",
           points: 1,
         },
@@ -1773,14 +1830,14 @@ const versionSpecs: VersionSpec[] = [
     pt2: {
       id: "lj3h-pt2-mail",
       title: "Mail opstellen",
-      instruction: reportMailInstruction,
+      instruction: advancedMailInstruction,
       kerndoel: "21A, 23A, 23B",
-      config: createReportMailConfig(),
+      config: createAdvancedMailConfig(),
     },
     pt3: {
       id: "lj3h-pt3-security",
       title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Reageer veilig op macro- en loginwaarschuwingen.",
+      instruction: "Kies veilige acties bij een bestand en een loginmelding.",
       kerndoel: "23A, 21A",
       config: {
         screens: [
@@ -1788,7 +1845,7 @@ const versionSpecs: VersionSpec[] = [
             id: "macro",
             title: "Scherm 1 - Macro-waarschuwing",
             instruction:
-              "Macro's zijn uitgeschakeld in Factuur_stage.xlsm. Bestand komt van onbekende afzender.",
+              "Je ontvangt een bestand: Factuur_stage.xlsm. Macro's zijn uitgeschakeld. Het bestand komt van een onbekende afzender.",
             groups: [
               {
                 id: "macroActions",
@@ -1807,7 +1864,7 @@ const versionSpecs: VersionSpec[] = [
           {
             id: "login",
             title: "Scherm 2 - Verdachte login",
-            instruction: "Nieuwe login op je schoolaccount vanaf onbekend apparaat.",
+            instruction: "Je krijgt deze melding op je telefoon: nieuwe login op je schoolaccount vanaf onbekend apparaat.",
             groups: [
               {
                 id: "loginActions",
@@ -1870,7 +1927,7 @@ const versionSpecs: VersionSpec[] = [
     pt4: {
       id: "lj3h-pt4-excel",
       title: "PT4 - Excel/data sorteren en filteren",
-      instruction: "Download LJ3_HV_OpenData.xlsx. Open het in Excel.",
+      instruction: excelInstruction("LJ3_HV_OpenData.xlsx"),
       filename: "LJ3_HV_OpenData.xlsx",
       sheetName: "Energie",
       questions: [
@@ -1904,7 +1961,7 @@ const versionSpecs: VersionSpec[] = [
       intro:
         "Een sensor meet temperatuur en raamstand. Op het scherm verschijnt waarschuwing of ok. Programmeer de logica met blokken; klik op ▶ om te testen met de schuifregelaars voor temperatuur en raamstand.",
       instruction:
-        "Maak een programma. Als de temperatuur hoger is dan 25 én het raam open staat, toon waarschuwing. Anders toon ok.",
+        "Maak een programma. Als de temperatuur hoger is dan 25 en het raam open staat, toon waarschuwing. Anders toon ok.",
       config: {
         device: "sensor",
         codingSteps: [
@@ -1995,7 +2052,7 @@ const versionSpecs: VersionSpec[] = [
     },
     pt8: {
       id: "lj3h-pt8-online",
-      title: "PT8 - Online gedrag: gemanipuleerde video en dark pattern",
+      title: "PT8 - Online gedrag: gemanipuleerde video",
       instruction:
         "Beoordeel de video.\nKies twee verdachte signalen.\nKies een verificatieactie.",
       kerndoel: "21D, 21B, 23B, 23C",
@@ -2004,7 +2061,7 @@ const versionSpecs: VersionSpec[] = [
         screens: [
           {
             id: "video",
-            title: "Gemanipuleerde video en dark pattern",
+            title: "Gemanipuleerde video",
             instruction:
               'Je ziet op een sociaal platform een video waarin een docent iets raars lijkt te zeggen. De video staat op een anoniem account zonder profielinformatie. De mondbeweging klopt niet goed met de stem. Onder de video staat: "Deel dit voordat school het verwijdert." Er is geen bron of context.',
             body:
@@ -2035,7 +2092,11 @@ const versionSpecs: VersionSpec[] = [
                 id: "verifyAction",
                 title: "Kies één verificatieactie",
                 inputType: "single",
-                options: fixedOptions(["Check via officiële school/mentor of betrouwbare bron"]),
+                options: fixedOptions([
+                  "Check via officiele school/mentor of betrouwbare bron",
+                  "Deel de video in de klas om te vragen of het klopt",
+                  "Kijk alleen naar de reacties onder de video",
+                ]),
               },
             ],
           },
@@ -2065,11 +2126,11 @@ const versionSpecs: VersionSpec[] = [
           },
           {
             id: "verify",
-            description: "juiste verificatieactie en niet delen.",
+            description: "juiste verificatieactie.",
             points: 1,
             groupId: "verifyAction",
             kind: "singleCorrect",
-            correctOptionIds: ["Check via officiële school/mentor of betrouwbare bron"],
+            correctOptionIds: ["Check via officiele school/mentor of betrouwbare bron"],
           },
         ],
       },
@@ -2106,17 +2167,17 @@ const versionSpecs: VersionSpec[] = [
       },
       {
         id: "lj3h-sr3-hallucination",
-        title: "SR3 - Verificatie en hallucinatie",
+        title: "SR3 - AI-bron controleren",
         kerndoel: "21D",
         question:
           "Een AI-tool noemt een wetenschappelijk artikel met titel en auteurs. Je vindt het artikel niet in zoeksystemen. Wat is waarschijnlijk?",
         options: [
-          "De AI heeft het artikel waarschijnlijk verzonnen (hallucinatie).",
-          "Zoekmachines verbergen wetenschappelijke artikelen standaard.",
-          "Een artikel zonder vindbare bron is altijd geheim.",
-          "De auteurs hebben het artikel op papier verstopt.",
+          "De AI heeft het artikel waarschijnlijk verzonnen.",
+          "Het artikel staat mogelijk in een tijdschrift zonder open toegang.",
+          "Je zoekt misschien in een database die niet alles indexeert.",
+          "De titel kan licht anders gespeld zijn in de bron.",
         ],
-        correct: "De AI heeft het artikel waarschijnlijk verzonnen (hallucinatie).",
+        correct: "De AI heeft het artikel waarschijnlijk verzonnen.",
         aiSnelVeranderendFlag: true,
       },
       {
@@ -2156,9 +2217,9 @@ const versionSpecs: VersionSpec[] = [
           "Welk aspect maakt het trainen van grote AI-modellen relatief energie-intensief?",
         options: [
           "Het rekenen op grote datasets vereist langdurig veel rekenkracht in datacenters.",
-          "AI-modellen draaien op zonnepanelen.",
-          "AI is altijd energie-zuinig.",
-          "AI gebruikt geen elektriciteit.",
+          "De modellen worden vooral getraind op gewone laptops van gebruikers.",
+          "De meeste energie gaat naar het tonen van het icoon van de app.",
+          "Na de training gebruikt een AI-systeem geen elektriciteit meer.",
         ],
         correct:
           "Het rekenen op grote datasets vereist langdurig veel rekenkracht in datacenters.",

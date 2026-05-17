@@ -1266,6 +1266,10 @@ main {
   min-height: min(590px, calc(78vh - 130px));
 }
 
+.fake-teams-content.participants-hidden {
+  grid-template-columns: 1fr;
+}
+
 .fake-teams-side {
   display: grid;
   align-content: start;
@@ -1290,6 +1294,20 @@ main {
   box-shadow: inset 3px 0 0 #7b83eb;
 }
 
+.fake-invite-button {
+  margin-top: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.fake-invite-button:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
 .fake-teams-main {
   position: relative;
   display: grid;
@@ -1307,6 +1325,7 @@ main {
 
 .fake-video-tile {
   position: relative;
+  overflow: hidden;
   display: grid;
   place-items: center;
   min-height: 330px;
@@ -1316,9 +1335,43 @@ main {
     #2f3246;
 }
 
-.fake-video-tile.muted {
+.fake-video-tile.compact {
   min-height: 210px;
   background: #343846;
+}
+
+.fake-video-tile.camera-on {
+  background: #17181f;
+}
+
+.fake-video-photo {
+  position: absolute;
+  inset: 0;
+  background: #17181f;
+}
+
+.fake-video-photo img {
+  position: absolute;
+  top: 0;
+  width: 200%;
+  height: 100%;
+  object-fit: cover;
+  max-width: none;
+  filter: saturate(0.96) contrast(1.03);
+  transform: scale(1.02);
+}
+
+.fake-video-photo.learner img {
+  left: 0;
+}
+
+.fake-video-photo.teacher img {
+  right: 0;
+}
+
+.fake-video-photo.blurred img {
+  filter: blur(3px) saturate(0.9);
+  transform: scale(1.08);
 }
 
 .fake-video-tile span {
@@ -1367,8 +1420,11 @@ main {
 }
 
 .fake-window-picker {
-  right: 470px;
-  width: min(500px, calc(100% - 520px));
+  right: auto;
+  left: 24px;
+  width: min(520px, calc(100% - 490px));
+  max-height: calc(100% - 48px);
+  overflow: auto;
 }
 
 .fake-share-options,
@@ -1382,7 +1438,7 @@ main {
 }
 
 .fake-window-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
 .fake-share-options button,
@@ -1399,9 +1455,19 @@ main {
 .fake-window-grid button {
   display: grid;
   gap: 8px;
-  min-height: 86px;
+  min-height: 96px;
   padding: 12px;
   text-align: left;
+}
+
+.fake-window-grid button {
+  align-content: start;
+}
+
+.fake-window-grid button span:last-child,
+.fake-share-options button span:last-child {
+  overflow-wrap: anywhere;
+  line-height: 1.28;
 }
 
 .fake-share-options button:hover,
@@ -1424,6 +1490,169 @@ main {
   font-weight: 900;
 }
 
+.fake-sound-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #f4f5fb;
+  color: #273142;
+  font-weight: 800;
+}
+
+.fake-sound-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #6264a7;
+}
+
+.fake-chat-panel,
+.fake-more-menu,
+.fake-reaction-menu {
+  position: absolute;
+  z-index: 5;
+  border: 1px solid #dadce8;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.28);
+}
+
+.fake-chat-panel {
+  top: 18px;
+  right: 18px;
+  display: grid;
+  grid-template-rows: auto minmax(180px, 1fr) auto;
+  gap: 12px;
+  width: min(320px, calc(100% - 36px));
+  max-height: calc(100% - 36px);
+  padding: 14px;
+}
+
+.fake-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fake-panel-heading button,
+.fake-chat-form button,
+.fake-more-menu button {
+  border: 1px solid rgba(31, 41, 55, 0.14);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #f7f8ff;
+  color: #1f2937;
+  font-weight: 800;
+}
+
+.fake-chat-messages {
+  display: grid;
+  align-content: end;
+  gap: 8px;
+  overflow: auto;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f4f5f9;
+}
+
+.fake-chat-message {
+  max-width: 86%;
+  border-radius: 10px;
+  padding: 8px 10px;
+  line-height: 1.35;
+}
+
+.fake-chat-message.received {
+  justify-self: start;
+  background: #ffffff;
+}
+
+.fake-chat-message.sent {
+  justify-self: end;
+  background: #6264a7;
+  color: #ffffff;
+}
+
+.fake-chat-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.fake-chat-form input {
+  min-width: 0;
+  border: 1px solid #cfd3df;
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+}
+
+.fake-reaction-menu {
+  right: 162px;
+  bottom: 18px;
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+}
+
+.fake-reaction-menu button {
+  width: 42px;
+  aspect-ratio: 1;
+  border: 1px solid #d9dced;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 1.3rem;
+}
+
+.fake-reaction-float {
+  position: absolute;
+  bottom: 34px;
+  z-index: 6;
+  font-size: 2.4rem;
+  animation: fake-reaction-rise 2.2s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes fake-reaction-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  18% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-250px) scale(1.18);
+  }
+}
+
+.fake-more-menu {
+  right: 18px;
+  bottom: 18px;
+  display: grid;
+  gap: 8px;
+  width: min(240px, calc(100% - 36px));
+  padding: 10px;
+}
+
+.fake-captions {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  z-index: 3;
+  transform: translateX(-50%);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.68);
+  color: #ffffff;
+  font-weight: 800;
+}
+
 .fake-teams-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -1435,6 +1664,7 @@ main {
 }
 
 .fake-teams-toolbar button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1446,6 +1676,30 @@ main {
 .fake-teams-toolbar button.active {
   border-color: #6264a7;
   background: #e8e9ff;
+}
+
+.fake-teams-toolbar button.inactive,
+.fake-teams-toolbar button.muted {
+  border-color: #c84646;
+  background: #fff0f0;
+  color: #821f1f;
+}
+
+.fake-teams-toolbar button.muted .teams-inline-icon::after {
+  content: "";
+}
+
+.fake-teams-toolbar button.muted::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  width: 20px;
+  height: 2px;
+  border-radius: 999px;
+  background: #c84646;
+  transform: rotate(-45deg);
+  transform-origin: center;
 }
 
 .teams-inline-icon {
@@ -1996,12 +2250,14 @@ main {
 }
 
 .explorer-hint {
-  min-height: 36px;
-  padding: 9px 12px;
+  min-height: 46px;
+  padding: 12px 14px;
   border-top: 1px solid #e4e6ea;
-  background: #fafafa;
-  color: #4b5563;
-  font-size: 0.86rem;
+  background: #f3f7fb;
+  color: #243447;
+  font-size: 0.96rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .result-mini ul {
