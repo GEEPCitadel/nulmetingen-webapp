@@ -1,5 +1,5 @@
-import type { CSSProperties, ReactNode } from "react";
-import { useEffect, useState } from "react";
+import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   assessmentMap,
   defaultCodeMappings,
@@ -19,6 +19,7 @@ import {
 import {
   buildPath,
   copyNode,
+  createFile,
   createFolder,
   deleteNode,
   getChildren,
@@ -50,6 +51,25 @@ import type {
 type EntryView = "intro" | "adminAccess" | "admin";
 type ConflictChoice = "overwrite" | "rename" | "cancel";
 type ExplorerClipboard = { mode: "cut" | "copy"; nodeId: string } | null;
+type NewExplorerItem = {
+  label: string;
+  icon: string;
+  type: "folder" | "file";
+  defaultName: string;
+};
+
+const newExplorerItems: NewExplorerItem[] = [
+  { label: "Map", icon: "folder", type: "folder", defaultName: "Nieuwe map" },
+  { label: "Snelkoppeling", icon: "shortcut", type: "file", defaultName: "Nieuwe snelkoppeling.url" },
+  { label: "Bitmapafbeelding", icon: "image", type: "file", defaultName: "Nieuwe afbeelding.bmp" },
+  { label: "Microsoft Word-document", icon: "word", type: "file", defaultName: "Doc1.docx" },
+  {
+    label: "Microsoft PowerPoint-presentatie",
+    icon: "powerpoint",
+    type: "file",
+    defaultName: "Presentatie1.pptx",
+  },
+];
 
 type SubmitAnswerPayload = {
   section: AssessmentSection;
@@ -1241,6 +1261,13 @@ const MailTaskView = ({
     return null;
   }
 
+  const sortedContacts = [...task.contacts].sort((first, second) =>
+    first.localeCompare(second, "nl", { sensitivity: "base" }),
+  );
+  const sortedFiles = [...task.files].sort((first, second) =>
+    first.localeCompare(second, "nl", { sensitivity: "base" }),
+  );
+
   const toggleListValue = (field: AddressField | "attachments", value: string) => {
     setDraft((current) => {
       const currentValues = current[field];
@@ -1278,8 +1305,8 @@ const MailTaskView = ({
     }
 
     if (button === "BCC tonen" || button === "Bcc tonen") {
-      setDraft((current) => ({ ...current, bccVisible: true }));
-      setActiveAddressField("bcc");
+      setDraft((current) => ({ ...current, bccVisible: !current.bccVisible }));
+      setActiveAddressField((current) => (draft.bccVisible || current === "bcc" ? null : "bcc"));
       setActiveCommandPanel(null);
       return;
     }
@@ -1350,7 +1377,7 @@ const MailTaskView = ({
   const fieldVisible = (field: AddressField) =>
     field === "to" ||
     field === "cc" ||
-    (field === "bcc" && (draft.bccVisible || draft.bcc.length > 0));
+    (field === "bcc" && draft.bccVisible);
   const fieldPlaceholder = (field: AddressField) =>
     field === "to" ? "Klik om ontvangers te kiezen" : "Klik om adressen te kiezen";
 
@@ -1370,7 +1397,7 @@ const MailTaskView = ({
           </button>
           {activeAddressField === field ? (
             <div className="mail-picker">
-              {task.contacts.map((contact) => (
+              {sortedContacts.map((contact) => (
                 <button
                   className={`chip-button ${draft[field].includes(contact) ? "selected" : ""}`}
                   key={`${field}-${contact}`}
@@ -1437,7 +1464,7 @@ const MailTaskView = ({
           <div className="mail-command-panel">
             <strong>Bestand bijvoegen</strong>
             <div className="chip-grid">
-              {task.files.map((file) => (
+              {sortedFiles.map((file) => (
                 <button
                   className={`chip-button ${draft.attachments.includes(file) ? "selected" : ""}`}
                   key={file}
@@ -2127,6 +2154,122 @@ const TeamsVideoTile = ({
   </div>
 );
 
+const FakeSharedWindow = ({ windowName }: { windowName: string }) => {
+  if (windowName === "Scherm") {
+    return (
+      <div className="fake-shared-window desktop-window">
+        <div className="fake-window-titlebar">
+          <span>Volledig scherm</span>
+          <span>Bureaublad van Mark Canbers</span>
+        </div>
+        <div className="fake-desktop-share">
+          <div className="fake-desktop-card word-card">Word - Verslag Nederlands</div>
+          <div className="fake-desktop-card media-card">Windows Media Player</div>
+          <div className="fake-desktop-card chat-card">Teams chat</div>
+          <div className="fake-desktop-card browser-card">Browser - schoolsite</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (windowName === "Windows Media Player") {
+    return (
+      <div className="fake-shared-window media-player">
+        <div className="fake-window-titlebar">
+          <span>Windows Media Player</span>
+          <span>Filmfragment.mp4</span>
+        </div>
+        <div className="fake-media-scene">
+          <div className="fake-film-frame">
+            <span>Filmfragment</span>
+          </div>
+          <div className="fake-media-controls">
+            <span className="fake-play-button" aria-hidden="true">&gt;</span>
+            <div className="fake-progress-track">
+              <span />
+            </div>
+            <span>01:24 / 03:10</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (windowName === "Word - Verslag Nederlands") {
+    return (
+      <div className="fake-shared-window word-window">
+        <div className="fake-window-titlebar">
+          <span>Word</span>
+          <span>Verslag Nederlands</span>
+        </div>
+        <div className="fake-word-ribbon">
+          {["Start", "Invoegen", "Ontwerpen", "Controleren"].map((tab) => (
+            <span key={tab}>{tab}</span>
+          ))}
+        </div>
+        <article className="fake-word-page">
+          <h3>Verslag Nederlands</h3>
+          <p>
+            In dit verslag bespreek ik het boek dat we deze periode hebben gelezen. Ik let op de
+            hoofdpersonen, het onderwerp en de manier waarop de schrijver spanning opbouwt.
+          </p>
+          <p>
+            De hoofdpersoon verandert duidelijk door het verhaal heen. Aan het begin is hij onzeker,
+            maar later durft hij beter voor zijn mening uit te komen.
+          </p>
+        </article>
+      </div>
+    );
+  }
+
+  if (windowName === "Excel - Cijferlijst") {
+    return (
+      <div className="fake-shared-window excel-window">
+        <div className="fake-window-titlebar">
+          <span>Excel</span>
+          <span>Cijferlijst.xlsx</span>
+        </div>
+        <div className="fake-sheet-grid" aria-hidden="true">
+          {["Naam", "Toets 1", "Toets 2", "Gemiddelde", "Mark Canbers", "7,1", "6,8", "7,0", "S. de Vries", "8,2", "7,9", "8,1"].map((cell, index) => (
+            <span className={index < 4 ? "heading" : ""} key={`${cell}-${index}`}>{cell}</span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (windowName === "Browser - schoolsite") {
+    return (
+      <div className="fake-shared-window browser-window">
+        <div className="fake-window-titlebar">
+          <span>Browser</span>
+          <span>schoolsite.example/agenda</span>
+        </div>
+        <div className="fake-browser-page">
+          <strong>Schoolsite</strong>
+          <h3>Agenda deze week</h3>
+          <p>Maandag: mentorgesprek</p>
+          <p>Dinsdag: Nederlands in lokaal 204</p>
+          <p>Vrijdag: opdracht digitale geletterdheid inleveren</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fake-shared-window teams-chat-window">
+      <div className="fake-window-titlebar">
+        <span>Microsoft Teams</span>
+        <span>Chat</span>
+      </div>
+      <div className="fake-chat-messages shared-chat">
+        <div className="fake-chat-message received">Kun je het filmfragment delen?</div>
+        <div className="fake-chat-message sent">Ja, ik zoek het venster op.</div>
+      </div>
+    </div>
+  );
+};
+
 const FakeTeamsTask = ({
   section,
   item,
@@ -2262,7 +2405,7 @@ const FakeTeamsTask = ({
             <aside className="fake-teams-side">
               <strong>Vergadering</strong>
               <span>Nu bezig</span>
-              <div className="fake-participant active">Leerling Anoniem</div>
+              <div className="fake-participant active">Mark Canbers</div>
               <div className="fake-participant">Docent</div>
               <button
                 className="fake-invite-button"
@@ -2276,14 +2419,27 @@ const FakeTeamsTask = ({
 
           <div className="fake-teams-main">
             <div className="fake-teams-stage">
-              <TeamsVideoTile
-                person="Leerling Anoniem"
-                initials="LA"
-                cameraOn={state.cameraOn}
-                photoSide="learner"
-                blurred={state.backgroundBlurred}
-              />
-              <TeamsVideoTile person="Docent" initials="D" cameraOn photoSide="teacher" small />
+              {state.selectedWindow ? (
+                <div className="fake-shared-stage">
+                  <div className="fake-sharing-label">
+                    {state.selectedWindow === task.correctWindow
+                      ? "Windows Media Player wordt nu gedeeld"
+                      : `${state.selectedWindow} wordt nu gedeeld`}
+                  </div>
+                  <FakeSharedWindow windowName={state.selectedWindow} />
+                </div>
+              ) : (
+                <>
+                  <TeamsVideoTile
+                    person="Mark Canbers"
+                    initials="MC"
+                    cameraOn={state.cameraOn}
+                    photoSide="learner"
+                    blurred={state.backgroundBlurred}
+                  />
+                  <TeamsVideoTile person="Docent" initials="D" cameraOn photoSide="teacher" small />
+                </>
+              )}
             </div>
 
             {state.reactionBursts.map((reaction, index) => (
@@ -2328,6 +2484,7 @@ const FakeTeamsTask = ({
                           return;
                         }
                         logAction(actionName(option), {
+                          shareOpened: false,
                           windowPickerOpen: false,
                           selectedWindow: option,
                         });
@@ -2355,7 +2512,7 @@ const FakeTeamsTask = ({
                           windowName === task.correctWindow
                             ? "selected_windows_media_player"
                             : `selected_${actionName(windowName).replace(/^clicked_/, "")}`,
-                          { selectedWindow: windowName },
+                          { selectedWindow: windowName, shareOpened: false, windowPickerOpen: false },
                         );
                       }}
                     >
@@ -2460,7 +2617,13 @@ const FakeTeamsTask = ({
               type="button"
               onClick={() => {
                 if (button === "Delen") {
-                  logAction("clicked_share", { shareOpened: true, windowPickerOpen: false });
+                  logAction("clicked_share", {
+                    shareOpened: !state.shareOpened,
+                    windowPickerOpen: false,
+                    chatOpen: false,
+                    reactionsOpen: false,
+                    moreOpen: false,
+                  });
                   return;
                 }
                 if (button === "Camera") {
@@ -2525,7 +2688,10 @@ const FakeTeamsTask = ({
   );
 };
 
-type ProgramBlock = ProgrammingBlockDefinition & { indent: number };
+type ProgramBlock = ProgrammingBlockDefinition & {
+  indent: number;
+  values?: Record<string, string>;
+};
 type ProgramRunEffects = {
   move: number;
   rotation: number;
@@ -2535,6 +2701,7 @@ type ProgramRunEffects = {
   score: number | null;
   speed: number | null;
   animationPaused: boolean;
+  animationMode: string;
   teller: number;
   log: string[];
 };
@@ -2548,9 +2715,24 @@ const emptyProgramRunEffects: ProgramRunEffects = {
   score: null,
   speed: null,
   animationPaused: false,
+  animationMode: "",
   teller: 0,
   log: [],
 };
+
+const programmingCategoryOrder = ["beweging", "uiterlijk", "geluid", "gebeurtenissen", "besturing"];
+const startProgramBlockLabel = "Wanneer er geklikt wordt op afspelen";
+const animationOptions = ["Dansen", "Lachen", "Lopen", "Niet animeren", "Springen"];
+const soundOptions = ["Applaus", "Bel", "Start", "Trommel"];
+
+const sortProgrammingBlocks = (blocks: ProgrammingBlockDefinition[]) =>
+  [...blocks].sort((first, second) => {
+    const firstIndex = programmingCategoryOrder.indexOf(first.category);
+    const secondIndex = programmingCategoryOrder.indexOf(second.category);
+    const firstRank = firstIndex === -1 ? programmingCategoryOrder.length : firstIndex;
+    const secondRank = secondIndex === -1 ? programmingCategoryOrder.length : secondIndex;
+    return firstRank - secondRank || first.label.localeCompare(second.label, "nl", { sensitivity: "base" });
+  });
 
 const BlockProgrammingTaskView = ({
   section,
@@ -2563,7 +2745,52 @@ const BlockProgrammingTaskView = ({
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
-  const [program, setProgram] = useState<ProgramBlock[]>([]);
+  const task = item.blockTask;
+  const isAdvancedBizzyTask = task?.device === "bizzy" && item.id !== "lj1v-pt7-programming";
+  const createProgramBlock = (block: ProgrammingBlockDefinition): ProgramBlock => {
+    const nextBlock: ProgramBlock = { ...block, indent: 0 };
+    if (!isAdvancedBizzyTask) {
+      return nextBlock;
+    }
+    if (block.label.startsWith("Bizzy zegt")) {
+      return { ...nextBlock, label: 'Bizzy zegt ""', values: { speech: "" } };
+    }
+    if (block.label.startsWith("verplaats Bizzy")) {
+      return {
+        ...nextBlock,
+        label: "verplaats Bizzy  meter vooruit in  sec.",
+        values: { meters: "", seconds: "" },
+      };
+    }
+    if (block.label.startsWith("draai Bizzy")) {
+      return {
+        ...nextBlock,
+        label: "draai Bizzy met de wijzers van de klok mee naar  graden in  sec.",
+        values: { degrees: "", seconds: "" },
+      };
+    }
+    if (block.label.startsWith("wacht")) {
+      return { ...nextBlock, label: "wacht  seconde", values: { seconds: "" } };
+    }
+    if (block.label.startsWith("herhaal")) {
+      return { ...nextBlock, label: "herhaal  keer", values: { times: "" } };
+    }
+    if (block.label.startsWith("verander animatie")) {
+      return {
+        ...nextBlock,
+        label: "verander animatie van Bizzy naar Niet animeren",
+        values: { animation: "Niet animeren" },
+      };
+    }
+    if (block.label.startsWith("speel geluid")) {
+      return { ...nextBlock, label: "speel geluid Applaus", values: { sound: "Applaus" } };
+    }
+    return nextBlock;
+  };
+  const [program, setProgram] = useState<ProgramBlock[]>(() => {
+    const startBlock = item.blockTask?.blocks.find((block) => block.label === startProgramBlockLabel);
+    return startBlock ? [createProgramBlock(startBlock)] : [];
+  });
   const [executed, setExecuted] = useState(false);
   const [speechVisible, setSpeechVisible] = useState(false);
   const [aPresses, setAPresses] = useState(0);
@@ -2572,8 +2799,11 @@ const BlockProgrammingTaskView = ({
   const [runEffects, setRunEffects] = useState<ProgramRunEffects>(
     emptyProgramRunEffects,
   );
-  const task = item.blockTask;
-  const [paletteBlocks] = useState(() => shuffleItems(item.blockTask?.blocks ?? []));
+  const [paletteBlocks] = useState(() =>
+    sortProgrammingBlocks(item.blockTask?.blocks ?? []).filter(
+      (block) => block.label !== startProgramBlockLabel,
+    ),
+  );
   if (!task) {
     return null;
   }
@@ -2581,13 +2811,31 @@ const BlockProgrammingTaskView = ({
   const blockStyle = (block: Pick<ProgrammingBlockDefinition, "color">) =>
     ({ "--block-color": block.color } as CSSProperties);
 
+  const updateProgramBlock = (
+    blockIndex: number,
+    field: string,
+    value: string,
+    getLabel: (values: Record<string, string>) => string,
+  ) => {
+    setProgram((current) =>
+      current.map((block, index) => {
+        if (index !== blockIndex) {
+          return block;
+        }
+        const values = { ...(block.values ?? {}), [field]: value };
+        return { ...block, values, label: getLabel(values) };
+      }),
+    );
+  };
+
   const addBlockToProgram = (block: ProgrammingBlockDefinition) => {
     setProgram((current) => {
       const previous = current[current.length - 1];
+      const createdBlock = createProgramBlock(block);
       return [
         ...current,
         {
-          ...block,
+          ...createdBlock,
           indent: previous?.isContainer
             ? Math.min(3, (previous.indent ?? 0) + 1)
             : previous?.indent ?? 0,
@@ -2596,6 +2844,168 @@ const BlockProgrammingTaskView = ({
     });
   };
   const hasBlock = (label: string) => program.some((block) => block.label === label);
+
+  const renderProgramBlockContent = (
+    block: ProgrammingBlockDefinition & { values?: Record<string, string> },
+    index?: number,
+  ) => {
+    if (index === undefined || !block.values) {
+      return <span>{block.label}</span>;
+    }
+    if ("speech" in block.values) {
+      return (
+        <span className="editable-block-line">
+          Bizzy zegt
+          <input
+            aria-label="Tekst die Bizzy zegt"
+            maxLength={80}
+            placeholder="max. 10 woorden"
+            value={block.values.speech}
+            onChange={(event) =>
+              updateProgramBlock(index, "speech", event.target.value, (values) =>
+                `Bizzy zegt "${values.speech.trim()}"`,
+              )
+            }
+          />
+        </span>
+      );
+    }
+    if ("meters" in block.values) {
+      return (
+        <span className="editable-block-line">
+          verplaats Bizzy
+          <input
+            aria-label="Aantal meter"
+            inputMode="numeric"
+            value={block.values.meters}
+            onChange={(event) =>
+              updateProgramBlock(index, "meters", event.target.value, (values) =>
+                `verplaats Bizzy ${values.meters.trim()} meter vooruit in ${values.seconds.trim()} sec.`,
+              )
+            }
+          />
+          meter vooruit in
+          <input
+            aria-label="Aantal seconden"
+            inputMode="numeric"
+            value={block.values.seconds}
+            onChange={(event) =>
+              updateProgramBlock(index, "seconds", event.target.value, (values) =>
+                `verplaats Bizzy ${values.meters.trim()} meter vooruit in ${values.seconds.trim()} sec.`,
+              )
+            }
+          />
+          sec.
+        </span>
+      );
+    }
+    if ("degrees" in block.values) {
+      return (
+        <span className="editable-block-line">
+          draai Bizzy naar
+          <input
+            aria-label="Aantal graden"
+            inputMode="numeric"
+            value={block.values.degrees}
+            onChange={(event) =>
+              updateProgramBlock(index, "degrees", event.target.value, (values) =>
+                `draai Bizzy met de wijzers van de klok mee naar ${values.degrees.trim()} graden in ${values.seconds.trim()} sec.`,
+              )
+            }
+          />
+          graden in
+          <input
+            aria-label="Aantal seconden"
+            inputMode="numeric"
+            value={block.values.seconds}
+            onChange={(event) =>
+              updateProgramBlock(index, "seconds", event.target.value, (values) =>
+                `draai Bizzy met de wijzers van de klok mee naar ${values.degrees.trim()} graden in ${values.seconds.trim()} sec.`,
+              )
+            }
+          />
+          sec.
+        </span>
+      );
+    }
+    if ("times" in block.values) {
+      return (
+        <span className="editable-block-line">
+          Herhaal
+          <input
+            aria-label="Aantal herhalingen"
+            inputMode="numeric"
+            value={block.values.times}
+            onChange={(event) =>
+              updateProgramBlock(index, "times", event.target.value, (values) =>
+                `herhaal ${values.times.trim()} keer`,
+              )
+            }
+          />
+          keer
+        </span>
+      );
+    }
+    if ("seconds" in block.values) {
+      return (
+        <span className="editable-block-line">
+          wacht
+          <input
+            aria-label="Aantal seconden"
+            inputMode="numeric"
+            value={block.values.seconds}
+            onChange={(event) =>
+              updateProgramBlock(index, "seconds", event.target.value, (values) =>
+                `wacht ${values.seconds.trim()} seconde`,
+              )
+            }
+          />
+          seconde
+        </span>
+      );
+    }
+    if ("animation" in block.values) {
+      return (
+        <span className="editable-block-line">
+          verander animatie van Bizzy naar
+          <select
+            aria-label="Animatie"
+            value={block.values.animation}
+            onChange={(event) =>
+              updateProgramBlock(index, "animation", event.target.value, (values) =>
+                `verander animatie van Bizzy naar ${values.animation}`,
+              )
+            }
+          >
+            {animationOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </span>
+      );
+    }
+    if ("sound" in block.values) {
+      return (
+        <span className="editable-block-line">
+          speel geluid
+          <select
+            aria-label="Geluid"
+            value={block.values.sound}
+            onChange={(event) =>
+              updateProgramBlock(index, "sound", event.target.value, (values) =>
+                `speel geluid ${values.sound}`,
+              )
+            }
+          >
+            {soundOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </span>
+      );
+    }
+    return <span>{block.label}</span>;
+  };
 
   const executeProgram = (): ProgramRunEffects => {
     const effects: ProgramRunEffects = {
@@ -2626,14 +3036,17 @@ const BlockProgrammingTaskView = ({
         effects.log.push("Bizzy-klikblok is actief gezet.");
         return;
       }
-      if (label.includes('zegt "Hoi!"')) {
-        effects.speech = "Hoi!";
-        effects.log.push("Bizzy zegt: Hoi!");
+      const speechMatch = label.match(/^Bizzy zegt "(.+)"$/);
+      if (speechMatch) {
+        effects.speech = speechMatch[1];
+        effects.log.push(`Bizzy zegt: ${speechMatch[1]}`);
         return;
       }
-      if (label.includes("verplaats Bizzy 1 meter vooruit")) {
-        effects.move += nextMoveMultiplier;
-        effects.log.push(`Bizzy beweegt ${nextMoveMultiplier} meter vooruit.`);
+      const moveMatch = label.match(/^verplaats Bizzy ([0-9]+) meter vooruit in ([0-9]+) sec\.$/);
+      if (moveMatch) {
+        const meters = Number(moveMatch[1]);
+        effects.move += meters * nextMoveMultiplier;
+        effects.log.push(`Bizzy beweegt ${meters * nextMoveMultiplier} meter vooruit.`);
         nextMoveMultiplier = 1;
         return;
       }
@@ -2642,24 +3055,23 @@ const BlockProgrammingTaskView = ({
         effects.log.push("Bizzy beweegt 5 meter achteruit.");
         return;
       }
-      if (label.includes("draai Bizzy")) {
-        effects.rotation = 180;
-        effects.log.push("Bizzy draait naar 180 graden.");
+      const turnMatch = label.match(/^draai Bizzy met de wijzers van de klok mee naar ([0-9]+) graden in ([0-9]+) sec\.$/);
+      if (turnMatch) {
+        effects.rotation = Number(turnMatch[1]);
+        effects.log.push(`Bizzy draait naar ${turnMatch[1]} graden.`);
         return;
       }
-      if (label.includes("niet animeren")) {
-        effects.animationPaused = true;
-        effects.log.push("De animatie van Bizzy staat op niet animeren.");
+      if (label.startsWith("verander animatie van Bizzy naar")) {
+        const animationMode = label.replace("verander animatie van Bizzy naar ", "");
+        effects.animationMode = animationMode;
+        effects.animationPaused = animationMode.toLowerCase() === "niet animeren";
+        effects.log.push(`De animatie van Bizzy staat op ${animationMode}.`);
         return;
       }
-      if (label === "herhaal 3 keer") {
-        nextMoveMultiplier = 3;
-        effects.log.push("Herhaling ingesteld op 3 keer.");
-        return;
-      }
-      if (label === "herhaal 10 keer") {
-        nextMoveMultiplier = 10;
-        effects.log.push("Herhaling ingesteld op 10 keer.");
+      const repeatMatch = label.match(/^herhaal ([0-9]+) keer$/);
+      if (repeatMatch) {
+        nextMoveMultiplier = Number(repeatMatch[1]);
+        effects.log.push(`Herhaling ingesteld op ${repeatMatch[1]} keer.`);
         return;
       }
       if (label === "herhaal altijd") {
@@ -2885,14 +3297,33 @@ const BlockProgrammingTaskView = ({
               </div>
             ) : (
               <div
-                className="bizzy-robot"
+                className={`bizzy-robot bizzy-${runEffects.animationMode.toLowerCase().replace(/\s+/g, "-")}`}
                 style={{
                   transform: `translateX(${runEffects.move * 54}px) rotate(${runEffects.rotation}deg)`,
                 }}
               >
-                {speechVisible ? <span className="speech-bubble">Hoi!</span> : null}
-                <div className="bizzy-head" />
-                <div className="bizzy-body" />
+                {speechVisible ? <span className="speech-bubble">{runEffects.speech}</span> : null}
+                <div className="bizzy-antenna" />
+                <div className="bizzy-ears" aria-hidden="true">
+                  <span />
+                  <span />
+                </div>
+                <div className="bizzy-head">
+                  <span className="bizzy-eye left" />
+                  <span className="bizzy-eye right" />
+                  <span className="bizzy-mouth" />
+                </div>
+                <div className="bizzy-body">
+                  <span className="bizzy-panel" />
+                </div>
+                <div className="bizzy-arms" aria-hidden="true">
+                  <span />
+                  <span />
+                </div>
+                <div className="bizzy-feet" aria-hidden="true">
+                  <span />
+                  <span />
+                </div>
               </div>
             )}
           </div>
@@ -2915,7 +3346,7 @@ const BlockProgrammingTaskView = ({
               {runEffects.sound ? <span>Geluid: {runEffects.sound}</span> : null}
               {runEffects.score !== null ? <span>Score: {runEffects.score}</span> : null}
               {runEffects.speed !== null ? <span>Snelheid: {runEffects.speed}</span> : null}
-              {runEffects.animationPaused ? <span>Animatie: niet animeren</span> : null}
+              {runEffects.animationMode ? <span>Animatie: {runEffects.animationMode}</span> : null}
             </div>
           ) : null}
         </div>
@@ -2930,7 +3361,7 @@ const BlockProgrammingTaskView = ({
               type="button"
               onClick={() => addBlockToProgram(block)}
             >
-              <span>{block.label}</span>
+              {renderProgramBlockContent(block)}
               <small>{block.category}</small>
             </button>
           ))}
@@ -2943,7 +3374,8 @@ const BlockProgrammingTaskView = ({
               className="ghost-button"
               type="button"
               onClick={() => {
-                setProgram([]);
+                const startBlock = task.blocks.find((block) => block.label === startProgramBlockLabel);
+                setProgram(startBlock ? [createProgramBlock(startBlock)] : []);
                 resetProgramRun();
               }}
             >
@@ -2962,7 +3394,7 @@ const BlockProgrammingTaskView = ({
                   className={`program-block ${block.isContainer ? "container-block" : ""}`}
                   style={blockStyle(blockByLabel.get(block.label) ?? block)}
                 >
-                  <span>{block.label}</span>
+                  {renderProgramBlockContent(block, index)}
                   <small>{block.category}</small>
                 </span>
                 <div className="row-tools">
@@ -3186,6 +3618,18 @@ const FileTaskWorkspace = ({
     nodeId: string;
     timestamp: number;
   } | null>(null);
+  const [newMenuOpen, setNewMenuOpen] = useState(false);
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const editInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!editingNodeId || !editInputRef.current) {
+      return;
+    }
+    editInputRef.current.focus();
+    editInputRef.current.select();
+  }, [editingNodeId]);
 
   if (!item.fileTask || !state) {
     return null;
@@ -3254,10 +3698,8 @@ const FileTaskWorkspace = ({
     if (!selectedNodeId || !selectedNode) {
       return;
     }
-    const nextName = window.prompt("Nieuwe naam:", selectedNode.name);
-    if (nextName) {
-      onChange(renameNode(state, selectedNodeId, nextName));
-    }
+    setEditingNodeId(selectedNodeId);
+    setEditingName(selectedNode.name);
   };
 
   const handleNodeClick = (node: Pt1Node, clickCount: number) => {
@@ -3274,18 +3716,43 @@ const FileTaskWorkspace = ({
     setLastNodeClick({ nodeId: node.id, timestamp: now });
 
     if (isSecondSingleClick) {
-      const nextName = window.prompt("Nieuwe naam:", node.name);
-      if (nextName) {
-        onChange(renameNode(state, node.id, nextName));
-      }
+      setEditingNodeId(node.id);
+      setEditingName(node.name);
     }
   };
 
-  const createNewFolder = () => {
-    const nextName = window.prompt("Naam van de nieuwe map:", "Schoolwerk");
-    if (nextName) {
-      onChange(createFolder(state, activeFolderId, nextName));
+  const commitEditingName = () => {
+    if (!editingNodeId) {
+      return;
     }
+    const node = getNodeById(state.nodes, editingNodeId);
+    setEditingNodeId(null);
+    if (node && editingName.trim() && editingName.trim() !== node.name) {
+      onChange(renameNode(state, editingNodeId, editingName));
+    }
+  };
+
+  const handleEditingKey = (event: KeyboardEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+    if (event.key === "Enter") {
+      commitEditingName();
+    }
+    if (event.key === "Escape") {
+      setEditingNodeId(null);
+    }
+  };
+
+  const createNewItem = (newItem: NewExplorerItem) => {
+    const nodeId = crypto.randomUUID();
+    setNewMenuOpen(false);
+    setSelectedNodeId(nodeId);
+    setEditingNodeId(nodeId);
+    setEditingName(newItem.defaultName);
+    onChange(
+      newItem.type === "folder"
+        ? createFolder(state, activeFolderId, newItem.defaultName, nodeId)
+        : createFile(state, activeFolderId, newItem.defaultName, nodeId),
+    );
   };
 
   const deleteSelectedNode = () => {
@@ -3363,17 +3830,46 @@ const FileTaskWorkspace = ({
               onClick={() => onChange(undoPt1(state))}
               disabled={state.undoStack.length === 0}
             >
+              <span className="command-icon command-icon-undo" aria-hidden="true" />
               Ongedaan maken
             </button>
-            <button className="explorer-command" type="button" onClick={createNewFolder}>
-              Nieuw
-            </button>
+            <div className="explorer-new-menu">
+              <button
+                className="explorer-command"
+                type="button"
+                aria-expanded={newMenuOpen}
+                onClick={() => setNewMenuOpen((isOpen) => !isOpen)}
+              >
+                <span className="command-icon command-icon-new" aria-hidden="true" />
+                Nieuw
+                <span className="command-chevron" aria-hidden="true" />
+              </button>
+              {newMenuOpen ? (
+                <div className="explorer-new-dropdown" role="menu">
+                  {newExplorerItems.map((newItem) => (
+                    <button
+                      key={newItem.label}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => createNewItem(newItem)}
+                    >
+                      <span
+                        className={`new-item-icon new-item-icon-${newItem.icon}`}
+                        aria-hidden="true"
+                      />
+                      {newItem.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             <button
               className="explorer-command"
               type="button"
               disabled={!selectedNode?.parentId}
               onClick={() => selectedNodeId && setClipboard({ mode: "cut", nodeId: selectedNodeId })}
             >
+              <span className="command-icon command-icon-cut" aria-hidden="true" />
               Knippen
             </button>
             <button
@@ -3382,6 +3878,7 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={() => selectedNodeId && setClipboard({ mode: "copy", nodeId: selectedNodeId })}
             >
+              <span className="command-icon command-icon-copy" aria-hidden="true" />
               Kopiëren
             </button>
             <button
@@ -3390,6 +3887,7 @@ const FileTaskWorkspace = ({
               disabled={!clipboardNode}
               onClick={pasteClipboard}
             >
+              <span className="command-icon command-icon-paste" aria-hidden="true" />
               Plakken
             </button>
             <button
@@ -3398,6 +3896,7 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={renameSelectedNode}
             >
+              <span className="command-icon command-icon-rename" aria-hidden="true" />
               Naam wijzigen
             </button>
             <button
@@ -3406,6 +3905,7 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={() => window.alert("Delen heb je voor deze opdracht niet nodig.")}
             >
+              <span className="command-icon command-icon-share" aria-hidden="true" />
               Delen
             </button>
             <button
@@ -3414,6 +3914,7 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={deleteSelectedNode}
             >
+              <span className="command-icon command-icon-delete" aria-hidden="true" />
               Verwijderen
             </button>
           </div>
@@ -3494,14 +3995,20 @@ const FileTaskWorkspace = ({
                 </div>
                 {activeFolder ? (
                   activeItems.map((node) => (
-                    <button
+                    <div
                       className={`explorer-row ${selectedNodeId === node.id ? "selected" : ""} ${
                         contextFolderId === node.id ? "active-target" : ""
                       }`}
                       key={node.id}
-                      type="button"
                       role="row"
+                      tabIndex={0}
                       onClick={(event) => handleNodeClick(node, event.detail)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" && node.type === "folder") {
+                          setContextFolderId(node.id);
+                          setSelectedNodeId(null);
+                        }
+                      }}
                       onDoubleClick={() => {
                         if (node.type === "folder") {
                           setContextFolderId(node.id);
@@ -3528,20 +4035,33 @@ const FileTaskWorkspace = ({
                     >
                       <span className="explorer-name">
                         <span className={`explorer-icon explorer-icon-${node.type}`} aria-hidden="true" />
-                        {node.name}
+                        {editingNodeId === node.id ? (
+                          <input
+                            ref={editInputRef}
+                            className="explorer-name-input"
+                            value={editingName}
+                            onChange={(event) => setEditingName(event.target.value)}
+                            onClick={(event) => event.stopPropagation()}
+                            onBlur={commitEditingName}
+                            onKeyDown={handleEditingKey}
+                            aria-label="Naam wijzigen"
+                          />
+                        ) : (
+                          node.name
+                        )}
                       </span>
                       <span className="explorer-status" aria-label="Gesynchroniseerd">*</span>
                       <span>25-4-2026 08:24</span>
                       <span>{getExplorerType(node)}</span>
-                    </button>
+                    </div>
                   ))
                 ) : null}
               </div>
-              <div className="explorer-hint">
-                {clipboard && clipboardNode
-                  ? `${clipboard.mode === "cut" ? "Geknipt" : "Gekopieerd"}: ${clipboardNode.name}. Kies een map en klik op Plakken.`
-                  : "Instructie: kies eerst een bestand of map. Gebruik daarna de knoppen bovenaan. Hernoemen kan ook door een geselecteerd item nog een keer aan te klikken."}
-              </div>
+              {clipboard && clipboardNode ? (
+                <div className="explorer-hint">
+                  {`${clipboard.mode === "cut" ? "Geknipt" : "Gekopieerd"}: ${clipboardNode.name}. Kies een map en klik op Plakken.`}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

@@ -90,6 +90,7 @@ export const createFolder = (
   state: Pt1State,
   parentId: string,
   folderName: string,
+  nodeId = crypto.randomUUID(),
 ): Pt1State => {
   const trimmedName = folderName.trim();
   if (!trimmedName) {
@@ -103,7 +104,7 @@ export const createFolder = (
     nodes: [
       ...next.nodes,
       {
-        id: crypto.randomUUID(),
+        id: nodeId,
         name: finalName,
         type: "folder",
         parentId,
@@ -113,6 +114,42 @@ export const createFolder = (
       ...next.actionLogs,
       {
         actionType: "create-folder",
+        targetPath: `${buildPath(next.nodes, parentId)}/${finalName}`,
+        newName: finalName,
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  };
+};
+
+export const createFile = (
+  state: Pt1State,
+  parentId: string,
+  fileName: string,
+  nodeId = crypto.randomUUID(),
+): Pt1State => {
+  const trimmedName = fileName.trim();
+  if (!trimmedName) {
+    return state;
+  }
+
+  const next = pushUndo(state);
+  const finalName = ensureUniqueName(next.nodes, parentId, trimmedName);
+  return {
+    ...next,
+    nodes: [
+      ...next.nodes,
+      {
+        id: nodeId,
+        name: finalName,
+        type: "file",
+        parentId,
+      },
+    ],
+    actionLogs: [
+      ...next.actionLogs,
+      {
+        actionType: "create-file",
         targetPath: `${buildPath(next.nodes, parentId)}/${finalName}`,
         newName: finalName,
         timestamp: new Date().toISOString(),

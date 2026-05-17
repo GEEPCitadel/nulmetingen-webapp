@@ -439,6 +439,12 @@ const shareRules = (): TeamsTaskConfig["rules"] => [
     points: 1,
     conditions: ["selected_windows_media_player"],
   },
+  {
+    id: "computer-sound-on",
+    description: "computergeluid is ingeschakeld.",
+    points: 1,
+    conditions: ["computerSoundOn"],
+  },
 ];
 
 const blockColors = {
@@ -448,7 +454,7 @@ const blockColors = {
   besturing: "#f47b32",
   variabelen: "#f2a23a",
   waarnemen: "#2eb8a6",
-  geluid: "#cf63c7",
+  geluid: "#8f5acb",
   data: "#3f8edb",
 };
 
@@ -575,22 +581,22 @@ const createAdvancedMailConfig = (): MailTaskConfig => ({
 });
 
 const fakeTeamsInstruction =
-  "Voer in de Teams-vergadering het juiste klikpad uit: klik op Delen, kies Venster en selecteer Windows Media Player.";
+  "Leerling Mark Canbers zit in een Teamsvergadering met zijn docent. Mark wil dat zijn docent een filmfragment hoort en ziet. Mark wil niet dat de docent ziet welke vensters Mark nog meer open heeft staan.\n\nKies de juiste instellingen zodat de docent alleen het filmfragment kan zien en horen.";
 
 const excelInstruction = (filename: string) =>
   `Download ${filename}. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.`;
 
 const createFakeTeamsConfig = (): TeamsTaskConfig => ({
   scenario:
-    "Je zit in een Teams-achtige vergadering als Leerling Anoniem. Deel alleen het venster van Windows Media Player.",
+    "Je zit in een Teams-achtige vergadering als Mark Canbers. Deel alleen het venster van Windows Media Player.",
   buttons: ["Camera", "Microfoon", "Chat", "Deelnemers", "Reageren", "Delen", "Meer"],
   shareOptions: ["Scherm", "Venster"],
   windows: [
-    "Windows Media Player",
     "Browser - schoolsite",
     "Word - Verslag Nederlands",
     "Excel - Cijferlijst",
     "Teams chat",
+    "Windows Media Player",
   ],
   correctWindow: "Windows Media Player",
   rules: shareRules(),
@@ -690,16 +696,14 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1v-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
-      instruction:
-        "Maak een programma dat dit doet: na klikken op Afspelen zegt Bizzy Hoi!, gaat hij 1 meter vooruit en draait hij naar 180 graden.",
+        "Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.",
+      instruction: "Programmeer Bizzy zo:",
       config: {
         device: "bizzy",
         codingSteps: [
-          "Gebruik het startblok Wanneer er geklikt wordt op afspelen.",
-          "Laat Bizzy Hoi! zeggen.",
           "Laat Bizzy 1 meter vooruit bewegen.",
-          "Laat Bizzy naar 180 graden draaien.",
+          "Laat Bizzy 180 graden draaien.",
+          "Na 1 seconde zegt Bizzy: Hoi!",
         ],
         blocks: [
           block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
@@ -707,8 +711,8 @@ const versionSpecs: VersionSpec[] = [
           block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
           block('Bizzy zegt "Hoi!"', "uiterlijk"),
           block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
-          block("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.", "beweging"),
-          block("als 1 < 2", "besturing", { isCriticalDistractor: true }),
+          block("draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.", "beweging"),
+          block("herhaal 1 keer", "besturing", { isContainer: true }),
           block("speel geluid applaus", "geluid"),
           block("wacht 1 seconde", "besturing"),
           block("zet score op 0", "variabelen"),
@@ -718,41 +722,38 @@ const versionSpecs: VersionSpec[] = [
         ],
         correctProgram: [
           "Wanneer er geklikt wordt op afspelen",
-          'Bizzy zegt "Hoi!"',
           "verplaats Bizzy 1 meter vooruit in 1 sec.",
-          "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.",
+          "draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.",
+          "wacht 1 seconde",
+          'Bizzy zegt "Hoi!"',
         ],
         rules: [
           {
-            id: "start",
-            description: "juiste startblok.",
-            points: 1,
-            firstBlock: "Wanneer er geklikt wordt op afspelen",
-          },
-          {
-            id: "say",
-            description: 'Bizzy zegt "Hoi!" gebruikt.',
-            points: 1,
-            requiredBlocks: ['Bizzy zegt "Hoi!"'],
-          },
-          {
             id: "move",
-            description: "verplaats Bizzy 1 meter vooruit in 1 sec. gebruikt.",
+            description: "Bizzy beweegt 1 meter vooruit.",
             points: 1,
             requiredBlocks: ["verplaats Bizzy 1 meter vooruit in 1 sec."],
           },
           {
-            id: "behavior",
-            description:
-              "eindgedrag klopt en er zijn geen kritieke afleider-blokken gebruikt.",
+            id: "turn",
+            description: "Bizzy draait 180 graden.",
+            points: 1,
+            requiredBlocks: ["draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec."],
+          },
+          {
+            id: "wait",
+            description: "Bizzy wacht 1 seconde voordat hij praat.",
+            points: 1,
+            requiredBlocks: ["wacht 1 seconde"],
+            orderedBlocks: ["wacht 1 seconde", 'Bizzy zegt "Hoi!"'],
+          },
+          {
+            id: "say",
+            description: 'Bizzy zegt "Hoi!".',
             points: 1,
             requireExecuted: true,
-            requiredBlocks: [
-              'Bizzy zegt "Hoi!"',
-              "verplaats Bizzy 1 meter vooruit in 1 sec.",
-              "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.",
-            ],
-            forbiddenBlocks: ["als 1 < 2", "verplaats Bizzy 5 meters achteruit in 1 sec."],
+            requiredBlocks: ['Bizzy zegt "Hoi!"'],
+            forbiddenBlocks: ["verplaats Bizzy 5 meters achteruit in 1 sec."],
           },
         ],
       },
@@ -1087,30 +1088,27 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1h-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
+        "Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.",
       instruction:
-        "Maak een programma dat dit doet: na klikken op Afspelen zegt Bizzy Hoi! en beweegt hij drie keer vooruit.",
+        "Programmeer Bizzy zo: laat Bizzy Hoi! zeggen en laat hem daarna drie keer 1 meter vooruit bewegen.",
       config: {
         device: "bizzy",
         codingSteps: [
-          "Gebruik het startblok Wanneer er geklikt wordt op afspelen.",
-          "Laat Bizzy Hoi! zeggen.",
-          "Gebruik herhaal 3 keer.",
-          "Zet verplaats Bizzy 1 meter vooruit in de herhaling.",
+          "Typ Hoi! in het zeg-blok.",
+          "Stel Herhaal in op 3 keer.",
+          "Stel verplaats in op 1 meter vooruit in 1 seconde.",
+          "Zet het verplaats-blok in de herhaling.",
         ],
         blocks: [
           block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
-          block("wanneer er op Bizzy wordt geklikt", "gebeurtenissen"),
           block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
           block('Bizzy zegt "Hoi!"', "uiterlijk"),
           block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
-          block("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.", "beweging"),
-          block("als 1 < 2", "besturing", { isContainer: true, isCriticalDistractor: true }),
-          block("herhaal 3 keer", "besturing", { isContainer: true }),
-          block("herhaal 10 keer", "besturing", { isContainer: true }),
-          block("speel geluid start", "geluid"),
-          block("zet snelheid op 2", "variabelen"),
-          block("als Bizzy rand raakt", "waarnemen", { isContainer: true }),
+          block("draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.", "beweging"),
+          block("herhaal 1 keer", "besturing", { isContainer: true }),
+          block("herhaal 10 keer", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("speel geluid applaus", "geluid"),
+          block("wacht 1 seconde", "besturing"),
           block("stop alles", "besturing"),
         ],
         correctProgram: [
@@ -1121,28 +1119,22 @@ const versionSpecs: VersionSpec[] = [
         ],
         rules: [
           {
-            id: "start",
-            description: "juiste startblok.",
-            points: 1,
-            firstBlock: "Wanneer er geklikt wordt op afspelen",
-          },
-          {
             id: "say",
-            description: 'Bizzy zegt "Hoi!" gebruikt.',
+            description: 'Bizzy zegt "Hoi!".',
             points: 1,
             requiredBlocks: ['Bizzy zegt "Hoi!"'],
           },
           {
             id: "repeat-three",
-            description:
-              "herhaal 3 keer met verplaats Bizzy 1 meter vooruit in 1 sec. als geneste body.",
+            description: "herhaal 3 keer met verplaats Bizzy 1 meter vooruit in 1 sec. als geneste body.",
             points: 1,
-            nestedBlocks: [
-              {
-                parent: "herhaal 3 keer",
-                child: "verplaats Bizzy 1 meter vooruit in 1 sec.",
-              },
-            ],
+            nestedBlocks: [{ parent: "herhaal 3 keer", child: "verplaats Bizzy 1 meter vooruit in 1 sec." }],
+          },
+          {
+            id: "move",
+            description: "verplaatsing is ingesteld op 1 meter in 1 seconde.",
+            points: 1,
+            requiredBlocks: ["verplaats Bizzy 1 meter vooruit in 1 sec."],
           },
           {
             id: "behavior",
@@ -1150,13 +1142,8 @@ const versionSpecs: VersionSpec[] = [
             points: 1,
             requireExecuted: true,
             requiredBlocks: ['Bizzy zegt "Hoi!"', "herhaal 3 keer"],
-            nestedBlocks: [
-              {
-                parent: "herhaal 3 keer",
-                child: "verplaats Bizzy 1 meter vooruit in 1 sec.",
-              },
-            ],
-            forbiddenBlocks: ["als 1 < 2"],
+            nestedBlocks: [{ parent: "herhaal 3 keer", child: "verplaats Bizzy 1 meter vooruit in 1 sec." }],
+            forbiddenBlocks: ["herhaal 10 keer"],
           },
         ],
       },
@@ -1537,75 +1524,40 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3v-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is een micro:bit-achtig apparaat met een klein scherm en twee knoppen (A en B). Programmeer een teller die op het scherm verschijnt. Klik op ▶ om je programma uit te voeren; klik daarna op A of B om de knoppen te testen.",
+        "Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.",
       instruction:
-        "Maak een programma. De teller begint op 0. Elke keer dat knop A wordt ingedrukt, gaat de teller 1 omhoog. Bij 5 of meer toont het scherm vol.",
+        "Programmeer Bizzy zo: laat Bizzy dansen, 2 meter vooruit bewegen, 90 graden draaien en daarna Hoi! zeggen.",
       config: {
-        device: "microbit",
+        device: "bizzy",
         codingSteps: [
-          "Zet de teller bij start op 0.",
-          "Laat knop A de teller met 1 verhogen.",
-          "Controleer of de teller 5 of meer is.",
-          "Toon vol als de teller 5 of meer is.",
+          "Kies Dansen bij het animatieblok.",
+          "Stel verplaats in op 2 meter vooruit in 1 seconde.",
+          "Stel draaien in op 90 graden in 1 seconde.",
+          "Typ Hoi! in het zeg-blok.",
         ],
         blocks: [
-          block("bij start", "gebeurtenissen", { isContainer: true }),
-          block("zet teller op 0", "variabelen"),
-          block("als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }),
-          block("als knop B wordt ingedrukt", "gebeurtenissen", { isContainer: true }),
-          block("verander teller met 1", "variabelen"),
-          block("verander teller met -1", "variabelen"),
-          block("als teller >= 5 dan", "besturing", { isContainer: true }),
-          block("als teller < 5 dan", "besturing", {
-            isContainer: true,
-            isCriticalDistractor: true,
-          }),
-          block('toon "vol"', "uiterlijk"),
-          block('toon "leeg"', "uiterlijk"),
-          block("wacht 10 seconden", "besturing"),
-          block("speel geluid klaar", "geluid"),
+          block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
+          block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
+          block('Bizzy zegt "Hoi!"', "uiterlijk"),
+          block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
+          block("draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.", "beweging"),
+          block("herhaal 1 keer", "besturing", { isContainer: true }),
+          block("speel geluid applaus", "geluid"),
+          block("wacht 1 seconde", "besturing"),
+          block("stop alles", "besturing"),
         ],
         correctProgram: [
-          "bij start",
-          "zet teller op 0",
-          "als knop A wordt ingedrukt",
-          "verander teller met 1",
-          "als teller >= 5 dan",
-          'toon "vol"',
+          "Wanneer er geklikt wordt op afspelen",
+          "verander animatie van Bizzy naar Dansen",
+          "verplaats Bizzy 2 meter vooruit in 1 sec.",
+          "draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.",
+          'Bizzy zegt "Hoi!"',
         ],
         rules: [
-          {
-            id: "init",
-            description: "teller initialiseert op 0 binnen bij start.",
-            points: 1,
-            nestedBlocks: [{ parent: "bij start", child: "zet teller op 0" }],
-          },
-          {
-            id: "button-a",
-            description: "als knop A wordt ingedrukt met geneste verander teller met 1.",
-            points: 1,
-            nestedBlocks: [
-              { parent: "als knop A wordt ingedrukt", child: "verander teller met 1" },
-            ],
-          },
-          {
-            id: "show-full",
-            description: 'als teller >= 5 dan met geneste toon "vol".',
-            points: 1,
-            nestedBlocks: [{ parent: "als teller >= 5 dan", child: 'toon "vol"' }],
-          },
-          {
-            id: "behavior",
-            description:
-              "eindgedrag bij testen van A klopt en er is geen kritieke afleider gebruikt.",
-            points: 1,
-            requireExecuted: true,
-            nestedBlocks: [
-              { parent: "als knop A wordt ingedrukt", child: "verander teller met 1" },
-              { parent: "als teller >= 5 dan", child: 'toon "vol"' },
-            ],
-            forbiddenBlocks: ["als teller < 5 dan"],
-          },
+          { id: "animation", description: "Bizzy danst.", points: 1, requiredBlocks: ["verander animatie van Bizzy naar Dansen"] },
+          { id: "move", description: "Bizzy beweegt 2 meter vooruit.", points: 1, requiredBlocks: ["verplaats Bizzy 2 meter vooruit in 1 sec."] },
+          { id: "turn", description: "Bizzy draait 90 graden.", points: 1, requiredBlocks: ["draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec."] },
+          { id: "say", description: 'Bizzy zegt "Hoi!" na uitvoeren.', points: 1, requireExecuted: true, requiredBlocks: ['Bizzy zegt "Hoi!"'] },
         ],
       },
     },
@@ -1959,94 +1911,40 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3h-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Een sensor meet temperatuur en raamstand. Op het scherm verschijnt waarschuwing of ok. Programmeer de logica met blokken; klik op ▶ om te testen met de schuifregelaars voor temperatuur en raamstand.",
+        "Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.",
       instruction:
-        "Maak een programma. Als de temperatuur hoger is dan 25 en het raam open staat, toon waarschuwing. Anders toon ok.",
+        "Programmeer Bizzy zo: laat Bizzy lopen, herhaal twee keer een beweging van 1 meter vooruit en laat Bizzy daarna Hoi! zeggen.",
       config: {
-        device: "sensor",
+        device: "bizzy",
         codingSteps: [
-          "Lees de temperatuur en de raamstand.",
-          "Gebruik de voorwaarde temperatuur hoger dan 25 EN raam open.",
-          "Toon waarschuwing in de dan-tak.",
-          "Toon ok in de anders-tak.",
+          "Kies Lopen bij het animatieblok.",
+          "Stel Herhaal in op 2 keer.",
+          "Stel verplaats in op 1 meter vooruit in 1 seconde en zet dit in de herhaling.",
+          "Typ Hoi! in het zeg-blok.",
         ],
         blocks: [
-          block("bij start", "gebeurtenissen", { isContainer: true }),
-          block("lees temperatuur", "waarnemen"),
-          block("lees raamstand", "waarnemen"),
-          block("als (temperatuur > 25) EN (raam = open) dan", "besturing", {
-            isContainer: true,
-          }),
-          block("als (temperatuur > 25) OF (raam = open) dan", "besturing", {
-            isContainer: true,
-            isCriticalDistractor: true,
-          }),
-          block("als (temperatuur < 25) EN (raam = open) dan", "besturing", {
-            isContainer: true,
-            isCriticalDistractor: true,
-          }),
-          block('toon "waarschuwing"', "uiterlijk"),
-          block('toon "ok"', "uiterlijk"),
-          block('toon "koud"', "uiterlijk"),
-          block("anders", "besturing", { isContainer: true }),
-          block("herhaal altijd", "besturing", { isContainer: true }),
-          block("verwijder temperatuur", "data"),
-          block("zet temperatuur op 0", "variabelen"),
-          block("speel alarmgeluid", "geluid"),
+          block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
+          block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
+          block('Bizzy zegt "Hoi!"', "uiterlijk"),
+          block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
+          block("draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.", "beweging"),
+          block("herhaal 1 keer", "besturing", { isContainer: true }),
+          block("speel geluid applaus", "geluid"),
+          block("wacht 1 seconde", "besturing"),
+          block("stop alles", "besturing"),
         ],
         correctProgram: [
-          "bij start",
-          "lees temperatuur",
-          "lees raamstand",
-          "als (temperatuur > 25) EN (raam = open) dan",
-          'toon "waarschuwing"',
-          "anders",
-          'toon "ok"',
+          "Wanneer er geklikt wordt op afspelen",
+          "verander animatie van Bizzy naar Lopen",
+          "herhaal 2 keer",
+          "verplaats Bizzy 1 meter vooruit in 1 sec.",
+          'Bizzy zegt "Hoi!"',
         ],
         rules: [
-          {
-            id: "read",
-            description: "temperatuur en raamstand worden gelezen.",
-            points: 1,
-            requiredBlocks: ["lees temperatuur", "lees raamstand"],
-          },
-          {
-            id: "condition",
-            description: "juiste EN-voorwaarde gekozen.",
-            points: 1,
-            requiredBlocks: ["als (temperatuur > 25) EN (raam = open) dan"],
-          },
-          {
-            id: "branches",
-            description: "waarschuwing in juiste tak en ok in anders-tak.",
-            points: 1,
-            nestedBlocks: [
-              {
-                parent: "als (temperatuur > 25) EN (raam = open) dan",
-                child: 'toon "waarschuwing"',
-              },
-              { parent: "anders", child: 'toon "ok"' },
-            ],
-          },
-          {
-            id: "behavior",
-            description:
-              "eindgedrag bij testwaarden klopt en er is geen kritieke afleider gebruikt.",
-            points: 1,
-            requireExecuted: true,
-            requiredBlocks: ["lees temperatuur", "lees raamstand"],
-            nestedBlocks: [
-              {
-                parent: "als (temperatuur > 25) EN (raam = open) dan",
-                child: 'toon "waarschuwing"',
-              },
-              { parent: "anders", child: 'toon "ok"' },
-            ],
-            forbiddenBlocks: [
-              "als (temperatuur > 25) OF (raam = open) dan",
-              "als (temperatuur < 25) EN (raam = open) dan",
-            ],
-          },
+          { id: "animation", description: "Bizzy loopt.", points: 1, requiredBlocks: ["verander animatie van Bizzy naar Lopen"] },
+          { id: "repeat-two", description: "herhaal 2 keer met verplaats Bizzy 1 meter vooruit in 1 sec. als geneste body.", points: 1, nestedBlocks: [{ parent: "herhaal 2 keer", child: "verplaats Bizzy 1 meter vooruit in 1 sec." }] },
+          { id: "move", description: "verplaatsing is ingesteld op 1 meter in 1 seconde.", points: 1, requiredBlocks: ["verplaats Bizzy 1 meter vooruit in 1 sec."] },
+          { id: "say", description: 'Bizzy zegt "Hoi!" na uitvoeren.', points: 1, requireExecuted: true, requiredBlocks: ['Bizzy zegt "Hoi!"'] },
         ],
       },
     },

@@ -387,7 +387,7 @@ const scoreTeamsTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) =>
       return state.shareOpened === true;
     }
     if (condition === "computerSoundOn") {
-      return state.computerSound === true;
+      return state.computerSoundOn === true;
     }
     if (condition === "mediaPlayerSelected") {
       return selectedWindow === item.teamsTask?.correctWindow;
