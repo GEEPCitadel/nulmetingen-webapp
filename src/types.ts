@@ -1,6 +1,16 @@
 export type AssessmentVersionId = "lj1-vmbo" | "lj1-hv" | "lj3-vmbo" | "lj3-hv";
 export type InstrumentId = AssessmentVersionId;
-export type ThemeKey = "limeTeal" | "skyOrange" | "mintPink" | "sandCoral";
+export type ThemeKey =
+  | "limeTeal"
+  | "skyOrange"
+  | "mintPink"
+  | "roseNavy"
+  | "rainbowCream";
+
+/** Slug that maps a theme to one of the 5 Citadel palettes (P1-P5).
+ *  Used on the app root as `data-theme="p4"` so every nested component
+ *  reads --t-* tokens from one place. */
+export type PaletteSlug = "p1" | "p2" | "p3" | "p4" | "p5";
 
 export type AssessmentItemType =
   | "self_assessment"
@@ -30,6 +40,8 @@ export interface Option {
 
 export interface ThemeDefinition {
   key: ThemeKey;
+  /** P1-P5 slug. Set on the .app root as `data-theme={palette}`. */
+  palette: PaletteSlug;
   label: string;
   primary: string;
   secondary: string;
@@ -115,18 +127,7 @@ export interface SelfAssessmentScaleLabel {
 }
 
 export interface MailCondition {
-  field:
-    | "to"
-    | "cc"
-    | "bcc"
-    | "subject"
-    | "subjectOptionId"
-    | "attachments"
-    | "links"
-    | "priority"
-    | "greetingOptionId"
-    | "closingOptionId"
-    | "sent";
+  field: "to" | "cc" | "bcc" | "subject" | "attachments" | "links" | "priority" | "sent";
   operator: "includes" | "allInclude" | "equals" | "noneInclude" | "true";
   value?: string | string[];
 }
@@ -142,25 +143,23 @@ export interface MailTaskConfig {
   visibleButtons: string[];
   contacts: string[];
   files: string[];
-  subjectMode?: "freeText" | "dropdown";
-  subjectOptions?: Option[];
-  greetingOptions?: Option[];
-  closingOptions?: Option[];
-  priorityToggle?: boolean;
   rules: MailScoringRule[];
+}
+
+export interface DownloadQuestionTolerance {
+  /** When true, the answer is treated as a number and compared with deltaAbs. */
+  numeric?: boolean;
+  /** Absolute tolerance for numeric comparison, e.g. 0.01. */
+  deltaAbs?: number;
 }
 
 export interface DownloadQuestion {
   id: string;
   prompt: string;
+  /** Either a short-code answer (string) or a numeric answer used with tolerance. */
   answer: string | number;
   points: number;
-  tolerance?: {
-    case?: "insensitive" | "sensitive";
-    trim?: boolean;
-    numeric?: boolean;
-    deltaAbs?: number;
-  };
+  tolerance?: DownloadQuestionTolerance;
 }
 
 export interface ExcelDownloadTaskConfig {
@@ -248,45 +247,18 @@ export interface ProgrammingBlockDefinition {
   isCriticalDistractor?: boolean;
 }
 
+export type BlockCriteriaSpec = "pt7-lj1v" | "pt7-lj1h" | "pt7-lj3v" | "pt7-lj3h";
+
 export interface BlockProgrammingTaskConfig {
   intro?: string;
   device?: "bizzy" | "microbit" | "sensor";
   codingSteps?: string[];
   blocks: ProgrammingBlockDefinition[];
   correctProgram: string[];
-  criteriaSpec?: string;
   rules: BlockScoringRule[];
-}
-
-export interface SourceEvaluationSnippet {
-  id: string;
-  title: string;
-  meta: string;
-  body: string;
-  hasImageRequiringReverseSearch?: boolean;
-}
-
-export type SourceEvaluationQuestion =
-  | {
-      id: string;
-      type: "dropdown";
-      prompt: string;
-      options: Option[];
-      points: number;
-      correctOptionId: string;
-    }
-  | {
-      id: string;
-      type: "multi_checkbox";
-      prompt: string;
-      options: Array<Option & { correctAsSignal?: boolean; distractor?: boolean }>;
-      scoring: { minCorrect: number; maxDistractor: number; points: number };
-    };
-
-export interface SourceEvaluationTaskConfig {
-  intro: string;
-  snippets: SourceEvaluationSnippet[];
-  questions: SourceEvaluationQuestion[];
+  /** When set, scoring follows the V6 criteria table for the given spec
+   *  instead of the generic `rules` array. */
+  criteriaSpec?: BlockCriteriaSpec;
 }
 
 export type InteractionInputType = "single" | "multi" | "toggle" | "matching";
@@ -332,6 +304,50 @@ export interface InteractionScreen {
 export interface InteractionTaskConfig {
   screens: InteractionScreen[];
   rules: InteractionScoringRule[];
+}
+
+/* ─── Source evaluation task (lj3-hv "betrouwbaarheid van bronnen") ─── */
+
+export interface SourceEvaluationOption {
+  id: string;
+  label?: string;
+  /** Marks an option as a positive signal of credibility (multi/signal type). */
+  correctAsSignal?: boolean;
+  /** Marks an option as a misleading "looks credible" distractor. */
+  distractor?: boolean;
+}
+
+export interface SourceEvaluationSignalScoring {
+  /** Minimum number of correct-as-signal options the learner must pick. */
+  minCorrect: number;
+  /** Maximum number of distractors before the question is marked wrong. */
+  maxDistractor: number;
+  points: number;
+}
+
+export interface SourceEvaluationDropdownQuestion {
+  type: "dropdown";
+  id: string;
+  prompt: string;
+  options?: SourceEvaluationOption[];
+  correctOptionId: string;
+  points: number;
+}
+
+export interface SourceEvaluationSignalQuestion {
+  type?: "signal";
+  id: string;
+  prompt: string;
+  options: SourceEvaluationOption[];
+  scoring: SourceEvaluationSignalScoring;
+}
+
+export type SourceEvaluationQuestion =
+  | SourceEvaluationDropdownQuestion
+  | SourceEvaluationSignalQuestion;
+
+export interface SourceEvaluationTaskConfig {
+  questions: SourceEvaluationQuestion[];
 }
 
 export interface AssessmentItem {
