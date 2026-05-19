@@ -1,5 +1,5 @@
-import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import {
   assessmentMap,
   defaultCodeMappings,
@@ -19,7 +19,6 @@ import {
 import {
   buildPath,
   copyNode,
-  createFile,
   createFolder,
   deleteNode,
   getChildren,
@@ -51,25 +50,6 @@ import type {
 type EntryView = "intro" | "adminAccess" | "admin";
 type ConflictChoice = "overwrite" | "rename" | "cancel";
 type ExplorerClipboard = { mode: "cut" | "copy"; nodeId: string } | null;
-type NewExplorerItem = {
-  label: string;
-  icon: string;
-  type: "folder" | "file";
-  defaultName: string;
-};
-
-const newExplorerItems: NewExplorerItem[] = [
-  { label: "Map", icon: "folder", type: "folder", defaultName: "Nieuwe map" },
-  { label: "Snelkoppeling", icon: "shortcut", type: "file", defaultName: "Nieuwe snelkoppeling.url" },
-  { label: "Bitmapafbeelding", icon: "image", type: "file", defaultName: "Nieuwe afbeelding.bmp" },
-  { label: "Microsoft Word-document", icon: "word", type: "file", defaultName: "Doc1.docx" },
-  {
-    label: "Microsoft PowerPoint-presentatie",
-    icon: "powerpoint",
-    type: "file",
-    defaultName: "Presentatie1.pptx",
-  },
-];
 
 type SubmitAnswerPayload = {
   section: AssessmentSection;
@@ -106,7 +86,8 @@ type StudentsResponse = {
   importedCount?: number;
 };
 
-const defaultTheme = themes.skyOrange;
+// P1 (rainbow on cream) is used for the entry / admin / fallback screens.
+const defaultTheme = themes.rainbowCream;
 
 const requestJson = async <T,>(url: string, options: RequestInit = {}): Promise<T> => {
   const response = await fetch(url, {
@@ -205,14 +186,6 @@ const createPdfDocument = (lines: string[]) => {
   return pdf;
 };
 
-const assessmentTitle = (
-  <>
-    Nulmeting
-    <br />
-    Digitale Geletterdheid
-  </>
-);
-
 const formatTime = (totalSeconds: number) => {
   const minutes = Math.floor(Math.max(totalSeconds, 0) / 60);
   const seconds = Math.max(totalSeconds, 0) % 60;
@@ -276,15 +249,7 @@ const QuestionHeader = ({
   </div>
 );
 
-const getEntryTheme = (view: EntryView) => {
-  if (view === "admin") {
-    return themes.sandCoral;
-  }
-  if (view === "adminAccess") {
-    return themes.mintPink;
-  }
-  return defaultTheme;
-};
+const getEntryTheme = (_view: EntryView) => defaultTheme;
 
 const getThemeForSession = (session: AssessmentSession | null, entryView: EntryView) =>
   session ? themes[assessmentMap[session.versionId].themeKey] : getEntryTheme(entryView);
@@ -512,40 +477,26 @@ const App = () => {
     setAdminError("");
   };
 
+  // Levelchip toont alleen tijdens een lopende meting de versie.
+  const levelShort = activeAssessment
+    ? activeAssessment.level
+    : entryView === "admin"
+      ? "Beheer"
+      : undefined;
+
+  const studentCode = session?.metadata.learnerCode || session?.metadata.accessCode;
+  const studentClassCode = session?.metadata.classCode;
+
   return (
     <AppShell
       theme={activeTheme}
-      title={
-        result
-          ? "Resultaat leerling"
-          : activeAssessment
-            ? assessmentTitle
-            : entryView === "adminAccess"
-              ? "Beheeromgeving openen"
-              : entryView === "admin"
-                ? "Beheer leerlingcodes"
-                : assessmentTitle
-      }
-      subtitle={
-        result
-          ? "De afname is afgerond. Hieronder staat de score per blok."
-          : activeAssessment
-            ? `${activeAssessment.level} - richttijd ongeveer 30 minuten`
-            : entryView === "adminAccess"
-              ? "Beheer opent met een aparte code."
-              : entryView === "admin"
-                ? "Importeer leerlingcodes en bekijk voortgang vanuit de gekoppelde Neon database."
-                : "Deze vragenlijst geeft een beeld van jouw digitale geletterdheid. Het invullen duurt ongeveer dertig minuten."
-      }
+      levelShort={levelShort}
+      studentCode={studentCode}
+      classCode={studentClassCode}
       timer={
         session && !session.completedAt
           ? formatTime(Math.floor((now - new Date(session.startedAt).getTime()) / 1000))
           : undefined
-      }
-      logoPath={
-        result || entryView === "admin"
-          ? "/brand/logos/citadel-5-rgb.png"
-          : activeTheme.logo
       }
       onReset={session && !session.completedAt ? resetSession : undefined}
     >
@@ -615,22 +566,25 @@ const App = () => {
 const AppShell = ({
   children,
   theme,
-  title,
-  subtitle,
   timer,
-  logoPath,
+  levelShort,
+  studentCode,
+  classCode,
   onReset,
 }: {
   children: ReactNode;
   theme: ThemeDefinition;
-  title: ReactNode;
-  subtitle: string;
+  /** Optional short label for the active assessment (e.g. "LJ1 VMBO"). */
+  levelShort?: string;
+  /** Optional student leerlingnummer to display in the topbar chip. */
+  studentCode?: string;
+  classCode?: string;
   timer?: string;
-  logoPath: string;
   onReset?: () => void;
 }) => (
   <div
-    className="app-shell"
+    className="app"
+    data-theme={theme.palette}
     style={
       {
         "--theme-primary": theme.primary,
@@ -642,29 +596,39 @@ const AppShell = ({
       } as CSSProperties
     }
   >
-    <div className="background-layer">
-      <img className="bg-blob bg-blob-a" src="/brand/shapes/blob.png" alt="" />
-      <img className="bg-blob bg-blob-b" src="/brand/shapes/blob-2.png" alt="" />
-      <img className="bg-ribbon bg-ribbon-a" src="/brand/shapes/slinger-3.png" alt="" />
-      <img className="bg-ribbon bg-ribbon-b" src="/brand/shapes/slinger-4.png" alt="" />
-    </div>
-    <header className="hero-card">
-      <div className="hero-copy">
-        <div className="eyebrow">Citadel College</div>
-        <h1>{title}</h1>
-        <p>{subtitle}</p>
+    <header className="topbar">
+      <span className="brand" aria-hidden="true" />
+      <div className="brand-label">
+        citadel college
+        <small>nulmeting digitale geletterdheid</small>
       </div>
-      <div className="hero-side">
-        <img className="brand-logo" src={logoPath} alt="Citadel College" />
-        {timer ? <div className="timer-chip">Bezig {timer}</div> : null}
-        {onReset ? (
-          <button className="ghost-button" type="button" onClick={onReset}>
-            Nieuwe leerling starten
-          </button>
-        ) : null}
-      </div>
+      <span className="spacer" />
+      {levelShort ? (
+        <span className="chip">
+          <span className="chip-dot" />
+          {levelShort}
+        </span>
+      ) : null}
+      {studentCode ? (
+        <span className="chip">
+          Leerling <strong style={{ fontWeight: 900, marginLeft: 4 }}>{studentCode}</strong>
+        </span>
+      ) : null}
+      {classCode ? <span className="chip">Klas {classCode}</span> : null}
+      {timer ? (
+        <span className="chip">
+          <span className="chip-dot" />
+          {timer}
+        </span>
+      ) : null}
+      {onReset ? (
+        <button className="ghost-btn" type="button" onClick={onReset}>
+          ← Terug
+        </button>
+      ) : null}
     </header>
-    <main>{children}</main>
+    <main className="page">{children}</main>
+    <img className="slinger" src={theme.ribbon} alt="" aria-hidden="true" />
   </div>
 );
 
@@ -687,58 +651,79 @@ const StudentStartScreen = ({
   onStart: () => void;
   onOpenAdmin: () => void;
 }) => (
-  <section className="panel start-panel">
-    <div className="stack-sm">
-      <span className="section-tag">Leerling</span>
-      <h2>Start de nulmeting</h2>
-      <p>
-        In deze meting krijg je korte opdrachten en vragen. Het resultaat geeft
-        een beeld van hoe digitaal geletterd jij bent.
+  <section className="hero">
+    <div className="hero-copy">
+      <span className="eyebrow">Welkom bij Citadel College</span>
+      <h1>
+        Fijn dat je<br />er bent!
+      </h1>
+      <p className="intro">
+        In deze nulmeting laat je zien wat je al kunt op het gebied van digitale
+        geletterdheid. Het is geen toets — het helpt ons om jou beter te begeleiden.
+        Werk zelfstandig en beantwoord de vragen eerlijk.
       </p>
-      <p>
-        Werk zelfstandig en beantwoord de vragen eerlijk. Als je iets niet weet,
-        kun je dat als antwoord kiezen of de opdracht overslaan.
-      </p>
-      <p>
-        De meting duurt ongeveer een half uur.
-      </p>
+      <div className="meta-row">
+        <span className="pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+          ± 30 minuten
+        </span>
+        <span className="pill">Eerlijk antwoord telt</span>
+      </div>
+
+      <div className="field-row">
+        <label className="field-block">
+          <span className="field-label">Leerlingnummer</span>
+          <input
+            className="field-input"
+            value={learnerCode}
+            placeholder="Bijv. 1234"
+            onChange={(event) => onLearnerCodeChange(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                onStart();
+              }
+            }}
+          />
+        </label>
+        <label className="field-block">
+          <span className="field-label">Klas</span>
+          <input
+            className="field-input"
+            value={classCode}
+            placeholder="Bijv. vmbo1a"
+            onChange={(event) => onClassCodeChange(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                onStart();
+              }
+            }}
+          />
+        </label>
+      </div>
+
+      {error ? <div className="error-banner-inline">{error}</div> : null}
+
+      <div className="hero-actions">
+        <button
+          className="btn btn-primary"
+          type="button"
+          onClick={onStart}
+          disabled={isStarting}
+        >
+          <span>{isStarting ? "Controleren…" : "Start de meting"}</span>
+          <span className="arrow-circle">→</span>
+        </button>
+        <button className="btn btn-ghost" type="button" onClick={onOpenAdmin}>
+          Beheeromgeving
+        </button>
+      </div>
     </div>
-    <label className="field">
-      <span>Leerlingnummer</span>
-      <input
-        value={learnerCode}
-        onChange={(event) => onLearnerCodeChange(event.target.value)}
-        placeholder="Bijvoorbeeld 1234"
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            onStart();
-          }
-        }}
-      />
-    </label>
-    <label className="field">
-      <span>Klas</span>
-      <input
-        value={classCode}
-        onChange={(event) => onClassCodeChange(event.target.value)}
-        placeholder="Bijvoorbeeld vmbo1a"
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            onStart();
-          }
-        }}
-      />
-    </label>
-    {error ? <div className="error-banner">{error}</div> : null}
-    <div className="actions start-actions">
-      <button className="primary-button" type="button" onClick={onStart} disabled={isStarting}>
-        {isStarting ? "Controleren..." : "Start"}
-      </button>
-    </div>
-    <div className="teacher-entry">
-      <button className="ghost-button" type="button" onClick={onOpenAdmin}>
-        Alleen beheeromgeving
-      </button>
+    <div className="hero-photo">
+      <span className="ster" aria-hidden="true" />
+      <span className="placeholder-text">Foto: leerling in de klas</span>
     </div>
   </section>
 );
@@ -758,35 +743,45 @@ const AdminAccessScreen = ({
   onUnlock: () => void;
   onBack: () => void;
 }) => (
-  <section className="panel compact-panel">
-    <div className="stack-sm">
-      <span className="section-tag">Beheer</span>
-      <h2>Voer de beheercode in</h2>
-      <p>Met de beheercode open je de beheeromgeving met de gekoppelde database.</p>
+  <div className="rd-modal-backdrop">
+    <div className="rd-modal" role="dialog" aria-labelledby="admin-access-title">
+      <h3 id="admin-access-title">Beheeromgeving openen</h3>
+      <p>
+        Met de beheercode open je de docentomgeving om leerlingnummers te
+        importeren en resultaten te bekijken.
+      </p>
+      <label className="field-block">
+        <span className="field-label">Beheercode</span>
+        <input
+          className="field-input"
+          type="password"
+          value={code}
+          onChange={(event) => onCodeChange(event.target.value)}
+          placeholder="Beheercode"
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              onUnlock();
+            }
+          }}
+        />
+      </label>
+      {error ? <div className="error-banner-inline">{error}</div> : null}
+      <div className="actions">
+        <button className="btn btn-ghost" type="button" onClick={onBack}>
+          ← Terug
+        </button>
+        <button
+          className="btn btn-primary"
+          type="button"
+          onClick={onUnlock}
+          disabled={isLoading}
+        >
+          <span>{isLoading ? "Controleren…" : "Open beheer"}</span>
+          <span className="arrow-circle">→</span>
+        </button>
+      </div>
     </div>
-    <label className="field">
-      <span>Beheercode</span>
-      <input
-        value={code}
-        onChange={(event) => onCodeChange(event.target.value)}
-        placeholder="Beheercode"
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            onUnlock();
-          }
-        }}
-      />
-    </label>
-    {error ? <div className="error-banner">{error}</div> : null}
-    <div className="actions">
-      <button className="primary-button" type="button" onClick={onUnlock} disabled={isLoading}>
-        {isLoading ? "Controleren..." : "Open beheer"}
-      </button>
-      <button className="ghost-button" type="button" onClick={onBack}>
-        Terug naar leerlingstart
-      </button>
-    </div>
-  </section>
+  </div>
 );
 
 const AdminScreen = ({
@@ -895,18 +890,140 @@ const AdminScreen = ({
     return "Niet gestart";
   };
 
+  const versionToPalette: Record<string, "p1" | "p2" | "p3" | "p4" | "p5"> = {
+    "lj1-vmbo": "p4",
+    "lj1-hv": "p3",
+    "lj3-vmbo": "p2",
+    "lj3-hv": "p5",
+  };
+
+  const [paletteFilter, setPaletteFilter] = useState<"all" | "p2" | "p3" | "p4" | "p5">("all");
+  const filteredStudents =
+    paletteFilter === "all"
+      ? students
+      : students.filter((s) => versionToPalette[s.versionId] === paletteFilter);
+
+  const completedCount = students.filter((s) => s.status === "completed").length;
+  const busyCount = students.filter((s) => s.status === "in_progress").length;
+  const notStartedCount = students.filter((s) => !s.status || s.status === "not_started").length;
+  const completedScores = students
+    .filter((s) => s.status === "completed" && typeof s.percentage === "number")
+    .map((s) => s.percentage ?? 0);
+  const avgScore = completedScores.length
+    ? Math.round(completedScores.reduce((a, b) => a + b, 0) / completedScores.length)
+    : null;
+
+  const stats: Array<{
+    tone: "p1" | "p2" | "p3" | "p4" | "p5";
+    label: string;
+    value: string;
+    delta: string;
+    up: boolean;
+  }> = [
+    {
+      tone: "p1",
+      label: "Totaal leerlingen",
+      value: String(students.length),
+      delta: "Alle klassen samen",
+      up: true,
+    },
+    {
+      tone: "p3",
+      label: "Bezig",
+      value: String(busyCount),
+      delta: busyCount > 0 ? "Actief nu" : "Niemand actief",
+      up: true,
+    },
+    {
+      tone: "p4",
+      label: "Afgerond",
+      value: String(completedCount),
+      delta: avgScore !== null ? `Gem. score ${avgScore}%` : "Nog geen scores",
+      up: true,
+    },
+    {
+      tone: "p2",
+      label: "Niet gestart",
+      value: String(notStartedCount),
+      delta: notStartedCount > 0 ? "Herinnering nodig" : "Iedereen onderweg",
+      up: notStartedCount === 0,
+    },
+  ];
+
   return (
-    <section className="panel stack-lg">
-      <div className="stack-sm">
-        <span className="section-tag">Beheer</span>
-        <h2>Leerlingcodes en resultaten</h2>
-        <p>
-          Importeer leerlingnummers per klas. Voortgang en resultaten worden uit de Neon database gelezen.
-        </p>
+    <>
+      <section className="admin-hero">
+        <div>
+          <span className="badge">Docentomgeving</span>
+          <h1>
+            Beheer leerlingen<br />en bekijk resultaten
+          </h1>
+          <p className="intro">
+            Importeer leerlingnummers per klas, volg de voortgang in real-time,
+            en exporteer de resultaten uit de gekoppelde Neon database.
+          </p>
+        </div>
+        <div className="admin-side-card">
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 999,
+                background: "var(--p1-purple)",
+                color: "#fff",
+                display: "grid",
+                placeItems: "center",
+                fontFamily: "var(--font-display)",
+                fontWeight: 900,
+              }}
+            >
+              CC
+            </div>
+            <div>
+              <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: ".95rem" }}>
+                Docentaccount
+              </div>
+              <div style={{ fontSize: ".82rem", color: "var(--c-ink-soft)" }}>Sessie actief</div>
+            </div>
+          </div>
+          <hr style={{ border: 0, borderTop: "1px solid var(--c-line)", margin: "12px 0" }} />
+          <div style={{ display: "flex", gap: 24, fontSize: ".88rem" }}>
+            <div>
+              <div style={{ color: "var(--c-ink-soft)", fontWeight: 500 }}>Leerlingen</div>
+              <div style={{ fontWeight: 700 }}>{students.length}</div>
+            </div>
+            <div>
+              <div style={{ color: "var(--c-ink-soft)", fontWeight: 500 }}>Afgerond</div>
+              <div style={{ fontWeight: 700 }}>{completedCount}</div>
+            </div>
+            <div>
+              <div style={{ color: "var(--c-ink-soft)", fontWeight: 500 }}>Bezig</div>
+              <div style={{ fontWeight: 700 }}>{busyCount}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="stats-strip">
+        {stats.map((s, i) => (
+          <div key={i} className="stat-card" data-tone={s.tone}>
+            <span className="accent-strip" />
+            <div className="label">{s.label}</div>
+            <div className="value">{s.value}</div>
+            <div className={`delta ${s.up ? "up" : "down"}`}>{s.delta}</div>
+          </div>
+        ))}
       </div>
-      <div className="admin-import-panel">
-        <div className="admin-import-controls">
-          <label className="field">
+
+      <section className="import-panel">
+        <h3>Leerlingen importeren</h3>
+        <p className="help">
+          Plak leerlingnummers per regel, bijvoorbeeld <code>vmbo1a 1234</code>. Eén klas
+          tegelijk is overzichtelijker, maar meerdere mag ook.
+        </p>
+        <div className="grid">
+          <label>
             <span>Nulmeting</span>
             <select
               value={versionId}
@@ -919,85 +1036,159 @@ const AdminScreen = ({
               ))}
             </select>
           </label>
-          <label className="field">
-            <span>Importnaam</span>
+          <label>
+            <span>Import-batch (optioneel)</span>
             <input
               value={importBatch}
               onChange={(event) => setImportBatch(event.target.value)}
-              placeholder="Bijvoorbeeld VMBO klas 1"
+              placeholder="bv. najaar-2026"
             />
           </label>
-          <div className="field">
-            <span>Actie</span>
-            <button className="primary-button" type="button" onClick={importStudents} disabled={isLoading}>
-              Importeren
+          <label>
+            <span>Leerlingen (één per regel)</span>
+            <textarea
+              value={importText}
+              onChange={(event) => setImportText(event.target.value)}
+              placeholder={"vmbo1a 1234\nvmbo1a 1235\nvmbo1a 1236"}
+            />
+          </label>
+          <button
+            className="btn-import"
+            type="button"
+            onClick={importStudents}
+            disabled={isLoading}
+          >
+            Importeren
+          </button>
+        </div>
+        {message ? (
+          <div
+            className="error-banner-inline"
+            style={{ background: "#E1F4ED", color: "#007a5e", marginTop: 16 }}
+          >
+            {message}
+          </div>
+        ) : null}
+        {error ? (
+          <div className="error-banner-inline" style={{ marginTop: 16 }}>
+            {error}
+          </div>
+        ) : null}
+      </section>
+
+      <section className="rd-student-section">
+        <div className="rd-section-head">
+          <div>
+            <span className="overline">Overzicht</span>
+            <h3 style={{ marginTop: 6 }}>Leerlingen ({filteredStudents.length})</h3>
+          </div>
+          <div className="rd-section-head" style={{ marginBottom: 0, gap: 12 }}>
+            <div className="filters">
+              {(
+                [
+                  ["all", "Alle"],
+                  ["p4", "LJ1 VMBO"],
+                  ["p3", "LJ1 HV"],
+                  ["p2", "LJ3 VMBO"],
+                  ["p5", "LJ3 HV"],
+                ] as const
+              ).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`filter-chip ${paletteFilter === id ? "active" : ""}`}
+                  onClick={() => setPaletteFilter(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button
+              className="filter-chip"
+              type="button"
+              onClick={loadStudents}
+              disabled={isLoading}
+            >
+              ↻ Vernieuwen
             </button>
           </div>
         </div>
-        <label className="field">
-          <span>Leerlingen</span>
-          <textarea
-            value={importText}
-            onChange={(event) => setImportText(event.target.value)}
-            placeholder={"Een leerling per regel, bijvoorbeeld:\nvmbo1a 1234\nvmbo1a 1235"}
-          />
-        </label>
-      </div>
-      {message ? <div className="success-banner">{message}</div> : null}
-      {error ? <div className="error-banner">{error}</div> : null}
-      <div className="admin-student-heading">
-        <h3>Leerlingen</h3>
-        <button className="secondary-button" type="button" onClick={loadStudents} disabled={isLoading}>
-          Vernieuwen
-        </button>
-      </div>
-      <div className="student-table student-management-table">
-        <div className="student-table-row student-table-head">
-          <span>Klas</span>
-          <span>Nummer</span>
-          <span>Nulmeting</span>
-          <span>Status</span>
-          <span>Score</span>
-          <span>Import</span>
-          <span>Actie</span>
-        </div>
-        {students.length === 0 ? (
-          <div className="student-table-row">
-            <span>Nog geen leerlingen in de database.</span>
+
+        <div className="rd-student-table">
+          <div className="rd-student-row head">
+            <span>Code</span>
+            <span>Klas</span>
+            <span>Meting</span>
+            <span>Status</span>
+            <span>Score</span>
+            <span>Actie</span>
           </div>
-        ) : (
-          students.map((student) => (
-            <div className="student-table-row" key={`${student.classCode}-${student.accessCode}`}>
-              <span>{student.classCode}</span>
-              <span>{student.accessCode}</span>
-              <span>{assessmentMap[student.versionId]?.level ?? student.versionId}</span>
-              <span>{statusLabel(student.status)}</span>
-              <span>
-                {typeof student.totalScore === "number" && typeof student.maxScore === "number"
-                  ? `${student.totalScore}/${student.maxScore} (${student.percentage ?? 0}%)`
-                  : "-"}
-              </span>
-              <span>{student.importBatch || "-"}</span>
-              <span>
-                <button
-                  className="ghost-button compact-action"
-                  type="button"
-                  onClick={() => reopenStudent(student)}
-                  disabled={isLoading}
-                >
-                  Heropen
-                </button>
+          {filteredStudents.length === 0 ? (
+            <div className="rd-student-row" style={{ gridTemplateColumns: "1fr" }}>
+              <span style={{ color: "var(--c-ink-soft)", fontStyle: "italic" }}>
+                Nog geen leerlingen in deze selectie.
               </span>
             </div>
-          ))
-        )}
-      </div>
-      <div className="actions">
-        <button className="ghost-button" type="button" onClick={onBack}>
-          Terug naar leerlingstart
+          ) : (
+            filteredStudents.map((student) => {
+              const palette = versionToPalette[student.versionId] ?? "p1";
+              const meting = assessmentMap[student.versionId]?.level ?? student.versionId;
+              const hasScore =
+                typeof student.totalScore === "number" && typeof student.maxScore === "number";
+              return (
+                <div
+                  className="rd-student-row"
+                  key={`${student.classCode}-${student.accessCode}`}
+                >
+                  <span className="code-cell">{student.accessCode}</span>
+                  <span>{student.classCode}</span>
+                  <span>
+                    <span className="meting-pill" data-p={palette}>
+                      <span className="swatch" />
+                      {meting}
+                    </span>
+                  </span>
+                  <span>
+                    <span
+                      className="rd-status-pill"
+                      data-s={
+                        student.status === "completed"
+                          ? "done"
+                          : student.status === "in_progress"
+                            ? "busy"
+                            : ""
+                      }
+                    >
+                      {statusLabel(student.status)}
+                    </span>
+                  </span>
+                  <span className={`score-cell ${hasScore ? "" : "dim"}`}>
+                    {hasScore
+                      ? `${student.totalScore}/${student.maxScore}`
+                      : "—"}
+                  </span>
+                  <span className="action-btns">
+                    <button
+                      type="button"
+                      onClick={() => reopenStudent(student)}
+                      disabled={isLoading}
+                    >
+                      Heropenen
+                    </button>
+                  </span>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </section>
+
+      <div style={{ marginTop: 32 }}>
+        <button className="btn btn-ghost" type="button" onClick={onBack}>
+          ← Terug naar leerlingstart
         </button>
       </div>
-    </section>
+    </>
   );
 };
 
@@ -1037,20 +1228,26 @@ const AssessmentScreen = ({
   const progress = Math.round(((stepIndex + 1) / stepCount) * 100);
 
   return (
-    <section className="stack-lg">
-      <div className="progress-card">
-        <div className="progress-meta">
-          <strong>Voortgang</strong>
-          <span>
-            {questionNumber
-              ? `Vraag ${questionNumber} van ${questionCount}`
-              : `Zelfinschatting · stap ${stepIndex + 1} van ${stepCount}`}
-          </span>
+    <div className="q-wrap">
+      <aside className="q-side">
+        <div className="progress-eyebrow">Voortgang</div>
+        <h2>{progress}% klaar</h2>
+        <div className="progress-bar-mini">
+          <span style={{ width: `${progress}%` }} />
         </div>
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${progress}%` }} />
+        <p style={{ fontSize: ".88rem", margin: "0 0 12px", opacity: .85 }}>
+          {questionNumber
+            ? `Vraag ${questionNumber} van ${questionCount}`
+            : `Zelfinschatting · stap ${stepIndex + 1} van ${stepCount}`}
+        </p>
+        <div className="helper">
+          <strong>Tip:</strong> weet je het echt niet? Kies dan
+          {" "}<em>"weet ik niet"</em> of sla de vraag over.
+          Geen punten aftrek.
         </div>
-      </div>
+      </aside>
+
+      <div className="q-main-col" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
       {item.type === "self_assessment" ? (
         <SelfAssessmentView
@@ -1135,15 +1332,6 @@ const AssessmentScreen = ({
         />
       ) : null}
 
-      {item.type === "source_evaluation" ? (
-        <SourceEvaluationTaskView
-          section={section}
-          item={item}
-          questionNumber={questionNumber ?? 1}
-          onSubmit={onSubmitAnswer}
-        />
-      ) : null}
-
       {item.type === "social_action_simulation" ? (
         <InteractionTaskView
           section={section}
@@ -1163,7 +1351,8 @@ const AssessmentScreen = ({
           onSubmit={onSubmitAnswer}
         />
       ) : null}
-    </section>
+      </div>
+    </div>
   );
 };
 
@@ -1251,7 +1440,6 @@ const MailTaskView = ({
     ccVisible: true,
     bccVisible: false,
     subject: "",
-    subjectOptionId: "",
     body: "",
     attachments: [] as string[],
     links: [] as string[],
@@ -1259,8 +1447,6 @@ const MailTaskView = ({
     linkTextDraft: "",
     linkTexts: {} as Record<string, string>,
     priority: "Normaal",
-    greetingOptionId: "",
-    closingOptionId: "",
     sent: false,
     draftSaved: false,
     deleted: false,
@@ -1272,13 +1458,6 @@ const MailTaskView = ({
   if (!task) {
     return null;
   }
-
-  const sortedContacts = [...task.contacts].sort((first, second) =>
-    first.localeCompare(second, "nl", { sensitivity: "base" }),
-  );
-  const sortedFiles = [...task.files].sort((first, second) =>
-    first.localeCompare(second, "nl", { sensitivity: "base" }),
-  );
 
   const toggleListValue = (field: AddressField | "attachments", value: string) => {
     setDraft((current) => {
@@ -1317,8 +1496,8 @@ const MailTaskView = ({
     }
 
     if (button === "BCC tonen" || button === "Bcc tonen") {
-      setDraft((current) => ({ ...current, bccVisible: !current.bccVisible }));
-      setActiveAddressField((current) => (draft.bccVisible || current === "bcc" ? null : "bcc"));
+      setDraft((current) => ({ ...current, bccVisible: true }));
+      setActiveAddressField("bcc");
       setActiveCommandPanel(null);
       return;
     }
@@ -1379,11 +1558,7 @@ const MailTaskView = ({
             ? { ...submittedDraft.linkTexts, [trimmedLink]: linkTextDraft.trim() }
             : submittedDraft.linkTexts,
       },
-      shownOptionOrder: [
-        ...(task.subjectOptions ?? []).map((option) => option.id),
-        ...(task.greetingOptions ?? []).map((option) => option.id),
-        ...(task.closingOptions ?? []).map((option) => option.id),
-      ],
+      shownOptionOrder: [],
     });
   };
 
@@ -1393,7 +1568,7 @@ const MailTaskView = ({
   const fieldVisible = (field: AddressField) =>
     field === "to" ||
     field === "cc" ||
-    (field === "bcc" && draft.bccVisible);
+    (field === "bcc" && (draft.bccVisible || draft.bcc.length > 0));
   const fieldPlaceholder = (field: AddressField) =>
     field === "to" ? "Klik om ontvangers te kiezen" : "Klik om adressen te kiezen";
 
@@ -1413,7 +1588,7 @@ const MailTaskView = ({
           </button>
           {activeAddressField === field ? (
             <div className="mail-picker">
-              {sortedContacts.map((contact) => (
+              {task.contacts.map((contact) => (
                 <button
                   className={`chip-button ${draft[field].includes(contact) ? "selected" : ""}`}
                   key={`${field}-${contact}`}
@@ -1480,7 +1655,7 @@ const MailTaskView = ({
           <div className="mail-command-panel">
             <strong>Bestand bijvoegen</strong>
             <div className="chip-grid">
-              {sortedFiles.map((file) => (
+              {task.files.map((file) => (
                 <button
                   className={`chip-button ${draft.attachments.includes(file) ? "selected" : ""}`}
                   key={file}
@@ -1544,33 +1719,12 @@ const MailTaskView = ({
           <label className="field">
             <span>Onderwerp</span>
             <div className="mail-subject-wrap">
-              {task.subjectMode === "dropdown" ? (
-                <select
-                  value={draft.subjectOptionId}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      subjectOptionId: event.target.value,
-                      subject:
-                        task.subjectOptions?.find((option) => option.id === event.target.value)?.label ?? "",
-                    }))
-                  }
-                >
-                  <option value="">Kies onderwerp</option>
-                  {(task.subjectOptions ?? []).map((option) => (
-                    <option value={option.id} key={option.id}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  value={draft.subject}
-                  onChange={(event) =>
-                    setDraft((current) => ({ ...current, subject: event.target.value }))
-                  }
-                />
-              )}
+              <input
+                value={draft.subject}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, subject: event.target.value }))
+                }
+              />
               {draft.priority === "Hoog" ? <span className="priority-marker">!</span> : null}
             </div>
           </label>
@@ -1594,21 +1748,6 @@ const MailTaskView = ({
 
           <label className="field">
             <span>Bericht</span>
-            {task.greetingOptions ? (
-              <select
-                value={draft.greetingOptionId}
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, greetingOptionId: event.target.value }))
-                }
-              >
-                <option value="">Kies aanhef</option>
-                {task.greetingOptions.map((option) => (
-                  <option value={option.id} key={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            ) : null}
             <textarea
               rows={10}
               value={draft.body}
@@ -1616,21 +1755,6 @@ const MailTaskView = ({
                 setDraft((current) => ({ ...current, body: event.target.value }))
               }
             />
-            {task.closingOptions ? (
-              <select
-                value={draft.closingOptionId}
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, closingOptionId: event.target.value }))
-                }
-              >
-                <option value="">Kies afsluiting</option>
-                {task.closingOptions.map((option) => (
-                  <option value={option.id} key={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            ) : null}
             {draft.links.length > 0 ? (
               <div className="mail-body-links">
                 {draft.links.map((link) => (
@@ -1854,121 +1978,6 @@ const InteractionGroupControl = ({
         </button>
       ) : null}
     </div>
-  );
-};
-
-const SourceEvaluationTaskView = ({
-  section,
-  item,
-  questionNumber,
-  onSubmit,
-}: {
-  section: AssessmentSection;
-  item: AssessmentItem;
-  questionNumber: number;
-  onSubmit: (payload: SubmitAnswerPayload) => void;
-}) => {
-  const task = item.sourceEvaluationTask;
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  if (!task) {
-    return null;
-  }
-
-  const setAnswer = (questionId: string, value: string | string[]) => {
-    setAnswers((current) => ({ ...current, [questionId]: value }));
-  };
-  const toggleCheckbox = (questionId: string, optionId: string) => {
-    const selected = Array.isArray(answers[questionId]) ? (answers[questionId] as string[]) : [];
-    setAnswer(
-      questionId,
-      selected.includes(optionId)
-        ? selected.filter((id) => id !== optionId)
-        : [...selected, optionId],
-    );
-  };
-
-  return (
-    <section className="panel stack-lg">
-      <QuestionHeader
-        questionNumber={questionNumber}
-        title={item.title}
-        instruction={item.instruction}
-      >
-        <p className="helper-text">{task.intro}</p>
-      </QuestionHeader>
-
-      <div className="source-snippet-grid">
-        {task.snippets.map((snippet) => (
-          <article className="source-snippet-card" key={snippet.id}>
-            <span className="section-tag">Snippet {snippet.id}</span>
-            <h3>{snippet.title}</h3>
-            <p className="source-meta">{snippet.meta}</p>
-            {snippet.hasImageRequiringReverseSearch ? (
-              <div className="source-image-placeholder">AI-afbeelding</div>
-            ) : null}
-            <p>{snippet.body}</p>
-          </article>
-        ))}
-      </div>
-
-      <div className="task-screen-grid">
-        {task.questions.map((question) => (
-          <div className="interaction-group" key={question.id}>
-            <strong>{question.prompt}</strong>
-            {question.type === "dropdown" ? (
-              <select
-                value={String(answers[question.id] ?? "")}
-                onChange={(event) => setAnswer(question.id, event.target.value)}
-              >
-                <option value="">Kies</option>
-                {question.options.map((option) => (
-                  <option value={option.id} key={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div className="chip-grid">
-                {question.options.map((option) => {
-                  const selected = Array.isArray(answers[question.id])
-                    ? (answers[question.id] as string[]).includes(option.id)
-                    : false;
-                  return (
-                    <button
-                      className={`chip-button ${selected ? "selected" : ""}`}
-                      key={option.id}
-                      type="button"
-                      onClick={() => toggleCheckbox(question.id, option.id)}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: { answers },
-              shownOptionOrder: task.questions.flatMap((question) =>
-                question.options.map((option) => option.id),
-              ),
-            })
-          }
-        >
-          Taak afronden
-        </button>
-      </div>
-    </section>
   );
 };
 
@@ -2336,122 +2345,6 @@ const TeamsVideoTile = ({
   </div>
 );
 
-const FakeSharedWindow = ({ windowName }: { windowName: string }) => {
-  if (windowName === "Scherm") {
-    return (
-      <div className="fake-shared-window desktop-window">
-        <div className="fake-window-titlebar">
-          <span>Volledig scherm</span>
-          <span>Bureaublad van Mark Canbers</span>
-        </div>
-        <div className="fake-desktop-share">
-          <div className="fake-desktop-card word-card">Word - Verslag Nederlands</div>
-          <div className="fake-desktop-card media-card">Windows Media Player</div>
-          <div className="fake-desktop-card chat-card">Teams chat</div>
-          <div className="fake-desktop-card browser-card">Browser - schoolsite</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (windowName === "Windows Media Player") {
-    return (
-      <div className="fake-shared-window media-player">
-        <div className="fake-window-titlebar">
-          <span>Windows Media Player</span>
-          <span>Filmfragment.mp4</span>
-        </div>
-        <div className="fake-media-scene">
-          <div className="fake-film-frame">
-            <span>Filmfragment</span>
-          </div>
-          <div className="fake-media-controls">
-            <span className="fake-play-button" aria-hidden="true">&gt;</span>
-            <div className="fake-progress-track">
-              <span />
-            </div>
-            <span>01:24 / 03:10</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (windowName === "Word - Verslag Nederlands") {
-    return (
-      <div className="fake-shared-window word-window">
-        <div className="fake-window-titlebar">
-          <span>Word</span>
-          <span>Verslag Nederlands</span>
-        </div>
-        <div className="fake-word-ribbon">
-          {["Start", "Invoegen", "Ontwerpen", "Controleren"].map((tab) => (
-            <span key={tab}>{tab}</span>
-          ))}
-        </div>
-        <article className="fake-word-page">
-          <h3>Verslag Nederlands</h3>
-          <p>
-            In dit verslag bespreek ik het boek dat we deze periode hebben gelezen. Ik let op de
-            hoofdpersonen, het onderwerp en de manier waarop de schrijver spanning opbouwt.
-          </p>
-          <p>
-            De hoofdpersoon verandert duidelijk door het verhaal heen. Aan het begin is hij onzeker,
-            maar later durft hij beter voor zijn mening uit te komen.
-          </p>
-        </article>
-      </div>
-    );
-  }
-
-  if (windowName === "Excel - Cijferlijst") {
-    return (
-      <div className="fake-shared-window excel-window">
-        <div className="fake-window-titlebar">
-          <span>Excel</span>
-          <span>Cijferlijst.xlsx</span>
-        </div>
-        <div className="fake-sheet-grid" aria-hidden="true">
-          {["Naam", "Toets 1", "Toets 2", "Gemiddelde", "Mark Canbers", "7,1", "6,8", "7,0", "S. de Vries", "8,2", "7,9", "8,1"].map((cell, index) => (
-            <span className={index < 4 ? "heading" : ""} key={`${cell}-${index}`}>{cell}</span>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (windowName === "Browser - schoolsite") {
-    return (
-      <div className="fake-shared-window browser-window">
-        <div className="fake-window-titlebar">
-          <span>Browser</span>
-          <span>schoolsite.example/agenda</span>
-        </div>
-        <div className="fake-browser-page">
-          <strong>Schoolsite</strong>
-          <h3>Agenda deze week</h3>
-          <p>Maandag: mentorgesprek</p>
-          <p>Dinsdag: Nederlands in lokaal 204</p>
-          <p>Vrijdag: opdracht digitale geletterdheid inleveren</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="fake-shared-window teams-chat-window">
-      <div className="fake-window-titlebar">
-        <span>Microsoft Teams</span>
-        <span>Chat</span>
-      </div>
-      <div className="fake-chat-messages shared-chat">
-        <div className="fake-chat-message received">Kun je het filmfragment delen?</div>
-        <div className="fake-chat-message sent">Ja, ik zoek het venster op.</div>
-      </div>
-    </div>
-  );
-};
-
 const FakeTeamsTask = ({
   section,
   item,
@@ -2587,7 +2480,7 @@ const FakeTeamsTask = ({
             <aside className="fake-teams-side">
               <strong>Vergadering</strong>
               <span>Nu bezig</span>
-              <div className="fake-participant active">Mark Canbers</div>
+              <div className="fake-participant active">Leerling Anoniem</div>
               <div className="fake-participant">Docent</div>
               <button
                 className="fake-invite-button"
@@ -2601,27 +2494,14 @@ const FakeTeamsTask = ({
 
           <div className="fake-teams-main">
             <div className="fake-teams-stage">
-              {state.selectedWindow ? (
-                <div className="fake-shared-stage">
-                  <div className="fake-sharing-label">
-                    {state.selectedWindow === task.correctWindow
-                      ? "Windows Media Player wordt nu gedeeld"
-                      : `${state.selectedWindow} wordt nu gedeeld`}
-                  </div>
-                  <FakeSharedWindow windowName={state.selectedWindow} />
-                </div>
-              ) : (
-                <>
-                  <TeamsVideoTile
-                    person="Mark Canbers"
-                    initials="MC"
-                    cameraOn={state.cameraOn}
-                    photoSide="learner"
-                    blurred={state.backgroundBlurred}
-                  />
-                  <TeamsVideoTile person="Docent" initials="D" cameraOn photoSide="teacher" small />
-                </>
-              )}
+              <TeamsVideoTile
+                person="Leerling Anoniem"
+                initials="LA"
+                cameraOn={state.cameraOn}
+                photoSide="learner"
+                blurred={state.backgroundBlurred}
+              />
+              <TeamsVideoTile person="Docent" initials="D" cameraOn photoSide="teacher" small />
             </div>
 
             {state.reactionBursts.map((reaction, index) => (
@@ -2666,7 +2546,6 @@ const FakeTeamsTask = ({
                           return;
                         }
                         logAction(actionName(option), {
-                          shareOpened: false,
                           windowPickerOpen: false,
                           selectedWindow: option,
                         });
@@ -2694,7 +2573,7 @@ const FakeTeamsTask = ({
                           windowName === task.correctWindow
                             ? "selected_windows_media_player"
                             : `selected_${actionName(windowName).replace(/^clicked_/, "")}`,
-                          { selectedWindow: windowName, shareOpened: false, windowPickerOpen: false },
+                          { selectedWindow: windowName },
                         );
                       }}
                     >
@@ -2799,13 +2678,7 @@ const FakeTeamsTask = ({
               type="button"
               onClick={() => {
                 if (button === "Delen") {
-                  logAction("clicked_share", {
-                    shareOpened: !state.shareOpened,
-                    windowPickerOpen: false,
-                    chatOpen: false,
-                    reactionsOpen: false,
-                    moreOpen: false,
-                  });
+                  logAction("clicked_share", { shareOpened: true, windowPickerOpen: false });
                   return;
                 }
                 if (button === "Camera") {
@@ -2870,15 +2743,7 @@ const FakeTeamsTask = ({
   );
 };
 
-type ProgramBlock = ProgrammingBlockDefinition & {
-  indent: number;
-  values?: Record<string, string>;
-};
-type ProgramAstNode = {
-  type: string;
-  params?: Record<string, string | number>;
-  children?: ProgramAstNode[];
-};
+type ProgramBlock = ProgrammingBlockDefinition & { indent: number };
 type ProgramRunEffects = {
   move: number;
   rotation: number;
@@ -2888,7 +2753,6 @@ type ProgramRunEffects = {
   score: number | null;
   speed: number | null;
   animationPaused: boolean;
-  animationMode: string;
   teller: number;
   log: string[];
 };
@@ -2902,24 +2766,9 @@ const emptyProgramRunEffects: ProgramRunEffects = {
   score: null,
   speed: null,
   animationPaused: false,
-  animationMode: "",
   teller: 0,
   log: [],
 };
-
-const programmingCategoryOrder = ["beweging", "uiterlijk", "geluid", "gebeurtenissen", "besturing"];
-const startProgramBlockLabel = "Wanneer er geklikt wordt op afspelen";
-const animationOptions = ["Dansen", "Lachen", "Lopen", "Niet animeren", "Springen"];
-const soundOptions = ["Applaus", "Bel", "Start", "Trommel"];
-
-const sortProgrammingBlocks = (blocks: ProgrammingBlockDefinition[]) =>
-  [...blocks].sort((first, second) => {
-    const firstIndex = programmingCategoryOrder.indexOf(first.category);
-    const secondIndex = programmingCategoryOrder.indexOf(second.category);
-    const firstRank = firstIndex === -1 ? programmingCategoryOrder.length : firstIndex;
-    const secondRank = secondIndex === -1 ? programmingCategoryOrder.length : secondIndex;
-    return firstRank - secondRank || first.label.localeCompare(second.label, "nl", { sensitivity: "base" });
-  });
 
 const BlockProgrammingTaskView = ({
   section,
@@ -2932,52 +2781,7 @@ const BlockProgrammingTaskView = ({
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
-  const task = item.blockTask;
-  const isAdvancedBizzyTask = task?.device === "bizzy" && item.id !== "lj1v-pt7-programming";
-  const createProgramBlock = (block: ProgrammingBlockDefinition): ProgramBlock => {
-    const nextBlock: ProgramBlock = { ...block, indent: 0 };
-    if (!isAdvancedBizzyTask) {
-      return nextBlock;
-    }
-    if (block.label.startsWith("Bizzy zegt")) {
-      return { ...nextBlock, label: 'Bizzy zegt ""', values: { speech: "" } };
-    }
-    if (block.label.startsWith("verplaats Bizzy")) {
-      return {
-        ...nextBlock,
-        label: "verplaats Bizzy  meter vooruit in  sec.",
-        values: { meters: "", seconds: "" },
-      };
-    }
-    if (block.label.startsWith("draai Bizzy")) {
-      return {
-        ...nextBlock,
-        label: "draai Bizzy met de wijzers van de klok mee naar  graden in  sec.",
-        values: { degrees: "", seconds: "" },
-      };
-    }
-    if (block.label.startsWith("wacht")) {
-      return { ...nextBlock, label: "wacht  seconde", values: { seconds: "" } };
-    }
-    if (block.label.startsWith("herhaal")) {
-      return { ...nextBlock, label: "herhaal  keer", values: { times: "" } };
-    }
-    if (block.label.startsWith("verander animatie")) {
-      return {
-        ...nextBlock,
-        label: "verander animatie van Bizzy naar Niet animeren",
-        values: { animation: "Niet animeren" },
-      };
-    }
-    if (block.label.startsWith("speel geluid")) {
-      return { ...nextBlock, label: "speel geluid Applaus", values: { sound: "Applaus" } };
-    }
-    return nextBlock;
-  };
-  const [program, setProgram] = useState<ProgramBlock[]>(() => {
-    const startBlock = item.blockTask?.blocks.find((block) => block.label === startProgramBlockLabel);
-    return startBlock ? [createProgramBlock(startBlock)] : [];
-  });
+  const [program, setProgram] = useState<ProgramBlock[]>([]);
   const [executed, setExecuted] = useState(false);
   const [speechVisible, setSpeechVisible] = useState(false);
   const [aPresses, setAPresses] = useState(0);
@@ -2986,11 +2790,8 @@ const BlockProgrammingTaskView = ({
   const [runEffects, setRunEffects] = useState<ProgramRunEffects>(
     emptyProgramRunEffects,
   );
-  const [paletteBlocks] = useState(() =>
-    sortProgrammingBlocks(item.blockTask?.blocks ?? []).filter(
-      (block) => block.label !== startProgramBlockLabel,
-    ),
-  );
+  const task = item.blockTask;
+  const [paletteBlocks] = useState(() => shuffleItems(item.blockTask?.blocks ?? []));
   if (!task) {
     return null;
   }
@@ -2998,31 +2799,13 @@ const BlockProgrammingTaskView = ({
   const blockStyle = (block: Pick<ProgrammingBlockDefinition, "color">) =>
     ({ "--block-color": block.color } as CSSProperties);
 
-  const updateProgramBlock = (
-    blockIndex: number,
-    field: string,
-    value: string,
-    getLabel: (values: Record<string, string>) => string,
-  ) => {
-    setProgram((current) =>
-      current.map((block, index) => {
-        if (index !== blockIndex) {
-          return block;
-        }
-        const values = { ...(block.values ?? {}), [field]: value };
-        return { ...block, values, label: getLabel(values) };
-      }),
-    );
-  };
-
   const addBlockToProgram = (block: ProgrammingBlockDefinition) => {
     setProgram((current) => {
       const previous = current[current.length - 1];
-      const createdBlock = createProgramBlock(block);
       return [
         ...current,
         {
-          ...createdBlock,
+          ...block,
           indent: previous?.isContainer
             ? Math.min(3, (previous.indent ?? 0) + 1)
             : previous?.indent ?? 0,
@@ -3031,212 +2814,6 @@ const BlockProgrammingTaskView = ({
     });
   };
   const hasBlock = (label: string) => program.some((block) => block.label === label);
-  const toProgramAstNode = (block: ProgramBlock): ProgramAstNode => {
-    const label = block.label;
-    const moveMatch = label.match(/^verplaats Bizzy ([0-9]+) meter vooruit in ([0-9]+) sec\.$/);
-    if (moveMatch) {
-      return { type: "verplaats", params: { afstand: Number(moveMatch[1]), sec: Number(moveMatch[2]) } };
-    }
-    const turnMatch = label.match(/^draai Bizzy met de wijzers van de klok mee naar ([0-9]+) graden in ([0-9]+) sec\.$/);
-    if (turnMatch) {
-      return { type: "draai", params: { hoek: Number(turnMatch[1]), sec: Number(turnMatch[2]) } };
-    }
-    const repeatMatch = label.match(/^herhaal ([0-9]+) keer$/);
-    if (repeatMatch) {
-      return { type: "herhaal", params: { aantal: Number(repeatMatch[1]) }, children: [] };
-    }
-    const speechMatch = label.match(/^Bizzy zegt "(.+)"$/);
-    if (speechMatch) {
-      return { type: "zeg", params: { tekst: speechMatch[1] } };
-    }
-    if (label.startsWith("speel geluid")) {
-      return { type: "speel_geluid", params: { geluid: label.replace("speel geluid ", "") } };
-    }
-    if (label.startsWith("wacht")) {
-      return { type: "wacht", params: { sec: Number(label.match(/[0-9]+/)?.[0] ?? 0) } };
-    }
-    return { type: label };
-  };
-  const serializeProgram = (): ProgramAstNode | null => {
-    const root = program[0];
-    if (!root) {
-      return null;
-    }
-    const rootNode = toProgramAstNode(root);
-    const stack: Array<{ indent: number; node: ProgramAstNode }> = [{ indent: root.indent, node: rootNode }];
-    program.slice(1).forEach((block) => {
-      const node = toProgramAstNode(block);
-      while (stack.length > 1 && block.indent <= stack[stack.length - 1].indent) {
-        stack.pop();
-      }
-      const parent = stack[stack.length - 1].node;
-      parent.children = [...(parent.children ?? []), node];
-      stack.push({ indent: block.indent, node });
-    });
-    return rootNode;
-  };
-
-  const renderProgramBlockContent = (
-    block: ProgrammingBlockDefinition & { values?: Record<string, string> },
-    index?: number,
-  ) => {
-    if (index === undefined || !block.values) {
-      return <span>{block.label}</span>;
-    }
-    if ("speech" in block.values) {
-      return (
-        <span className="editable-block-line">
-          Bizzy zegt
-          <input
-            aria-label="Tekst die Bizzy zegt"
-            maxLength={80}
-            placeholder="max. 10 woorden"
-            value={block.values.speech}
-            onChange={(event) =>
-              updateProgramBlock(index, "speech", event.target.value, (values) =>
-                `Bizzy zegt "${values.speech.trim()}"`,
-              )
-            }
-          />
-        </span>
-      );
-    }
-    if ("meters" in block.values) {
-      return (
-        <span className="editable-block-line">
-          verplaats Bizzy
-          <input
-            aria-label="Aantal meter"
-            inputMode="numeric"
-            value={block.values.meters}
-            onChange={(event) =>
-              updateProgramBlock(index, "meters", event.target.value, (values) =>
-                `verplaats Bizzy ${values.meters.trim()} meter vooruit in ${values.seconds.trim()} sec.`,
-              )
-            }
-          />
-          meter vooruit in
-          <input
-            aria-label="Aantal seconden"
-            inputMode="numeric"
-            value={block.values.seconds}
-            onChange={(event) =>
-              updateProgramBlock(index, "seconds", event.target.value, (values) =>
-                `verplaats Bizzy ${values.meters.trim()} meter vooruit in ${values.seconds.trim()} sec.`,
-              )
-            }
-          />
-          sec.
-        </span>
-      );
-    }
-    if ("degrees" in block.values) {
-      return (
-        <span className="editable-block-line">
-          draai Bizzy naar
-          <input
-            aria-label="Aantal graden"
-            inputMode="numeric"
-            value={block.values.degrees}
-            onChange={(event) =>
-              updateProgramBlock(index, "degrees", event.target.value, (values) =>
-                `draai Bizzy met de wijzers van de klok mee naar ${values.degrees.trim()} graden in ${values.seconds.trim()} sec.`,
-              )
-            }
-          />
-          graden in
-          <input
-            aria-label="Aantal seconden"
-            inputMode="numeric"
-            value={block.values.seconds}
-            onChange={(event) =>
-              updateProgramBlock(index, "seconds", event.target.value, (values) =>
-                `draai Bizzy met de wijzers van de klok mee naar ${values.degrees.trim()} graden in ${values.seconds.trim()} sec.`,
-              )
-            }
-          />
-          sec.
-        </span>
-      );
-    }
-    if ("times" in block.values) {
-      return (
-        <span className="editable-block-line">
-          Herhaal
-          <input
-            aria-label="Aantal herhalingen"
-            inputMode="numeric"
-            value={block.values.times}
-            onChange={(event) =>
-              updateProgramBlock(index, "times", event.target.value, (values) =>
-                `herhaal ${values.times.trim()} keer`,
-              )
-            }
-          />
-          keer
-        </span>
-      );
-    }
-    if ("seconds" in block.values) {
-      return (
-        <span className="editable-block-line">
-          wacht
-          <input
-            aria-label="Aantal seconden"
-            inputMode="numeric"
-            value={block.values.seconds}
-            onChange={(event) =>
-              updateProgramBlock(index, "seconds", event.target.value, (values) =>
-                `wacht ${values.seconds.trim()} seconde`,
-              )
-            }
-          />
-          seconde
-        </span>
-      );
-    }
-    if ("animation" in block.values) {
-      return (
-        <span className="editable-block-line">
-          verander animatie van Bizzy naar
-          <select
-            aria-label="Animatie"
-            value={block.values.animation}
-            onChange={(event) =>
-              updateProgramBlock(index, "animation", event.target.value, (values) =>
-                `verander animatie van Bizzy naar ${values.animation}`,
-              )
-            }
-          >
-            {animationOptions.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </span>
-      );
-    }
-    if ("sound" in block.values) {
-      return (
-        <span className="editable-block-line">
-          speel geluid
-          <select
-            aria-label="Geluid"
-            value={block.values.sound}
-            onChange={(event) =>
-              updateProgramBlock(index, "sound", event.target.value, (values) =>
-                `speel geluid ${values.sound}`,
-              )
-            }
-          >
-            {soundOptions.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </span>
-      );
-    }
-    return <span>{block.label}</span>;
-  };
 
   const executeProgram = (): ProgramRunEffects => {
     const effects: ProgramRunEffects = {
@@ -3267,17 +2844,14 @@ const BlockProgrammingTaskView = ({
         effects.log.push("Bizzy-klikblok is actief gezet.");
         return;
       }
-      const speechMatch = label.match(/^Bizzy zegt "(.+)"$/);
-      if (speechMatch) {
-        effects.speech = speechMatch[1];
-        effects.log.push(`Bizzy zegt: ${speechMatch[1]}`);
+      if (label.includes('zegt "Hoi!"')) {
+        effects.speech = "Hoi!";
+        effects.log.push("Bizzy zegt: Hoi!");
         return;
       }
-      const moveMatch = label.match(/^verplaats Bizzy ([0-9]+) meter vooruit in ([0-9]+) sec\.$/);
-      if (moveMatch) {
-        const meters = Number(moveMatch[1]);
-        effects.move += meters * nextMoveMultiplier;
-        effects.log.push(`Bizzy beweegt ${meters * nextMoveMultiplier} meter vooruit.`);
+      if (label.includes("verplaats Bizzy 1 meter vooruit")) {
+        effects.move += nextMoveMultiplier;
+        effects.log.push(`Bizzy beweegt ${nextMoveMultiplier} meter vooruit.`);
         nextMoveMultiplier = 1;
         return;
       }
@@ -3286,23 +2860,24 @@ const BlockProgrammingTaskView = ({
         effects.log.push("Bizzy beweegt 5 meter achteruit.");
         return;
       }
-      const turnMatch = label.match(/^draai Bizzy met de wijzers van de klok mee naar ([0-9]+) graden in ([0-9]+) sec\.$/);
-      if (turnMatch) {
-        effects.rotation = Number(turnMatch[1]);
-        effects.log.push(`Bizzy draait naar ${turnMatch[1]} graden.`);
+      if (label.includes("draai Bizzy")) {
+        effects.rotation = 180;
+        effects.log.push("Bizzy draait naar 180 graden.");
         return;
       }
-      if (label.startsWith("verander animatie van Bizzy naar")) {
-        const animationMode = label.replace("verander animatie van Bizzy naar ", "");
-        effects.animationMode = animationMode;
-        effects.animationPaused = animationMode.toLowerCase() === "niet animeren";
-        effects.log.push(`De animatie van Bizzy staat op ${animationMode}.`);
+      if (label.includes("niet animeren")) {
+        effects.animationPaused = true;
+        effects.log.push("De animatie van Bizzy staat op niet animeren.");
         return;
       }
-      const repeatMatch = label.match(/^herhaal ([0-9]+) keer$/);
-      if (repeatMatch) {
-        nextMoveMultiplier = Number(repeatMatch[1]);
-        effects.log.push(`Herhaling ingesteld op ${repeatMatch[1]} keer.`);
+      if (label === "herhaal 3 keer") {
+        nextMoveMultiplier = 3;
+        effects.log.push("Herhaling ingesteld op 3 keer.");
+        return;
+      }
+      if (label === "herhaal 10 keer") {
+        nextMoveMultiplier = 10;
+        effects.log.push("Herhaling ingesteld op 10 keer.");
         return;
       }
       if (label === "herhaal altijd") {
@@ -3528,33 +3103,14 @@ const BlockProgrammingTaskView = ({
               </div>
             ) : (
               <div
-                className={`bizzy-robot bizzy-${runEffects.animationMode.toLowerCase().replace(/\s+/g, "-")}`}
+                className="bizzy-robot"
                 style={{
                   transform: `translateX(${runEffects.move * 54}px) rotate(${runEffects.rotation}deg)`,
                 }}
               >
-                {speechVisible ? <span className="speech-bubble">{runEffects.speech}</span> : null}
-                <div className="bizzy-antenna" />
-                <div className="bizzy-ears" aria-hidden="true">
-                  <span />
-                  <span />
-                </div>
-                <div className="bizzy-head">
-                  <span className="bizzy-eye left" />
-                  <span className="bizzy-eye right" />
-                  <span className="bizzy-mouth" />
-                </div>
-                <div className="bizzy-body">
-                  <span className="bizzy-panel" />
-                </div>
-                <div className="bizzy-arms" aria-hidden="true">
-                  <span />
-                  <span />
-                </div>
-                <div className="bizzy-feet" aria-hidden="true">
-                  <span />
-                  <span />
-                </div>
+                {speechVisible ? <span className="speech-bubble">Hoi!</span> : null}
+                <div className="bizzy-head" />
+                <div className="bizzy-body" />
               </div>
             )}
           </div>
@@ -3577,7 +3133,7 @@ const BlockProgrammingTaskView = ({
               {runEffects.sound ? <span>Geluid: {runEffects.sound}</span> : null}
               {runEffects.score !== null ? <span>Score: {runEffects.score}</span> : null}
               {runEffects.speed !== null ? <span>Snelheid: {runEffects.speed}</span> : null}
-              {runEffects.animationMode ? <span>Animatie: {runEffects.animationMode}</span> : null}
+              {runEffects.animationPaused ? <span>Animatie: niet animeren</span> : null}
             </div>
           ) : null}
         </div>
@@ -3592,7 +3148,7 @@ const BlockProgrammingTaskView = ({
               type="button"
               onClick={() => addBlockToProgram(block)}
             >
-              {renderProgramBlockContent(block)}
+              <span>{block.label}</span>
               <small>{block.category}</small>
             </button>
           ))}
@@ -3605,8 +3161,7 @@ const BlockProgrammingTaskView = ({
               className="ghost-button"
               type="button"
               onClick={() => {
-                const startBlock = task.blocks.find((block) => block.label === startProgramBlockLabel);
-                setProgram(startBlock ? [createProgramBlock(startBlock)] : []);
+                setProgram([]);
                 resetProgramRun();
               }}
             >
@@ -3625,7 +3180,7 @@ const BlockProgrammingTaskView = ({
                   className={`program-block ${block.isContainer ? "container-block" : ""}`}
                   style={blockStyle(blockByLabel.get(block.label) ?? block)}
                 >
-                  {renderProgramBlockContent(block, index)}
+                  <span>{block.label}</span>
                   <small>{block.category}</small>
                 </span>
                 <div className="row-tools">
@@ -3652,15 +3207,7 @@ const BlockProgrammingTaskView = ({
             onSubmit({
               section,
               item,
-              selectedAnswer: {
-                program,
-                programAst: serializeProgram(),
-                executed,
-                aPresses,
-                temperature,
-                windowOpen,
-                runEffects,
-              },
+              selectedAnswer: { program, executed, aPresses, temperature, windowOpen, runEffects },
               shownOptionOrder: paletteBlocks.map((block) => block.label),
             })
           }
@@ -3857,18 +3404,6 @@ const FileTaskWorkspace = ({
     nodeId: string;
     timestamp: number;
   } | null>(null);
-  const [newMenuOpen, setNewMenuOpen] = useState(false);
-  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState("");
-  const editInputRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    if (!editingNodeId || !editInputRef.current) {
-      return;
-    }
-    editInputRef.current.focus();
-    editInputRef.current.select();
-  }, [editingNodeId]);
 
   if (!item.fileTask || !state) {
     return null;
@@ -3937,8 +3472,10 @@ const FileTaskWorkspace = ({
     if (!selectedNodeId || !selectedNode) {
       return;
     }
-    setEditingNodeId(selectedNodeId);
-    setEditingName(selectedNode.name);
+    const nextName = window.prompt("Nieuwe naam:", selectedNode.name);
+    if (nextName) {
+      onChange(renameNode(state, selectedNodeId, nextName));
+    }
   };
 
   const handleNodeClick = (node: Pt1Node, clickCount: number) => {
@@ -3955,43 +3492,18 @@ const FileTaskWorkspace = ({
     setLastNodeClick({ nodeId: node.id, timestamp: now });
 
     if (isSecondSingleClick) {
-      setEditingNodeId(node.id);
-      setEditingName(node.name);
+      const nextName = window.prompt("Nieuwe naam:", node.name);
+      if (nextName) {
+        onChange(renameNode(state, node.id, nextName));
+      }
     }
   };
 
-  const commitEditingName = () => {
-    if (!editingNodeId) {
-      return;
+  const createNewFolder = () => {
+    const nextName = window.prompt("Naam van de nieuwe map:", "Schoolwerk");
+    if (nextName) {
+      onChange(createFolder(state, activeFolderId, nextName));
     }
-    const node = getNodeById(state.nodes, editingNodeId);
-    setEditingNodeId(null);
-    if (node && editingName.trim() && editingName.trim() !== node.name) {
-      onChange(renameNode(state, editingNodeId, editingName));
-    }
-  };
-
-  const handleEditingKey = (event: KeyboardEvent<HTMLInputElement>) => {
-    event.stopPropagation();
-    if (event.key === "Enter") {
-      commitEditingName();
-    }
-    if (event.key === "Escape") {
-      setEditingNodeId(null);
-    }
-  };
-
-  const createNewItem = (newItem: NewExplorerItem) => {
-    const nodeId = crypto.randomUUID();
-    setNewMenuOpen(false);
-    setSelectedNodeId(nodeId);
-    setEditingNodeId(nodeId);
-    setEditingName(newItem.defaultName);
-    onChange(
-      newItem.type === "folder"
-        ? createFolder(state, activeFolderId, newItem.defaultName, nodeId)
-        : createFile(state, activeFolderId, newItem.defaultName, nodeId),
-    );
   };
 
   const deleteSelectedNode = () => {
@@ -4069,46 +3581,17 @@ const FileTaskWorkspace = ({
               onClick={() => onChange(undoPt1(state))}
               disabled={state.undoStack.length === 0}
             >
-              <span className="command-icon command-icon-undo" aria-hidden="true" />
               Ongedaan maken
             </button>
-            <div className="explorer-new-menu">
-              <button
-                className="explorer-command"
-                type="button"
-                aria-expanded={newMenuOpen}
-                onClick={() => setNewMenuOpen((isOpen) => !isOpen)}
-              >
-                <span className="command-icon command-icon-new" aria-hidden="true" />
-                Nieuw
-                <span className="command-chevron" aria-hidden="true" />
-              </button>
-              {newMenuOpen ? (
-                <div className="explorer-new-dropdown" role="menu">
-                  {newExplorerItems.map((newItem) => (
-                    <button
-                      key={newItem.label}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => createNewItem(newItem)}
-                    >
-                      <span
-                        className={`new-item-icon new-item-icon-${newItem.icon}`}
-                        aria-hidden="true"
-                      />
-                      {newItem.label}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+            <button className="explorer-command" type="button" onClick={createNewFolder}>
+              Nieuw
+            </button>
             <button
               className="explorer-command"
               type="button"
               disabled={!selectedNode?.parentId}
               onClick={() => selectedNodeId && setClipboard({ mode: "cut", nodeId: selectedNodeId })}
             >
-              <span className="command-icon command-icon-cut" aria-hidden="true" />
               Knippen
             </button>
             <button
@@ -4117,7 +3600,6 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={() => selectedNodeId && setClipboard({ mode: "copy", nodeId: selectedNodeId })}
             >
-              <span className="command-icon command-icon-copy" aria-hidden="true" />
               Kopiëren
             </button>
             <button
@@ -4126,7 +3608,6 @@ const FileTaskWorkspace = ({
               disabled={!clipboardNode}
               onClick={pasteClipboard}
             >
-              <span className="command-icon command-icon-paste" aria-hidden="true" />
               Plakken
             </button>
             <button
@@ -4135,7 +3616,6 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={renameSelectedNode}
             >
-              <span className="command-icon command-icon-rename" aria-hidden="true" />
               Naam wijzigen
             </button>
             <button
@@ -4144,7 +3624,6 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={() => window.alert("Delen heb je voor deze opdracht niet nodig.")}
             >
-              <span className="command-icon command-icon-share" aria-hidden="true" />
               Delen
             </button>
             <button
@@ -4153,7 +3632,6 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={deleteSelectedNode}
             >
-              <span className="command-icon command-icon-delete" aria-hidden="true" />
               Verwijderen
             </button>
           </div>
@@ -4234,20 +3712,14 @@ const FileTaskWorkspace = ({
                 </div>
                 {activeFolder ? (
                   activeItems.map((node) => (
-                    <div
+                    <button
                       className={`explorer-row ${selectedNodeId === node.id ? "selected" : ""} ${
                         contextFolderId === node.id ? "active-target" : ""
                       }`}
                       key={node.id}
+                      type="button"
                       role="row"
-                      tabIndex={0}
                       onClick={(event) => handleNodeClick(node, event.detail)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" && node.type === "folder") {
-                          setContextFolderId(node.id);
-                          setSelectedNodeId(null);
-                        }
-                      }}
                       onDoubleClick={() => {
                         if (node.type === "folder") {
                           setContextFolderId(node.id);
@@ -4274,33 +3746,20 @@ const FileTaskWorkspace = ({
                     >
                       <span className="explorer-name">
                         <span className={`explorer-icon explorer-icon-${node.type}`} aria-hidden="true" />
-                        {editingNodeId === node.id ? (
-                          <input
-                            ref={editInputRef}
-                            className="explorer-name-input"
-                            value={editingName}
-                            onChange={(event) => setEditingName(event.target.value)}
-                            onClick={(event) => event.stopPropagation()}
-                            onBlur={commitEditingName}
-                            onKeyDown={handleEditingKey}
-                            aria-label="Naam wijzigen"
-                          />
-                        ) : (
-                          node.name
-                        )}
+                        {node.name}
                       </span>
                       <span className="explorer-status" aria-label="Gesynchroniseerd">*</span>
                       <span>25-4-2026 08:24</span>
                       <span>{getExplorerType(node)}</span>
-                    </div>
+                    </button>
                   ))
                 ) : null}
               </div>
-              {clipboard && clipboardNode ? (
-                <div className="explorer-hint">
-                  {`${clipboard.mode === "cut" ? "Geknipt" : "Gekopieerd"}: ${clipboardNode.name}. Kies een map en klik op Plakken.`}
-                </div>
-              ) : null}
+              <div className="explorer-hint">
+                {clipboard && clipboardNode
+                  ? `${clipboard.mode === "cut" ? "Geknipt" : "Gekopieerd"}: ${clipboardNode.name}. Kies een map en klik op Plakken.`
+                  : "Instructie: kies eerst een bestand of map. Gebruik daarna de knoppen bovenaan. Hernoemen kan ook door een geselecteerd item nog een keer aan te klikken."}
+              </div>
             </div>
           </div>
         </div>
@@ -4446,7 +3905,6 @@ const ResultScreen = ({
   const result = calculateResult(session, assessment);
   const displayCode = session.metadata.learnerCode || session.metadata.anonymousCode;
   const exportBaseName = `nulmeting-${session.versionId}-${displayCode}`;
-  const totalTone = scoreTone(result.percentage);
   const selfAssessmentResult = session.results.find(
     (entry) => entry.itemId === "self-assessment",
   );
@@ -4486,63 +3944,85 @@ const ResultScreen = ({
   };
 
   return (
-    <section className="panel stack-lg">
-      <div className="result-hero">
-        <div
-          className={`score-meter score-${totalTone}`}
-          style={{ "--score-degrees": `${result.percentage * 3.6}deg` } as CSSProperties}
-        >
-          <div className="score-ring">
-            <strong>{result.percentage}%</strong>
-            <span>{result.totalScore} / {result.maxScore}</span>
+    <>
+      <section
+        className="rd-result-hero"
+        style={{ "--pct": result.percentage } as CSSProperties}
+      >
+        <div className="rd-score-meter">
+          <div className="inner">
+            <div className="pct">
+              {result.percentage}%
+              <small>jouw score</small>
+            </div>
           </div>
         </div>
-        <div className="result-copy">
-          <span className="section-tag">Afgerond</span>
-          <h2>Resultaat nulmeting</h2>
-          <p>
-            Je score is {result.totalScore} van {result.maxScore} punten. De
-            zelfinschatting telt niet mee in het eindresultaat.
+        <div className="rd-result-copy">
+          <span className="eyebrow" style={{ marginBottom: 4 }}>
+            Afgerond — goed gedaan!
+          </span>
+          <h2>Jouw nulmeting is klaar.</h2>
+          <p className="intro">
+            Je scoorde <strong>{result.totalScore} van de {result.maxScore} punten</strong>.
+            De zelfinschatting telt niet mee in het eindresultaat — we kijken samen met je
+            mentor naar je groeipunten.
           </p>
-          <p>Sessie: {displayCode}</p>
+          <p className="meta">Sessie: {displayCode}</p>
           {selfAssessmentScore !== null && selfAssessmentDifference !== null ? (
-            <p>
+            <p className="meta">
               Zelfinschatting: {selfAssessmentScore}/100. Verschil met je score:
               {" "}{selfAssessmentDifference.toFixed(1)} punten.
             </p>
           ) : null}
         </div>
-      </div>
-      <h3>Score per onderdeel</h3>
-      <div className="result-grid">
+      </section>
+
+      <h3
+        style={{
+          marginTop: 48,
+          marginBottom: 16,
+          fontFamily: "var(--font-display)",
+          fontWeight: 900,
+          fontSize: "1.25rem",
+          letterSpacing: "-0.02em",
+        }}
+      >
+        Score per onderdeel
+      </h3>
+      <div className="rd-result-grid">
         {result.blockScores.map((block) => {
           const percentage = scorePercentage(block.score, block.maxScore);
+          const tone = percentage >= 75 ? "Sterk" : percentage >= 50 ? "Op weg" : "Groeipunt";
           return (
-            <div
-              className={`result-card score-card score-${scoreTone(percentage)}`}
-              key={block.blockId}
-            >
-              <div className="score-card-heading">
-                <strong>{studentBlockTitle(block.title)}</strong>
-                <span className="score-number">{block.score} / {block.maxScore}</span>
+            <div className="rd-block-card" key={block.blockId}>
+              <div className="head">
+                <h4>{studentBlockTitle(block.title)}</h4>
+                <span className="score">
+                  {block.score}/{block.maxScore}
+                </span>
               </div>
-              <div className="result-bar" aria-label={`${percentage}%`}>
-                <span className="result-bar-fill" style={{ width: `${percentage}%` }} />
+              <div className="bar" aria-label={`${percentage}%`}>
+                <span style={{ width: `${percentage}%` }} />
               </div>
-              <span>{percentage}%</span>
+              <div className="pct-line">
+                <span>{percentage}%</span>
+                <span>{tone}</span>
+              </div>
             </div>
           );
         })}
       </div>
-      <div className="actions">
-        <button className="primary-button" type="button" onClick={exportPdf}>
-          Download PDF
+
+      <div className="rd-result-actions">
+        <button className="btn btn-ghost" type="button" onClick={onClose}>
+          ← Nieuwe leerling
         </button>
-        <button className="secondary-button" type="button" onClick={onClose}>
-          Test afsluiten
+        <button className="btn btn-primary" type="button" onClick={exportPdf}>
+          <span>Download PDF</span>
+          <span className="arrow-circle">↓</span>
         </button>
       </div>
-    </section>
+    </>
   );
 };
 

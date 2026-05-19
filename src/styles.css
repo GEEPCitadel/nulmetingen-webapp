@@ -925,6 +925,43 @@ main {
   gap: 12px;
 }
 
+.source-snippet-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.source-snippet-card {
+  border: 1px solid rgba(20, 32, 50, 0.12);
+  border-radius: 8px;
+  background: #fff;
+  padding: 1rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.source-snippet-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.source-meta {
+  margin: 0;
+  color: #526071;
+  font-size: 0.9rem;
+}
+
+.source-image-placeholder {
+  min-height: 120px;
+  border: 1px dashed rgba(20, 32, 50, 0.28);
+  border-radius: 8px;
+  background: #f3f6f8;
+  display: grid;
+  place-items: center;
+  color: #526071;
+  font-weight: 700;
+}
+
 .mail-address-row {
   display: grid;
   grid-template-columns: 62px minmax(0, 1fr);

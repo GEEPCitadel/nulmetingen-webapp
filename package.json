@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify:anchors": "node scripts/verify-anchors.js",
+    "report:kd-coverage": "node scripts/kd-coverage.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

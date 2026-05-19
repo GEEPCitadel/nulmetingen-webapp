@@ -177,6 +177,27 @@ const normalizeShortCode = (value: unknown) =>
     .replace(/\.$/, "")
     .toUpperCase();
 
+export const parseNumeric = (value: string): number | null => {
+  let cleaned = String(value ?? "").trim().replace(/[€$£\s]/g, "");
+  if (!cleaned) {
+    return null;
+  }
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+  if (lastComma > -1 && lastDot > -1) {
+    cleaned =
+      lastComma > lastDot
+        ? cleaned.replace(/\./g, "").replace(",", ".")
+        : cleaned.replace(/,/g, "");
+  } else if (lastComma > -1) {
+    cleaned = cleaned.length - lastComma - 1 === 3 ? cleaned.replace(/,/g, "") : cleaned.replace(",", ".");
+  } else if (lastDot > -1 && cleaned.length - lastDot - 1 === 3) {
+    cleaned = cleaned.replace(/\./g, "");
+  }
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 const scoreFileTask = (item: AssessmentItem, state?: Pt1State) => {
   const requirements = item.correctState?.requiredPaths ?? [];
   const taskResults = requirements.map((requirement) => ({
@@ -218,7 +239,13 @@ const scoreMailTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => 
     if (field === "sent") {
       return Boolean(state.sent);
     }
-    if (field === "subject" || field === "priority") {
+    if (
+      field === "subject" ||
+      field === "subjectOptionId" ||
+      field === "priority" ||
+      field === "greetingOptionId" ||
+      field === "closingOptionId"
+    ) {
       return String(state[field] ?? "").trim();
     }
     return stringArray(state[field]);
@@ -270,7 +297,22 @@ const scoreExcelDownloadTask = (item: AssessmentItem, selectedAnswer: SelectedAn
   const taskResults = questions.map((question) => ({
     taskId: question.id,
     description: question.prompt,
-    correct: normalizeShortCode(answers[question.id]) === normalizeShortCode(question.answer),
+    correct: (() => {
+      const rawAnswer = answers[question.id];
+      if (question.tolerance?.numeric) {
+        const actual = parseNumeric(String(rawAnswer ?? ""));
+        const expected =
+          typeof question.answer === "number"
+            ? question.answer
+            : parseNumeric(String(question.answer));
+        return (
+          actual !== null &&
+          expected !== null &&
+          Math.abs(actual - expected) <= (question.tolerance.deltaAbs ?? 0)
+        );
+      }
+      return normalizeShortCode(rawAnswer) === normalizeShortCode(question.answer);
+    })(),
   }));
   const score = taskResults.reduce(
     (sum, result) =>
@@ -468,7 +510,71 @@ const hasNestedBlock = (
   return false;
 };
 
+const blockIndex = (program: Array<{ label: string; indent: number }>, label: string) =>
+  program.findIndex((entry) => entry.label === label);
+
+const countBlock = (program: string[], label: string) =>
+  program.filter((entry) => entry === label).length;
+
+const scoreV6BlockTask = (
+  item: AssessmentItem,
+  selectedAnswer: SelectedAnswer,
+  criteriaSpec: string,
+) => {
+  const state = answerRecord(selectedAnswer);
+  const programEntries = getProgramEntries(selectedAnswer);
+  const program = programEntries.map((entry) => entry.label);
+  const runEffects = answerRecord(state.runEffects as SelectedAnswer);
+  const speech = String(runEffects.speech ?? "");
+  const sound = String(runEffects.sound ?? "");
+  const executed = state.executed === true;
+  const has = (label: string) => program.includes(label);
+  const nested = (parent: string, child: string) => hasNestedBlock(programEntries, parent, child);
+  const ordered = (...labels: string[]) => hasOrderedSubsequence(program, labels);
+  const criteria = {
+    "pt7-lj1v": [
+      { id: "move", description: "Bizzy beweegt 1 meter vooruit.", points: 1, correct: has("verplaats Bizzy 1 meter vooruit in 1 sec.") },
+      { id: "turn", description: "Bizzy draait 180 graden.", points: 1, correct: has("draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.") },
+      { id: "wait", description: "Bizzy wacht 1 seconde voordat hij praat.", points: 1, correct: ordered("wacht 1 seconde", 'Bizzy zegt "Hoi!"') || ordered("wacht 1 seconde", 'Bizzy zegt "Hoi!"') },
+      { id: "say", description: 'Bizzy zegt "Hoi!".', points: 1, correct: executed && speech === "Hoi!" && has('Bizzy zegt "Hoi!"') },
+    ],
+    "pt7-lj1h": [
+      { id: "say", description: 'Bizzy zegt "Hoi!".', points: 1, correct: executed && speech === "Hoi!" },
+      { id: "repeat-three", description: "herhaal 3 keer met verplaats 1 meter genest.", points: 1, correct: nested("herhaal 3 keer", "verplaats Bizzy 1 meter vooruit in 1 sec.") },
+      { id: "move-three", description: "Bizzy beweegt in totaal 3 meter vooruit.", points: 1, correct: Number(runEffects.move ?? 0) === 3 },
+      { id: "no-repeat-ten", description: "afleider herhaal 10 keer niet gebruikt.", points: 1, correct: !has("herhaal 10 keer") },
+    ],
+    "pt7-lj3v": [
+      { id: "repeat-four", description: "herhaal 4 keer gebruikt.", points: 1, correct: has("herhaal 4 keer") },
+      { id: "nested-square", description: "verplaats 1 meter en draai 90 graden staan in herhaal 4.", points: 1, correct: nested("herhaal 4 keer", "verplaats Bizzy 1 meter vooruit in 1 sec.") && nested("herhaal 4 keer", "draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.") },
+      { id: "closed-square", description: "vier zijden en hoeken aanwezig.", points: 1, correct: (has("herhaal 4 keer") && nested("herhaal 4 keer", "verplaats Bizzy 1 meter vooruit in 1 sec.") && nested("herhaal 4 keer", "draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.")) || (countBlock(program, "verplaats Bizzy 1 meter vooruit in 1 sec.") >= 4 && countBlock(program, "draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.") >= 4) },
+      { id: "say-ready", description: 'Bizzy zegt "Klaar!".', points: 1, correct: executed && speech === "Klaar!" },
+    ],
+    "pt7-lj3h": [
+      { id: "repeat-three", description: "herhaal 3 keer gebruikt.", points: 1, correct: has("herhaal 3 keer") },
+      { id: "nested-return", description: "heen-en-weer-blokken staan in de herhaling.", points: 1, correct: nested("herhaal 3 keer", "verplaats Bizzy 2 meter vooruit in 1 sec.") && nested("herhaal 3 keer", "draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.") },
+      { id: "applause", description: "applaus speelt na de herhaling.", points: 1, correct: executed && sound === "Applaus" && blockIndex(programEntries, "speel geluid Applaus") > blockIndex(programEntries, "herhaal 3 keer") },
+      { id: "no-1m", description: "geen verplaats 1 meter gebruikt.", points: 1, correct: !has("verplaats Bizzy 1 meter vooruit in 1 sec.") },
+    ],
+  }[criteriaSpec] ?? [];
+
+  const taskResults = criteria.map((criterion) => ({
+    taskId: criterion.id,
+    description: criterion.description,
+    correct: criterion.correct,
+  }));
+  const score = criteria.reduce((sum, criterion) => sum + (criterion.correct ? criterion.points : 0), 0);
+  return {
+    isCorrect: criteria.length > 0 && taskResults.every((result) => result.correct),
+    score,
+    taskResults,
+  };
+};
+
 const scoreBlockTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => {
+  if (item.blockTask?.criteriaSpec) {
+    return scoreV6BlockTask(item, selectedAnswer, item.blockTask.criteriaSpec);
+  }
   const state = answerRecord(selectedAnswer);
   const programEntries = getProgramEntries(selectedAnswer);
   const program = programEntries.map((entry) => entry.label);
@@ -505,6 +611,42 @@ const scoreBlockTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) =>
 
   return {
     isCorrect: rules.length > 0 && taskResults.every((result) => result.correct),
+    score,
+    taskResults,
+  };
+};
+
+const scoreSourceEvaluationTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => {
+  const state = answerRecord(selectedAnswer);
+  const answers = answerRecord(state.answers as SelectedAnswer);
+  const questions = item.sourceEvaluationTask?.questions ?? [];
+  const taskResults = questions.map((question) => {
+    if (question.type === "dropdown") {
+      return {
+        taskId: question.id,
+        description: question.prompt,
+        correct: answers[question.id] === question.correctOptionId,
+        points: answers[question.id] === question.correctOptionId ? question.points : 0,
+      };
+    }
+    const selected = stringArray(answers[question.id]);
+    const correctIds = question.options.filter((option) => option.correctAsSignal).map((option) => option.id);
+    const distractorIds = question.options.filter((option) => option.distractor).map((option) => option.id);
+    const correctCount = selected.filter((id) => correctIds.includes(id)).length;
+    const distractorCount = selected.filter((id) => distractorIds.includes(id)).length;
+    const correct =
+      correctCount >= question.scoring.minCorrect &&
+      distractorCount <= question.scoring.maxDistractor;
+    return {
+      taskId: question.id,
+      description: question.prompt,
+      correct,
+      points: correct ? question.scoring.points : 0,
+    };
+  });
+  const score = taskResults.reduce((sum, result) => sum + result.points, 0);
+  return {
+    isCorrect: questions.length > 0 && taskResults.every((result) => result.correct),
     score,
     taskResults,
   };
@@ -628,6 +770,10 @@ export const scoreItem = (
     return scoreBlockTask(item, selectedAnswer);
   }
 
+  if (item.type === "source_evaluation") {
+    return scoreSourceEvaluationTask(item, selectedAnswer);
+  }
+
   if (item.type === "social_action_simulation") {
     return scoreInteractionTask(item.socialTask, selectedAnswer);
   }
@@ -683,6 +829,7 @@ export const submitItemAnswer = ({
             "powerpoint_design_task",
             "teams_share_simulation",
             "block_programming_task",
+            "source_evaluation",
             "social_action_simulation",
           ].includes(item.type)
         ? JSON.stringify(selectedAnswer)

@@ -12,7 +12,6 @@ import type {
   ProgrammingBlockDefinition,
   Pt1Node,
   Pt1Simulation,
-  SourceEvaluationTaskConfig,
   TeamsTaskConfig,
   ThemeDefinition,
 } from "../types";
@@ -20,49 +19,71 @@ import type {
 export const ADMIN_CODE = "beheer";
 
 export const themes: Record<string, ThemeDefinition> = {
+  /* P4 — Lime · Teal · Cyan · Cream (logo 4) — LJ1 VMBO */
   limeTeal: {
     key: "limeTeal",
-    label: "Lime, turquoise en blauw",
-    primary: "#C8D900",
-    secondary: "#009E96",
-    tertiary: "#0075BA",
-    panel: "#F4F9E8",
+    palette: "p4",
+    label: "Lime, turquoise en cyaan",
+    primary: "#C7D400",
+    secondary: "#009991",
+    tertiary: "#63C2C7",
+    panel: "#EFF5C2",
     ribbon: "/brand/shapes/slinger-4.png",
-    accent: "#63C2C7",
-    logo: "/brand/logos/citadel-4-rgb.png",
+    accent: "#009991",
+    logo: "/brand/logos/citadel-logo-4-fc.png",
   },
+  /* P3 — Sky · Yellow · Orange (logo 3) — LJ1 HAVO/VWO */
   skyOrange: {
     key: "skyOrange",
-    label: "Lichtblauw, geel en oranje",
-    primary: "#8BD0EA",
-    secondary: "#FFDE00",
-    tertiary: "#F7B033",
-    panel: "#F0FAFD",
-    ribbon: "/brand/shapes/slinger-2.png",
-    accent: "#F7B033",
-    logo: "/brand/logos/citadel-3-rgb.png",
+    palette: "p3",
+    label: "Sky, geel en oranje",
+    primary: "#91D4ED",
+    secondary: "#FFED00",
+    tertiary: "#E88500",
+    panel: "#D9F0F9",
+    ribbon: "/brand/shapes/slinger-3.png",
+    accent: "#E88500",
+    logo: "/brand/logos/citadel-logo-3-fc.png",
   },
+  /* P2 — Mint · Pink · Red (logo 2) — LJ3 VMBO */
   mintPink: {
     key: "mintPink",
-    label: "Mint, roze en paars",
-    primary: "#9ED7C7",
+    palette: "p2",
+    label: "Mint, pink en rood",
+    primary: "#8AC9B5",
+    secondary: "#E85287",
+    tertiary: "#E30521",
+    panel: "#D6ECE3",
+    ribbon: "/brand/shapes/slinger-2.png",
+    accent: "#E85287",
+    logo: "/brand/logos/citadel-logo-2-fc.png",
+  },
+  /* P5 — Rose · Blue · Navy · Cyan (logo 5) — LJ3 HAVO/VWO
+     Replaces the old "sandCoral" which used a non-brand #EF735C coral. */
+  roseNavy: {
+    key: "roseNavy",
+    palette: "p5",
+    label: "Rose, blauw en navy",
+    primary: "#F7D1D6",
+    secondary: "#0075BA",
+    tertiary: "#0D4580",
+    panel: "#FCE5E9",
+    ribbon: "/brand/shapes/slinger-1.png",
+    accent: "#0075BA",
+    logo: "/brand/logos/citadel-logo-5-fc.png",
+  },
+  /* P1 — Rainbow on cream (logo 1) — entry / admin / fallback */
+  rainbowCream: {
+    key: "rainbowCream",
+    palette: "p1",
+    label: "Cream, geel, magenta en paars",
+    primary: "#DED4BA",
     secondary: "#E51C73",
     tertiary: "#662482",
-    panel: "#F4FBF8",
-    ribbon: "/brand/shapes/slinger-3.png",
+    panel: "#DED4BA",
+    ribbon: "/brand/shapes/slinger-0.png",
     accent: "#E51C73",
-    logo: "/brand/logos/citadel-2-rgb.png",
-  },
-  sandCoral: {
-    key: "sandCoral",
-    label: "Zand, koraal en paars",
-    primary: "#DED4BA",
-    secondary: "#EF735C",
-    tertiary: "#662482",
-    panel: "#FBF7ED",
-    ribbon: "/brand/shapes/slinger-1.png",
-    accent: "#E51C73",
-    logo: "/brand/logos/citadel-1-rgb.png",
+    logo: "/brand/logos/citadel-logo-1-fc.png",
   },
 };
 
@@ -75,7 +96,6 @@ type VersionSpec = {
   pt2: MailTaskSpec;
   pt3?: SecurityTaskSpec;
   pt4: ExcelTaskSpec;
-  pt5?: SourceEvalTaskSpec;
   pt6: TeamsTaskSpec;
   pt7: BlockTaskSpec;
   pt8: SocialTaskSpec;
@@ -114,26 +134,7 @@ type ExcelTaskSpec = {
   instruction: string;
   filename: string;
   sheetName: string;
-  questions: Array<{
-    id: string;
-    prompt: string;
-    answer: string | number;
-    points: number;
-    tolerance?: {
-      case?: "insensitive" | "sensitive";
-      trim?: boolean;
-      numeric?: boolean;
-      deltaAbs?: number;
-    };
-  }>;
-};
-
-type SourceEvalTaskSpec = {
-  id: string;
-  title: string;
-  instruction: string;
-  kerndoel: string;
-  config: SourceEvaluationTaskConfig;
+  questions: Array<{ id: string; prompt: string; answer: string; points: number }>;
 };
 
 type TeamsTaskSpec = {
@@ -270,7 +271,7 @@ const mailTaskItem = (spec: MailTaskSpec): AssessmentItem => ({
   type: "outlook_mail_simulation",
   title: spec.title,
   instruction: spec.instruction,
-  points: spec.config.rules.reduce((sum, rule) => sum + rule.points, 0),
+  points: 4,
   skillDomain: "21A Digitale systemen / 23B Digitaal burgerschap",
   kerndoel: spec.kerndoel,
   mailTask: spec.config,
@@ -292,7 +293,7 @@ const excelTaskItem = (spec: ExcelTaskSpec): AssessmentItem => ({
   type: "excel_download_task",
   title: spec.title,
   instruction: spec.instruction,
-  points: spec.questions.reduce((sum, question) => sum + question.points, 0),
+  points: 4,
   skillDomain: "21C Data",
   kerndoel: "21C, 21A",
   excelTask: {
@@ -300,21 +301,6 @@ const excelTaskItem = (spec: ExcelTaskSpec): AssessmentItem => ({
     sheetName: spec.sheetName,
     questions: spec.questions,
   },
-});
-
-const sourceEvalTaskItem = (spec: SourceEvalTaskSpec): AssessmentItem => ({
-  id: spec.id,
-  type: "source_evaluation",
-  title: spec.title,
-  instruction: spec.instruction,
-  points: spec.config.questions.reduce(
-    (sum, question) =>
-      sum + (question.type === "dropdown" ? question.points : question.scoring.points),
-    0,
-  ),
-  skillDomain: "21B Informatievaardigheden / 21D AI",
-  kerndoel: spec.kerndoel,
-  sourceEvaluationTask: spec.config,
 });
 
 const teamsTaskItem = (spec: TeamsTaskSpec): AssessmentItem => ({
@@ -410,15 +396,6 @@ const makeSections = (spec: VersionSpec): AssessmentSection[] => [
     title: "PT4 - Excel/data sorteren en filteren",
     items: [excelTaskItem(spec.pt4)],
   },
-  ...(spec.pt5
-    ? [
-        {
-          id: "pt5",
-          title: "PT5 - Bronbeoordeling",
-          items: [sourceEvalTaskItem(spec.pt5)],
-        },
-      ]
-    : []),
   {
     id: "pt6",
     title: "PT6 - Videovergadering en schermdelen",
@@ -450,6 +427,10 @@ const buildAssessment = (spec: VersionSpec): AssessmentVersion => {
     0,
   );
 
+  if (maxScore !== 32) {
+    throw new Error(`${spec.id} heeft ${maxScore} punten in plaats van 32.`);
+  }
+
   return {
     id: spec.id,
     title: spec.title,
@@ -480,12 +461,6 @@ const shareRules = (): TeamsTaskConfig["rules"] => [
     points: 1,
     conditions: ["selected_windows_media_player"],
   },
-  {
-    id: "computer-sound-on",
-    description: "computergeluid is ingeschakeld.",
-    points: 1,
-    conditions: ["computerSoundOn"],
-  },
 ];
 
 const blockColors = {
@@ -495,7 +470,7 @@ const blockColors = {
   besturing: "#f47b32",
   variabelen: "#f2a23a",
   waarnemen: "#2eb8a6",
-  geluid: "#8f5acb",
+  geluid: "#cf63c7",
   data: "#3f8edb",
 };
 
@@ -567,86 +542,6 @@ const createReportMailConfig = (): MailTaskConfig => ({
   ],
 });
 
-const createLj1hMailConfig = (): MailTaskConfig => ({
-  ...createReportMailConfig(),
-  subjectMode: "dropdown",
-  subjectOptions: [
-    { id: "subj-a", label: "Verslag" },
-    { id: "subj-b", label: "Verslag Nederlands" },
-    { id: "subj-c", label: "RE: opdracht voor jullie" },
-  ],
-  rules: [
-    {
-      id: "to-mentor",
-      description: "juiste mailadres staat in Aan.",
-      points: 1,
-      conditions: [{ field: "to", operator: "includes", value: "mentor@school.nl" }],
-    },
-    {
-      id: "subject",
-      description: "juiste onderwerp gekozen.",
-      points: 1,
-      conditions: [{ field: "subjectOptionId", operator: "equals", value: "subj-b" }],
-    },
-    {
-      id: "attachment",
-      description: "juiste bestand is toegevoegd.",
-      points: 1,
-      conditions: [{ field: "attachments", operator: "includes", value: "Verslag_Nederlands.docx" }],
-    },
-    {
-      id: "sent",
-      description: "mail is verzonden.",
-      points: 1,
-      conditions: [{ field: "sent", operator: "true" }],
-    },
-  ],
-});
-
-const createStageMailConfig = (): MailTaskConfig => ({
-  visibleButtons: mailButtons,
-  contacts: ["mentor@school.nl", "begeleider@stagebedrijf.nl", "klasgroep@school.nl", "vriend@school.nl"],
-  files: ["Stageverslag.docx", "Foto_stage.jpg", "Rooster.pdf", "Notities.txt"],
-  subjectMode: "dropdown",
-  subjectOptions: [
-    { id: "subj-a", label: "Stage" },
-    { id: "subj-b", label: "Stageverslag week 6" },
-    { id: "subj-c", label: "Hoi" },
-  ],
-  rules: [
-    {
-      id: "to-mentor",
-      description: "juiste mailadres staat in Aan.",
-      points: 1,
-      conditions: [{ field: "to", operator: "includes", value: "mentor@school.nl" }],
-    },
-    {
-      id: "cc-supervisor",
-      description: "begeleider staat in CC.",
-      points: 1,
-      conditions: [{ field: "cc", operator: "includes", value: "begeleider@stagebedrijf.nl" }],
-    },
-    {
-      id: "subject",
-      description: "juiste onderwerp gekozen.",
-      points: 1,
-      conditions: [{ field: "subjectOptionId", operator: "equals", value: "subj-b" }],
-    },
-    {
-      id: "attachment",
-      description: "juiste bestand is toegevoegd.",
-      points: 1,
-      conditions: [{ field: "attachments", operator: "includes", value: "Stageverslag.docx" }],
-    },
-    {
-      id: "sent",
-      description: "mail is verzonden.",
-      points: 1,
-      conditions: [{ field: "sent", operator: "true" }],
-    },
-  ],
-});
-
 const advancedMailInstruction =
   "Je werkt met twee klasgenoten aan een onderzoeksverslag. Stel hieronder een e-mail op. Let op de volgende punten:\n- Stuur de mail aan je mentor.\n- Zet je projectgroep in CC.\n- Gebruik als onderwerp: 'Onderzoeksverslag mediawijsheid'.\n- Voeg het juiste verslag toe en klik op 'Verzenden'.";
 
@@ -663,18 +558,6 @@ const createAdvancedMailConfig = (): MailTaskConfig => ({
     "Bronnenlijst.xlsx",
     "Foto_vakantie.jpg",
     "Rooster.pdf",
-  ],
-  subjectMode: "freeText",
-  priorityToggle: true,
-  greetingOptions: [
-    { id: "gr-a", label: "Beste meneer/mevrouw [naam]" },
-    { id: "gr-b", label: "Hoi!" },
-    { id: "gr-c", label: "Geachte heer/mevrouw, ik wil u hierbij berichten dat" },
-  ],
-  closingOptions: [
-    { id: "cl-a", label: "Met vriendelijke groet, [naam]" },
-    { id: "cl-b", label: "Groetjes" },
-    { id: "cl-c", label: "Cheers!" },
   ],
   rules: [
     {
@@ -710,335 +593,29 @@ const createAdvancedMailConfig = (): MailTaskConfig => ({
         { field: "sent", operator: "true" },
       ],
     },
-    {
-      id: "priority",
-      description: "prioriteit staat op hoog.",
-      points: 1,
-      conditions: [{ field: "priority", operator: "equals", value: "Hoog" }],
-    },
-    {
-      id: "greeting-closing",
-      description: "aanhef en afsluiting zijn passend.",
-      points: 1,
-      conditions: [
-        { field: "greetingOptionId", operator: "equals", value: "gr-a" },
-        { field: "closingOptionId", operator: "equals", value: "cl-a" },
-      ],
-    },
   ],
 });
 
 const fakeTeamsInstruction =
-  "Leerling Mark Canbers zit in een Teamsvergadering met zijn docent. Mark wil dat zijn docent een filmfragment hoort en ziet. Mark wil niet dat de docent ziet welke vensters Mark nog meer open heeft staan.\n\nKies de juiste instellingen zodat de docent alleen het filmfragment kan zien en horen.";
+  "Voer in de Teams-vergadering het juiste klikpad uit: klik op Delen, kies Venster en selecteer Windows Media Player.";
 
 const excelInstruction = (filename: string) =>
   `Download ${filename}. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.`;
 
 const createFakeTeamsConfig = (): TeamsTaskConfig => ({
   scenario:
-    "Je zit in een Teams-achtige vergadering als Mark Canbers. Deel alleen het venster van Windows Media Player.",
+    "Je zit in een Teams-achtige vergadering als Leerling Anoniem. Deel alleen het venster van Windows Media Player.",
   buttons: ["Camera", "Microfoon", "Chat", "Deelnemers", "Reageren", "Delen", "Meer"],
   shareOptions: ["Scherm", "Venster"],
   windows: [
+    "Windows Media Player",
     "Browser - schoolsite",
     "Word - Verslag Nederlands",
     "Excel - Cijferlijst",
     "Teams chat",
-    "Windows Media Player",
   ],
   correctWindow: "Windows Media Player",
   rules: shareRules(),
-});
-
-const anchorSrItems: SelectedResponseSpec[] = [
-  {
-    id: "anker-sr-wachtwoord",
-    title: "Anker - Wachtwoord",
-    kerndoel: "23A",
-    question: "Welk wachtwoord is het veiligst?",
-    options: ["BlauweTreinLampSchoolTas", "Welkom2026!", "Fietsbel", "Qwerty!23"],
-    correct: "BlauweTreinLampSchoolTas",
-    ankerItemFlag: true,
-  },
-  {
-    id: "anker-sr-ai-hallucinatie",
-    title: "Anker - AI-hallucinatie",
-    kerndoel: "21D",
-    question:
-      "Een AI-chatbot noemt een wetenschappelijk artikel met titel en auteurs. Je vindt het artikel niet in zoekmachines of databases. Wat is het meest waarschijnlijk?",
-    options: [
-      "De AI heeft het artikel waarschijnlijk verzonnen.",
-      "Het artikel staat misschien in een tijdschrift dat niet door zoekmachines wordt geindexeerd.",
-      "Je zoekt misschien op de verkeerde manier.",
-      "Het artikel is mogelijk nog niet gepubliceerd.",
-    ],
-    correct: "De AI heeft het artikel waarschijnlijk verzonnen.",
-    ankerItemFlag: true,
-    aiSnelVeranderendFlag: true,
-  },
-  {
-    id: "anker-sr-auteursrecht-foto",
-    title: "Anker - Auteursrecht foto",
-    kerndoel: "22A",
-    question: "Je gebruikt een foto van internet in je werkstuk. Wat moet je doen?",
-    options: [
-      "Kijken of je de foto mag gebruiken en de maker erbij zetten.",
-      "De foto kopieren; op internet is alles vrij.",
-      "De foto verkleinen of bewerken, dan is hij van jou.",
-      "De foto alleen gebruiken als hij niet bekend is.",
-    ],
-    correct: "Kijken of je de foto mag gebruiken en de maker erbij zetten.",
-    ankerItemFlag: true,
-  },
-  {
-    id: "anker-sr-bronbeoordeling-klimaat",
-    title: "Anker - Bronbeoordeling klimaat",
-    kerndoel: "21B",
-    question: "Welke bron is het meest betrouwbaar voor een werkstuk over klimaatverandering?",
-    options: [
-      "Een artikel van het KNMI met datum en auteur.",
-      "Een viral TikTok van een influencer met veel volgers.",
-      "Een meme met cijfers.",
-      "Een blog zonder auteursnaam met sterke meningen.",
-    ],
-    correct: "Een artikel van het KNMI met datum en auteur.",
-    ankerItemFlag: true,
-  },
-];
-
-const v6Removals: Record<AssessmentVersionId, string[]> = {
-  "lj1-vmbo": [
-    "lj1v-sr1-pw",
-    "lj1v-sr7-hallucination",
-    "lj1v-sr8-copyright",
-    "lj1v-sr5-source",
-  ],
-  "lj1-hv": ["lj1h-sr1-pw", "lj1h-sr8-hallucination", "lj1h-sr6-source"],
-  "lj3-vmbo": ["lj3v-sr5-copyright", "lj3v-sr3-source"],
-  "lj3-hv": ["lj3h-sr3-hallucination"],
-};
-
-const srSponsored = (version: "lj3v" | "lj3h"): SelectedResponseSpec => ({
-  id: `${version}-sr-sponsored`,
-  title: "SR - Betaalde samenwerking",
-  kerndoel: "21B",
-  question:
-    "Een YouTuber maakt een filmpje over de nieuwste telefoon en zegt dat het zijn favoriete is. Onderaan de beschrijving staat \"betaalde samenwerking met [merknaam]\". Wat betekent dat?",
-  options: [
-    "De YouTuber is betaald om positief over deze telefoon te zijn.",
-    "De YouTuber heeft de telefoon zelf gekocht en geeft een eerlijk oordeel.",
-    "Het maakt niets uit voor de beoordeling, de YouTuber kan nog steeds eerlijk zijn.",
-    "De YouTuber krijgt alleen geld als kijkers de telefoon kopen.",
-  ],
-  correct: "De YouTuber is betaald om positief over deze telefoon te zijn.",
-});
-
-const srAdsRanking = (version: "lj3v" | "lj3h"): SelectedResponseSpec => ({
-  id: `${version}-sr-ads-ranking`,
-  title: "SR - Advertentie in zoekresultaten",
-  kerndoel: "21B",
-  question:
-    "Je zoekt op Google op \"beste laptop voor school\". Bovenaan de resultaten staat een resultaat met het label \"Advertentie\" of \"Sponsored\". Wat betekent dat?",
-  options: [
-    "Iemand heeft betaald om dat resultaat bovenaan te krijgen.",
-    "Het is het meest betrouwbare resultaat volgens Google.",
-    "Het resultaat is het meest gelezen door anderen.",
-    "Google heeft het zelf geschreven.",
-  ],
-  correct: "Iemand heeft betaald om dat resultaat bovenaan te krijgen.",
-});
-
-const v6SrAdditions: Partial<Record<AssessmentVersionId, SelectedResponseSpec[]>> = {
-  "lj1-vmbo": [
-    {
-      id: "lj1v-sr-cr2-gebruik",
-      title: "SR - Auteursrecht gebruik",
-      kerndoel: "22A",
-      question:
-        "Op een website staat onder een afbeelding: \"Deze afbeelding mag je vrij gebruiken, maar noem de maker erbij.\" Wat mag je dan doen?",
-      options: [
-        "De afbeelding gebruiken in je werkstuk en de maker erbij zetten.",
-        "De afbeelding niet gebruiken.",
-        "De afbeelding gebruiken zonder maker erbij, het mag toch.",
-        "De afbeelding alleen gebruiken als je hem eerst aan de maker laat zien.",
-      ],
-      correct: "De afbeelding gebruiken in je werkstuk en de maker erbij zetten.",
-    },
-  ],
-  "lj3-vmbo": [
-    {
-      id: "lj3v-sr-cr2-bync",
-      title: "SR - Creative Commons BY-NC",
-      kerndoel: "22A",
-      question: "Een foto heeft de aanduiding \"CC BY-NC\". Wat betekent dat?",
-      options: [
-        "Je mag de foto gebruiken en moet de maker noemen, maar niet voor commerciele doelen.",
-        "Je mag de foto alleen voor commerciele doelen gebruiken.",
-        "NC betekent No Credit - je hoeft de maker niet te noemen.",
-        "De foto mag alleen in Nederland worden gebruikt.",
-      ],
-      correct: "Je mag de foto gebruiken en moet de maker noemen, maar niet voor commerciele doelen.",
-    },
-    srSponsored("lj3v"),
-    srAdsRanking("lj3v"),
-  ],
-  "lj3-hv": [srSponsored("lj3h"), srAdsRanking("lj3h")],
-};
-
-const v6SrReplacements: Partial<Record<AssessmentVersionId, Record<string, SelectedResponseSpec>>> = {
-  "lj3-hv": {
-    "lj3h-sr5-cc-sa": {
-      id: "lj3h-sr5-cc-sa",
-      title: "SR5 - Open licenties",
-      kerndoel: "22A",
-      question: "Wat betekent het als content een Creative Commons BY-SA-licentie heeft?",
-      options: [
-        "Je noemt de maker en deelt jouw versie onder dezelfde licentie.",
-        "Je noemt de maker.",
-        "Je mag het alleen voor niet-commerciele doeleinden gebruiken.",
-        "Je mag het alleen ongewijzigd delen.",
-      ],
-      correct: "Je noemt de maker en deelt jouw versie onder dezelfde licentie.",
-    },
-  },
-};
-
-const applyV6SrItems = (spec: VersionSpec): VersionSpec => {
-  const removals = new Set(v6Removals[spec.id] ?? []);
-  const replacements = v6SrReplacements[spec.id] ?? {};
-  const baseSr = spec.sr
-    .filter((item) => !removals.has(item.id))
-    .map((item) => replacements[item.id] ?? item);
-  return {
-    ...spec,
-    sr: [...baseSr, ...anchorSrItems, ...(v6SrAdditions[spec.id] ?? [])],
-  };
-};
-
-const createLj3vSourceEvalConfig = (): SourceEvaluationTaskConfig => ({
-  intro:
-    "Hieronder staan twee korte teksten over de vraag: hoeveel uur slaap heeft een tiener nodig? Lees beide en beantwoord de vragen.",
-  snippets: [
-    {
-      id: "A",
-      title: "Slaap bij tieners",
-      meta: "NJI.nl, 12 maart 2025, door dr. R. de Vries (kinderarts)",
-      body:
-        "Onderzoek laat zien dat tieners tussen 8 en 10 uur slaap per nacht nodig hebben. Te weinig slaap heeft gevolgen voor concentratie en stemming. Het Nederlands Jeugdinstituut adviseert ouders en scholen om hier rekening mee te houden bij schooltijden en bedtijden.",
-    },
-    {
-      id: "B",
-      title: "Beste slaaptips!",
-      meta: "SlaapWonder.com - beste slaaptips!",
-      body:
-        "Tieners hebben minstens 12 uur slaap nodig om gezond te blijven. Slaap minder en je hersenen krimpen. Koop ons matras om gegarandeerd beter te slapen.",
-    },
-  ],
-  questions: [
-    {
-      id: "q1",
-      type: "dropdown",
-      prompt: "Welke snippet is het meest betrouwbaar?",
-      options: fixedOptions(["Snippet A", "Snippet B", "Beide even betrouwbaar"]).map((option, index) => ({
-        ...option,
-        id: ["A", "B", "both"][index],
-      })),
-      points: 1,
-      correctOptionId: "A",
-    },
-    {
-      id: "q2",
-      type: "multi_checkbox",
-      prompt: "Welke signalen heb je daarbij gebruikt?",
-      options: [
-        { id: "datum", label: "Datum en auteur staan erbij", correctAsSignal: true },
-        { id: "org", label: "Bron is gekoppeld aan een organisatie", correctAsSignal: true },
-        { id: "adv", label: "De snippet bevat advertentie of verkoopdoel", correctAsSignal: true },
-        { id: "lang", label: "Snippet is langer", distractor: true },
-        { id: "titel", label: "Snippet heeft een aantrekkelijke titel", distractor: true },
-      ],
-      scoring: { minCorrect: 2, maxDistractor: 0, points: 1 },
-    },
-    {
-      id: "q3",
-      type: "dropdown",
-      prompt: "Wat zou je doen met Snippet B?",
-      options: fixedOptions([
-        "Helemaal niet gebruiken",
-        "Alleen gebruiken na controle in een betrouwbare bron",
-        "Wel gebruiken; alle bronnen zijn nuttig",
-      ]).map((option, index) => ({ ...option, id: ["niet", "check", "wel"][index] })),
-      points: 1,
-      correctOptionId: "check",
-    },
-  ],
-});
-
-const createLj3hSourceEvalConfig = (): SourceEvaluationTaskConfig => ({
-  intro:
-    "Hieronder staan drie korte teksten over de vraag: hoeveel CO2 stoot een gemiddelde Nederlander uit? Lees ze en beantwoord de vragen.",
-  snippets: [
-    {
-      id: "A",
-      title: "CO2-uitstoot per huishouden, 2024",
-      meta: "CBS, gepubliceerd 14 oktober 2024, methodologie: jaarrekening huishoudens",
-      body:
-        "Een gemiddeld Nederlands huishouden stootte in 2024 circa 18,5 ton CO2-equivalent uit, voornamelijk via wonen, mobiliteit en voeding. CBS gebruikt hiervoor data van energieleveranciers, het CBS Mobiliteitspanel en NEVO voedingsdata.",
-    },
-    {
-      id: "B",
-      title: "Wij stoten te veel uit",
-      meta: "Klimaatblog NL, 3 januari 2025, opiniestuk",
-      body:
-        "Het is duidelijk dat de gemiddelde Nederlander veel meer uitstoot dan de wereldgemiddelde burger. We moeten allemaal minder gaan vliegen en eten. De cijfers liegen niet.",
-    },
-    {
-      id: "C",
-      title: "Smog over Amsterdam - schokkende foto",
-      meta: "Instagram-post, anoniem account, januari 2025",
-      body:
-        "Foto: zware smog hangt over de Amsterdamse skyline; gebouwen zijn nauwelijks zichtbaar. Bijschrift: \"Dit is wat we elke dag inademen. DEEL DIT.\" De foto ziet er fotorealistisch uit maar lijkt op AI-output.",
-      hasImageRequiringReverseSearch: true,
-    },
-  ],
-  questions: [
-    {
-      id: "q1",
-      type: "dropdown",
-      prompt: "Welke snippet zou je gebruiken voor een werkstuk?",
-      options: fixedOptions(["Snippet A", "Snippet B", "Snippet C", "Een combinatie van meerdere"]).map(
-        (option, index) => ({ ...option, id: ["A", "B", "C", "mix"][index] }),
-      ),
-      points: 1,
-      correctOptionId: "A",
-    },
-    {
-      id: "q2",
-      type: "dropdown",
-      prompt: "Bij Snippet C - wat is een sterke methode om de afbeelding te controleren?",
-      options: fixedOptions([
-        "Reverse image search via Google Images of TinEye",
-        "Vragen aan ChatGPT of het echt is",
-        "De afbeelding vergroten om beter te kunnen kijken",
-        "Kijken hoeveel likes de post heeft",
-      ]).map((option, index) => ({ ...option, id: ["rev", "ai", "zoom", "likes"][index] })),
-      points: 1,
-      correctOptionId: "rev",
-    },
-    {
-      id: "q3",
-      type: "multi_checkbox",
-      prompt: "Welke kenmerken maken Snippet A betrouwbaarder dan Snippet B?",
-      options: [
-        { id: "org-meth", label: "Snippet A noemt een organisatie en methodologie", correctAsSignal: true },
-        { id: "specific", label: "Snippet A heeft een specifiek getal met context", correctAsSignal: true },
-        { id: "opinie-b", label: "Snippet B heeft een opinie-component", correctAsSignal: true },
-        { id: "lang", label: "Snippet A is langer", distractor: true },
-        { id: "toon", label: "Snippet A heeft een professionele toon" },
-      ],
-      scoring: { minCorrect: 2, maxDistractor: 0, points: 1 },
-    },
-  ],
 });
 
 const versionSpecs: VersionSpec[] = [
@@ -1135,15 +712,16 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1v-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.",
-      instruction: "Programmeer Bizzy zo:",
+        "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
+      instruction:
+        "Maak een programma dat dit doet: na klikken op Afspelen zegt Bizzy Hoi!, gaat hij 1 meter vooruit en draait hij naar 180 graden.",
       config: {
         device: "bizzy",
-        criteriaSpec: "pt7-lj1v",
         codingSteps: [
+          "Gebruik het startblok Wanneer er geklikt wordt op afspelen.",
+          "Laat Bizzy Hoi! zeggen.",
           "Laat Bizzy 1 meter vooruit bewegen.",
-          "Laat Bizzy 180 graden draaien.",
-          "Na 1 seconde zegt Bizzy: Hoi!",
+          "Laat Bizzy naar 180 graden draaien.",
         ],
         blocks: [
           block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
@@ -1151,8 +729,8 @@ const versionSpecs: VersionSpec[] = [
           block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
           block('Bizzy zegt "Hoi!"', "uiterlijk"),
           block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
-          block("draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.", "beweging"),
-          block("herhaal 1 keer", "besturing", { isContainer: true }),
+          block("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.", "beweging"),
+          block("als 1 < 2", "besturing", { isCriticalDistractor: true }),
           block("speel geluid applaus", "geluid"),
           block("wacht 1 seconde", "besturing"),
           block("zet score op 0", "variabelen"),
@@ -1162,38 +740,41 @@ const versionSpecs: VersionSpec[] = [
         ],
         correctProgram: [
           "Wanneer er geklikt wordt op afspelen",
-          "verplaats Bizzy 1 meter vooruit in 1 sec.",
-          "draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.",
-          "wacht 1 seconde",
           'Bizzy zegt "Hoi!"',
+          "verplaats Bizzy 1 meter vooruit in 1 sec.",
+          "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.",
         ],
         rules: [
           {
+            id: "start",
+            description: "juiste startblok.",
+            points: 1,
+            firstBlock: "Wanneer er geklikt wordt op afspelen",
+          },
+          {
+            id: "say",
+            description: 'Bizzy zegt "Hoi!" gebruikt.',
+            points: 1,
+            requiredBlocks: ['Bizzy zegt "Hoi!"'],
+          },
+          {
             id: "move",
-            description: "Bizzy beweegt 1 meter vooruit.",
+            description: "verplaats Bizzy 1 meter vooruit in 1 sec. gebruikt.",
             points: 1,
             requiredBlocks: ["verplaats Bizzy 1 meter vooruit in 1 sec."],
           },
           {
-            id: "turn",
-            description: "Bizzy draait 180 graden.",
-            points: 1,
-            requiredBlocks: ["draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec."],
-          },
-          {
-            id: "wait",
-            description: "Bizzy wacht 1 seconde voordat hij praat.",
-            points: 1,
-            requiredBlocks: ["wacht 1 seconde"],
-            orderedBlocks: ["wacht 1 seconde", 'Bizzy zegt "Hoi!"'],
-          },
-          {
-            id: "say",
-            description: 'Bizzy zegt "Hoi!".',
+            id: "behavior",
+            description:
+              "eindgedrag klopt en er zijn geen kritieke afleider-blokken gebruikt.",
             points: 1,
             requireExecuted: true,
-            requiredBlocks: ['Bizzy zegt "Hoi!"'],
-            forbiddenBlocks: ["verplaats Bizzy 5 meters achteruit in 1 sec."],
+            requiredBlocks: [
+              'Bizzy zegt "Hoi!"',
+              "verplaats Bizzy 1 meter vooruit in 1 sec.",
+              "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.",
+            ],
+            forbiddenBlocks: ["als 1 < 2", "verplaats Bizzy 5 meters achteruit in 1 sec."],
           },
         ],
       },
@@ -1492,7 +1073,7 @@ const versionSpecs: VersionSpec[] = [
       title: "Mail opstellen",
       instruction: reportMailInstruction,
       kerndoel: "21A, 23B",
-      config: createLj1hMailConfig(),
+      config: createReportMailConfig(),
     },
     pt4: {
       id: "lj1h-pt4-excel",
@@ -1528,28 +1109,30 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1h-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.",
+        "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
       instruction:
-        "Programmeer Bizzy zo: laat Bizzy Hoi! zeggen en laat hem daarna drie keer 1 meter vooruit bewegen.",
+        "Maak een programma dat dit doet: na klikken op Afspelen zegt Bizzy Hoi! en beweegt hij drie keer vooruit.",
       config: {
         device: "bizzy",
-        criteriaSpec: "pt7-lj1h",
         codingSteps: [
-          "Typ Hoi! in het zeg-blok.",
-          "Stel Herhaal in op 3 keer.",
-          "Stel verplaats in op 1 meter vooruit in 1 seconde.",
-          "Zet het verplaats-blok in de herhaling.",
+          "Gebruik het startblok Wanneer er geklikt wordt op afspelen.",
+          "Laat Bizzy Hoi! zeggen.",
+          "Gebruik herhaal 3 keer.",
+          "Zet verplaats Bizzy 1 meter vooruit in de herhaling.",
         ],
         blocks: [
           block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
+          block("wanneer er op Bizzy wordt geklikt", "gebeurtenissen"),
           block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
           block('Bizzy zegt "Hoi!"', "uiterlijk"),
           block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
-          block("draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.", "beweging"),
-          block("herhaal 1 keer", "besturing", { isContainer: true }),
-          block("herhaal 10 keer", "besturing", { isContainer: true, isCriticalDistractor: true }),
-          block("speel geluid applaus", "geluid"),
-          block("wacht 1 seconde", "besturing"),
+          block("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.", "beweging"),
+          block("als 1 < 2", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("herhaal 3 keer", "besturing", { isContainer: true }),
+          block("herhaal 10 keer", "besturing", { isContainer: true }),
+          block("speel geluid start", "geluid"),
+          block("zet snelheid op 2", "variabelen"),
+          block("als Bizzy rand raakt", "waarnemen", { isContainer: true }),
           block("stop alles", "besturing"),
         ],
         correctProgram: [
@@ -1560,22 +1143,28 @@ const versionSpecs: VersionSpec[] = [
         ],
         rules: [
           {
+            id: "start",
+            description: "juiste startblok.",
+            points: 1,
+            firstBlock: "Wanneer er geklikt wordt op afspelen",
+          },
+          {
             id: "say",
-            description: 'Bizzy zegt "Hoi!".',
+            description: 'Bizzy zegt "Hoi!" gebruikt.',
             points: 1,
             requiredBlocks: ['Bizzy zegt "Hoi!"'],
           },
           {
             id: "repeat-three",
-            description: "herhaal 3 keer met verplaats Bizzy 1 meter vooruit in 1 sec. als geneste body.",
+            description:
+              "herhaal 3 keer met verplaats Bizzy 1 meter vooruit in 1 sec. als geneste body.",
             points: 1,
-            nestedBlocks: [{ parent: "herhaal 3 keer", child: "verplaats Bizzy 1 meter vooruit in 1 sec." }],
-          },
-          {
-            id: "move",
-            description: "verplaatsing is ingesteld op 1 meter in 1 seconde.",
-            points: 1,
-            requiredBlocks: ["verplaats Bizzy 1 meter vooruit in 1 sec."],
+            nestedBlocks: [
+              {
+                parent: "herhaal 3 keer",
+                child: "verplaats Bizzy 1 meter vooruit in 1 sec.",
+              },
+            ],
           },
           {
             id: "behavior",
@@ -1583,8 +1172,13 @@ const versionSpecs: VersionSpec[] = [
             points: 1,
             requireExecuted: true,
             requiredBlocks: ['Bizzy zegt "Hoi!"', "herhaal 3 keer"],
-            nestedBlocks: [{ parent: "herhaal 3 keer", child: "verplaats Bizzy 1 meter vooruit in 1 sec." }],
-            forbiddenBlocks: ["herhaal 10 keer"],
+            nestedBlocks: [
+              {
+                parent: "herhaal 3 keer",
+                child: "verplaats Bizzy 1 meter vooruit in 1 sec.",
+              },
+            ],
+            forbiddenBlocks: ["als 1 < 2"],
           },
         ],
       },
@@ -1844,10 +1438,9 @@ const versionSpecs: VersionSpec[] = [
     pt2: {
       id: "lj3v-pt2-mail",
       title: "Mail opstellen",
-      instruction:
-        "Stuur een mail naar je mentor over je stageverslag. Zet je begeleider in CC. Kies een passend onderwerp, voeg het stageverslag toe en klik op Verzenden.",
+      instruction: reportMailInstruction,
       kerndoel: "21A, 23B",
-      config: createStageMailConfig(),
+      config: createReportMailConfig(),
     },
     pt3: {
       id: "lj3v-pt3-security",
@@ -1954,13 +1547,6 @@ const versionSpecs: VersionSpec[] = [
         },
       ],
     },
-    pt5: {
-      id: "lj3v-pt5-bronbeoordeling",
-      title: "PT5 - Bronbeoordeling",
-      instruction: "Beoordeel welke bron je kunt gebruiken en welke signalen daarbij horen.",
-      kerndoel: "21B",
-      config: createLj3vSourceEvalConfig(),
-    },
     pt6: {
       id: "lj3v-pt6-meeting",
       title: "PT6 - Videovergadering en schermdelen",
@@ -1973,40 +1559,75 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3v-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.",
+        "Dit is een micro:bit-achtig apparaat met een klein scherm en twee knoppen (A en B). Programmeer een teller die op het scherm verschijnt. Klik op ▶ om je programma uit te voeren; klik daarna op A of B om de knoppen te testen.",
       instruction:
-        "Programmeer Bizzy zo: laat Bizzy een vierkant lopen en daarna Klaar! zeggen.",
+        "Maak een programma. De teller begint op 0. Elke keer dat knop A wordt ingedrukt, gaat de teller 1 omhoog. Bij 5 of meer toont het scherm vol.",
       config: {
-        device: "bizzy",
-        criteriaSpec: "pt7-lj3v",
+        device: "microbit",
         codingSteps: [
-          "Gebruik een herhaalblok van 4 keer.",
-          "Zet in de herhaling: 1 meter vooruit en 90 graden draaien.",
-          "Laat Bizzy na de herhaling Klaar! zeggen.",
+          "Zet de teller bij start op 0.",
+          "Laat knop A de teller met 1 verhogen.",
+          "Controleer of de teller 5 of meer is.",
+          "Toon vol als de teller 5 of meer is.",
         ],
         blocks: [
-          block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
-          block('Bizzy zegt "Klaar!"', "uiterlijk"),
-          block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
-          block("draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.", "beweging"),
-          block("draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.", "beweging"),
-          block("herhaal 4 keer", "besturing", { isContainer: true }),
-          block("herhaal 3 keer", "besturing", { isContainer: true }),
-          block("speel geluid applaus", "geluid"),
-          block("wacht 1 seconde", "besturing"),
+          block("bij start", "gebeurtenissen", { isContainer: true }),
+          block("zet teller op 0", "variabelen"),
+          block("als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }),
+          block("als knop B wordt ingedrukt", "gebeurtenissen", { isContainer: true }),
+          block("verander teller met 1", "variabelen"),
+          block("verander teller met -1", "variabelen"),
+          block("als teller >= 5 dan", "besturing", { isContainer: true }),
+          block("als teller < 5 dan", "besturing", {
+            isContainer: true,
+            isCriticalDistractor: true,
+          }),
+          block('toon "vol"', "uiterlijk"),
+          block('toon "leeg"', "uiterlijk"),
+          block("wacht 10 seconden", "besturing"),
+          block("speel geluid klaar", "geluid"),
         ],
         correctProgram: [
-          "Wanneer er geklikt wordt op afspelen",
-          "herhaal 4 keer",
-          "verplaats Bizzy 1 meter vooruit in 1 sec.",
-          "draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.",
-          'Bizzy zegt "Klaar!"',
+          "bij start",
+          "zet teller op 0",
+          "als knop A wordt ingedrukt",
+          "verander teller met 1",
+          "als teller >= 5 dan",
+          'toon "vol"',
         ],
         rules: [
-          { id: "repeat-four", description: "herhaal 4 keer gebruikt.", points: 1, requiredBlocks: ["herhaal 4 keer"] },
-          { id: "nested-square", description: "verplaats 1m en draai 90 graden staan in de herhaling.", points: 1, nestedBlocks: [{ parent: "herhaal 4 keer", child: "verplaats Bizzy 1 meter vooruit in 1 sec." }, { parent: "herhaal 4 keer", child: "draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec." }] },
-          { id: "closed-square", description: "vierkant is gesloten.", points: 1, requiredBlocks: ["verplaats Bizzy 1 meter vooruit in 1 sec.", "draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec."] },
-          { id: "say-ready", description: 'Bizzy zegt "Klaar!" na uitvoeren.', points: 1, requireExecuted: true, requiredBlocks: ['Bizzy zegt "Klaar!"'] },
+          {
+            id: "init",
+            description: "teller initialiseert op 0 binnen bij start.",
+            points: 1,
+            nestedBlocks: [{ parent: "bij start", child: "zet teller op 0" }],
+          },
+          {
+            id: "button-a",
+            description: "als knop A wordt ingedrukt met geneste verander teller met 1.",
+            points: 1,
+            nestedBlocks: [
+              { parent: "als knop A wordt ingedrukt", child: "verander teller met 1" },
+            ],
+          },
+          {
+            id: "show-full",
+            description: 'als teller >= 5 dan met geneste toon "vol".',
+            points: 1,
+            nestedBlocks: [{ parent: "als teller >= 5 dan", child: 'toon "vol"' }],
+          },
+          {
+            id: "behavior",
+            description:
+              "eindgedrag bij testen van A klopt en er is geen kritieke afleider gebruikt.",
+            points: 1,
+            requireExecuted: true,
+            nestedBlocks: [
+              { parent: "als knop A wordt ingedrukt", child: "verander teller met 1" },
+              { parent: "als teller >= 5 dan", child: 'toon "vol"' },
+            ],
+            forbiddenBlocks: ["als teller < 5 dan"],
+          },
         ],
       },
     },
@@ -2178,7 +1799,7 @@ const versionSpecs: VersionSpec[] = [
     id: "lj3-hv",
     title: "Leerjaar 3 HAVO/VWO",
     level: "LJ3 HAVO/VWO",
-    themeKey: "sandCoral",
+    themeKey: "roseNavy",
     pt1: {
       id: "lj3h-pt1-files",
       title: "PT1 - Bestanden en mappen",
@@ -2231,8 +1852,7 @@ const versionSpecs: VersionSpec[] = [
     pt2: {
       id: "lj3h-pt2-mail",
       title: "Mail opstellen",
-      instruction:
-        "Stuur een mail naar je mentor over je onderzoeksverslag. Zet je projectgroep in CC. Markeer met hoge prioriteit. Kies een passende aanhef en afsluiting.",
+      instruction: advancedMailInstruction,
       kerndoel: "21A, 23A, 23B",
       config: createAdvancedMailConfig(),
     },
@@ -2347,22 +1967,7 @@ const versionSpecs: VersionSpec[] = [
           answer: "E02",
           points: 2,
         },
-        {
-          id: "c",
-          prompt:
-            "Gebruik een formule om de totale Kosten te berekenen van alle huishoudens met Woningtype = A. Typ de uitkomst in cel H2.",
-          answer: 9573,
-          points: 2,
-          tolerance: { numeric: true, deltaAbs: 1 },
-        },
       ],
-    },
-    pt5: {
-      id: "lj3h-pt5-bronbeoordeling",
-      title: "PT5 - Bronbeoordeling",
-      instruction: "Beoordeel bronnen, controleer een afbeelding en kies de beste signalen.",
-      kerndoel: "21B, 21D",
-      config: createLj3hSourceEvalConfig(),
     },
     pt6: {
       id: "lj3h-pt6-meeting",
@@ -2376,42 +1981,94 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3h-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.",
+        "Een sensor meet temperatuur en raamstand. Op het scherm verschijnt waarschuwing of ok. Programmeer de logica met blokken; klik op ▶ om te testen met de schuifregelaars voor temperatuur en raamstand.",
       instruction:
-        "Programmeer Bizzy zo: laat Bizzy drie keer naar voren gaan en weer terug. Speel daarna het applausgeluid.",
+        "Maak een programma. Als de temperatuur hoger is dan 25 en het raam open staat, toon waarschuwing. Anders toon ok.",
       config: {
-        device: "bizzy",
-        criteriaSpec: "pt7-lj3h",
+        device: "sensor",
         codingSteps: [
-          "Gebruik een herhaalblok van 3 keer.",
-          "Zet in de herhaling: 2 meter vooruit, 180 graden draaien, 2 meter vooruit, 180 graden draaien.",
-          "Speel na de herhaling het applausgeluid.",
+          "Lees de temperatuur en de raamstand.",
+          "Gebruik de voorwaarde temperatuur hoger dan 25 EN raam open.",
+          "Toon waarschuwing in de dan-tak.",
+          "Toon ok in de anders-tak.",
         ],
         blocks: [
-          block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
-          block('Bizzy zegt "Hoi!"', "uiterlijk"),
-          block("verplaats Bizzy 2 meter vooruit in 1 sec.", "beweging"),
-          block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
-          block("draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.", "beweging"),
-          block("herhaal 3 keer", "besturing", { isContainer: true }),
-          block("herhaal 2 keer", "besturing", { isContainer: true }),
-          block("speel geluid applaus", "geluid"),
-          block("wacht 1 seconde", "besturing"),
+          block("bij start", "gebeurtenissen", { isContainer: true }),
+          block("lees temperatuur", "waarnemen"),
+          block("lees raamstand", "waarnemen"),
+          block("als (temperatuur > 25) EN (raam = open) dan", "besturing", {
+            isContainer: true,
+          }),
+          block("als (temperatuur > 25) OF (raam = open) dan", "besturing", {
+            isContainer: true,
+            isCriticalDistractor: true,
+          }),
+          block("als (temperatuur < 25) EN (raam = open) dan", "besturing", {
+            isContainer: true,
+            isCriticalDistractor: true,
+          }),
+          block('toon "waarschuwing"', "uiterlijk"),
+          block('toon "ok"', "uiterlijk"),
+          block('toon "koud"', "uiterlijk"),
+          block("anders", "besturing", { isContainer: true }),
+          block("herhaal altijd", "besturing", { isContainer: true }),
+          block("verwijder temperatuur", "data"),
+          block("zet temperatuur op 0", "variabelen"),
+          block("speel alarmgeluid", "geluid"),
         ],
         correctProgram: [
-          "Wanneer er geklikt wordt op afspelen",
-          "herhaal 3 keer",
-          "verplaats Bizzy 2 meter vooruit in 1 sec.",
-          "draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.",
-          "verplaats Bizzy 2 meter vooruit in 1 sec.",
-          "draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.",
-          "speel geluid applaus",
+          "bij start",
+          "lees temperatuur",
+          "lees raamstand",
+          "als (temperatuur > 25) EN (raam = open) dan",
+          'toon "waarschuwing"',
+          "anders",
+          'toon "ok"',
         ],
         rules: [
-          { id: "repeat-three", description: "herhaal 3 keer gebruikt.", points: 1, requiredBlocks: ["herhaal 3 keer"] },
-          { id: "nested-return", description: "heen-en-weer-blokken staan in correcte volgorde in de herhaling.", points: 1, nestedBlocks: [{ parent: "herhaal 3 keer", child: "verplaats Bizzy 2 meter vooruit in 1 sec." }, { parent: "herhaal 3 keer", child: "draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec." }] },
-          { id: "applause-after", description: "applaus speelt na de herhaling.", points: 1, requireExecuted: true, requiredBlocks: ["speel geluid applaus"] },
-          { id: "no-1m", description: "alleen verplaats 2 meter gebruikt.", points: 1, forbiddenBlocks: ["verplaats Bizzy 1 meter vooruit in 1 sec."] },
+          {
+            id: "read",
+            description: "temperatuur en raamstand worden gelezen.",
+            points: 1,
+            requiredBlocks: ["lees temperatuur", "lees raamstand"],
+          },
+          {
+            id: "condition",
+            description: "juiste EN-voorwaarde gekozen.",
+            points: 1,
+            requiredBlocks: ["als (temperatuur > 25) EN (raam = open) dan"],
+          },
+          {
+            id: "branches",
+            description: "waarschuwing in juiste tak en ok in anders-tak.",
+            points: 1,
+            nestedBlocks: [
+              {
+                parent: "als (temperatuur > 25) EN (raam = open) dan",
+                child: 'toon "waarschuwing"',
+              },
+              { parent: "anders", child: 'toon "ok"' },
+            ],
+          },
+          {
+            id: "behavior",
+            description:
+              "eindgedrag bij testwaarden klopt en er is geen kritieke afleider gebruikt.",
+            points: 1,
+            requireExecuted: true,
+            requiredBlocks: ["lees temperatuur", "lees raamstand"],
+            nestedBlocks: [
+              {
+                parent: "als (temperatuur > 25) EN (raam = open) dan",
+                child: 'toon "waarschuwing"',
+              },
+              { parent: "anders", child: 'toon "ok"' },
+            ],
+            forbiddenBlocks: [
+              "als (temperatuur > 25) OF (raam = open) dan",
+              "als (temperatuur < 25) EN (raam = open) dan",
+            ],
+          },
         ],
       },
     },
@@ -2593,7 +2250,7 @@ const versionSpecs: VersionSpec[] = [
   },
 ];
 
-export const assessments: AssessmentVersion[] = versionSpecs.map(applyV6SrItems).map(buildAssessment);
+export const assessments: AssessmentVersion[] = versionSpecs.map(buildAssessment);
 
 export const assessmentMap: Record<AssessmentVersionId, AssessmentVersion> =
   assessments.reduce(

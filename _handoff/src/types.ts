@@ -1,6 +1,16 @@
 export type AssessmentVersionId = "lj1-vmbo" | "lj1-hv" | "lj3-vmbo" | "lj3-hv";
 export type InstrumentId = AssessmentVersionId;
-export type ThemeKey = "limeTeal" | "skyOrange" | "mintPink" | "sandCoral";
+export type ThemeKey =
+  | "limeTeal"
+  | "skyOrange"
+  | "mintPink"
+  | "roseNavy"
+  | "rainbowCream";
+
+/** Slug that maps a theme to one of the 5 Citadel palettes (P1-P5).
+ *  Used on the app root as `data-theme="p4"` so every nested component
+ *  reads --t-* tokens from one place. */
+export type PaletteSlug = "p1" | "p2" | "p3" | "p4" | "p5";
 
 export type AssessmentItemType =
   | "self_assessment"
@@ -13,7 +23,6 @@ export type AssessmentItemType =
   | "powerpoint_design_task"
   | "teams_share_simulation"
   | "block_programming_task"
-  | "source_evaluation"
   | "social_action_simulation";
 
 export type SelectedAnswer =
@@ -30,6 +39,8 @@ export interface Option {
 
 export interface ThemeDefinition {
   key: ThemeKey;
+  /** P1-P5 slug. Set on the .app root as `data-theme={palette}`. */
+  palette: PaletteSlug;
   label: string;
   primary: string;
   secondary: string;
@@ -115,18 +126,7 @@ export interface SelfAssessmentScaleLabel {
 }
 
 export interface MailCondition {
-  field:
-    | "to"
-    | "cc"
-    | "bcc"
-    | "subject"
-    | "subjectOptionId"
-    | "attachments"
-    | "links"
-    | "priority"
-    | "greetingOptionId"
-    | "closingOptionId"
-    | "sent";
+  field: "to" | "cc" | "bcc" | "subject" | "attachments" | "links" | "priority" | "sent";
   operator: "includes" | "allInclude" | "equals" | "noneInclude" | "true";
   value?: string | string[];
 }
@@ -142,25 +142,14 @@ export interface MailTaskConfig {
   visibleButtons: string[];
   contacts: string[];
   files: string[];
-  subjectMode?: "freeText" | "dropdown";
-  subjectOptions?: Option[];
-  greetingOptions?: Option[];
-  closingOptions?: Option[];
-  priorityToggle?: boolean;
   rules: MailScoringRule[];
 }
 
 export interface DownloadQuestion {
   id: string;
   prompt: string;
-  answer: string | number;
+  answer: string;
   points: number;
-  tolerance?: {
-    case?: "insensitive" | "sensitive";
-    trim?: boolean;
-    numeric?: boolean;
-    deltaAbs?: number;
-  };
 }
 
 export interface ExcelDownloadTaskConfig {
@@ -254,39 +243,7 @@ export interface BlockProgrammingTaskConfig {
   codingSteps?: string[];
   blocks: ProgrammingBlockDefinition[];
   correctProgram: string[];
-  criteriaSpec?: string;
   rules: BlockScoringRule[];
-}
-
-export interface SourceEvaluationSnippet {
-  id: string;
-  title: string;
-  meta: string;
-  body: string;
-  hasImageRequiringReverseSearch?: boolean;
-}
-
-export type SourceEvaluationQuestion =
-  | {
-      id: string;
-      type: "dropdown";
-      prompt: string;
-      options: Option[];
-      points: number;
-      correctOptionId: string;
-    }
-  | {
-      id: string;
-      type: "multi_checkbox";
-      prompt: string;
-      options: Array<Option & { correctAsSignal?: boolean; distractor?: boolean }>;
-      scoring: { minCorrect: number; maxDistractor: number; points: number };
-    };
-
-export interface SourceEvaluationTaskConfig {
-  intro: string;
-  snippets: SourceEvaluationSnippet[];
-  questions: SourceEvaluationQuestion[];
 }
 
 export type InteractionInputType = "single" | "multi" | "toggle" | "matching";
@@ -364,7 +321,6 @@ export interface AssessmentItem {
   powerPointTask?: PowerPointTaskConfig;
   teamsTask?: TeamsTaskConfig;
   blockTask?: BlockProgrammingTaskConfig;
-  sourceEvaluationTask?: SourceEvaluationTaskConfig;
   socialTask?: InteractionTaskConfig;
 }
 
