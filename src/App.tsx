@@ -487,9 +487,21 @@ const App = () => {
   const studentCode = session?.metadata.learnerCode || session?.metadata.accessCode;
   const studentClassCode = session?.metadata.classCode;
 
+  const screenMarker: "landing" | "adminAccess" | "admin" | "assessment" | "result" =
+    result
+      ? "result"
+      : session && activeAssessment
+        ? "assessment"
+        : entryView === "admin"
+          ? "admin"
+          : entryView === "adminAccess"
+            ? "adminAccess"
+            : "landing";
+
   return (
     <AppShell
       theme={activeTheme}
+      screen={screenMarker}
       levelShort={levelShort}
       studentCode={studentCode}
       classCode={studentClassCode}
@@ -571,6 +583,7 @@ const AppShell = ({
   studentCode,
   classCode,
   onReset,
+  screen,
 }: {
   children: ReactNode;
   theme: ThemeDefinition;
@@ -581,10 +594,13 @@ const AppShell = ({
   classCode?: string;
   timer?: string;
   onReset?: () => void;
+  /** Screen marker for per-screen CSS overrides (e.g. landing/admin → white hero). */
+  screen?: "landing" | "adminAccess" | "admin" | "assessment" | "result";
 }) => (
   <div
     className="app"
     data-theme={theme.palette}
+    data-screen={screen}
     style={
       {
         "--theme-primary": theme.primary,

@@ -997,6 +997,44 @@ body {
 .rd-modal .field-input { border-color: var(--c-line); }
 .rd-modal .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
 
+/* ─────────── Landing & Admin: white-hero overrides ───────────
+   Per huisstijl mag beige NIET als grote pagina-achtergrond gebruikt
+   worden. Op de landing en het docent-dashboard wordt de hero dus wit,
+   met magenta-accent en de gekleurde fotokaart als visueel anker. */
+[data-screen="landing"] .hero-copy,
+[data-screen="admin"] .admin-hero {
+  background: var(--c-bg);
+  padding: 24px 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+[data-screen="landing"]::before,
+[data-screen="admin"]::before {
+  background: none !important;
+}
+[data-screen="landing"] .hero-copy { padding: 16px 0 8px; }
+[data-screen="landing"] .hero-copy h1 { color: var(--p1-magenta); }
+[data-screen="landing"] .hero-copy .eyebrow { color: var(--p1-magenta); }
+[data-screen="landing"] .hero-copy .eyebrow::before { background: var(--p1-magenta); }
+[data-screen="landing"] .hero-copy .field-label { color: var(--p1-magenta); }
+[data-screen="landing"] .field-input { border-color: var(--c-line); }
+[data-screen="landing"] .field-input:focus { border-color: var(--p1-magenta); box-shadow: 0 0 0 4px rgba(229,28,115,.12); }
+[data-screen="landing"] .hero-copy .hero-actions .btn-primary { background: var(--p1-magenta); }
+[data-screen="landing"] .hero-copy .hero-actions .btn-primary:hover { background: #c41864; }
+[data-screen="landing"] .hero-copy .hero-actions .btn-primary .arrow-circle { color: var(--p1-magenta); }
+[data-screen="landing"] .hero-copy .pill {
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+}
+
+[data-screen="admin"] .admin-hero { padding: 32px 0; gap: 48px; }
+[data-screen="admin"] .admin-hero::after { display: none; }
+[data-screen="admin"] .admin-hero h1 { color: var(--p1-magenta); }
+[data-screen="admin"] .admin-hero .badge {
+  border: 1px solid var(--c-line);
+  background: var(--c-bg);
+}
+
 /* ─────────── Adjustments to legacy components inside the new shell ───────────
    The existing assessment views (FileTask, Mail, Teams, Block-prog, Choice,
    Interaction…) still render with their original classes (.panel, .primary-button,
