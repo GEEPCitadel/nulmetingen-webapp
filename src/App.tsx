@@ -1580,45 +1580,29 @@ const MailTaskView = ({
 
   const toolbarButtons = task.visibleButtons.filter((button) => button !== "Verzenden");
   const fieldLabel = (field: AddressField) =>
-    field === "to" ? "AAN" : field === "cc" ? "CC" : "BCC";
+    field === "to" ? "Aan" : field === "cc" ? "Cc" : "Bcc";
   const fieldVisible = (field: AddressField) =>
     field === "to" ||
     field === "cc" ||
     (field === "bcc" && (draft.bccVisible || draft.bcc.length > 0));
-  const fieldPlaceholder = (field: AddressField) =>
-    field === "to" ? "Klik om ontvangers te kiezen" : "Klik om adressen te kiezen";
 
-  const renderAddressField = (field: AddressField) =>
-    fieldVisible(field) ? (
-      <div className="mail-address-row" key={field}>
-        <strong>{fieldLabel(field)}</strong>
-        <div className="mail-address-control">
-          <button
-            className={`mail-address-input ${draft[field].length === 0 ? "empty" : ""}`}
-            type="button"
-            onClick={() =>
-              setActiveAddressField((current) => (current === field ? null : field))
-            }
-          >
-            {draft[field].length > 0 ? draft[field].join("; ") : fieldPlaceholder(field)}
-          </button>
-          {activeAddressField === field ? (
-            <div className="mail-picker">
-              {task.contacts.map((contact) => (
-                <button
-                  className={`chip-button ${draft[field].includes(contact) ? "selected" : ""}`}
-                  key={`${field}-${contact}`}
-                  type="button"
-                  onClick={() => toggleListValue(field, contact)}
-                >
-                  {contact}
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      </div>
-    ) : null;
+  const contactInitials = (email: string) => {
+    const local = (email.split("@")[0] || email).replace(/[^a-z0-9]/gi, "");
+    return (local.slice(0, 2) || "?").toUpperCase();
+  };
+  const fileExt = (filename: string) => {
+    const dot = filename.lastIndexOf(".");
+    return dot >= 0 ? filename.slice(dot + 1).toUpperCase().slice(0, 4) : "FILE";
+  };
+  const ribbonIcon = (button: string) => {
+    if (button === "Bestand bijvoegen") return "📎 ";
+    if (button === "Hyperlink invoegen") return "🔗 ";
+    if (button === "Prioriteit") return "⚠ ";
+    if (button === "Concept opslaan") return "💾 ";
+    if (button === "Verwijderen") return "🗑 ";
+    if (button === "BCC tonen") return "+ ";
+    return "";
+  };
 
   return (
     <section className="panel stack-lg">
@@ -1628,66 +1612,54 @@ const MailTaskView = ({
         instruction={item.instruction}
       />
 
-      <div className="mail-window">
-        <div className="mail-titlebar">Nieuw bericht</div>
+      <div className="mail-shell">
         <div className="mail-ribbon">
-          <div className="mail-send-group">
-            <button className="mail-send-button" type="button" onClick={sendMessage}>
-              Verzenden
-            </button>
-            <button
-              aria-label="Meer verzendopties"
-              className="mail-send-caret"
-              type="button"
-              onClick={() => setSendMenuOpen((current) => !current)}
-            />
-            {sendMenuOpen ? (
-              <div className="mail-send-menu">
-                <button type="button" onClick={() => setSendMenuOpen(false)}>
-                  Verzending plannen
-                </button>
-              </div>
-            ) : null}
-          </div>
-          {toolbarButtons.map((button) => (
-            <button
-              key={button}
-              className={`mail-ribbon-button ${
-                (button === "Bestand bijvoegen" && activeCommandPanel === "attachments") ||
-                (button === "Hyperlink invoegen" && activeCommandPanel === "link") ||
-                (button === "Prioriteit" && draft.priority === "Hoog")
-                  ? "active"
-                  : ""
-              }`}
-              type="button"
-              onClick={() => handleRibbonCommand(button)}
-            >
-              {button}
+          {["Vet", "Cursief", "Onderstreept", "Lijst"].map((b) => (
+            <button key={b} className="rb" type="button" onClick={() => undefined}>
+              {b}
             </button>
           ))}
+          <span className="rb-divider" />
+          {toolbarButtons.map((button) => {
+            const isActive =
+              (button === "Bestand bijvoegen" && activeCommandPanel === "attachments") ||
+              (button === "Hyperlink invoegen" && activeCommandPanel === "link") ||
+              (button === "Prioriteit" && draft.priority === "Hoog");
+            return (
+              <button
+                key={button}
+                className={`rb ${isActive ? "active" : ""}`}
+                type="button"
+                onClick={() => handleRibbonCommand(button)}
+              >
+                {ribbonIcon(button)}
+                {button}
+              </button>
+            );
+          })}
+          <span style={{ flex: 1 }} />
+          <button
+            className="rb"
+            type="button"
+            onClick={() => setSendMenuOpen((current) => !current)}
+            aria-label="Meer verzendopties"
+          >
+            ⋯
+          </button>
+          {sendMenuOpen ? (
+            <div className="mail-send-menu" style={{ position: "absolute", right: 24, top: 56, background: "#fff", border: "1px solid var(--c-line)", borderRadius: "var(--radius-md)", padding: 8, boxShadow: "var(--shadow-md)", zIndex: 10 }}>
+              <button className="rb" type="button" onClick={() => setSendMenuOpen(false)}>
+                Verzending plannen
+              </button>
+            </div>
+          ) : null}
         </div>
 
-        {activeCommandPanel === "attachments" ? (
-          <div className="mail-command-panel">
-            <strong>Bestand bijvoegen</strong>
-            <div className="chip-grid">
-              {task.files.map((file) => (
-                <button
-                  className={`chip-button ${draft.attachments.includes(file) ? "selected" : ""}`}
-                  key={file}
-                  type="button"
-                  onClick={() => toggleListValue("attachments", file)}
-                >
-                  {file}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
         {activeCommandPanel === "link" ? (
-          <div className="mail-command-panel">
-            <strong>Hyperlink invoegen</strong>
+          <div className="mail-fields" style={{ background: "var(--t-bg-soft)", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <strong style={{ fontSize: ".82rem", color: "var(--t-accent-deep)" }}>
+              Hyperlink invoegen:
+            </strong>
             <input
               value={draft.linkUrlDraft}
               onChange={(event) =>
@@ -1700,6 +1672,7 @@ const MailTaskView = ({
                 }
               }}
               placeholder="URL"
+              style={{ border: "1px solid var(--c-line)", borderRadius: 8, padding: "6px 10px", background: "#fff" }}
             />
             <input
               value={draft.linkTextDraft}
@@ -1713,85 +1686,267 @@ const MailTaskView = ({
                 }
               }}
               placeholder="Linktekst"
+              style={{ border: "1px solid var(--c-line)", borderRadius: 8, padding: "6px 10px", background: "#fff" }}
             />
-            <button className="secondary-button" type="button" onClick={commitLinkDraft}>
+            <button className="rb active" type="button" onClick={commitLinkDraft}>
               Invoegen
             </button>
-            {draft.links.length > 0 ? (
-              <div className="mini-list">
-                {draft.links
-                  .map((link) => draft.linkTexts[link] ? `${draft.linkTexts[link]} (${link})` : link)
-                  .join(", ")}
-              </div>
-            ) : null}
           </div>
         ) : null}
 
-        <div className="mail-layout">
-          <div className="mail-recipients">
-            {(["to", "cc", "bcc"] as const).map(renderAddressField)}
-          </div>
-
-          <label className="field">
-            <span>Onderwerp</span>
-            <div className="mail-subject-wrap">
-              <input
-                value={draft.subject}
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, subject: event.target.value }))
-                }
-              />
-              {draft.priority === "Hoog" ? <span className="priority-marker">!</span> : null}
-            </div>
-          </label>
-
-          {draft.attachments.length > 0 ? (
-            <div className="attachment-strip">
-              {draft.attachments.map((attachment) => (
-                <span className="attachment-pill" key={attachment}>
-                  {attachment}
-                  <button
-                    aria-label={`${attachment} verwijderen`}
-                    type="button"
-                    onClick={() => toggleListValue("attachments", attachment)}
+        <div className="mail-fields">
+          {(["to", "cc", "bcc"] as const).map((field) =>
+            fieldVisible(field) ? (
+              <div className="mail-field" key={field} style={{ position: "relative" }}>
+                <span className="label">{fieldLabel(field)}</span>
+                <div className="chips-row">
+                  {draft[field].map((contact) => (
+                    <span className="contact-chip" key={`${field}-${contact}`}>
+                      <span className="avatar">{contactInitials(contact)}</span>
+                      {contact}
+                      <span
+                        className="x"
+                        onClick={() => toggleListValue(field, contact)}
+                        role="button"
+                        aria-label={`${contact} verwijderen`}
+                      >
+                        ×
+                      </span>
+                    </span>
+                  ))}
+                </div>
+                <button
+                  className="add-btn"
+                  type="button"
+                  onClick={() =>
+                    setActiveAddressField((current) => (current === field ? null : field))
+                  }
+                >
+                  + Contact
+                </button>
+                {activeAddressField === field ? (
+                  <div
+                    className="mail-picker-inline"
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 76,
+                      right: 16,
+                      marginTop: 4,
+                      background: "#fff",
+                      border: "1px solid var(--c-line)",
+                      borderRadius: "var(--radius-md)",
+                      padding: 10,
+                      boxShadow: "var(--shadow-md)",
+                      zIndex: 5,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                    }}
                   >
-                    ×
-                  </button>
-                </span>
+                    {task.contacts.map((contact) => {
+                      const isPicked = draft[field].includes(contact);
+                      return (
+                        <button
+                          key={`${field}-pick-${contact}`}
+                          type="button"
+                          onClick={() => toggleListValue(field, contact)}
+                          className="contact-chip"
+                          style={{
+                            justifyContent: "flex-start",
+                            background: isPicked ? "var(--t-accent)" : "var(--t-bg-soft)",
+                            color: isPicked ? "#fff" : "var(--t-accent-deep)",
+                            cursor: "pointer",
+                            border: "none",
+                            padding: "8px 12px 8px 6px",
+                            textAlign: "left",
+                          }}
+                        >
+                          <span
+                            className="avatar"
+                            style={{
+                              background: isPicked ? "#fff" : "var(--t-accent)",
+                              color: isPicked ? "var(--t-accent)" : "#fff",
+                            }}
+                          >
+                            {contactInitials(contact)}
+                          </span>
+                          <span style={{ fontSize: ".88rem" }}>{contact}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            ) : null,
+          )}
+          <div className="mail-field">
+            <span className="label">Onderwerp</span>
+            <input
+              value={draft.subject}
+              placeholder="Bijv. Verslag Nederlands"
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, subject: event.target.value }))
+              }
+            />
+            {draft.priority === "Hoog" ? (
+              <span
+                className="add-btn"
+                style={{
+                  background: "var(--p2-red)",
+                  color: "#fff",
+                  padding: "2px 8px",
+                  borderRadius: 6,
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 900,
+                }}
+              >
+                !
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mail-body-area">
+          <textarea
+            className="body-edit"
+            rows={9}
+            value={draft.body}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, body: event.target.value }))
+            }
+            placeholder="Beste mevrouw De Jong, ..."
+            style={{
+              border: "none",
+              outline: "none",
+              fontFamily: "var(--font-sans)",
+              fontSize: "1rem",
+              lineHeight: 1.6,
+              width: "100%",
+              resize: "vertical",
+              background: "transparent",
+              color: "var(--c-ink)",
+            }}
+          />
+          {draft.links.length > 0 ? (
+            <div className="mail-body-links" style={{ marginTop: 10, fontSize: ".9rem" }}>
+              {draft.links.map((link) => (
+                <a
+                  key={link}
+                  href={link}
+                  style={{ color: "var(--t-accent)", marginRight: 12 }}
+                >
+                  {draft.linkTexts[link] ?? link}
+                </a>
               ))}
             </div>
           ) : null}
+        </div>
 
-          <label className="field">
-            <span>Bericht</span>
-            <textarea
-              rows={10}
-              value={draft.body}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, body: event.target.value }))
-              }
-            />
-            {draft.links.length > 0 ? (
-              <div className="mail-body-links">
-                {draft.links.map((link) => (
-                  <a key={link} href={link}>
-                    {draft.linkTexts[link] ?? link}
-                  </a>
-                ))}
-              </div>
-            ) : null}
-          </label>
+        {activeCommandPanel === "attachments" ? (
+          <div
+            className="mail-attachments"
+            style={{ background: "var(--t-bg-soft)", padding: "12px 28px" }}
+          >
+            <strong
+              style={{
+                width: "100%",
+                fontSize: ".8rem",
+                color: "var(--t-accent-deep)",
+                fontFamily: "var(--font-display)",
+                marginBottom: 6,
+              }}
+            >
+              Beschikbare bestanden
+            </strong>
+            {task.files.map((file) => {
+              const picked = draft.attachments.includes(file);
+              return (
+                <button
+                  key={file}
+                  type="button"
+                  className="attach-chip"
+                  onClick={() => toggleListValue("attachments", file)}
+                  style={{
+                    cursor: "pointer",
+                    border: picked ? "1px solid var(--t-accent)" : "1px solid var(--c-line)",
+                    background: picked ? "var(--t-accent)" : "var(--c-bg-soft)",
+                    color: picked ? "#fff" : "var(--c-ink)",
+                  }}
+                >
+                  <span
+                    className="file-pic"
+                    style={{
+                      background: picked ? "#fff" : "var(--t-accent)",
+                      color: picked ? "var(--t-accent)" : "#fff",
+                    }}
+                  >
+                    {fileExt(file)}
+                  </span>
+                  {file}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
 
-          <div className="status-strip">
-            {draft.sent ? "Status: verzonden" : draft.deleted ? "Status: verwijderd" : draft.draftSaved ? "Status: concept opgeslagen" : "Status: concept"}
+        {draft.attachments.length > 0 ? (
+          <div className="mail-attachments">
+            {draft.attachments.map((attachment) => (
+              <span className="attach-chip" key={attachment}>
+                <span className="file-pic">{fileExt(attachment)}</span>
+                {attachment}
+                <span
+                  style={{
+                    opacity: 0.5,
+                    marginLeft: 4,
+                    cursor: "pointer",
+                    fontWeight: 900,
+                  }}
+                  role="button"
+                  aria-label={`${attachment} verwijderen`}
+                  onClick={() => toggleListValue("attachments", attachment)}
+                >
+                  ×
+                </span>
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="mail-footer">
+          <div className="left">
+            <span
+              style={{
+                fontSize: ".88rem",
+                color: draft.sent ? "#007a5e" : "var(--c-ink-soft)",
+                fontWeight: 700,
+              }}
+            >
+              {draft.sent
+                ? "✓ Verzonden"
+                : draft.deleted
+                  ? "🗑 Verwijderd"
+                  : draft.draftSaved
+                    ? "💾 Concept opgeslagen"
+                    : "Concept"}
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <button
+              className="btn btn-ghost"
+              type="button"
+              onClick={sendMessage}
+              disabled={draft.sent}
+            >
+              Verzenden
+            </button>
+            <button className="btn btn-primary" type="button" onClick={submit}>
+              <span>Taak afronden</span>
+              <span className="arrow-circle">→</span>
+            </button>
           </div>
         </div>
-      </div>
-
-      <div className="actions">
-        <button className="primary-button" type="button" onClick={submit}>
-          Taak afronden
-        </button>
       </div>
     </section>
   );
@@ -2806,6 +2961,8 @@ const BlockProgrammingTaskView = ({
   const [runEffects, setRunEffects] = useState<ProgramRunEffects>(
     emptyProgramRunEffects,
   );
+  const [runStep, setRunStep] = useState(-1); // -1 idle; otherwise index of currently-active block
+  const [runTimer, setRunTimer] = useState<number | null>(null);
   const task = item.blockTask;
   const [paletteBlocks] = useState(() => shuffleItems(item.blockTask?.blocks ?? []));
   if (!task) {
@@ -3030,7 +3187,20 @@ const BlockProgrammingTaskView = ({
     return effects;
   };
 
+  const stopStepper = () => {
+    if (runTimer !== null) {
+      window.clearTimeout(runTimer);
+      setRunTimer(null);
+    }
+    setRunStep(-1);
+  };
+
   const playProgram = () => {
+    if (runStep >= 0) {
+      // Already running → stop.
+      stopStepper();
+      return;
+    }
     setExecuted(true);
     const effects = executeProgram();
     setRunEffects(effects);
@@ -3038,13 +3208,29 @@ const BlockProgrammingTaskView = ({
       setSpeechVisible(true);
       window.setTimeout(() => setSpeechVisible(false), 2000);
     }
+    // Walk the program step-by-step for a visual highlight in the canvas.
+    if (program.length === 0) return;
+    const interval = 600;
+    const advance = (index: number) => {
+      if (index >= program.length) {
+        setRunStep(-1);
+        setRunTimer(null);
+        return;
+      }
+      setRunStep(index);
+      const id = window.setTimeout(() => advance(index + 1), interval);
+      setRunTimer(id);
+    };
+    advance(0);
   };
   const resetProgramRun = () => {
+    stopStepper();
     setExecuted(false);
     setSpeechVisible(false);
     setAPresses(0);
     setRunEffects(emptyProgramRunEffects);
   };
+  const isRunning = runStep >= 0;
   const microbitShowsFull =
     executed &&
     aPresses >= 5 &&
@@ -3081,19 +3267,144 @@ const BlockProgrammingTaskView = ({
         ) : null}
       </QuestionHeader>
 
-      <div className="block-programming-layout">
-        <div className="program-stage">
-          <div className={`program-canvas program-canvas-${task.device ?? "bizzy"}`}>
+      <div className="blocks-shell">
+        {/* ── Palette ─────────────────────────────── */}
+        <aside className="blocks-palette">
+          {(() => {
+            // Group shuffled palette by category, preserving the order in
+            // which each category first appears.
+            const grouped: { category: string; color: string; blocks: ProgrammingBlockDefinition[] }[] = [];
+            const at = new Map<string, number>();
+            paletteBlocks.forEach((b) => {
+              if (!at.has(b.category)) {
+                at.set(b.category, grouped.length);
+                grouped.push({ category: b.category, color: b.color, blocks: [] });
+              }
+              grouped[at.get(b.category)!].blocks.push(b);
+            });
+            return grouped.map((cat) => (
+              <div className="palette-cat" key={cat.category}>
+                <div className="cat-title">
+                  <span className="cat-dot" style={{ background: cat.color }} />
+                  {cat.category}
+                </div>
+                <div className="palette-list">
+                  {cat.blocks.map((b) => {
+                    const shape = b.category === "gebeurtenissen"
+                      ? "hat"
+                      : b.isContainer ? "container" : "stack";
+                    return (
+                      <button
+                        className="palette-block-btn"
+                        key={b.label}
+                        type="button"
+                        onClick={() => addBlockToProgram(b)}
+                        title="Klik om toe te voegen"
+                      >
+                        <span
+                          className={`block block-${shape}`}
+                          style={blockStyle(b)}
+                        >
+                          <span className="block-label">{b.label}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ));
+          })()}
+        </aside>
+
+        {/* ── Canvas ──────────────────────────────── */}
+        <section className="blocks-canvas">
+          <div className="canvas-toolbar">
+            <div className="canvas-toolbar-left">
+              <h3>Werkblad</h3>
+              <span className="canvas-meta">{program.length} {program.length === 1 ? "blok" : "blokken"}</span>
+            </div>
+            <div className="canvas-toolbar-right">
+              <button
+                className="ghost-btn"
+                type="button"
+                onClick={() => { setProgram([]); resetProgramRun(); }}
+                disabled={program.length === 0}
+              >
+                Leegmaken
+              </button>
+              <button
+                className={`play-btn ${isRunning ? "is-running" : ""}`}
+                type="button"
+                onClick={playProgram}
+              >
+                {isRunning ? (
+                  <>
+                    <span className="play-glyph">■</span> Stop
+                  </>
+                ) : (
+                  <>
+                    <span className="play-glyph">▸</span> Afspelen
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className={`blocks-canvas-area ${program.length === 0 ? "empty" : ""}`}>
+            {program.length === 0 ? (
+              <div className="canvas-empty">
+                <div className="canvas-empty-icon">▾</div>
+                <strong>Klik blokken aan om je programma te bouwen</strong>
+              </div>
+            ) : null}
+            {program.map((block, index) => {
+              const def = blockByLabel.get(block.label) ?? block;
+              const shape = def.category === "gebeurtenissen"
+                ? "hat"
+                : def.isContainer ? "container" : "stack";
+              return (
+                <div
+                  className={`canvas-row ${runStep === index ? "is-active" : ""}`}
+                  key={`${block.label}-${index}`}
+                  style={{ "--depth": block.indent } as CSSProperties}
+                >
+                  <span
+                    className={`block block-${shape} ${runStep === index ? "is-active" : ""}`}
+                    style={blockStyle(def)}
+                  >
+                    <span className="block-label">{block.label}</span>
+                  </span>
+                  <button
+                    className="canvas-row-remove"
+                    type="button"
+                    aria-label="Verwijder blok"
+                    onClick={() =>
+                      setProgram((current) => current.filter((_, i) => i !== index))
+                    }
+                  >×</button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ── Device preview ──────────────────────── */}
+        <aside className="blocks-preview">
+          <div className="preview-head">
+            <h3>{task.device === "microbit" ? "micro:bit" : task.device === "sensor" ? "Sensor" : "Bizzy"}</h3>
+            <span className={`run-pill ${isRunning ? "is-running" : ""}`}>
+              <span className="run-dot" />
+              {isRunning ? `Stap ${Math.min(runStep + 1, program.length)}/${program.length}` : "Stand-by"}
+            </span>
+          </div>
+
+          <div className={`bizzy-stage device-stage-${task.device ?? "bizzy"} ${isRunning ? "is-running" : ""}`}>
             {task.device === "microbit" ? (
               <div className="microbit-device">
                 <div className="microbit-screen">{microbitDisplay}</div>
                 <div className="microbit-buttons">
-                  <button type="button" onClick={() => setAPresses((current) => current + 1)}>
-                    A
-                  </button>
-                  <button type="button" onClick={() => setAPresses((current) => Math.max(0, current - 1))}>
-                    B
-                  </button>
+                  <button type="button" onClick={() => setAPresses((c) => c + 1)}>A</button>
+                  <button type="button" onClick={() => setAPresses((c) => Math.max(0, c - 1))}>B</button>
                 </div>
               </div>
             ) : task.device === "sensor" ? (
@@ -3118,26 +3429,46 @@ const BlockProgrammingTaskView = ({
                 </button>
               </div>
             ) : (
-              <div
-                className="bizzy-robot"
-                style={{
-                  transform: `translateX(${runEffects.move * 54}px) rotate(${runEffects.rotation}deg)`,
-                }}
-              >
-                {speechVisible ? <span className="speech-bubble">Hoi!</span> : null}
-                <div className="bizzy-head" />
-                <div className="bizzy-body" />
-              </div>
+              <>
+                <div className="bizzy-floor" />
+                <div
+                  className="bizzy-mover"
+                  style={{
+                    transform: `translateX(${runEffects.move * 18}px) rotate(${runEffects.rotation}deg)`,
+                  }}
+                >
+                  {speechVisible ? <div className="bizzy-speech">Hoi!</div> : null}
+                  <svg
+                    className={`bizzy-svg ${isRunning ? "is-running" : ""}`}
+                    viewBox="0 0 144 168"
+                    width="120"
+                    height="140"
+                    aria-hidden="true"
+                  >
+                    <line x1="72" y1="18" x2="72" y2="6" stroke="#1B1D22" strokeWidth="4" strokeLinecap="round" />
+                    <circle cx="72" cy="6" r="6" fill="#E51C73" stroke="#1B1D22" strokeWidth="3" />
+                    <rect x="14" y="16" width="116" height="98" rx="28" fill="#E51C73" stroke="#1B1D22" strokeWidth="4" />
+                    <ellipse cx="42" cy="42" rx="14" ry="8" fill="#fff" opacity=".22" />
+                    <circle cx="50" cy="58" r="14" fill="#fff" stroke="#1B1D22" strokeWidth="3" />
+                    <circle cx="94" cy="58" r="14" fill="#fff" stroke="#1B1D22" strokeWidth="3" />
+                    <circle className="bizzy-pupil" cx="50" cy="58" r="6" fill="#1B1D22" />
+                    <circle className="bizzy-pupil" cx="94" cy="58" r="6" fill="#1B1D22" />
+                    {speechVisible || isRunning ? (
+                      <path d="M52 84 Q72 100 92 84" fill="none" stroke="#1B1D22" strokeWidth="5" strokeLinecap="round" />
+                    ) : (
+                      <rect x="60" y="84" width="24" height="5" rx="2.5" fill="#1B1D22" />
+                    )}
+                    <rect x="34" y="116" width="76" height="14" rx="6" fill="#1B1D22" />
+                    <rect x="30" y="128" width="34" height="32" rx="14" fill="#1B1D22" />
+                    <rect x="80" y="128" width="34" height="32" rx="14" fill="#1B1D22" />
+                    <circle cx="47" cy="144" r="5" fill="#fff" opacity=".7" />
+                    <circle cx="97" cy="144" r="5" fill="#fff" opacity=".7" />
+                  </svg>
+                </div>
+              </>
             )}
           </div>
-          <div className="workspace-buttons">
-            <button className="primary-button" type="button" onClick={playProgram}>
-              Afspelen
-            </button>
-            <button className="ghost-button" type="button" onClick={resetProgramRun}>
-              Reset
-            </button>
-          </div>
+
           {runEffects.log.length > 0 ? (
             <div className="execution-log">
               <strong>Uitvoering</strong>
@@ -3152,67 +3483,7 @@ const BlockProgrammingTaskView = ({
               {runEffects.animationPaused ? <span>Animatie: niet animeren</span> : null}
             </div>
           ) : null}
-        </div>
-
-        <div className="block-palette">
-          <strong>Blokken</strong>
-          {paletteBlocks.map((block) => (
-            <button
-              className={`program-block ${block.isContainer ? "container-block" : ""}`}
-              key={block.label}
-              style={blockStyle(block)}
-              type="button"
-              onClick={() => addBlockToProgram(block)}
-            >
-              <span>{block.label}</span>
-              <small>{block.category}</small>
-            </button>
-          ))}
-        </div>
-
-        <div className="program-workspace">
-          <div className="workspace-toolbar">
-            <strong>Werkvlak</strong>
-            <button
-              className="ghost-button"
-              type="button"
-              onClick={() => {
-                setProgram([]);
-                resetProgramRun();
-              }}
-            >
-              Leegmaken
-            </button>
-          </div>
-          <div className="program-stack">
-            {program.length === 0 ? <div className="empty-workspace">Klik blokken aan om ze toe te voegen.</div> : null}
-            {program.map((block, index) => (
-              <div
-                className="program-row"
-                key={`${block.label}-${index}`}
-                style={{ paddingLeft: `${block.indent * 28}px` }}
-              >
-                <span
-                  className={`program-block ${block.isContainer ? "container-block" : ""}`}
-                  style={blockStyle(blockByLabel.get(block.label) ?? block)}
-                >
-                  <span>{block.label}</span>
-                  <small>{block.category}</small>
-                </span>
-                <div className="row-tools">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setProgram((current) => current.filter((_, blockIndex) => blockIndex !== index))
-                    }
-                  >
-                    Verwijderen
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        </aside>
       </div>
 
       <div className="actions">
@@ -3394,6 +3665,22 @@ const MockupCardView = ({ item }: { item: AssessmentItem }) => {
   );
 };
 
+/* ─── Folder + File SVG icons used inside the file-task workspace.
+   Match the prototype's coloured folder + cream-folded paper file. */
+const FolderIcon = () => (
+  <svg className="folder-svg" viewBox="0 0 64 56" width="56" height="56">
+    <path className="tab" d="M2 8 Q2 4 6 4 H22 L28 10 H58 Q62 10 62 14 V20 H2 Z" />
+    <path className="body" d="M2 16 H62 V50 Q62 54 58 54 H6 Q2 54 2 50 Z" />
+  </svg>
+);
+const FileIcon = ({ ext }: { ext: string }) => (
+  <svg className="file-svg" viewBox="0 0 50 60" width="56" height="56">
+    <path className="body" d="M6 2 H32 L46 16 V54 Q46 58 42 58 H10 Q6 58 6 54 Z" />
+    <path className="fold" d="M32 2 L32 14 Q32 16 34 16 L46 16" />
+    <text x="14" y="46">{ext}</text>
+  </svg>
+);
+
 const FileTaskWorkspace = ({
   item,
   questionNumber,
@@ -3427,7 +3714,6 @@ const FileTaskWorkspace = ({
 
   const selectedNode = selectedNodeId ? getNodeById(state.nodes, selectedNodeId) : null;
   const activeFolderId = contextFolderId;
-  const activeFolder = getNodeById(state.nodes, activeFolderId);
   const activeItems = getChildren(state.nodes, activeFolderId);
   const clipboardNode = clipboard ? getNodeById(state.nodes, clipboard.nodeId) : null;
   const getFolderId = (name: string) =>
@@ -3719,57 +4005,73 @@ const FileTaskWorkspace = ({
                 <span>{buildPath(state.nodes, activeFolderId)}</span>
                 <span>{selectedNode ? `Geselecteerd: ${selectedNode.name}` : "Geen selectie"}</span>
               </div>
-              <div className="explorer-table" role="table" aria-label="Gesimuleerde Windows Verkenner">
-                <div className="explorer-row explorer-header" role="row">
-                  <span>Naam</span>
-                  <span>Status</span>
-                  <span>Gewijzigd op</span>
-                  <span>Type</span>
-                </div>
-                {activeFolder ? (
-                  activeItems.map((node) => (
-                    <button
-                      className={`explorer-row ${selectedNodeId === node.id ? "selected" : ""} ${
-                        contextFolderId === node.id ? "active-target" : ""
-                      }`}
-                      key={node.id}
-                      type="button"
-                      role="row"
-                      onClick={(event) => handleNodeClick(node, event.detail)}
-                      onDoubleClick={() => {
-                        if (node.type === "folder") {
-                          setContextFolderId(node.id);
-                          setSelectedNodeId(null);
-                        }
-                      }}
-                      draggable={node.parentId !== null}
-                      onDragStart={(event) => {
-                        event.dataTransfer.setData("text/plain", node.id);
-                      }}
-                      onDragOver={(event) => {
-                        if (node.type === "folder") {
+              <div
+                className={`file-grid ${activeItems.length === 0 ? "is-empty" : ""}`}
+                role="list"
+                aria-label="Gesimuleerde Windows Verkenner"
+              >
+                {activeItems.length === 0 ? (
+                  <div
+                    style={{
+                      gridColumn: "1 / -1",
+                      textAlign: "center",
+                      padding: "40px 20px",
+                      color: "var(--c-ink-mute)",
+                      fontStyle: "italic",
+                      fontSize: ".9rem",
+                    }}
+                  >
+                    Deze map is leeg — sleep er bestanden in.
+                  </div>
+                ) : (
+                  activeItems.map((node) => {
+                    const isFolder = node.type === "folder";
+                    const ext = isFolder
+                      ? ""
+                      : (node.name.split(".").pop() ?? "FILE").toUpperCase();
+                    const isDropTarget = isFolder && contextFolderId === node.id;
+                    return (
+                      <button
+                        key={node.id}
+                        type="button"
+                        role="listitem"
+                        className={`file-tile ${selectedNodeId === node.id ? "selected" : ""} ${
+                          isDropTarget ? "drop-target" : ""
+                        }`}
+                        title={`${node.name} — ${getExplorerType(node)}`}
+                        onClick={(event) => handleNodeClick(node, event.detail)}
+                        onDoubleClick={() => {
+                          if (isFolder) {
+                            setContextFolderId(node.id);
+                            setSelectedNodeId(null);
+                          }
+                        }}
+                        draggable={node.parentId !== null}
+                        onDragStart={(event) => {
+                          event.dataTransfer.setData("text/plain", node.id);
+                        }}
+                        onDragOver={(event) => {
+                          if (isFolder) {
+                            event.preventDefault();
+                          }
+                        }}
+                        onDrop={(event) => {
+                          if (!isFolder) {
+                            return;
+                          }
                           event.preventDefault();
-                        }
-                      }}
-                      onDrop={(event) => {
-                        if (node.type !== "folder") {
-                          return;
-                        }
-                        event.preventDefault();
-                        const draggedId = event.dataTransfer.getData("text/plain");
-                        handleDrop(draggedId, node.id);
-                      }}
-                    >
-                      <span className="explorer-name">
-                        <span className={`explorer-icon explorer-icon-${node.type}`} aria-hidden="true" />
-                        {node.name}
-                      </span>
-                      <span className="explorer-status" aria-label="Gesynchroniseerd">*</span>
-                      <span>25-4-2026 08:24</span>
-                      <span>{getExplorerType(node)}</span>
-                    </button>
-                  ))
-                ) : null}
+                          const draggedId = event.dataTransfer.getData("text/plain");
+                          handleDrop(draggedId, node.id);
+                        }}
+                      >
+                        <div className="icon">
+                          {isFolder ? <FolderIcon /> : <FileIcon ext={ext.slice(0, 4)} />}
+                        </div>
+                        <div className="label">{node.name}</div>
+                      </button>
+                    );
+                  })
+                )}
               </div>
               <div className="explorer-hint">
                 {clipboard && clipboardNode
@@ -3980,8 +4282,8 @@ const ResultScreen = ({
           <h2>Jouw nulmeting is klaar.</h2>
           <p className="intro">
             Je scoorde <strong>{result.totalScore} van de {result.maxScore} punten</strong>.
-            De zelfinschatting telt niet mee in het eindresultaat — we kijken samen met je
-            mentor naar je groeipunten.
+            De zelfinschatting telt niet mee in het eindresultaat. Dit is een nulmeting —
+            er is geen "goed" of "fout".
           </p>
           <p className="meta">Sessie: {displayCode}</p>
           {selfAssessmentScore !== null && selfAssessmentDifference !== null ? (
