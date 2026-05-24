@@ -19,6 +19,7 @@ import {
 import {
   buildPath,
   copyNode,
+  createFile,
   createFolder,
   deleteNode,
   getChildren,
@@ -50,6 +51,51 @@ import type {
 type EntryView = "intro" | "adminAccess" | "admin";
 type ConflictChoice = "overwrite" | "rename" | "cancel";
 type ExplorerClipboard = { mode: "cut" | "copy"; nodeId: string } | null;
+type ExplorerNewItemType = "folder" | "shortcut" | "bitmap" | "word" | "powerpoint";
+
+const explorerNewItems: Array<{
+  type: ExplorerNewItemType;
+  label: string;
+  defaultName: string;
+  nodeKind: "folder" | "file";
+  iconClass: string;
+}> = [
+  {
+    type: "folder",
+    label: "Map",
+    defaultName: "Nieuwe map",
+    nodeKind: "folder",
+    iconClass: "new-item-icon-folder",
+  },
+  {
+    type: "shortcut",
+    label: "Snelkoppeling",
+    defaultName: "Nieuwe snelkoppeling.url",
+    nodeKind: "file",
+    iconClass: "new-item-icon-shortcut",
+  },
+  {
+    type: "bitmap",
+    label: "Bitmapafbeelding",
+    defaultName: "Nieuwe afbeelding.bmp",
+    nodeKind: "file",
+    iconClass: "new-item-icon-image",
+  },
+  {
+    type: "word",
+    label: "Microsoft Word-document",
+    defaultName: "Doc1.docx",
+    nodeKind: "file",
+    iconClass: "new-item-icon-word",
+  },
+  {
+    type: "powerpoint",
+    label: "Microsoft PowerPoint-presentatie",
+    defaultName: "Presentatie1.pptx",
+    nodeKind: "file",
+    iconClass: "new-item-icon-powerpoint",
+  },
+];
 
 type SubmitAnswerPayload = {
   section: AssessmentSection;
@@ -3707,6 +3753,9 @@ const FileTaskWorkspace = ({
     nodeId: string;
     timestamp: number;
   } | null>(null);
+  const [isNewMenuOpen, setIsNewMenuOpen] = useState(false);
+  const [renamingNodeId, setRenamingNodeId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
 
   if (!item.fileTask || !state) {
     return null;
@@ -3774,10 +3823,30 @@ const FileTaskWorkspace = ({
     if (!selectedNodeId || !selectedNode) {
       return;
     }
-    const nextName = window.prompt("Nieuwe naam:", selectedNode.name);
-    if (nextName) {
-      onChange(renameNode(state, selectedNodeId, nextName));
+    if (!selectedNode.parentId) {
+      return;
     }
+    setRenamingNodeId(selectedNodeId);
+    setRenameDraft(selectedNode.name);
+  };
+
+  const commitInlineRename = () => {
+    if (!renamingNodeId) {
+      return;
+    }
+
+    const currentNode = getNodeById(state.nodes, renamingNodeId);
+    const nextName = renameDraft.trim();
+    setRenamingNodeId(null);
+    if (!currentNode || !currentNode.parentId || !nextName || nextName === currentNode.name) {
+      return;
+    }
+    onChange(renameNode(state, renamingNodeId, nextName));
+  };
+
+  const cancelInlineRename = () => {
+    setRenamingNodeId(null);
+    setRenameDraft("");
   };
 
   const handleNodeClick = (node: Pt1Node, clickCount: number) => {
@@ -3794,18 +3863,27 @@ const FileTaskWorkspace = ({
     setLastNodeClick({ nodeId: node.id, timestamp: now });
 
     if (isSecondSingleClick) {
-      const nextName = window.prompt("Nieuwe naam:", node.name);
-      if (nextName) {
-        onChange(renameNode(state, node.id, nextName));
-      }
+      setRenamingNodeId(node.id);
+      setRenameDraft(node.name);
     }
   };
 
-  const createNewFolder = () => {
-    const nextName = window.prompt("Naam van de nieuwe map:", "Schoolwerk");
-    if (nextName) {
-      onChange(createFolder(state, activeFolderId, nextName));
+  const createNewItem = (itemType: ExplorerNewItemType) => {
+    const definition = explorerNewItems.find((candidate) => candidate.type === itemType);
+    if (!definition) {
+      return;
     }
+
+    const nodeId = crypto.randomUUID();
+    const nextState =
+      definition.nodeKind === "folder"
+        ? createFolder(state, activeFolderId, definition.defaultName, nodeId)
+        : createFile(state, activeFolderId, definition.defaultName, nodeId);
+    onChange(nextState);
+    setSelectedNodeId(nodeId);
+    setRenamingNodeId(nodeId);
+    setRenameDraft(definition.defaultName);
+    setIsNewMenuOpen(false);
   };
 
   const deleteSelectedNode = () => {
@@ -3883,17 +3961,46 @@ const FileTaskWorkspace = ({
               onClick={() => onChange(undoPt1(state))}
               disabled={state.undoStack.length === 0}
             >
+              <span className="command-icon command-icon-undo" aria-hidden="true" />
               Ongedaan maken
             </button>
-            <button className="explorer-command" type="button" onClick={createNewFolder}>
-              Nieuw
-            </button>
+            <div className="explorer-new-menu">
+              <button
+                className="explorer-command"
+                type="button"
+                aria-expanded={isNewMenuOpen}
+                onClick={() => setIsNewMenuOpen((open) => !open)}
+              >
+                <span className="command-icon command-icon-new" aria-hidden="true" />
+                Nieuw
+                <span className="command-chevron" aria-hidden="true" />
+              </button>
+              {isNewMenuOpen ? (
+                <div className="explorer-new-dropdown" role="menu" aria-label="Nieuw item">
+                  {explorerNewItems.map((newItem) => (
+                    <button
+                      key={newItem.type}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => createNewItem(newItem.type)}
+                    >
+                      <span
+                        className={`new-item-icon ${newItem.iconClass}`}
+                        aria-hidden="true"
+                      />
+                      {newItem.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             <button
               className="explorer-command"
               type="button"
               disabled={!selectedNode?.parentId}
               onClick={() => selectedNodeId && setClipboard({ mode: "cut", nodeId: selectedNodeId })}
             >
+              <span className="command-icon command-icon-cut" aria-hidden="true" />
               Knippen
             </button>
             <button
@@ -3902,6 +4009,7 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={() => selectedNodeId && setClipboard({ mode: "copy", nodeId: selectedNodeId })}
             >
+              <span className="command-icon command-icon-copy" aria-hidden="true" />
               Kopiëren
             </button>
             <button
@@ -3910,6 +4018,7 @@ const FileTaskWorkspace = ({
               disabled={!clipboardNode}
               onClick={pasteClipboard}
             >
+              <span className="command-icon command-icon-paste" aria-hidden="true" />
               Plakken
             </button>
             <button
@@ -3918,6 +4027,7 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={renameSelectedNode}
             >
+              <span className="command-icon command-icon-rename" aria-hidden="true" />
               Naam wijzigen
             </button>
             <button
@@ -3926,6 +4036,7 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={() => window.alert("Delen heb je voor deze opdracht niet nodig.")}
             >
+              <span className="command-icon command-icon-share" aria-hidden="true" />
               Delen
             </button>
             <button
@@ -3934,6 +4045,7 @@ const FileTaskWorkspace = ({
               disabled={!selectedNode?.parentId}
               onClick={deleteSelectedNode}
             >
+              <span className="command-icon command-icon-delete" aria-hidden="true" />
               Verwijderen
             </button>
           </div>
@@ -4067,17 +4179,40 @@ const FileTaskWorkspace = ({
                         <div className="icon">
                           {isFolder ? <FolderIcon /> : <FileIcon ext={ext.slice(0, 4)} />}
                         </div>
-                        <div className="label">{node.name}</div>
+                        {renamingNodeId === node.id ? (
+                          <input
+                            className="file-rename-input"
+                            value={renameDraft}
+                            autoFocus
+                            onFocus={(event) => event.currentTarget.select()}
+                            onClick={(event) => event.stopPropagation()}
+                            onDoubleClick={(event) => event.stopPropagation()}
+                            onChange={(event) => setRenameDraft(event.target.value)}
+                            onBlur={commitInlineRename}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                commitInlineRename();
+                              }
+                              if (event.key === "Escape") {
+                                event.preventDefault();
+                                cancelInlineRename();
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div className="label">{node.name}</div>
+                        )}
                       </button>
                     );
                   })
                 )}
               </div>
-              <div className="explorer-hint">
-                {clipboard && clipboardNode
-                  ? `${clipboard.mode === "cut" ? "Geknipt" : "Gekopieerd"}: ${clipboardNode.name}. Kies een map en klik op Plakken.`
-                  : "Instructie: kies eerst een bestand of map. Gebruik daarna de knoppen bovenaan. Hernoemen kan ook door een geselecteerd item nog een keer aan te klikken."}
-              </div>
+              {clipboard && clipboardNode ? (
+                <div className="explorer-hint">
+                  {`${clipboard.mode === "cut" ? "Geknipt" : "Gekopieerd"}: ${clipboardNode.name}. Kies een map en klik op Plakken.`}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
