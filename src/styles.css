@@ -2777,6 +2777,74 @@ main {
   min-width: 0;
 }
 
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  align-content: start;
+  gap: 14px 10px;
+  min-height: 320px;
+  padding: 18px;
+  overflow: auto;
+  background: #ffffff;
+}
+
+.file-tile {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-height: 104px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 8px 6px;
+  background: transparent;
+  color: #1f2937;
+  text-align: center;
+}
+
+.file-tile:not(:disabled):hover {
+  background: #eef6ff;
+  border-color: #c7ddf4;
+}
+
+.file-tile.selected {
+  background: #cfe8ff;
+  border-color: #4a90d9;
+}
+
+.file-tile.drop-target {
+  outline: 2px solid #0078d4;
+  outline-offset: 2px;
+}
+
+.file-tile .icon {
+  display: grid;
+  place-items: center;
+  height: 58px;
+}
+
+.file-tile .label {
+  max-width: 100%;
+  color: #1f2937;
+  font-size: 0.84rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.file-rename-input {
+  width: min(136px, 100%);
+  border: 1px solid #0078d4;
+  border-radius: 2px;
+  padding: 2px 4px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  text-align: center;
+}
+
+.file-rename-input:focus {
+  outline: 1px solid #0078d4;
+}
+
 .explorer-address {
   display: flex;
   justify-content: space-between;
