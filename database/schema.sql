@@ -1,68 +1,55 @@
 -- Nulmetingen DG Assessment Database Schema
+-- Persoonlijke afnamecodes worden alleen gebruikt voor statusbeheer.
+-- Resultaten worden zonder afnamecode, naam of leerlingnummer opgeslagen.
 
--- Sessions Table
-CREATE TABLE IF NOT EXISTS sessions (
-  sessionId TEXT PRIMARY KEY,
-  instrumentId TEXT NOT NULL,
-  classToken TEXT,
-  classId TEXT,
-  anonymousAttemptId TEXT,
-  startTime DATETIME DEFAULT CURRENT_TIMESTAMP,
-  endTime DATETIME,
-  status TEXT DEFAULT 'active', -- active, completed, abandoned
-  selfAssessmentScore INTEGER,
-  privacyConsent BOOLEAN DEFAULT 0
+CREATE TABLE IF NOT EXISTS students (
+  id BIGSERIAL PRIMARY KEY,
+  student_number TEXT UNIQUE,
+  participant_label TEXT,
+  access_code TEXT NOT NULL,
+  class_code TEXT NOT NULL,
+  version_id TEXT NOT NULL,
+  import_batch TEXT,
+  status TEXT NOT NULL DEFAULT 'not_started',
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Responses Table (MC, PT2, PT3)
-CREATE TABLE IF NOT EXISTS responses (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  sessionId TEXT NOT NULL,
-  instrumentId TEXT NOT NULL,
-  blockId TEXT NOT NULL, -- mc-block, pt2-block, pt3-block
-  itemId TEXT NOT NULL,
-  presentedOptionOrder TEXT, -- JSON array
-  selectedOptionId TEXT,
-  selectedOptionIds TEXT, -- JSON array for multiple-select
-  selectedUnknown BOOLEAN DEFAULT 0,
-  responseType TEXT, -- correct, incorrect, unknown, skipped
-  isCorrect BOOLEAN,
-  score INTEGER DEFAULT 0,
-  maxScore INTEGER DEFAULT 0,
-  responseTimeMs INTEGER,
-  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (sessionId) REFERENCES sessions(sessionId)
+CREATE TABLE IF NOT EXISTS assessment_sessions (
+  id UUID PRIMARY KEY,
+  access_code TEXT,
+  class_code TEXT,
+  class_id TEXT,
+  class_token TEXT,
+  anonymous_attempt_id TEXT,
+  version_id TEXT NOT NULL,
+  session_json JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- PT1 Actions Table
-CREATE TABLE IF NOT EXISTS pt1_actions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  sessionId TEXT NOT NULL,
-  actionType TEXT NOT NULL, -- create-folder, move-file, rename-file, copy, delete, undo
-  sourcePath TEXT,
-  targetPath TEXT,
-  oldName TEXT,
-  newName TEXT,
-  extra TEXT,
-  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (sessionId) REFERENCES sessions(sessionId)
+CREATE TABLE IF NOT EXISTS assessment_results (
+  session_id UUID PRIMARY KEY,
+  class_code TEXT,
+  class_id TEXT,
+  version_id TEXT NOT NULL,
+  total_score INTEGER NOT NULL,
+  max_score INTEGER NOT NULL,
+  percentage INTEGER NOT NULL,
+  self_assessment_score INTEGER,
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ NOT NULL,
+  result_json JSONB NOT NULL,
+  event_logs JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- PT1 Final States
-CREATE TABLE IF NOT EXISTS pt1_final_states (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  sessionId TEXT NOT NULL,
-  fileSystemState TEXT, -- JSON representation
-  pt1Score INTEGER,
-  tasksCompleted TEXT, -- JSON array
-  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (sessionId) REFERENCES sessions(sessionId)
-);
-
--- Indexes for performance
-CREATE INDEX idx_sessions_instrumentId ON sessions(instrumentId);
-CREATE INDEX idx_sessions_status ON sessions(status);
-CREATE INDEX idx_responses_sessionId ON responses(sessionId);
-CREATE INDEX idx_responses_blockId ON responses(blockId);
-CREATE INDEX idx_pt1_actions_sessionId ON pt1_actions(sessionId);
-CREATE INDEX idx_pt1_final_states_sessionId ON pt1_final_states(sessionId);
+CREATE INDEX IF NOT EXISTS idx_students_class_code ON students(class_code);
+CREATE INDEX IF NOT EXISTS idx_students_access_code ON students(access_code);
+CREATE INDEX IF NOT EXISTS idx_students_status ON students(status);
+CREATE INDEX IF NOT EXISTS idx_sessions_access_code ON assessment_sessions(access_code);
+CREATE INDEX IF NOT EXISTS idx_sessions_class_code ON assessment_sessions(class_code);
+CREATE INDEX IF NOT EXISTS idx_results_class_code ON assessment_results(class_code);
+CREATE INDEX IF NOT EXISTS idx_results_version_id ON assessment_results(version_id);

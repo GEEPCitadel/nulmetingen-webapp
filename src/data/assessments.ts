@@ -456,6 +456,7 @@ const createSimulation = (folders: string[], files: string[]): Pt1Simulation => 
   };
 
   addFolder("Thuis");
+  ["Thuis/Bureaublad", "Thuis/Downloads", "Thuis/Documenten", "Thuis/Afbeeldingen", "Thuis/OneDrive"].forEach(addFolder);
   folders.forEach(addFolder);
   files.forEach(addFile);
 
@@ -2477,53 +2478,53 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     "lj1-vmbo": {
       id: "lj1v-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nMaak in de oefenomgeving een map School. Maak daarin de mappen Nederlands en Mens en Maatschappij. Verplaats werkblad_mens_en_maatschappij.pdf naar de juiste map en hernoem nieuw_document.docx naar verslag_nederlands.docx.`,
-      startFolders: ["Thuis/Oefenomgeving"],
-      startFiles: ["Thuis/Oefenomgeving/werkblad_mens_en_maatschappij.pdf", "Thuis/Oefenomgeving/nieuw_document.docx"],
+      instruction: `${v3FileInstruction}\nWerk in OneDrive. Maak de map Project Dieren. Maak daarin de submappen Tekst, Afbeeldingen en Bronnen. Verplaats de drie projectbestanden naar de juiste submappen en hernoem concept_dieren.docx naar project_dieren_verslag.docx.`,
+      startFolders: ["Thuis/OneDrive"],
+      startFiles: ["Thuis/OneDrive/concept_dieren.docx", "Thuis/OneDrive/foto_kat.jpg", "Thuis/OneDrive/bron_dieren.pdf"],
       tasks: [
-        { id: "school", description: "map School correct.", expectedPath: "Thuis/Oefenomgeving/School", points: 1 },
-        { id: "subjects", description: "twee vakmappen correct.", expectedPaths: ["Thuis/Oefenomgeving/School/Nederlands", "Thuis/Oefenomgeving/School/Mens en Maatschappij"], points: 1 },
-        { id: "move", description: "bestand correct verplaatst.", expectedPath: "Thuis/Oefenomgeving/School/Mens en Maatschappij/werkblad_mens_en_maatschappij.pdf", points: 1 },
-        { id: "rename", description: "bestand correct hernoemd.", expectedPath: "Thuis/Oefenomgeving/School/Nederlands/verslag_nederlands.docx", forbiddenPaths: ["Thuis/Oefenomgeving/nieuw_document.docx"], points: 1 },
+        { id: "main", description: "hoofdmap Project Dieren correct.", expectedPath: "Thuis/OneDrive/Project Dieren", points: 1 },
+        { id: "subfolders", description: "drie projectmappen correct.", expectedPaths: ["Thuis/OneDrive/Project Dieren/Tekst", "Thuis/OneDrive/Project Dieren/Afbeeldingen", "Thuis/OneDrive/Project Dieren/Bronnen"], points: 1 },
+        { id: "placed", description: "afbeelding en bron correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Project Dieren/Afbeeldingen/foto_kat.jpg", "Thuis/OneDrive/Project Dieren/Bronnen/bron_dieren.pdf"], points: 1 },
+        { id: "rename", description: "verslag correct hernoemd en geplaatst.", expectedPath: "Thuis/OneDrive/Project Dieren/Tekst/project_dieren_verslag.docx", forbiddenPaths: ["Thuis/OneDrive/concept_dieren.docx"], points: 1 },
       ],
     },
     "lj1-hv": {
       id: "lj1h-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nMaak een map Project Water. Maak daarin Bronnen, Afbeeldingen en Verslag. Verplaats drie bestanden naar de juiste map en hernoem het verslagbestand naar project_water_verslag.docx.`,
-      startFolders: ["Thuis/Oefenomgeving"],
-      startFiles: ["Thuis/Oefenomgeving/bron_water.pdf", "Thuis/Oefenomgeving/waterfoto.png", "Thuis/Oefenomgeving/concept_verslag.docx"],
+      instruction: `${v3FileInstruction}\nWerk in OneDrive. Maak de hoofdmap Project Water. Maak daarin Bronnen, Afbeeldingen en Verslag. Verplaats de vier bestanden naar de juiste map. Hernoem concept_verslag.docx naar project_water_verslag.docx en presentatie_water.pptx naar project_water_presentatie.pptx.`,
+      startFolders: ["Thuis/OneDrive"],
+      startFiles: ["Thuis/OneDrive/bron_water.pdf", "Thuis/OneDrive/waterfoto.png", "Thuis/OneDrive/concept_verslag.docx", "Thuis/OneDrive/presentatie_water.pptx"],
       tasks: [
-        { id: "main", description: "hoofdmap correct.", expectedPath: "Thuis/Oefenomgeving/Project Water", points: 1 },
-        { id: "subfolders", description: "submappen correct.", expectedPaths: ["Thuis/Oefenomgeving/Project Water/Bronnen", "Thuis/Oefenomgeving/Project Water/Afbeeldingen", "Thuis/Oefenomgeving/Project Water/Verslag"], points: 1 },
-        { id: "placed", description: "minimaal 2 van 3 bestanden correct geplaatst.", expectedPaths: ["Thuis/Oefenomgeving/Project Water/Bronnen/bron_water.pdf", "Thuis/Oefenomgeving/Project Water/Afbeeldingen/waterfoto.png"], points: 1 },
-        { id: "rename", description: "verslagbestand correct hernoemd.", expectedPath: "Thuis/Oefenomgeving/Project Water/Verslag/project_water_verslag.docx", forbiddenPaths: ["Thuis/Oefenomgeving/concept_verslag.docx"], points: 1 },
+        { id: "main", description: "hoofdmap Project Water correct.", expectedPath: "Thuis/OneDrive/Project Water", points: 1 },
+        { id: "subfolders", description: "submappen correct.", expectedPaths: ["Thuis/OneDrive/Project Water/Bronnen", "Thuis/OneDrive/Project Water/Afbeeldingen", "Thuis/OneDrive/Project Water/Verslag"], points: 1 },
+        { id: "placed", description: "bestanden per type correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Project Water/Bronnen/bron_water.pdf", "Thuis/OneDrive/Project Water/Afbeeldingen/waterfoto.png"], points: 1 },
+        { id: "rename", description: "twee bestanden correct hernoemd en geplaatst.", expectedPaths: ["Thuis/OneDrive/Project Water/Verslag/project_water_verslag.docx", "Thuis/OneDrive/Project Water/Verslag/project_water_presentatie.pptx"], forbiddenPaths: ["Thuis/OneDrive/concept_verslag.docx", "Thuis/OneDrive/presentatie_water.pptx"], points: 1 },
       ],
     },
     "lj3-vmbo": {
       id: "lj3v-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nOrden een projectmap. Maak Actueel en Archief. Zet de nieuwste versie van het verslag in Actueel, oudere versies in Archief, en hernoem de nieuwste versie volgens stageverslag_v3_definitief.docx.`,
-      startFolders: ["Thuis/Projectmap"],
-      startFiles: ["Thuis/Projectmap/stageverslag_v1.docx", "Thuis/Projectmap/stageverslag_v2.docx", "Thuis/Projectmap/stageverslag_v3.docx"],
+      instruction: `${v3FileInstruction}\nWerk in OneDrive in de map Stageproject. Maak de mappen Actueel en Oud. Zet de nieuwste versie van het stageverslag in Actueel, zet oudere versies in Oud en hernoem stageverslag_v3.docx naar stageverslag_2026_definitief.docx.`,
+      startFolders: ["Thuis/OneDrive/Stageproject"],
+      startFiles: ["Thuis/OneDrive/Stageproject/stageverslag_v1.docx", "Thuis/OneDrive/Stageproject/stageverslag_v2.docx", "Thuis/OneDrive/Stageproject/stageverslag_v3.docx", "Thuis/OneDrive/Stageproject/foto_stage.jpg"],
       tasks: [
-        { id: "folders", description: "mappen correct.", expectedPaths: ["Thuis/Projectmap/Actueel", "Thuis/Projectmap/Archief"], points: 1 },
-        { id: "newest", description: "nieuwste versie herkend.", expectedPath: "Thuis/Projectmap/Actueel/stageverslag_v3_definitief.docx", points: 1 },
-        { id: "archive", description: "archief correct gebruikt.", expectedPaths: ["Thuis/Projectmap/Archief/stageverslag_v1.docx", "Thuis/Projectmap/Archief/stageverslag_v2.docx"], points: 1 },
-        { id: "name", description: "juiste naamgeving.", expectedPath: "Thuis/Projectmap/Actueel/stageverslag_v3_definitief.docx", forbiddenPaths: ["Thuis/Projectmap/stageverslag_v3.docx"], points: 1 },
+        { id: "folders", description: "mappen Actueel en Oud correct.", expectedPaths: ["Thuis/OneDrive/Stageproject/Actueel", "Thuis/OneDrive/Stageproject/Oud"], points: 1 },
+        { id: "newest", description: "nieuwste versie herkend en correct geplaatst.", expectedPath: "Thuis/OneDrive/Stageproject/Actueel/stageverslag_2026_definitief.docx", points: 1 },
+        { id: "archive", description: "oudere versies correct gearchiveerd.", expectedPaths: ["Thuis/OneDrive/Stageproject/Oud/stageverslag_v1.docx", "Thuis/OneDrive/Stageproject/Oud/stageverslag_v2.docx"], points: 1 },
+        { id: "name", description: "juiste definitieve bestandsnaam.", expectedPath: "Thuis/OneDrive/Stageproject/Actueel/stageverslag_2026_definitief.docx", forbiddenPaths: ["Thuis/OneDrive/Stageproject/stageverslag_v3.docx"], points: 1 },
       ],
     },
     "lj3-hv": {
       id: "lj3h-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nOrden projectbestanden met versies. Maak Onderzoek, Data, Bronnen en Archief. Plaats bestanden op basis van type en versie. Zet alleen de definitieve versie in de hoofdmap Onderzoek.`,
-      startFolders: ["Thuis/Project"],
-      startFiles: ["Thuis/Project/onderzoek_v1.docx", "Thuis/Project/onderzoek_definitief.docx", "Thuis/Project/data.csv", "Thuis/Project/bron.pdf"],
+      instruction: `${v3FileInstruction}\nWerk in OneDrive in Project Onderzoek. Maak daarin de mappen Data, Bronnen, Beelden en Archief. Plaats bestanden op basis van type en versie. Zet alleen de definitieve versie in Project Onderzoek en archiveer de oude versie.`,
+      startFolders: ["Thuis/OneDrive/Project Onderzoek"],
+      startFiles: ["Thuis/OneDrive/Project Onderzoek/onderzoek_v1.docx", "Thuis/OneDrive/Project Onderzoek/onderzoek_definitief.docx", "Thuis/OneDrive/Project Onderzoek/resultaten.csv", "Thuis/OneDrive/Project Onderzoek/bron_artikel.pdf", "Thuis/OneDrive/Project Onderzoek/grafiek.png"],
       tasks: [
-        { id: "structure", description: "mapstructuur correct.", expectedPaths: ["Thuis/Project/Onderzoek", "Thuis/Project/Onderzoek/Data", "Thuis/Project/Onderzoek/Bronnen", "Thuis/Project/Onderzoek/Archief"], points: 1 },
-        { id: "types", description: "bestanden per type correct geplaatst.", expectedPaths: ["Thuis/Project/Onderzoek/Data/data.csv", "Thuis/Project/Onderzoek/Bronnen/bron.pdf"], points: 1 },
-        { id: "versions", description: "versies correct onderscheiden.", expectedPath: "Thuis/Project/Onderzoek/Archief/onderzoek_v1.docx", points: 1 },
-        { id: "final", description: "definitieve versie correct benoemd/geplaatst.", expectedPath: "Thuis/Project/Onderzoek/onderzoek_definitief.docx", points: 1 },
+        { id: "structure", description: "mapstructuur correct.", expectedPaths: ["Thuis/OneDrive/Project Onderzoek/Data", "Thuis/OneDrive/Project Onderzoek/Bronnen", "Thuis/OneDrive/Project Onderzoek/Beelden", "Thuis/OneDrive/Project Onderzoek/Archief"], points: 1 },
+        { id: "types", description: "data, bron en beeld correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Project Onderzoek/Data/resultaten.csv", "Thuis/OneDrive/Project Onderzoek/Bronnen/bron_artikel.pdf", "Thuis/OneDrive/Project Onderzoek/Beelden/grafiek.png"], points: 1 },
+        { id: "versions", description: "oude versie correct gearchiveerd.", expectedPath: "Thuis/OneDrive/Project Onderzoek/Archief/onderzoek_v1.docx", points: 1 },
+        { id: "final", description: "definitieve versie in hoofdmap behouden.", expectedPath: "Thuis/OneDrive/Project Onderzoek/onderzoek_definitief.docx", forbiddenPaths: ["Thuis/OneDrive/Project Onderzoek/Archief/onderzoek_definitief.docx"], points: 1 },
       ],
     },
   };

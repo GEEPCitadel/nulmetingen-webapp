@@ -53,6 +53,7 @@ type EntryView = "intro" | "adminAccess" | "admin";
 type ConflictChoice = "overwrite" | "rename" | "cancel";
 type ExplorerClipboard = { mode: "cut" | "copy"; nodeId: string } | null;
 type ExplorerNewItemType = "folder" | "shortcut" | "bitmap" | "word" | "powerpoint";
+type ExplorerSortKey = "name" | "modified" | "type" | "size";
 
 const explorerNewItems: Array<{
   type: ExplorerNewItemType;
@@ -106,7 +107,8 @@ type SubmitAnswerPayload = {
 };
 
 type ApiStudent = {
-  studentNumber: string;
+  studentNumber?: string;
+  participantLabel?: string;
   accessCode: string;
   classCode: string;
   versionId: AssessmentVersion["id"];
@@ -167,7 +169,7 @@ const getInitialStartContext = () => {
 
   return {
     assessmentId,
-    classToken: url.searchParams.get("classToken") ?? "",
+    classToken: url.searchParams.get("code") ?? url.searchParams.get("classToken") ?? "",
   };
 };
 
@@ -289,6 +291,13 @@ const createPdfDocument = (lines: string[]) => {
   pdf += `startxref\n${xrefOffset}\n%%EOF`;
   return pdf;
 };
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 
 const formatTime = (totalSeconds: number) => {
   const minutes = Math.floor(Math.max(totalSeconds, 0) / 60);
@@ -423,10 +432,9 @@ const App = () => {
   }, []);
 
   const startAssessment = async () => {
-    const assessment = assessmentMap[startContext.assessmentId];
-    const classToken = startContext.classToken.trim();
-    if (!assessment || !classToken) {
-      setLearnerCodeError("Gebruik een startlink met klascode of vul een classToken in.");
+    const code = startContext.classToken.trim().toUpperCase();
+    if (!code) {
+      setLearnerCodeError("Vul je persoonlijke afnamecode in.");
       return;
     }
 
@@ -437,20 +445,37 @@ const App = () => {
 
     setIsStarting(true);
     try {
+      const data = await requestJson<StudentLoginResponse>("/api/student-login", {
+        method: "POST",
+        body: JSON.stringify({ code }),
+      });
+
+      if (data.status === "completed") {
+        setLearnerCodeError("Deze afnamecode is al afgerond. Vraag je docent om de code opnieuw open te zetten.");
+        return;
+      }
+
+      if (data.session) {
+        setSession(data.session);
+        setLearnerCodeError("");
+        return;
+      }
+
+      const assessment = assessmentMap[data.student.versionId];
       const anonymousAttemptId = crypto.randomUUID();
-      const classId = classIdFromToken(classToken);
       const metadata: SessionMetadata = {
-        classToken,
-        classId,
-        classCode: classId,
+        accessCode: data.student.accessCode,
+        participantLabel: data.student.participantLabel,
+        classId: data.student.classCode,
+        classCode: data.student.classCode,
         anonymousAttemptId,
         privacyConsent: true,
         anonymousCode: anonymousAttemptId.slice(0, 8),
       };
-      setSession(createSession(assessment, classToken, metadata));
+      setSession(createSession(assessment, data.student.accessCode, metadata));
       setLearnerCodeError("");
     } catch {
-      setLearnerCodeError("De nulmeting kon niet worden gestart.");
+      setLearnerCodeError("Deze afnamecode is niet gevonden of de nulmeting kon niet worden gestart.");
     } finally {
       setIsStarting(false);
     }
@@ -644,7 +669,7 @@ const App = () => {
             setLearnerCodeError("");
           }}
           onGenerateClassToken={() => {
-            setStartContext((current) => ({ ...current, classToken: newClassToken() }));
+            setStartContext((current) => ({ ...current, classToken: "" }));
             setLearnerCodeError("");
           }}
           onStart={startAssessment}
@@ -818,11 +843,11 @@ const StudentStartScreen = ({
           </p>
 
           <label className="field-block welcome-field">
-            <span className="field-label">Jouw leerlingcode</span>
+            <span className="field-label">Jouw persoonlijke afnamecode</span>
             <input
               className="field-input"
               value={classToken}
-              placeholder="Bijv. LJ1-042"
+              placeholder="Bijv. K7M4Q2"
               autoFocus
               onChange={(event) => onClassTokenChange(event.target.value)}
               onKeyDown={(event) => {
@@ -869,7 +894,7 @@ const StudentStartScreen = ({
             <li>De voortgangsmeting bestaat uit meerdere opdrachten en duurt <strong>ongeveer 30 minuten</strong>.</li>
             <li>Sommige vragen zijn makkelijker, andere moeilijker. Weet je het echt niet? Kies dan <em>'Ik weet het niet.'</em> Dat is prima — geen stress.</li>
             <li>Je hoeft geen internet te gebruiken voor de vragen.</li>
-            <li>Per ongeluk afgesloten? Vraag je docent om de startlink opnieuw.</li>
+            <li>Per ongeluk afgesloten? Vul dezelfde afnamecode opnieuw in.</li>
             <li>Aan het einde zie je hoeveel punten je hebt gehaald.</li>
           </ul>
         </div>
@@ -934,8 +959,8 @@ const AdminAccessScreen = ({
     <div className="rd-modal" role="dialog" aria-labelledby="admin-access-title">
       <h3 id="admin-access-title">Beheeromgeving openen</h3>
       <p>
-        Met de beheercode open je de docentomgeving om leerlingnummers te
-        importeren en resultaten te bekijken.
+        Met de beheercode open je de docentomgeving om afnamecodes te
+        beheren en de voortgang per klas te bekijken.
       </p>
       <label className="field-block">
         <span className="field-label">Beheercode</span>
@@ -981,7 +1006,7 @@ const AdminScreen = ({
   const [students, setStudents] = useState<ApiStudent[]>([]);
   const [versionId, setVersionId] = useState<AssessmentVersion["id"]>("lj1-vmbo");
   const [importBatch, setImportBatch] = useState("");
-  const [importText, setImportText] = useState("");
+  const [classPlanText, setClassPlanText] = useState("vmbo1a; 3; Noor Jansen, Samira B., Leerling 03");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -1008,22 +1033,42 @@ const AdminScreen = ({
     void loadStudents();
   }, []);
 
-  const parseImportRows = () =>
-    importText
+  const parseClassPlanRows = () =>
+    classPlanText
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean)
-      .map((line) => {
-        const [first = "", second = ""] = line.split(/[,\t; ]+/).map((part) => part.trim());
-        const accessCode = /^\d{4}$/.test(first) ? first : second;
-        const classCode = /^\d{4}$/.test(first) ? second : first;
-        return { accessCode, classCode };
+      .flatMap((line, lineIndex) => {
+        const [classCodeRaw = "", countRaw = "", namesRaw = ""] = line.split(";").map((part) => part.trim());
+        const classCode = classCodeRaw.toLowerCase();
+        const count = Number.parseInt(countRaw, 10);
+
+        if (!classCode) throw new Error(`Regel ${lineIndex + 1}: klasnaam ontbreekt.`);
+        if (!Number.isFinite(count) || count < 1 || count > 250) {
+          throw new Error(`Regel ${lineIndex + 1}: aantal moet tussen 1 en 250 liggen.`);
+        }
+
+        const names = namesRaw
+          .split(/[,|]/)
+          .map((name) => name.trim())
+          .filter(Boolean);
+
+        return Array.from({ length: count }, (_, index) => ({
+          classCode,
+          participantLabel: names[index] || `Leerling ${String(index + 1).padStart(2, "0")}`,
+        }));
       });
 
   const importStudents = async () => {
-    const rows = parseImportRows();
-    if (rows.length === 0) {
-      setError("Plak eerst leerlingregels, bijvoorbeeld: vmbo1a 1234.");
+    let rows: Array<{ classCode: string; participantLabel: string }>;
+    try {
+      rows = parseClassPlanRows();
+      if (rows.length === 0) {
+        setError("Vul minimaal een klasregel in, bijvoorbeeld: vmbo1a; 28; Noor Jansen, Samira B.");
+        return;
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "De klasregels konden niet worden gelezen.");
       return;
     }
 
@@ -1039,14 +1084,61 @@ const AdminScreen = ({
         }),
       });
       setStudents(data.students);
-      setMessage(`${data.importedCount ?? rows.length} leerlingen geimporteerd.`);
+      setMessage(`${data.importedCount ?? rows.length} afnamecodes aangemaakt.`);
       setError("");
-      setImportText("");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Importeren is niet gelukt.");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getExportRows = () =>
+    filteredStudents.map((student) => ({
+      Afnamecode: student.accessCode,
+      Leerling: student.participantLabel || "",
+      Klas: student.classCode,
+      Nulmeting: assessmentLabels[student.versionId] ?? student.versionId,
+      Status: statusLabel(student.status),
+      "Import-batch": student.importBatch ?? "",
+      "Afgerond op": student.completedAt ? new Date(student.completedAt).toLocaleString("nl-NL") : "",
+    }));
+
+  const exportBaseName = () => {
+    const suffix = paletteFilter === "all" ? "alle-klassen" : paletteFilter;
+    return `afnamecodes-${suffix}-${new Date().toISOString().slice(0, 10)}`;
+  };
+
+  const exportCodesExcel = async () => {
+    const XLSX = await import("xlsx");
+    const worksheet = XLSX.utils.json_to_sheet(getExportRows());
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Afnamecodes");
+    XLSX.writeFile(workbook, `${exportBaseName()}.xlsx`);
+  };
+
+  const exportCodesWord = () => {
+    const rows = getExportRows();
+    const htmlRows = rows
+      .map(
+        (row) =>
+          `<tr><td>${escapeHtml(row.Afnamecode)}</td><td>${escapeHtml(row.Leerling)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td><td>${escapeHtml(row["Import-batch"])}</td></tr>`,
+      )
+      .join("");
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Afnamecodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Afnamecodes nulmeting</h1><table><thead><tr><th>Afnamecode</th><th>Leerling</th><th>Klas</th><th>Nulmeting</th><th>Status</th><th>Import-batch</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    downloadFile(`${exportBaseName()}.doc`, html, "application/msword");
+  };
+
+  const exportCodesPdf = () => {
+    const rows = getExportRows();
+    const lines = [
+      "Afnamecodes nulmeting Digitale Geletterdheid",
+      "",
+      ...rows.flatMap((row) => [
+        `${row.Klas} | ${row.Leerling || "Geen label"} | ${row.Afnamecode} | ${row.Status}`,
+      ]),
+    ];
+    downloadFile(`${exportBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
   };
 
   const reopenStudent = async (student: ApiStudent) => {
@@ -1058,11 +1150,10 @@ const AdminScreen = ({
         body: JSON.stringify({
           action: "reopen",
           accessCode: student.accessCode,
-          classCode: student.classCode,
         }),
       });
       setStudents(data.students);
-      setMessage(`${student.classCode} ${student.accessCode} is opnieuw opengezet.`);
+      setMessage(`${student.accessCode} is opnieuw opengezet.`);
       setError("");
     } catch {
       setError("Opnieuw openzetten is niet gelukt.");
@@ -1093,13 +1184,6 @@ const AdminScreen = ({
   const completedCount = students.filter((s) => s.status === "completed").length;
   const busyCount = students.filter((s) => s.status === "in_progress").length;
   const notStartedCount = students.filter((s) => !s.status || s.status === "not_started").length;
-  const completedScores = students
-    .filter((s) => s.status === "completed" && typeof s.percentage === "number")
-    .map((s) => s.percentage ?? 0);
-  const avgScore = completedScores.length
-    ? Math.round(completedScores.reduce((a, b) => a + b, 0) / completedScores.length)
-    : null;
-
   const stats: Array<{
     label: string;
     value: string;
@@ -1121,7 +1205,7 @@ const AdminScreen = ({
     {
       label: "Afgerond",
       value: String(completedCount),
-      delta: avgScore !== null ? `Gem. score ${avgScore}%` : "Nog geen scores",
+      delta: "Status zonder scorekoppeling",
       up: true,
     },
     {
@@ -1138,11 +1222,11 @@ const AdminScreen = ({
         <div>
           <span className="badge">Docentomgeving</span>
           <h1>
-            Beheer leerlingen<br />en bekijk resultaten
+            Beheer afnamecodes<br />en klasvoortgang
           </h1>
           <p className="intro">
-            Importeer leerlingnummers per klas, volg de voortgang in real-time,
-            en exporteer de resultaten uit de gekoppelde Neon database.
+            Importeer per klas wie een code nodig heeft en volg alleen de afnamestatus.
+            Resultaten worden los van leerlingen opgeslagen voor rapportage op klasniveau.
           </p>
         </div>
         <div className="admin-side-card">
@@ -1199,10 +1283,10 @@ const AdminScreen = ({
       </div>
 
       <section className="import-panel">
-        <h3>Leerlingen importeren</h3>
+        <h3>Afnamecodes genereren</h3>
         <p className="help">
-          Plak leerlingnummers per regel, bijvoorbeeld <code>vmbo1a 1234</code>. Eén klas
-          tegelijk is overzichtelijker, maar meerdere mag ook.
+          Maak per klas in een keer genoeg codes aan. Gebruik per regel:
+          <code> klas; aantal; namen gescheiden door komma&apos;s</code>. Meerdere klassen tegelijk kan.
         </p>
         <div className="grid">
           <label>
@@ -1229,9 +1313,9 @@ const AdminScreen = ({
           <label>
             <span>Leerlingen (één per regel)</span>
             <textarea
-              value={importText}
-              onChange={(event) => setImportText(event.target.value)}
-              placeholder={"vmbo1a 1234\nvmbo1a 1235\nvmbo1a 1236"}
+              value={classPlanText}
+              onChange={(event) => setClassPlanText(event.target.value)}
+              placeholder={"vmbo1a; 28; Noor Jansen, Samira B., Ali K.\nhavo1b; 30; Mila S., Adam V."}
             />
           </label>
           <button
@@ -1240,7 +1324,7 @@ const AdminScreen = ({
             onClick={importStudents}
             disabled={isLoading}
           >
-            Importeren
+            Codes genereren
           </button>
         </div>
         {message ? (
@@ -1288,16 +1372,25 @@ const AdminScreen = ({
             >
               ↻ Vernieuwen
             </button>
+            <button className="filter-chip" type="button" onClick={exportCodesExcel} disabled={filteredStudents.length === 0}>
+              Excel
+            </button>
+            <button className="filter-chip" type="button" onClick={exportCodesWord} disabled={filteredStudents.length === 0}>
+              Word
+            </button>
+            <button className="filter-chip" type="button" onClick={exportCodesPdf} disabled={filteredStudents.length === 0}>
+              PDF
+            </button>
           </div>
         </div>
 
         <div className="rd-student-table">
           <div className="rd-student-row head">
             <span>Code</span>
+            <span>Leerling</span>
             <span>Klas</span>
             <span>Meting</span>
             <span>Status</span>
-            <span>Score</span>
             <span>Actie</span>
           </div>
           {filteredStudents.length === 0 ? (
@@ -1310,14 +1403,14 @@ const AdminScreen = ({
             filteredStudents.map((student) => {
               const palette = versionToPalette[student.versionId] ?? "p1";
               const meting = assessmentMap[student.versionId]?.level ?? student.versionId;
-              const hasScore =
-                typeof student.totalScore === "number" && typeof student.maxScore === "number";
+              const hasScore = false;
               return (
                 <div
                   className="rd-student-row"
                   key={`${student.classCode}-${student.accessCode}`}
                 >
                   <span className="code-cell">{student.accessCode}</span>
+                  <span>{student.participantLabel || "Geen label"}</span>
                   <span>{student.classCode}</span>
                   <span>
                     <span className="meting-pill" data-p={palette}>
@@ -1409,9 +1502,20 @@ const AssessmentScreen = ({
   const progress = Math.round(((stepIndex + 1) / stepCount) * 100);
 
   const sectionIdx = assessment.sections.findIndex((s) => s.id === section.id);
+  const stepTypeLabel =
+    item.type === "multiple_choice"
+      ? "Meerkeuzevraag"
+      : item.type === "self_assessment"
+        ? "Zelfinschatting"
+        : "Praktijkopdracht";
 
   return (
     <div className="q-wrap">
+      <div className="assessment-topbar">
+        <span className="assessment-step-dot">{questionNumber ?? stepIndex + 1}</span>
+        <span className="assessment-step-type">{stepTypeLabel}</span>
+        <span className="assessment-top-logo" role="img" aria-label="Citadel College" />
+      </div>
       <aside className="q-side">
         {/* Brand */}
         <div className="assess-brand">
@@ -1463,6 +1567,47 @@ const AssessmentScreen = ({
       </aside>
 
       <div className="q-main-col">
+        <div className="assessment-progress-panel">
+          <div className="assessment-progress-row">
+            <span className="assessment-main-logo" role="img" aria-label="Citadel College" />
+            <div className="assessment-progress-copy">
+              <span className="assessment-question-count">
+                {questionNumber != null
+                  ? `Vraag ${questionNumber} van ${questionCount}`
+                  : `Stap ${stepIndex + 1} van ${stepCount}`}
+              </span>
+              <div className="assessment-progress-track" aria-label={`${progress}% voortgang`}>
+                <span style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+            <span className="assessment-progress-pill">{progress}%</span>
+          </div>
+          <div className="assessment-section-bars" aria-hidden="true">
+            {assessment.sections.map((sec) => {
+              const secSteps = steps.filter((s) => s.sectionId === sec.id);
+              const secTotal = secSteps.length;
+              const firstIdx = steps.findIndex((s) => s.sectionId === sec.id);
+              const isActive = sec.id === section.id;
+              const isDone = firstIdx >= 0 && firstIdx + secTotal - 1 < stepIndex;
+              const activeProgress =
+                isActive && firstIdx >= 0
+                  ? Math.min(100, Math.round(((stepIndex - firstIdx + 1) / secTotal) * 100))
+                  : 0;
+              return (
+                <span
+                  key={sec.id}
+                  className={`assessment-section-bar${isActive ? " active" : ""}${isDone ? " done" : ""}`}
+                >
+                  <span style={{ width: `${isDone ? 100 : activeProgress}%` }} />
+                </span>
+              );
+            })}
+          </div>
+          <div className="assessment-section-meta">
+            <span className="q-section-label">{shortSectionTitle(section)}</span>
+            <span className="q-question-num">Onderdeel {sectionIdx + 1}</span>
+          </div>
+        </div>
         {/* Sectiestrook */}
         <div className="q-section-strip">
           <span className="q-section-label">
@@ -4053,6 +4198,8 @@ const FileTaskWorkspace = ({
   const [isNewMenuOpen, setIsNewMenuOpen] = useState(false);
   const [renamingNodeId, setRenamingNodeId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
+  const [sortKey, setSortKey] = useState<ExplorerSortKey>("name");
+  const [sharedNodeId, setSharedNodeId] = useState<string | null>(null);
 
   if (!item.fileTask || !state) {
     return null;
@@ -4060,7 +4207,6 @@ const FileTaskWorkspace = ({
 
   const selectedNode = selectedNodeId ? getNodeById(state.nodes, selectedNodeId) : null;
   const activeFolderId = contextFolderId;
-  const activeItems = getChildren(state.nodes, activeFolderId);
   const clipboardNode = clipboard ? getNodeById(state.nodes, clipboard.nodeId) : null;
   const getFolderId = (name: string) =>
     state.nodes.find((node) => node.name === name && node.type === "folder")?.id ??
@@ -4114,6 +4260,24 @@ const FileTaskWorkspace = ({
     }
 
     onChange(copyNode(state, clipboard.nodeId, activeFolderId));
+  };
+
+  const shareSelectedNode = () => {
+    if (!selectedNodeId || !selectedNode) {
+      return;
+    }
+    setSharedNodeId(selectedNodeId);
+    onChange({
+      ...state,
+      actionLogs: [
+        ...state.actionLogs,
+        {
+          actionType: "share",
+          sourcePath: buildPath(state.nodes, selectedNodeId),
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    });
   };
 
   const renameSelectedNode = () => {
@@ -4215,11 +4379,40 @@ const FileTaskWorkspace = ({
     return "Bestand";
   };
 
+  const getExplorerDate = (node: Pt1Node) =>
+    node.type === "folder" ? "26-5-2026 09:00" : "25-5-2026 09:03";
+
+  const getExplorerSize = (node: Pt1Node) => {
+    if (node.type === "folder") {
+      return "";
+    }
+    const extension = node.name.split(".").pop()?.toLowerCase();
+    if (extension === "pptx") return "1.842 kB";
+    if (extension === "docx") return "1.365 kB";
+    if (extension === "pdf") return "884 kB";
+    if (extension === "jpg" || extension === "png") return "642 kB";
+    if (extension === "csv") return "24 kB";
+    return "18 kB";
+  };
+
+  const activeItems = [...getChildren(state.nodes, activeFolderId)].sort((left, right) => {
+    if (sortKey === "type") {
+      return getExplorerType(left).localeCompare(getExplorerType(right), "nl") || left.name.localeCompare(right.name, "nl");
+    }
+    if (sortKey === "size") {
+      return getExplorerSize(left).localeCompare(getExplorerSize(right), "nl") || left.name.localeCompare(right.name, "nl");
+    }
+    if (sortKey === "modified") {
+      return getExplorerDate(left).localeCompare(getExplorerDate(right), "nl") || left.name.localeCompare(right.name, "nl");
+    }
+    return left.name.localeCompare(right.name, "nl");
+  });
+
   const rootId = item.fileTask.simulation.rootId;
   const rootFolders = state.nodes.filter(
     (node) => node.parentId === rootId && node.type === "folder",
   );
-  const quickAccessNames = ["Downloads", "Documenten", "Afbeeldingen"];
+  const quickAccessNames = ["Bureaublad", "Downloads", "Documenten", "Afbeeldingen", "OneDrive"];
   const meetingFolders = rootFolders.filter(
     (node) => !quickAccessNames.includes(node.name),
   );
@@ -4230,7 +4423,7 @@ const FileTaskWorkspace = ({
   const currentPathLabel = (() => {
     const path = buildPath(state.nodes, activeFolderId);
     const parts = path.split("/").filter(Boolean);
-    return parts.length === 0 ? "Bureaublad" : parts[parts.length - 1];
+    return parts.length === 0 ? "Thuis" : parts.join(" > ");
   })();
 
   return (
@@ -4242,6 +4435,73 @@ const FileTaskWorkspace = ({
       />
 
       <div className="file-explorer">
+        <div className="explorer-commandbar" aria-label="Verkenner acties">
+          <div className="explorer-new-menu">
+            <button
+              type="button"
+              className="explorer-command explorer-command-new"
+              aria-expanded={isNewMenuOpen}
+              onClick={() => setIsNewMenuOpen((current) => !current)}
+            >
+              <span className="command-icon command-icon-new" aria-hidden="true" />
+              <span>Nieuw</span>
+              <span className="command-chevron" aria-hidden="true" />
+            </button>
+            {isNewMenuOpen ? (
+              <div className="explorer-new-dropdown">
+                {explorerNewItems.map((definition) => (
+                  <button
+                    key={definition.type}
+                    type="button"
+                    onClick={() => createNewItem(definition.type)}
+                  >
+                    <span className={`new-item-icon ${definition.iconClass}`} aria-hidden="true" />
+                    <span>{definition.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          <button className="explorer-command icon-only-command" type="button" title="Knippen" aria-label="Knippen" disabled={!selectedNode} onClick={() => selectedNodeId && setClipboard({ mode: "cut", nodeId: selectedNodeId })}>
+            <span className="command-icon command-icon-cut" aria-hidden="true" />
+            <span className="command-label">Knippen</span>
+          </button>
+          <button className="explorer-command icon-only-command" type="button" title="Kopieren" aria-label="Kopieren" disabled={!selectedNode} onClick={() => selectedNodeId && setClipboard({ mode: "copy", nodeId: selectedNodeId })}>
+            <span className="command-icon command-icon-copy" aria-hidden="true" />
+            <span className="command-label">Kopieren</span>
+          </button>
+          <button className="explorer-command icon-only-command" type="button" title="Plakken" aria-label="Plakken" disabled={!clipboardNode} onClick={pasteClipboard}>
+            <span className="command-icon command-icon-paste" aria-hidden="true" />
+            <span className="command-label">Plakken</span>
+          </button>
+          <button className="explorer-command icon-only-command" type="button" title="Naam wijzigen" aria-label="Naam wijzigen" disabled={!selectedNode} onClick={renameSelectedNode}>
+            <span className="command-icon command-icon-rename" aria-hidden="true" />
+            <span className="command-label">Naam wijzigen</span>
+          </button>
+          <button className="explorer-command icon-only-command" type="button" title="Delen" aria-label="Delen" disabled={!selectedNode} onClick={shareSelectedNode}>
+            <span className="command-icon command-icon-share" aria-hidden="true" />
+            <span className="command-label">Delen</span>
+          </button>
+          <button className="explorer-command icon-only-command" type="button" title="Verwijderen" aria-label="Verwijderen" disabled={!selectedNode} onClick={deleteSelectedNode}>
+            <span className="command-icon command-icon-delete" aria-hidden="true" />
+            <span className="command-label">Verwijderen</span>
+          </button>
+          <button
+            className="explorer-command icon-only-command"
+            type="button"
+            title="Sorteren"
+            aria-label="Sorteren"
+            onClick={() => setSortKey((current) => current === "name" ? "modified" : current === "modified" ? "type" : current === "type" ? "size" : "name")}
+          >
+            <span className="command-icon command-icon-sort" aria-hidden="true" />
+            <span className="command-label">Sorteren</span>
+            <span className="command-chevron" aria-hidden="true" />
+          </button>
+          <button className="explorer-command icon-only-command" type="button" title="Ongedaan maken" aria-label="Ongedaan maken" disabled={state.undoStack.length === 0} onClick={() => onChange(undoPt1(state))}>
+            <span className="command-icon command-icon-undo" aria-hidden="true" />
+            <span className="command-label">Ongedaan maken</span>
+          </button>
+        </div>
         <div className="file-explorer-toolbar">
           <div className="file-breadcrumb">{currentPathLabel}</div>
           <div className="file-toolbar-actions">
@@ -4268,11 +4528,18 @@ const FileTaskWorkspace = ({
         <div className="file-explorer-body">
           <aside className="file-sidebar" aria-label="Mappenlijst">
             <div className="file-sidebar-group">
-              <div className="file-sidebar-label">Snelle toegang</div>
               <button
                 type="button"
                 className={`file-sidebar-item ${activeFolderId === rootId ? "active" : ""}`}
                 onClick={() => goToFolder(rootId)}
+              >
+                <span className="ico ico-home" aria-hidden="true" />
+                <span className="lbl">Thuis</span>
+              </button>
+              <button
+                type="button"
+                className={`file-sidebar-item ${activeFolderId === getFolderId("Bureaublad") ? "active" : ""}`}
+                onClick={() => goToFolder(getFolderId("Bureaublad"))}
               >
                 <span className="ico ico-desktop" aria-hidden="true" />
                 <span className="lbl">Bureaublad</span>
@@ -4309,6 +4576,19 @@ const FileTaskWorkspace = ({
               ) : null}
             </div>
 
+            {getFolder("OneDrive") ? (
+              <div className="file-sidebar-group">
+                <button
+                  type="button"
+                  className={`file-sidebar-item ${activeFolderId === getFolderId("OneDrive") ? "active" : ""}`}
+                  onClick={() => goToFolder(getFolderId("OneDrive"))}
+                >
+                  <span className="ico ico-onedrive" aria-hidden="true" />
+                  <span className="lbl">OneDrive - voCampus</span>
+                </button>
+              </div>
+            ) : null}
+
             {meetingFolders.length > 0 ? (
               <div className="file-sidebar-group">
                 <div className="file-sidebar-label">Deze meting</div>
@@ -4334,11 +4614,21 @@ const FileTaskWorkspace = ({
           </aside>
 
           <div className="file-main">
+              <div className="explorer-address">
+                <span>{currentPathLabel}</span>
+                <span>Sorteren: {sortKey === "name" ? "Naam" : sortKey === "modified" ? "Gewijzigd op" : sortKey === "type" ? "Type" : "Grootte"}</span>
+              </div>
               <div
                 className={`file-grid ${activeItems.length === 0 ? "is-empty" : ""}`}
                 role="list"
                 aria-label="Gesimuleerde Windows Verkenner"
               >
+                <div className="file-list-header" aria-hidden="true">
+                  <span>Naam</span>
+                  <span>Gewijzigd op</span>
+                  <span>Type</span>
+                  <span>Grootte</span>
+                </div>
                 {activeItems.length === 0 ? (
                   <div className="file-grid-empty">
                     Deze map is leeg — sleep er bestanden in.
@@ -4411,6 +4701,9 @@ const FileTaskWorkspace = ({
                         ) : (
                           <div className="label">{node.name}</div>
                         )}
+                        <span className="file-modified">{getExplorerDate(node)}</span>
+                        <span className="file-type">{getExplorerType(node)}</span>
+                        <span className="file-size">{getExplorerSize(node)}</span>
                       </button>
                     );
                   })
@@ -4419,6 +4712,11 @@ const FileTaskWorkspace = ({
               {clipboard && clipboardNode ? (
                 <div className="explorer-hint">
                   {`${clipboard.mode === "cut" ? "Geknipt" : "Gekopieerd"}: ${clipboardNode.name}. Kies een map en klik op Plakken.`}
+                </div>
+              ) : null}
+              {sharedNodeId && getNodeById(state.nodes, sharedNodeId) ? (
+                <div className="explorer-hint">
+                  Delen voorbereid voor {getNodeById(state.nodes, sharedNodeId)?.name}.
                 </div>
               ) : null}
           </div>

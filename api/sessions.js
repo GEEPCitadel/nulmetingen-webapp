@@ -11,9 +11,25 @@ const readJsonBody = async (request) => {
 
 const ensureTable = async (sql) => {
   await sql`
+    CREATE TABLE IF NOT EXISTS students (
+      id BIGSERIAL PRIMARY KEY,
+      student_number TEXT UNIQUE,
+      participant_label TEXT,
+      access_code TEXT NOT NULL,
+      class_code TEXT NOT NULL,
+      version_id TEXT NOT NULL,
+      import_batch TEXT,
+      status TEXT NOT NULL DEFAULT 'not_started',
+      started_at TIMESTAMPTZ,
+      completed_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+  await sql`
     CREATE TABLE IF NOT EXISTS assessment_sessions (
       id UUID PRIMARY KEY,
-      access_code CHAR(4),
+      access_code TEXT,
       class_code TEXT,
       class_id TEXT,
       class_token TEXT,
@@ -26,8 +42,14 @@ const ensureTable = async (sql) => {
   await sql`ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS class_id TEXT`;
   await sql`ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS class_token TEXT`;
   await sql`ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS anonymous_attempt_id TEXT`;
+  await sql`ALTER TABLE assessment_sessions ALTER COLUMN access_code TYPE TEXT`;
   await sql`ALTER TABLE assessment_sessions ALTER COLUMN access_code DROP NOT NULL`;
   await sql`ALTER TABLE assessment_sessions ALTER COLUMN class_code DROP NOT NULL`;
+
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'not_started'`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
 };
 
 export default async function handler(request, response) {
@@ -47,11 +69,9 @@ export default async function handler(request, response) {
     const body = await readJsonBody(request);
     const session = body.session && typeof body.session === "object" ? body.session : null;
     const anonymousAttemptId = String(session?.metadata?.anonymousAttemptId ?? "").trim();
-    const accessCode = String(
-      session?.metadata?.accessCode ?? session?.accessCode ?? anonymousAttemptId.slice(0, 4) ?? "",
-    )
+    const accessCode = String(session?.metadata?.accessCode ?? session?.accessCode ?? "")
       .trim()
-      .slice(0, 4);
+      .toUpperCase();
     const classId = String(session?.metadata?.classId ?? "").trim().toLowerCase();
     const classToken = String(session?.metadata?.classToken ?? "").trim();
     const classCode = String(session?.metadata?.classCode ?? classId).trim().toLowerCase();
@@ -100,6 +120,13 @@ export default async function handler(request, response) {
         anonymous_attempt_id = EXCLUDED.anonymous_attempt_id,
         updated_at = NOW()
     `;
+    if (accessCode) {
+      await sql`
+        UPDATE students
+        SET status = 'in_progress', started_at = COALESCE(started_at, NOW()), updated_at = NOW()
+        WHERE access_code = ${accessCode} AND status <> 'completed'
+      `;
+    }
 
     response.status(200).json({ ok: true });
   } catch {

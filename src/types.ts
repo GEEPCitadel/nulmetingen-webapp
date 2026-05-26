@@ -429,6 +429,7 @@ export interface CodeMapping {
 export interface SessionMetadata {
   learnerCode?: string;
   accessCode?: string;
+  participantLabel?: string;
   classToken?: string;
   classId?: string;
   classCode?: string;

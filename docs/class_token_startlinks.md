@@ -1,9 +1,9 @@
-# ClassToken-startlinks
+# Persoonlijke afnamecodes
 
-De leerlingroute gebruikt startlinks met:
+De leerlingroute gebruikt tijdelijke persoonlijke afnamecodes:
 
-`/nulmeting/start/:assessmentId?classToken=<token>`
+`/?code=<afnamecode>`
 
-De leerling vult geen naam, e-mailadres of leerlingnummer in. Bij starten maakt de client een `anonymousAttemptId` en zet de `classToken` lokaal om naar een niet-herleidbare `classId`. Elke poging bewaart de `assessmentId`, `classId`, `anonymousAttemptId`, `startedAt`, `completedAt`, `selfAssessmentScore`, `itemResponses` via `results` en `scores` via `calculateResult`.
+Een leerling vult geen leerlingnummer of e-mailadres in. De beheeromgeving genereert per importregel een willekeurige afnamecode van zes tekens. In de beheeromgeving kan de docent bijhouden welke code nog niet gestart, bezig of afgerond is.
 
-TODO: voeg een beheeromgeving/API toe waarin een docent of beheerder classTokens server-side aanmaakt en koppelt aan `classId`, `schoolId` en afnameperiode. De huidige client-hash is alleen een tijdelijke mapping zodat de afname al zonder leerlingidentiteit werkt.
+De tijdelijke sessietabel bewaart de afnamecode zolang een leerling bezig is, zodat een onderbroken afname kan worden hervat en de status kan worden bijgewerkt. Bij afronden wordt het resultaat opgeslagen zonder afnamecode, naam, leerlingnummer of participantlabel. Resultaten zijn daardoor bedoeld voor klasrapportage, niet voor individuele leerlingrapportage.

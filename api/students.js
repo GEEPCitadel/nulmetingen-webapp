@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
+const codeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
@@ -24,33 +25,44 @@ const requireAdmin = (request, body) => {
   return Boolean(expectedPassword && candidate && safeEquals(candidate, expectedPassword));
 };
 
+const generateAccessCode = () =>
+  Array.from({ length: 6 }, () => codeAlphabet[crypto.randomInt(codeAlphabet.length)]).join("");
+
 const ensureTables = async (sql) => {
   await sql`
     CREATE TABLE IF NOT EXISTS students (
       id BIGSERIAL PRIMARY KEY,
       student_number TEXT UNIQUE,
-      access_code CHAR(4) NOT NULL,
+      participant_label TEXT,
+      access_code TEXT NOT NULL,
       class_code TEXT NOT NULL,
       version_id TEXT NOT NULL,
       import_batch TEXT,
+      status TEXT NOT NULL DEFAULT 'not_started',
+      started_at TIMESTAMPTZ,
+      completed_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS participant_label TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS class_code TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS import_batch TEXT`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'not_started'`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
   await sql`ALTER TABLE students ALTER COLUMN student_number DROP NOT NULL`;
   await sql`ALTER TABLE students DROP CONSTRAINT IF EXISTS students_access_code_key`;
-  await sql`
-    CREATE UNIQUE INDEX IF NOT EXISTS students_access_code_class_code_key
-    ON students (access_code, class_code)
-  `;
 
   await sql`
     CREATE TABLE IF NOT EXISTS assessment_sessions (
       id UUID PRIMARY KEY,
-      access_code CHAR(4) NOT NULL,
-      class_code TEXT NOT NULL,
+      access_code TEXT,
+      class_code TEXT,
+      class_id TEXT,
+      class_token TEXT,
+      anonymous_attempt_id TEXT,
       version_id TEXT NOT NULL,
       session_json JSONB NOT NULL,
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -60,12 +72,13 @@ const ensureTables = async (sql) => {
   await sql`
     CREATE TABLE IF NOT EXISTS assessment_results (
       session_id UUID PRIMARY KEY,
-      access_code CHAR(4) NOT NULL,
-      class_code TEXT NOT NULL,
+      class_code TEXT,
+      class_id TEXT,
       version_id TEXT NOT NULL,
       total_score INTEGER NOT NULL,
       max_score INTEGER NOT NULL,
       percentage INTEGER NOT NULL,
+      self_assessment_score INTEGER,
       started_at TIMESTAMPTZ,
       completed_at TIMESTAMPTZ NOT NULL,
       result_json JSONB NOT NULL,
@@ -78,67 +91,40 @@ const ensureTables = async (sql) => {
 
 const normalizeStudentRows = (students, versionId, importBatch) => {
   if (!Array.isArray(students)) return [];
-  const seenAccounts = new Set();
-
   return students.map((student, index) => {
-    const accessCode = typeof student.accessCode === "string" ? student.accessCode.trim() : "";
     const classCode = typeof student.classCode === "string" ? student.classCode.trim().toLowerCase() : "";
+    const participantLabel =
+      typeof student.participantLabel === "string" ? student.participantLabel.trim() : "";
 
-    if (!/^\d{4}$/.test(accessCode)) throw new Error(`Rij ${index + 1}: leerlingnummer moet uit precies vier cijfers bestaan.`);
     if (!classCode) throw new Error(`Rij ${index + 1}: klas ontbreekt.`);
-
-    const accountKey = `${accessCode}:${classCode}`;
-    if (seenAccounts.has(accountKey)) throw new Error(`Rij ${index + 1}: leerlingnummer ${accessCode} met klas ${classCode} staat dubbel in de import.`);
-    seenAccounts.add(accountKey);
-
-    return { accessCode, classCode, versionId, importBatch };
+    return { classCode, participantLabel, versionId, importBatch };
   });
+};
+
+const createUniqueCode = async (sql) => {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const code = generateAccessCode();
+    const rows = await sql`SELECT 1 FROM students WHERE access_code = ${code} LIMIT 1`;
+    if (rows.length === 0) return code;
+  }
+  throw new Error("Kon geen unieke afnamecode genereren.");
 };
 
 const listStudents = async (sql) => {
   const rows = await sql`
-    SELECT
-      s.access_code,
-      s.class_code,
-      s.version_id,
-      s.import_batch,
-      s.updated_at,
-      r.session_id,
-      r.total_score,
-      r.max_score,
-      r.percentage,
-      r.completed_at,
-      sess.id AS active_session_id
-    FROM students s
-    LEFT JOIN LATERAL (
-      SELECT *
-      FROM assessment_results ar
-      WHERE ar.access_code = s.access_code AND LOWER(ar.class_code) = LOWER(s.class_code)
-      ORDER BY ar.completed_at DESC
-      LIMIT 1
-    ) r ON true
-    LEFT JOIN LATERAL (
-      SELECT id
-      FROM assessment_sessions ase
-      WHERE ase.access_code = s.access_code AND LOWER(ase.class_code) = LOWER(s.class_code)
-      ORDER BY ase.updated_at DESC
-      LIMIT 1
-    ) sess ON true
-    ORDER BY s.class_code ASC, s.access_code ASC
+    SELECT access_code, participant_label, class_code, version_id, import_batch, status, completed_at, updated_at
+    FROM students
+    ORDER BY class_code ASC, participant_label ASC, access_code ASC
     LIMIT 10000
   `;
 
   return rows.map((row) => ({
-    studentNumber: row.access_code,
+    participantLabel: row.participant_label ?? "",
     accessCode: row.access_code,
     classCode: row.class_code,
     versionId: row.version_id,
     importBatch: row.import_batch ?? "",
-    status: row.session_id ? "completed" : row.active_session_id ? "in_progress" : "not_started",
-    resultSessionId: row.session_id,
-    totalScore: row.total_score,
-    maxScore: row.max_score,
-    percentage: row.percentage,
+    status: row.status ?? "not_started",
     completedAt: row.completed_at,
     updatedAt: row.updated_at,
   }));
@@ -177,15 +163,18 @@ export default async function handler(request, response) {
         return;
       }
 
-      const accessCode = String(body.accessCode ?? "").trim();
-      const classCode = String(body.classCode ?? "").trim().toLowerCase();
-      if (!/^\d{4}$/.test(accessCode) || !classCode) {
-        response.status(400).json({ ok: false, error: "Leerlingnummer of klas ontbreekt." });
+      const accessCode = String(body.accessCode ?? "").trim().toUpperCase();
+      if (!/^[A-Z0-9]{6}$/.test(accessCode)) {
+        response.status(400).json({ ok: false, error: "Afnamecode ontbreekt." });
         return;
       }
 
-      await sql`DELETE FROM assessment_results WHERE access_code = ${accessCode} AND LOWER(class_code) = ${classCode}`;
-      await sql`DELETE FROM assessment_sessions WHERE access_code = ${accessCode} AND LOWER(class_code) = ${classCode}`;
+      await sql`
+        UPDATE students
+        SET status = 'not_started', started_at = NULL, completed_at = NULL, updated_at = NOW()
+        WHERE access_code = ${accessCode}
+      `;
+      await sql`DELETE FROM assessment_sessions WHERE access_code = ${accessCode}`;
       response.status(200).json({ ok: true, students: await listStudents(sql) });
       return;
     }
@@ -216,14 +205,10 @@ export default async function handler(request, response) {
     }
 
     for (const row of rows) {
+      const accessCode = await createUniqueCode(sql);
       await sql`
-        INSERT INTO students (student_number, access_code, class_code, version_id, import_batch)
-        VALUES (${`${row.classCode}:${row.accessCode}`}, ${row.accessCode}, ${row.classCode}, ${row.versionId}, ${row.importBatch})
-        ON CONFLICT (access_code, class_code)
-        DO UPDATE SET
-          version_id = EXCLUDED.version_id,
-          import_batch = EXCLUDED.import_batch,
-          updated_at = NOW()
+        INSERT INTO students (student_number, participant_label, access_code, class_code, version_id, import_batch)
+        VALUES (${accessCode}, ${row.participantLabel || null}, ${accessCode}, ${row.classCode}, ${row.versionId}, ${row.importBatch})
       `;
     }
 
