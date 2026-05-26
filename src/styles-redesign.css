@@ -4178,3 +4178,138 @@ body {
     justify-content: center;
   }
 }
+
+/* Desktop/laptop assessment tuning: use the available screen width instead
+   of the narrow mobile-like column, especially for performance tasks. */
+@media (min-width: 900px) {
+  [data-screen="assessment"] .q-main-col,
+  [data-screen="assessment"] .q-mc-footer,
+  [data-screen="assessment"] .task-nav {
+    width: min(1180px, calc(100% - 72px));
+  }
+
+  [data-screen="assessment"] .q-main-col {
+    padding-top: 18px;
+    padding-bottom: 88px;
+  }
+
+  .assessment-progress-panel {
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .assessment-topbar {
+    min-height: 44px;
+    padding-block: 7px;
+  }
+
+  .assessment-step-type {
+    font-size: .82rem;
+  }
+
+  [data-screen="assessment"] .question-title,
+  [data-screen="assessment"] .panel h2 {
+    font-size: 1.12rem;
+    line-height: 1.36;
+  }
+
+  [data-screen="assessment"] .helper-text,
+  [data-screen="assessment"] .slider-instruction,
+  [data-screen="assessment"] .option-card,
+  [data-screen="assessment"] .mockup-frame,
+  [data-screen="assessment"] .task-nav,
+  [data-screen="assessment"] .mail-shell,
+  [data-screen="assessment"] .file-explorer,
+  [data-screen="assessment"] .powerpoint-window,
+  [data-screen="assessment"] .teams-window,
+  [data-screen="assessment"] .program-workspace {
+    font-size: .92rem;
+  }
+
+  [data-screen="assessment"] .option-grid {
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  [data-screen="assessment"] .option-card {
+    min-height: 54px;
+    border-radius: 12px;
+    padding: 10px 16px;
+  }
+
+  [data-screen="assessment"] .option-letter {
+    width: 30px;
+    height: 30px;
+    font-size: .78rem;
+  }
+
+  [data-screen="assessment"] .pt1-layout {
+    grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  [data-screen="assessment"] .pt1-tasks,
+  [data-screen="assessment"] .workspace-card {
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  [data-screen="assessment"] .file-explorer-body {
+    grid-template-columns: 230px minmax(0, 1fr);
+  }
+
+  [data-screen="assessment"] .file-explorer {
+    border-radius: 8px;
+  }
+
+  [data-screen="assessment"] .file-explorer .explorer-commandbar {
+    min-height: 44px;
+    padding: 5px 10px;
+  }
+
+  [data-screen="assessment"] .file-sidebar {
+    padding: 10px 8px;
+  }
+
+  [data-screen="assessment"] .file-sidebar-item {
+    min-height: 30px;
+    padding: 6px 9px;
+    font-size: .82rem;
+  }
+
+  [data-screen="assessment"] .file-list-header,
+  [data-screen="assessment"] .file-grid .file-tile {
+    grid-template-columns: minmax(240px, 1.6fr) minmax(125px, .65fr) minmax(150px, .8fr) minmax(76px, .35fr);
+  }
+
+  [data-screen="assessment"] .file-list-header {
+    min-height: 34px;
+    font-size: .8rem;
+  }
+
+  [data-screen="assessment"] .file-grid .file-tile {
+    min-height: 31px;
+    font-size: .82rem;
+  }
+
+  [data-screen="assessment"] .file-grid .file-tile .label,
+  [data-screen="assessment"] .file-modified,
+  [data-screen="assessment"] .file-type,
+  [data-screen="assessment"] .file-size {
+    padding-block: 6px;
+    font-size: .82rem;
+  }
+
+  [data-screen="assessment"] .task-nav {
+    padding: 12px 0;
+  }
+
+  [data-screen="assessment"] .task-nav-back,
+  [data-screen="assessment"] .task-nav-primary,
+  [data-screen="assessment"] .q-weet-btn,
+  [data-screen="assessment"] .primary-button {
+    min-height: 42px;
+    padding: 9px 18px;
+    border-radius: 10px;
+  }
+}
