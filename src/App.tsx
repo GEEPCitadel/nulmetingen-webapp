@@ -38,6 +38,7 @@ import type {
   AssessmentSession,
   AssessmentVersion,
   EventLog,
+  GoalScore,
   InteractionGroup,
   Pt1Node,
   Pt1State,
@@ -134,6 +135,63 @@ type StudentsResponse = {
 
 // P1 (rainbow on cream) is used for the entry / admin / fallback screens.
 const defaultTheme = themes.rainbowCream;
+const UNKNOWN_OPTION_LABEL = "Ik weet het niet.";
+
+/* Korte weergavenamen voor secties in de zijbalk */
+const SECTION_SHORT_TITLE: Record<string, string> = {
+  zelfinschatting: "Zelf inschatten",
+  pt1: "Bestanden", pt2: "Mail", pt3: "Beveiliging",
+  pt4: "Data & Excel", pt5: "Presentatie", pt6: "Samenwerken",
+  pt7: "Programmeren", pt8: "Online gedrag", sr: "Meerkeuze",
+};
+const shortSectionTitle = (sec: AssessmentSection): string =>
+  SECTION_SHORT_TITLE[sec.id] ?? sec.title.replace(/^PT\d+\s*[-–]\s*/i, "");
+const assessmentIds = ["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"] as const;
+const assessmentLabels: Record<AssessmentVersion["id"], string> = {
+  "lj1-vmbo": "Leerjaar 1 VMBO",
+  "lj1-hv": "Leerjaar 1 HAVO/VWO",
+  "lj3-vmbo": "Leerjaar 3 VMBO",
+  "lj3-hv": "Leerjaar 3 HAVO/VWO",
+};
+
+const getInitialStartContext = () => {
+  const url = new URL(window.location.href);
+  const queryAssessmentId = url.searchParams.get("assessmentId");
+  const pathParts = url.pathname.split("/").filter(Boolean);
+  const pathAssessmentId = pathParts[pathParts.length - 1];
+  const assessmentId = assessmentIds.includes(queryAssessmentId as AssessmentVersion["id"])
+    ? (queryAssessmentId as AssessmentVersion["id"])
+    : assessmentIds.includes(pathAssessmentId as AssessmentVersion["id"])
+      ? (pathAssessmentId as AssessmentVersion["id"])
+      : "lj1-vmbo";
+
+  return {
+    assessmentId,
+    classToken: url.searchParams.get("classToken") ?? "",
+  };
+};
+
+const classIdFromToken = (token: string) => {
+  // TODO(class-tokens): vervang deze lokale mapping door een beheeromgeving/API
+  // waarin classTokens server-side naar classId, schoolId en afnameperiode wijzen.
+  let hash = 2166136261;
+  for (const char of token.trim()) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `class-${(hash >>> 0).toString(36).padStart(7, "0")}`;
+};
+
+const createClassStartLink = (assessmentId: AssessmentVersion["id"], classToken: string) => {
+  const url = new URL(window.location.href);
+  url.pathname = `/nulmeting/start/${assessmentId}`;
+  url.search = "";
+  url.searchParams.set("classToken", classToken);
+  return url.toString();
+};
+
+const newClassToken = () =>
+  `klas-${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
 
 const requestJson = async <T,>(url: string, options: RequestInit = {}): Promise<T> => {
   const response = await fetch(url, {
@@ -295,7 +353,16 @@ const QuestionHeader = ({
   </div>
 );
 
-const getEntryTheme = (_view: EntryView) => defaultTheme;
+const SkipTaskButton = ({ onSkip }: { onSkip: () => void }) => (
+  <button className="ghost-button" type="button" onClick={onSkip}>
+    Ik weet het niet / sla over
+  </button>
+);
+
+// P5 (rose/navy) past bij de zakelijke toon van de docent-/beheeromgeving.
+// De landingspagina blijft op P1 (rainbowCream) als warm onthaal.
+const getEntryTheme = (view: EntryView) =>
+  view === "adminAccess" || view === "admin" ? themes.roseNavy : defaultTheme;
 
 const getThemeForSession = (session: AssessmentSession | null, entryView: EntryView) =>
   session ? themes[assessmentMap[session.versionId].themeKey] : getEntryTheme(entryView);
@@ -305,8 +372,8 @@ const App = () => {
   const [session, setSession] = useState<AssessmentSession | null>(() =>
     readActiveSession(),
   );
-  const [learnerCode, setLearnerCode] = useState("");
-  const [learnerClassCode, setLearnerClassCode] = useState("");
+  const [startContext, setStartContext] = useState(getInitialStartContext);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
   const [learnerCodeError, setLearnerCodeError] = useState("");
   const [adminCode, setAdminCode] = useState("");
   const [adminToken, setAdminToken] = useState("");
@@ -328,7 +395,7 @@ const App = () => {
   useEffect(() => {
     saveActiveSession(session);
 
-    if (!session?.metadata.classCode) {
+    if (!session?.metadata.classId) {
       return;
     }
 
@@ -356,44 +423,34 @@ const App = () => {
   }, []);
 
   const startAssessment = async () => {
-    const accessCode = learnerCode.trim();
-    const classCode = learnerClassCode.trim().toLowerCase();
-    if (!/^\d{4}$/.test(accessCode) || !classCode) {
-      setLearnerCodeError("Vul je viercijferige leerlingnummer en klas in.");
+    const assessment = assessmentMap[startContext.assessmentId];
+    const classToken = startContext.classToken.trim();
+    if (!assessment || !classToken) {
+      setLearnerCodeError("Gebruik een startlink met klascode of vul een classToken in.");
+      return;
+    }
+
+    if (!privacyConsent) {
+      setLearnerCodeError("Vink eerst aan dat je de privacyvoorwaarden accepteert.");
       return;
     }
 
     setIsStarting(true);
     try {
-      const data = await requestJson<StudentLoginResponse>("/api/student-login", {
-        method: "POST",
-        body: JSON.stringify({ code: accessCode, classCode }),
-      });
-      const student = data.student;
-      const assessment = assessmentMap[student.versionId];
-      if (data.session) {
-        setSession({
-          ...data.session,
-          metadata: {
-            ...data.session.metadata,
-            learnerCode: accessCode,
-            accessCode,
-            classCode,
-            anonymousCode: data.session.metadata?.anonymousCode ?? `${classCode}-${accessCode}`,
-          },
-        });
-      } else {
-        const metadata: SessionMetadata = {
-          learnerCode: accessCode,
-          accessCode,
-          classCode,
-          anonymousCode: `${classCode}-${accessCode}`,
-        };
-        setSession(createSession(assessment, accessCode, metadata));
-      }
+      const anonymousAttemptId = crypto.randomUUID();
+      const classId = classIdFromToken(classToken);
+      const metadata: SessionMetadata = {
+        classToken,
+        classId,
+        classCode: classId,
+        anonymousAttemptId,
+        privacyConsent: true,
+        anonymousCode: anonymousAttemptId.slice(0, 8),
+      };
+      setSession(createSession(assessment, classToken, metadata));
       setLearnerCodeError("");
     } catch {
-      setLearnerCodeError("Deze leerling is niet gevonden. Controleer je nummer en klas.");
+      setLearnerCodeError("De nulmeting kon niet worden gestart.");
     } finally {
       setIsStarting(false);
     }
@@ -513,11 +570,20 @@ const App = () => {
     });
   };
 
+  const skipPerformanceTask = (section: AssessmentSection, item: AssessmentItem) => {
+    submitAnswer({
+      section,
+      item,
+      selectedAnswer: { skipped: true },
+      shownOptionOrder: [],
+    });
+  };
+
   const resetSession = () => {
     setSession(null);
     setEntryView("intro");
-    setLearnerCode("");
-    setLearnerClassCode("");
+    setStartContext(getInitialStartContext());
+    setPrivacyConsent(false);
     setLearnerCodeError("");
     setAdminCode("");
     setAdminError("");
@@ -530,8 +596,8 @@ const App = () => {
       ? "Beheer"
       : undefined;
 
-  const studentCode = session?.metadata.learnerCode || session?.metadata.accessCode;
-  const studentClassCode = session?.metadata.classCode;
+  const attemptCode = session?.metadata.anonymousAttemptId?.slice(0, 8);
+  const studentClassCode = session?.metadata.classId;
 
   const screenMarker: "landing" | "adminAccess" | "admin" | "assessment" | "result" =
     result
@@ -549,7 +615,7 @@ const App = () => {
       theme={activeTheme}
       screen={screenMarker}
       levelShort={levelShort}
-      studentCode={studentCode}
+      studentCode={attemptCode}
       classCode={studentClassCode}
       timer={
         session && !session.completedAt
@@ -560,16 +626,25 @@ const App = () => {
     >
       {!session && entryView === "intro" ? (
         <StudentStartScreen
-          learnerCode={learnerCode}
-          classCode={learnerClassCode}
+          selectedAssessmentId={startContext.assessmentId}
+          classToken={startContext.classToken}
+          privacyConsent={privacyConsent}
           error={learnerCodeError}
           isStarting={isStarting}
-          onLearnerCodeChange={(value) => {
-            setLearnerCode(value);
+          onAssessmentChange={(value) => {
+            setStartContext((current) => ({ ...current, assessmentId: value }));
             setLearnerCodeError("");
           }}
-          onClassCodeChange={(value) => {
-            setLearnerClassCode(value);
+          onClassTokenChange={(value) => {
+            setStartContext((current) => ({ ...current, classToken: value }));
+            setLearnerCodeError("");
+          }}
+          onPrivacyConsentChange={(value) => {
+            setPrivacyConsent(value);
+            setLearnerCodeError("");
+          }}
+          onGenerateClassToken={() => {
+            setStartContext((current) => ({ ...current, classToken: newClassToken() }));
             setLearnerCodeError("");
           }}
           onStart={startAssessment}
@@ -611,6 +686,8 @@ const App = () => {
           onSubmitAnswer={submitAnswer}
           onUpdateFileTaskState={updateFileTaskState}
           onFinishFileTask={finishFileTask}
+          onSkipPerformanceTask={skipPerformanceTask}
+          onReset={resetSession}
         />
       ) : null}
 
@@ -635,7 +712,7 @@ const AppShell = ({
   theme: ThemeDefinition;
   /** Optional short label for the active assessment (e.g. "LJ1 VMBO"). */
   levelShort?: string;
-  /** Optional student leerlingnummer to display in the topbar chip. */
+  /** Optional anonymous attempt id to display in the topbar chip. */
   studentCode?: string;
   classCode?: string;
   timer?: string;
@@ -659,7 +736,7 @@ const AppShell = ({
     }
   >
     <header className="topbar">
-      <span className="brand" aria-hidden="true" />
+      <span className="brand" role="img" aria-label="Citadel College" />
       <div className="brand-label">
         citadel college
         <small>nulmeting digitale geletterdheid</small>
@@ -671,12 +748,6 @@ const AppShell = ({
           {levelShort}
         </span>
       ) : null}
-      {studentCode ? (
-        <span className="chip">
-          Leerling <strong style={{ fontWeight: 900, marginLeft: 4 }}>{studentCode}</strong>
-        </span>
-      ) : null}
-      {classCode ? <span className="chip">Klas {classCode}</span> : null}
       {timer ? (
         <span className="chip">
           <span className="chip-dot" />
@@ -691,104 +762,158 @@ const AppShell = ({
     </header>
     <main className="page">{children}</main>
     <img className="slinger" src={theme.ribbon} alt="" aria-hidden="true" />
+    {screen !== "assessment" && screen !== "adminAccess" ? (
+      <footer className="site-footer">
+        <span className="payoff">je leert, je groeit, je schittert.</span>
+        <a
+          className="site-url"
+          href="https://www.citadelcollege.nl"
+          target="_blank"
+          rel="noreferrer"
+        >
+          www.citadelcollege.nl
+        </a>
+      </footer>
+    ) : null}
   </div>
 );
 
 const StudentStartScreen = ({
-  learnerCode,
-  classCode,
+  selectedAssessmentId,
+  classToken,
+  privacyConsent,
   error,
   isStarting,
-  onLearnerCodeChange,
-  onClassCodeChange,
+  onAssessmentChange,
+  onClassTokenChange,
+  onPrivacyConsentChange,
+  onGenerateClassToken,
   onStart,
   onOpenAdmin,
 }: {
-  learnerCode: string;
-  classCode: string;
+  selectedAssessmentId: AssessmentVersion["id"];
+  classToken: string;
+  privacyConsent: boolean;
   error: string;
   isStarting: boolean;
-  onLearnerCodeChange: (value: string) => void;
-  onClassCodeChange: (value: string) => void;
+  onAssessmentChange: (value: AssessmentVersion["id"]) => void;
+  onClassTokenChange: (value: string) => void;
+  onPrivacyConsentChange: (value: boolean) => void;
+  onGenerateClassToken: () => void;
   onStart: () => void;
   onOpenAdmin: () => void;
-}) => (
-  <section className="hero">
-    <div className="hero-copy">
-      <span className="eyebrow">Welkom bij Citadel College</span>
-      <h1>
-        Fijn dat je<br />er bent!
-      </h1>
-      <p className="intro">
-        In deze nulmeting laat je zien wat je al kunt op het gebied van digitale
-        geletterdheid. Het is geen toets — het helpt ons om jou beter te begeleiden.
-        Werk zelfstandig en beantwoord de vragen eerlijk.
-      </p>
-      <div className="meta-row">
-        <span className="pill">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 7v5l3 2" />
-          </svg>
-          ± 30 minuten
-        </span>
-        <span className="pill">Eerlijk antwoord telt</span>
-      </div>
+}) => {
+  const [step, setStep] = useState<1 | 2>(1);
 
-      <div className="field-row">
-        <label className="field-block">
-          <span className="field-label">Leerlingnummer</span>
-          <input
-            className="field-input"
-            value={learnerCode}
-            placeholder="Bijv. 1234"
-            onChange={(event) => onLearnerCodeChange(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                onStart();
-              }
-            }}
-          />
-        </label>
-        <label className="field-block">
-          <span className="field-label">Klas</span>
-          <input
-            className="field-input"
-            value={classCode}
-            placeholder="Bijv. vmbo1a"
-            onChange={(event) => onClassCodeChange(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                onStart();
-              }
-            }}
-          />
-        </label>
-      </div>
+  if (step === 1) {
+    return (
+      <div className="welcome-screen">
+        <div className="welcome-card">
+          <div className="welcome-logo-img" role="img" aria-label="Citadel College" />
+          <h1 className="welcome-title">
+            Welkom bij de<br />voortgangsmeting
+          </h1>
+          <p className="welcome-subtitle">
+            Digitale Geletterdheid · {assessmentLabels[selectedAssessmentId]}
+          </p>
 
-      {error ? <div className="error-banner-inline">{error}</div> : null}
+          <label className="field-block welcome-field">
+            <span className="field-label">Jouw leerlingcode</span>
+            <input
+              className="field-input"
+              value={classToken}
+              placeholder="Bijv. LJ1-042"
+              autoFocus
+              onChange={(event) => onClassTokenChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && classToken.trim()) setStep(2);
+              }}
+            />
+          </label>
 
-      <div className="hero-actions">
-        <button
-          className="btn btn-primary"
-          type="button"
-          onClick={onStart}
-          disabled={isStarting}
-        >
-          <span>{isStarting ? "Controleren…" : "Start de meting"}</span>
-          <span className="arrow-circle">→</span>
-        </button>
-        <button className="btn btn-ghost" type="button" onClick={onOpenAdmin}>
-          Beheeromgeving
+          {error ? <div className="error-banner-inline welcome-field">{error}</div> : null}
+
+          <button
+            className="btn btn-primary welcome-start-btn"
+            type="button"
+            onClick={() => { if (classToken.trim()) setStep(2); }}
+            disabled={!classToken.trim()}
+          >
+            <span>Volgende</span>
+            <span className="arrow-circle">→</span>
+          </button>
+
+          <div className="welcome-dots">
+            <span className="dot dot-active" />
+            <span className="dot" />
+          </div>
+        </div>
+
+        <button className="welcome-admin-link" type="button" onClick={onOpenAdmin}>
+          Beheerder? <strong>Klik hier</strong>
         </button>
       </div>
+    );
+  }
+
+  return (
+    <div className="welcome-screen">
+      <div className="welcome-card welcome-card--wide">
+        <div className="welcome-logo-img" role="img" aria-label="Citadel College" />
+        <h2 className="welcome-instruction-title">
+          Voortgangsmeting Digitale Geletterdheid
+        </h2>
+
+        <div className="instruction-box">
+          <ul className="instruction-list">
+            <li>De voortgangsmeting bestaat uit meerdere opdrachten en duurt <strong>ongeveer 30 minuten</strong>.</li>
+            <li>Sommige vragen zijn makkelijker, andere moeilijker. Weet je het echt niet? Kies dan <em>'Ik weet het niet.'</em> Dat is prima — geen stress.</li>
+            <li>Je hoeft geen internet te gebruiken voor de vragen.</li>
+            <li>Per ongeluk afgesloten? Vraag je docent om de startlink opnieuw.</li>
+            <li>Aan het einde zie je hoeveel punten je hebt gehaald.</li>
+          </ul>
+        </div>
+
+        <div className="privacy-consent-box">
+          <p>
+            Deze voortgangsmeting wordt aangeboden door Citadel College. Je antwoorden worden <strong>zonder naam</strong> opgeslagen — de uitkomsten zijn niet terug te leiden naar jou persoonlijk. De school bekijkt de resultaten per klas.
+          </p>
+          <p>Meedoen is niet verplicht.</p>
+          <label className="check-row">
+            <input
+              type="checkbox"
+              checked={privacyConsent}
+              onChange={(event) => onPrivacyConsentChange(event.target.checked)}
+            />
+            <span>Ik accepteer de privacyvoorwaarden.</span>
+          </label>
+        </div>
+
+        {error ? <div className="error-banner-inline">{error}</div> : null}
+
+        <div className="welcome-nav">
+          <button className="btn btn-ghost" type="button" onClick={() => setStep(1)}>
+            ← Terug
+          </button>
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={onStart}
+            disabled={isStarting || !privacyConsent}
+          >
+            <span>{isStarting ? 'Starten...' : 'Start de voortgangsmeting'}</span>
+            <span className="arrow-circle">→</span>
+          </button>
+        </div>
+
+        <div className="welcome-dots">
+          <span className="dot" />
+          <span className="dot dot-active" />
+        </div>
+      </div>
     </div>
-    <div className="hero-photo">
-      <span className="ster" aria-hidden="true" />
-      <span className="placeholder-text">Foto: leerling in de klas</span>
-    </div>
-  </section>
-);
+  );
+};
 
 const AdminAccessScreen = ({
   code,
@@ -976,35 +1101,30 @@ const AdminScreen = ({
     : null;
 
   const stats: Array<{
-    tone: "p1" | "p2" | "p3" | "p4" | "p5";
     label: string;
     value: string;
     delta: string;
     up: boolean;
   }> = [
     {
-      tone: "p1",
       label: "Totaal leerlingen",
       value: String(students.length),
       delta: "Alle klassen samen",
       up: true,
     },
     {
-      tone: "p3",
       label: "Bezig",
       value: String(busyCount),
       delta: busyCount > 0 ? "Actief nu" : "Niemand actief",
       up: true,
     },
     {
-      tone: "p4",
       label: "Afgerond",
       value: String(completedCount),
       delta: avgScore !== null ? `Gem. score ${avgScore}%` : "Nog geen scores",
       up: true,
     },
     {
-      tone: "p2",
       label: "Niet gestart",
       value: String(notStartedCount),
       delta: notStartedCount > 0 ? "Herinnering nodig" : "Iedereen onderweg",
@@ -1032,7 +1152,7 @@ const AdminScreen = ({
                 width: 44,
                 height: 44,
                 borderRadius: 999,
-                background: "var(--p1-purple)",
+                background: "var(--t-accent-deep)",
                 color: "#fff",
                 display: "grid",
                 placeItems: "center",
@@ -1069,7 +1189,7 @@ const AdminScreen = ({
 
       <div className="stats-strip">
         {stats.map((s, i) => (
-          <div key={i} className="stat-card" data-tone={s.tone}>
+          <div key={i} className="stat-card">
             <span className="accent-strip" />
             <div className="label">{s.label}</div>
             <div className="value">{s.value}</div>
@@ -1124,12 +1244,7 @@ const AdminScreen = ({
           </button>
         </div>
         {message ? (
-          <div
-            className="error-banner-inline"
-            style={{ background: "#E1F4ED", color: "#007a5e", marginTop: 16 }}
-          >
-            {message}
-          </div>
+          <div className="success-banner-inline">{message}</div>
         ) : null}
         {error ? (
           <div className="error-banner-inline" style={{ marginTop: 16 }}>
@@ -1263,6 +1378,8 @@ const AssessmentScreen = ({
   onSubmitAnswer,
   onUpdateFileTaskState,
   onFinishFileTask,
+  onSkipPerformanceTask,
+  onReset,
 }: {
   session: AssessmentSession;
   assessment: AssessmentVersion;
@@ -1272,6 +1389,8 @@ const AssessmentScreen = ({
   onSubmitAnswer: (payload: SubmitAnswerPayload) => void;
   onUpdateFileTaskState: (item: AssessmentItem, nextState: Pt1State) => void;
   onFinishFileTask: (section: AssessmentSection, item: AssessmentItem) => void;
+  onSkipPerformanceTask: (section: AssessmentSection, item: AssessmentItem) => void;
+  onReset: () => void;
 }) => {
   const section = getSectionById(assessment, step.sectionId);
   const item = getItemByStep(assessment, step);
@@ -1289,27 +1408,71 @@ const AssessmentScreen = ({
   const questionCount = questionSteps.length;
   const progress = Math.round(((stepIndex + 1) / stepCount) * 100);
 
+  const sectionIdx = assessment.sections.findIndex((s) => s.id === section.id);
+
   return (
     <div className="q-wrap">
       <aside className="q-side">
-        <div className="progress-eyebrow">Voortgang</div>
-        <h2>{progress}% klaar</h2>
+        {/* Brand */}
+        <div className="assess-brand">
+          <span className="brand" role="img" aria-label="Citadel College" />
+          <div className="brand-label">
+            citadel college
+            <small>nulmeting digitale geletterdheid</small>
+          </div>
+        </div>
+
+        {/* Meting */}
+        <div className="assess-meta-row">
+          <span className="assess-meta-label">METING</span>
+          <span className="assess-meta-value">{assessment.level}</span>
+        </div>
+
+        {/* Voortgang % */}
+        <div className="assess-voortgang-row">
+          <span className="assess-meta-label">VOORTGANG</span>
+          <strong className="assess-pct">{progress}%</strong>
+        </div>
         <div className="progress-bar-mini">
           <span style={{ width: `${progress}%` }} />
         </div>
-        <p style={{ fontSize: ".88rem", margin: "0 0 12px", opacity: .85 }}>
-          {questionNumber
-            ? `Vraag ${questionNumber} van ${questionCount}`
-            : `Zelfinschatting · stap ${stepIndex + 1} van ${stepCount}`}
-        </p>
-        <div className="helper">
-          <strong>Tip:</strong> weet je het echt niet? Kies dan
-          {" "}<em>"weet ik niet"</em> of sla de vraag over.
-          Geen punten aftrek.
-        </div>
+
+        {/* Sectielijst */}
+        <ul className="assess-section-list">
+          {assessment.sections.map((sec, idx) => {
+            const secSteps = steps.filter((s) => s.sectionId === sec.id);
+            const secTotal = secSteps.length;
+            const firstIdx = steps.findIndex((s) => s.sectionId === sec.id);
+            const isActive = sec.id === section.id;
+            const isDone = firstIdx >= 0 && firstIdx + secTotal - 1 < stepIndex;
+            const doneSoFar = isActive ? Math.max(0, stepIndex - firstIdx) : 0;
+            return (
+              <li
+                key={sec.id}
+                className={`assess-sec-item${isActive ? " active" : ""}${isDone ? " done" : ""}`}
+              >
+                <span className="assess-sec-dot">{isDone ? "✓" : idx + 1}</span>
+                <span className="assess-sec-name">{shortSectionTitle(sec)}</span>
+                <span className="assess-sec-count">
+                  {isActive ? `${doneSoFar}/${secTotal}` : secTotal}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </aside>
 
-      <div className="q-main-col" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div className="q-main-col">
+        {/* Sectiestrook */}
+        <div className="q-section-strip">
+          <span className="q-section-label">
+            ONDERDEEL {sectionIdx + 1} — {shortSectionTitle(section).toUpperCase()}
+          </span>
+          {questionNumber != null ? (
+            <span className="q-question-num">Vraag {questionNumber} / {questionCount}</span>
+          ) : null}
+          <button className="q-pauze-btn" type="button" onClick={onReset}>Pauze</button>
+        </div>
 
       {item.type === "self_assessment" ? (
         <SelfAssessmentView
@@ -1327,6 +1490,7 @@ const AssessmentScreen = ({
           state={session.pt1States[item.id]}
           onChange={(nextState) => onUpdateFileTaskState(item, nextState)}
           onFinish={() => onFinishFileTask(section, item)}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1336,6 +1500,7 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1346,6 +1511,7 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           task={item.securityTask}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1355,6 +1521,7 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1364,6 +1531,7 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1373,6 +1541,7 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1382,6 +1551,7 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1391,6 +1561,7 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1401,6 +1572,7 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           task={item.socialTask}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1434,11 +1606,7 @@ const SelfAssessmentView = ({
   return (
     <section className="panel stack-lg">
       <QuestionHeader label="Zelfinschatting" title={item.title}>
-        <p className="slider-instruction">
-          {item.instruction}
-          <br />
-          Schuif het bolletje naar de score die het best bij jouw eigen inschatting past.
-        </p>
+        <p className="slider-instruction">{item.instruction}</p>
       </QuestionHeader>
       <div className="slider-card">
         <input
@@ -1486,11 +1654,13 @@ const MailTaskView = ({
   item,
   questionNumber,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   type AddressField = "to" | "cc" | "bcc";
   type CommandPanel = "attachments" | "link" | null;
@@ -1509,20 +1679,35 @@ const MailTaskView = ({
     linkTextDraft: "",
     linkTexts: {} as Record<string, string>,
     priority: "Normaal",
+    fontFamily: "Aptos",
+    fontSize: "12",
+    bold: false,
+    italic: false,
+    underline: false,
     sent: false,
     draftSaved: false,
     deleted: false,
   });
+  const [undoSnapshot, setUndoSnapshot] = useState<typeof draft | null>(null);
   const [activeAddressField, setActiveAddressField] = useState<AddressField | null>(null);
   const [activeCommandPanel, setActiveCommandPanel] = useState<CommandPanel>(null);
   const [sendMenuOpen, setSendMenuOpen] = useState(false);
+  const [subjectFocused, setSubjectFocused] = useState(false);
+  const [notice, setNotice] = useState("");
   const task = item.mailTask;
   if (!task) {
     return null;
   }
 
-  const toggleListValue = (field: AddressField | "attachments", value: string) => {
+  const updateDraft = (updater: (current: typeof draft) => typeof draft) => {
     setDraft((current) => {
+      setUndoSnapshot(current);
+      return updater(current);
+    });
+  };
+
+  const toggleListValue = (field: AddressField | "attachments", value: string) => {
+    updateDraft((current) => {
       const currentValues = current[field];
       return {
         ...current,
@@ -1539,7 +1724,7 @@ const MailTaskView = ({
     if (!url) {
       return;
     }
-    setDraft((current) => ({
+    updateDraft((current) => ({
       ...current,
       body: current.body ? `${current.body} ${text}` : text,
       links: current.links.includes(url) ? current.links : [...current.links, url],
@@ -1550,21 +1735,67 @@ const MailTaskView = ({
   };
 
   const handleRibbonCommand = (button: string) => {
+    setNotice("");
+    if (button === "Ongedaan maken") {
+      if (undoSnapshot) {
+        setDraft(undoSnapshot);
+        setUndoSnapshot(null);
+      }
+      setActiveCommandPanel(null);
+      return;
+    }
+
+    if (button === "Lettertype") {
+      updateDraft((current) => ({
+        ...current,
+        fontFamily:
+          current.fontFamily === "Aptos"
+            ? "Calibri"
+            : current.fontFamily === "Calibri"
+              ? "Arial"
+              : "Aptos",
+      }));
+      return;
+    }
+
+    if (button === "Lettergrootte") {
+      updateDraft((current) => ({
+        ...current,
+        fontSize: current.fontSize === "12" ? "14" : current.fontSize === "14" ? "16" : "12",
+      }));
+      return;
+    }
+
+    if (button === "Vet") {
+      updateDraft((current) => ({ ...current, bold: !current.bold }));
+      return;
+    }
+
+    if (button === "Cursief") {
+      updateDraft((current) => ({ ...current, italic: !current.italic }));
+      return;
+    }
+
+    if (button === "Onderstrepen") {
+      updateDraft((current) => ({ ...current, underline: !current.underline }));
+      return;
+    }
+
     if (button === "CC" || button === "Cc") {
-      setDraft((current) => ({ ...current, ccVisible: true }));
+      updateDraft((current) => ({ ...current, ccVisible: true }));
       setActiveAddressField("cc");
       setActiveCommandPanel(null);
       return;
     }
 
     if (button === "BCC tonen" || button === "Bcc tonen") {
-      setDraft((current) => ({ ...current, bccVisible: true }));
-      setActiveAddressField("bcc");
+      updateDraft((current) => ({ ...current, bccVisible: !current.bccVisible }));
+      setActiveAddressField((current) => (current === "bcc" ? null : "bcc"));
       setActiveCommandPanel(null);
       return;
     }
 
-    if (button === "Bestand bijvoegen" || button === "Bestand toevoegen") {
+    if (button === "Bestand invoegen" || button === "Bestand bijvoegen" || button === "Bestand toevoegen") {
       setActiveCommandPanel((current) => (current === "attachments" ? null : "attachments"));
       setActiveAddressField(null);
       return;
@@ -1577,7 +1808,7 @@ const MailTaskView = ({
     }
 
     if (button === "Prioriteit") {
-      setDraft((current) => ({
+      updateDraft((current) => ({
         ...current,
         priority: current.priority === "Hoog" ? "Normaal" : "Hoog",
       }));
@@ -1585,21 +1816,28 @@ const MailTaskView = ({
       return;
     }
 
+    if (button === "Afdrukken") {
+      setNotice("niet beschikbaar");
+      setActiveCommandPanel(null);
+      setActiveAddressField(null);
+      return;
+    }
+
     if (button === "Concept opslaan") {
-      setDraft((current) => ({ ...current, draftSaved: true }));
+      updateDraft((current) => ({ ...current, draftSaved: true }));
       setActiveCommandPanel(null);
       return;
     }
 
     if (button === "Verwijderen") {
-      setDraft((current) => ({ ...current, deleted: true, sent: false }));
+      updateDraft((current) => ({ ...current, deleted: true, sent: false }));
       setActiveCommandPanel(null);
       return;
     }
   };
 
   const sendMessage = () => {
-    setDraft((current) => ({ ...current, sent: true, deleted: false }));
+    updateDraft((current) => ({ ...current, sent: true, deleted: false }));
     setSendMenuOpen(false);
   };
 
@@ -1624,13 +1862,25 @@ const MailTaskView = ({
     });
   };
 
-  const toolbarButtons = task.visibleButtons.filter((button) => button !== "Verzenden");
+  const toolbarButtons = [
+    "Ongedaan maken",
+    "Lettertype",
+    "Lettergrootte",
+    "Vet",
+    "Cursief",
+    "Onderstrepen",
+    "BCC tonen",
+    "Bestand invoegen",
+    "Hyperlink invoegen",
+    "Prioriteit",
+    "Afdrukken",
+  ];
   const fieldLabel = (field: AddressField) =>
     field === "to" ? "Aan" : field === "cc" ? "Cc" : "Bcc";
   const fieldVisible = (field: AddressField) =>
     field === "to" ||
     field === "cc" ||
-    (field === "bcc" && (draft.bccVisible || draft.bcc.length > 0));
+    (field === "bcc" && draft.bccVisible);
 
   const contactInitials = (email: string) => {
     const local = (email.split("@")[0] || email).replace(/[^a-z0-9]/gi, "");
@@ -1641,13 +1891,25 @@ const MailTaskView = ({
     return dot >= 0 ? filename.slice(dot + 1).toUpperCase().slice(0, 4) : "FILE";
   };
   const ribbonIcon = (button: string) => {
-    if (button === "Bestand bijvoegen") return "📎 ";
-    if (button === "Hyperlink invoegen") return "🔗 ";
-    if (button === "Prioriteit") return "⚠ ";
-    if (button === "Concept opslaan") return "💾 ";
-    if (button === "Verwijderen") return "🗑 ";
-    if (button === "BCC tonen") return "+ ";
-    return "";
+    if (button === "Ongedaan maken") return "↶";
+    if (button === "Lettertype") return "Aa";
+    if (button === "Lettergrootte") return draft.fontSize;
+    if (button === "Vet") return "B";
+    if (button === "Cursief") return "I";
+    if (button === "Onderstrepen") return "U";
+    if (button === "BCC tonen") return "Bcc";
+    if (button === "Bestand invoegen") return "📎";
+    if (button === "Hyperlink invoegen") return "🔗";
+    if (button === "Prioriteit") return "!";
+    if (button === "Afdrukken") return "⎙";
+    return button.slice(0, 1);
+  };
+  const bodyStyle: CSSProperties = {
+    fontFamily: draft.fontFamily,
+    fontSize: `${draft.fontSize}px`,
+    fontWeight: draft.bold ? 700 : 400,
+    fontStyle: draft.italic ? "italic" : "normal",
+    textDecoration: draft.underline ? "underline" : "none",
   };
 
   return (
@@ -1659,107 +1921,125 @@ const MailTaskView = ({
       />
 
       <div className="mail-shell">
-        <div className="mail-ribbon">
-          {["Vet", "Cursief", "Onderstreept", "Lijst"].map((b) => (
-            <button key={b} className="rb" type="button" onClick={() => undefined}>
-              {b}
+        <div className="mail-main">
+          <div className="mail-titlebar">Nieuwe e-mail</div>
+          <div className="mail-tabs" aria-label="Menubalk">
+            {["Bestand", "Bericht", "Invoegen", "Tekst opmaken", "Tekenen", "Opties"].map((tab) => (
+              <span key={tab} className={tab === "Bericht" ? "active" : ""}>{tab}</span>
+            ))}
+          </div>
+          <div className="mail-ribbon">
+            <div className="mail-ribbon-group">
+              {toolbarButtons.map((button) => {
+                const isActive =
+                  (button === "Bestand invoegen" && activeCommandPanel === "attachments") ||
+                  (button === "Hyperlink invoegen" && activeCommandPanel === "link") ||
+                  (button === "Prioriteit" && draft.priority === "Hoog") ||
+                  (button === "Vet" && draft.bold) ||
+                  (button === "Cursief" && draft.italic) ||
+                  (button === "Onderstrepen" && draft.underline) ||
+                  (button === "BCC tonen" && draft.bccVisible);
+                return (
+                  <button
+                    key={button}
+                    className={`rb rb-icon-only ${isActive ? "active" : ""}`}
+                    type="button"
+                    onClick={() => handleRibbonCommand(button)}
+                    aria-label={button}
+                    title={button}
+                  >
+                    <span className="rb-ico" aria-hidden="true">{ribbonIcon(button)}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {notice ? <span className="mail-notice" role="status">{notice}</span> : null}
+            {sendMenuOpen ? (
+              <div className="mail-send-menu">
+                <button className="rb" type="button" onClick={() => setSendMenuOpen(false)}>
+                  Verzending plannen
+                </button>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="mail-send-row">
+            <button className="mail-send-button" type="button" onClick={sendMessage}>
+              <span aria-hidden="true">▷</span>
+              <span>Verzenden</span>
             </button>
-          ))}
-          <span className="rb-divider" />
-          {toolbarButtons.map((button) => {
-            const isActive =
-              (button === "Bestand bijvoegen" && activeCommandPanel === "attachments") ||
-              (button === "Hyperlink invoegen" && activeCommandPanel === "link") ||
-              (button === "Prioriteit" && draft.priority === "Hoog");
-            return (
-              <button
-                key={button}
-                className={`rb ${isActive ? "active" : ""}`}
-                type="button"
-                onClick={() => handleRibbonCommand(button)}
-              >
-                {ribbonIcon(button)}
-                {button}
-              </button>
-            );
-          })}
-          <span style={{ flex: 1 }} />
-          <button
-            className="rb"
-            type="button"
-            onClick={() => setSendMenuOpen((current) => !current)}
-            aria-label="Meer verzendopties"
-          >
-            ⋯
-          </button>
-          {sendMenuOpen ? (
-            <div className="mail-send-menu" style={{ position: "absolute", right: 24, top: 56, background: "#fff", border: "1px solid var(--c-line)", borderRadius: "var(--radius-md)", padding: 8, boxShadow: "var(--shadow-md)", zIndex: 10 }}>
-              <button className="rb" type="button" onClick={() => setSendMenuOpen(false)}>
-                Verzending plannen
+            <button
+              className="mail-send-caret"
+              type="button"
+              onClick={() => setSendMenuOpen((current) => !current)}
+              aria-label="Meer verzendopties"
+              title="Meer verzendopties"
+            >
+              ▾
+            </button>
+            <span className="mail-from">Van: vrbril@citadelcollege.nl</span>
+          </div>
+
+          {activeCommandPanel === "link" ? (
+            <div className="mail-inline-panel">
+              <strong>Hyperlink invoegen:</strong>
+              <input
+                className="mail-inline-input"
+                value={draft.linkUrlDraft}
+                onChange={(event) =>
+                  updateDraft((current) => ({ ...current, linkUrlDraft: event.target.value }))
+                }
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    commitLinkDraft();
+                  }
+                }}
+                placeholder="https://…"
+              />
+              <input
+                className="mail-inline-input"
+                value={draft.linkTextDraft}
+                onChange={(event) =>
+                  updateDraft((current) => ({ ...current, linkTextDraft: event.target.value }))
+                }
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    commitLinkDraft();
+                  }
+                }}
+                placeholder="Linktekst"
+              />
+              <button className="rb active" type="button" onClick={commitLinkDraft}>
+                Invoegen
               </button>
             </div>
           ) : null}
-        </div>
 
-        {activeCommandPanel === "link" ? (
-          <div className="mail-fields" style={{ background: "var(--t-bg-soft)", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <strong style={{ fontSize: ".82rem", color: "var(--t-accent-deep)" }}>
-              Hyperlink invoegen:
-            </strong>
-            <input
-              value={draft.linkUrlDraft}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, linkUrlDraft: event.target.value }))
-              }
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  commitLinkDraft();
-                }
-              }}
-              placeholder="URL"
-              style={{ border: "1px solid var(--c-line)", borderRadius: 8, padding: "6px 10px", background: "#fff" }}
-            />
-            <input
-              value={draft.linkTextDraft}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, linkTextDraft: event.target.value }))
-              }
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  commitLinkDraft();
-                }
-              }}
-              placeholder="Linktekst"
-              style={{ border: "1px solid var(--c-line)", borderRadius: 8, padding: "6px 10px", background: "#fff" }}
-            />
-            <button className="rb active" type="button" onClick={commitLinkDraft}>
-              Invoegen
-            </button>
-          </div>
-        ) : null}
-
-        <div className="mail-fields">
+          <div className="mail-fields">
           {(["to", "cc", "bcc"] as const).map((field) =>
             fieldVisible(field) ? (
-              <div className="mail-field" key={field} style={{ position: "relative" }}>
+              <div className="mail-field" key={field}>
                 <span className="label">{fieldLabel(field)}</span>
                 <div className="chips-row">
                   {draft[field].map((contact) => (
                     <span className="contact-chip" key={`${field}-${contact}`}>
                       <span className="avatar">{contactInitials(contact)}</span>
-                      {contact}
-                      <span
+                      <span className="contact-email">{contact}</span>
+                      <button
+                        type="button"
                         className="x"
                         onClick={() => toggleListValue(field, contact)}
-                        role="button"
                         aria-label={`${contact} verwijderen`}
                       >
                         ×
-                      </span>
+                      </button>
                     </span>
                   ))}
+                  {draft[field].length === 0 ? (
+                    <span className="chips-placeholder">Voeg een ontvanger toe…</span>
+                  ) : null}
                 </div>
                 <button
                   className="add-btn"
@@ -1767,29 +2047,13 @@ const MailTaskView = ({
                   onClick={() =>
                     setActiveAddressField((current) => (current === field ? null : field))
                   }
+                  aria-expanded={activeAddressField === field}
                 >
                   + Contact
                 </button>
                 {activeAddressField === field ? (
-                  <div
-                    className="mail-picker-inline"
-                    style={{
-                      position: "absolute",
-                      top: "100%",
-                      left: 76,
-                      right: 16,
-                      marginTop: 4,
-                      background: "#fff",
-                      border: "1px solid var(--c-line)",
-                      borderRadius: "var(--radius-md)",
-                      padding: 10,
-                      boxShadow: "var(--shadow-md)",
-                      zIndex: 5,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 6,
-                    }}
-                  >
+                  <div className="mail-picker-inline">
+                    <div className="mail-picker-header">Contactenlijst</div>
                     {task.contacts.map((contact) => {
                       const isPicked = draft[field].includes(contact);
                       return (
@@ -1797,27 +2061,11 @@ const MailTaskView = ({
                           key={`${field}-pick-${contact}`}
                           type="button"
                           onClick={() => toggleListValue(field, contact)}
-                          className="contact-chip"
-                          style={{
-                            justifyContent: "flex-start",
-                            background: isPicked ? "var(--t-accent)" : "var(--t-bg-soft)",
-                            color: isPicked ? "#fff" : "var(--t-accent-deep)",
-                            cursor: "pointer",
-                            border: "none",
-                            padding: "8px 12px 8px 6px",
-                            textAlign: "left",
-                          }}
+                          className={`mail-picker-item ${isPicked ? "is-picked" : ""}`}
                         >
-                          <span
-                            className="avatar"
-                            style={{
-                              background: isPicked ? "#fff" : "var(--t-accent)",
-                              color: isPicked ? "var(--t-accent)" : "#fff",
-                            }}
-                          >
-                            {contactInitials(contact)}
-                          </span>
-                          <span style={{ fontSize: ".88rem" }}>{contact}</span>
+                          <span className="avatar">{contactInitials(contact)}</span>
+                          <span className="contact-email">{contact}</span>
+                          {isPicked ? <span className="check" aria-hidden="true">✓</span> : null}
                         </button>
                       );
                     })}
@@ -1826,177 +2074,135 @@ const MailTaskView = ({
               </div>
             ) : null,
           )}
-          <div className="mail-field">
+          <div className="mail-field mail-field-subject">
             <span className="label">Onderwerp</span>
             <input
+              className="subject-input"
               value={draft.subject}
-              placeholder="Bijv. Verslag Nederlands"
+              placeholder={subjectFocused ? "" : "Onderwerp toevoegen"}
+              onFocus={() => setSubjectFocused(true)}
+              onBlur={() => setSubjectFocused(false)}
               onChange={(event) =>
-                setDraft((current) => ({ ...current, subject: event.target.value }))
+                updateDraft((current) => ({ ...current, subject: event.target.value }))
               }
             />
             {draft.priority === "Hoog" ? (
-              <span
-                className="add-btn"
-                style={{
-                  background: "var(--p2-red)",
-                  color: "#fff",
-                  padding: "2px 8px",
-                  borderRadius: 6,
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 900,
-                }}
-              >
-                !
-              </span>
+              <span className="priority-flag" aria-label="Hoge prioriteit">!</span>
             ) : null}
           </div>
-        </div>
+          </div>
 
-        <div className="mail-body-area">
-          <textarea
-            className="body-edit"
-            rows={9}
-            value={draft.body}
-            onChange={(event) =>
-              setDraft((current) => ({ ...current, body: event.target.value }))
-            }
-            placeholder="Beste mevrouw De Jong, ..."
-            style={{
-              border: "none",
-              outline: "none",
-              fontFamily: "var(--font-sans)",
-              fontSize: "1rem",
-              lineHeight: 1.6,
-              width: "100%",
-              resize: "vertical",
-              background: "transparent",
-              color: "var(--c-ink)",
-            }}
-          />
-          {draft.links.length > 0 ? (
-            <div className="mail-body-links" style={{ marginTop: 10, fontSize: ".9rem" }}>
-              {draft.links.map((link) => (
-                <a
-                  key={link}
-                  href={link}
-                  style={{ color: "var(--t-accent)", marginRight: 12 }}
-                >
-                  {draft.linkTexts[link] ?? link}
-                </a>
+          <div className="mail-body-area">
+            <textarea
+              className="body-edit"
+              rows={9}
+              value={draft.body}
+              style={bodyStyle}
+              onChange={(event) =>
+                updateDraft((current) => ({ ...current, body: event.target.value }))
+              }
+              placeholder=""
+            />
+            {draft.links.length > 0 ? (
+              <div className="mail-body-links">
+                {draft.links.map((link) => (
+                  <a key={link} href={link}>
+                    {draft.linkTexts[link] ?? link}
+                  </a>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          {activeCommandPanel === "attachments" ? (
+            <div className="mail-attach-picker">
+              <strong className="mail-attach-picker-label">Beschikbare bestanden</strong>
+              <div className="mail-attach-list">
+                {task.files.map((file) => {
+                  const picked = draft.attachments.includes(file);
+                  return (
+                    <button
+                      key={file}
+                      type="button"
+                      className={`attach-chip is-picker ${picked ? "is-picked" : ""}`}
+                      onClick={() => toggleListValue("attachments", file)}
+                    >
+                      <span className="file-pic">{fileExt(file)}</span>
+                      <span className="attach-name">{file}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {draft.attachments.length > 0 ? (
+            <div className="mail-attachments">
+              <span className="mail-attach-paperclip" aria-hidden="true">📎</span>
+              {draft.attachments.map((attachment) => (
+                <span className="attach-chip" key={attachment}>
+                  <span className="file-pic">{fileExt(attachment)}</span>
+                  <span className="attach-name">{attachment}</span>
+                  <button
+                    type="button"
+                    className="attach-remove"
+                    aria-label={`${attachment} verwijderen`}
+                    onClick={() => toggleListValue("attachments", attachment)}
+                  >
+                    ×
+                  </button>
+                </span>
               ))}
             </div>
           ) : null}
-        </div>
 
-        {activeCommandPanel === "attachments" ? (
-          <div
-            className="mail-attachments"
-            style={{ background: "var(--t-bg-soft)", padding: "12px 28px" }}
-          >
-            <strong
-              style={{
-                width: "100%",
-                fontSize: ".8rem",
-                color: "var(--t-accent-deep)",
-                fontFamily: "var(--font-display)",
-                marginBottom: 6,
-              }}
-            >
-              Beschikbare bestanden
-            </strong>
-            {task.files.map((file) => {
-              const picked = draft.attachments.includes(file);
-              return (
-                <button
-                  key={file}
-                  type="button"
-                  className="attach-chip"
-                  onClick={() => toggleListValue("attachments", file)}
-                  style={{
-                    cursor: "pointer",
-                    border: picked ? "1px solid var(--t-accent)" : "1px solid var(--c-line)",
-                    background: picked ? "var(--t-accent)" : "var(--c-bg-soft)",
-                    color: picked ? "#fff" : "var(--c-ink)",
-                  }}
-                >
-                  <span
-                    className="file-pic"
-                    style={{
-                      background: picked ? "#fff" : "var(--t-accent)",
-                      color: picked ? "var(--t-accent)" : "#fff",
-                    }}
-                  >
-                    {fileExt(file)}
-                  </span>
-                  {file}
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
-
-        {draft.attachments.length > 0 ? (
-          <div className="mail-attachments">
-            {draft.attachments.map((attachment) => (
-              <span className="attach-chip" key={attachment}>
-                <span className="file-pic">{fileExt(attachment)}</span>
-                {attachment}
-                <span
-                  style={{
-                    opacity: 0.5,
-                    marginLeft: 4,
-                    cursor: "pointer",
-                    fontWeight: 900,
-                  }}
-                  role="button"
-                  aria-label={`${attachment} verwijderen`}
-                  onClick={() => toggleListValue("attachments", attachment)}
-                >
-                  ×
-                </span>
-              </span>
-            ))}
-          </div>
-        ) : null}
-
-        <div className="mail-footer">
-          <div className="left">
-            <span
-              style={{
-                fontSize: ".88rem",
-                color: draft.sent ? "#007a5e" : "var(--c-ink-soft)",
-                fontWeight: 700,
-              }}
-            >
-              {draft.sent
-                ? "✓ Verzonden"
-                : draft.deleted
-                  ? "🗑 Verwijderd"
-                  : draft.draftSaved
-                    ? "💾 Concept opgeslagen"
-                    : "Concept"}
-            </span>
-          </div>
-          <div style={{ display: "flex", gap: 12 }}>
-            <button
-              className="btn btn-ghost"
-              type="button"
-              onClick={sendMessage}
-              disabled={draft.sent}
-            >
-              Verzenden
-            </button>
-            <button className="btn btn-primary" type="button" onClick={submit}>
-              <span>Taak afronden</span>
-              <span className="arrow-circle">→</span>
-            </button>
-          </div>
         </div>
       </div>
+
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel={draft.sent ? "Taak afronden" : "Verstuur"}
+        onPrimary={draft.sent ? submit : () => { sendMessage(); submit(); }}
+        onSkip={onSkip}
+      />
     </section>
   );
 };
+
+const TaskNavFooter = ({
+  questionNumber,
+  totalCount,
+  primaryLabel,
+  onPrimary,
+  onSkip,
+  primaryDisabled,
+}: {
+  questionNumber: number;
+  totalCount?: number;
+  primaryLabel: string;
+  onPrimary: () => void;
+  onSkip: () => void;
+  primaryDisabled?: boolean;
+}) => (
+  <div className="task-nav">
+    <button className="task-nav-back" type="button" onClick={onSkip}>
+      <span className="task-nav-arrow" aria-hidden="true">←</span>
+      <span>Vorige</span>
+    </button>
+    <span className="task-nav-progress">
+      {totalCount ? `Opdracht ${questionNumber} van ${totalCount}` : `Opdracht ${questionNumber}`}
+    </span>
+    <button
+      className="task-nav-primary"
+      type="button"
+      onClick={onPrimary}
+      disabled={primaryDisabled}
+    >
+      <span>{primaryLabel}</span>
+      <span className="arrow-circle" aria-hidden="true">→</span>
+    </button>
+  </div>
+);
 
 const InteractionTaskView = ({
   section,
@@ -2004,12 +2210,14 @@ const InteractionTaskView = ({
   questionNumber,
   task,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   task: AssessmentItem["securityTask"] | AssessmentItem["socialTask"];
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   const [state, setState] = useState<Record<string, unknown>>({});
   const [optionOrders] = useState(() => createInteractionOrders(task));
@@ -2082,6 +2290,7 @@ const InteractionTaskView = ({
         <button className="primary-button" type="button" onClick={submit}>
           Taak afronden
         </button>
+        <SkipTaskButton onSkip={onSkip} />
       </div>
     </section>
   );
@@ -2203,11 +2412,13 @@ const ExcelDownloadTaskView = ({
   item,
   questionNumber,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const task = item.excelTask;
@@ -2266,6 +2477,7 @@ const ExcelDownloadTaskView = ({
         >
           Taak afronden
         </button>
+        <SkipTaskButton onSkip={onSkip} />
       </div>
     </section>
   );
@@ -2276,11 +2488,13 @@ const OfficeFormatTaskView = ({
   item,
   questionNumber,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   const [code, setCode] = useState("");
   const [exportAction, setExportAction] = useState("");
@@ -2343,6 +2557,7 @@ const OfficeFormatTaskView = ({
         >
           Taak afronden
         </button>
+        <SkipTaskButton onSkip={onSkip} />
       </div>
     </section>
   );
@@ -2353,11 +2568,13 @@ const PowerPointDesignTaskView = ({
   item,
   questionNumber,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   const [state, setState] = useState<Record<string, string>>({});
   const task = item.powerPointTask;
@@ -2449,6 +2666,7 @@ const PowerPointDesignTaskView = ({
         >
           Taak afronden
         </button>
+        <SkipTaskButton onSkip={onSkip} />
       </div>
     </section>
   );
@@ -2567,11 +2785,13 @@ const FakeTeamsTask = ({
   item,
   questionNumber,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   const [state, setState] = useState({
     shareOpened: false,
@@ -2951,9 +3171,9 @@ const FakeTeamsTask = ({
         <button
           className="ghost-button"
           type="button"
-          onClick={() => submit(true)}
+          onClick={onSkip}
         >
-          Sla over
+          Ik weet het niet / sla over
         </button>
       </div>
     </section>
@@ -2992,11 +3212,13 @@ const BlockProgrammingTaskView = ({
   item,
   questionNumber,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   const [program, setProgram] = useState<ProgramBlock[]>([]);
   const [executed, setExecuted] = useState(false);
@@ -3547,6 +3769,7 @@ const BlockProgrammingTaskView = ({
         >
           Taak afronden
         </button>
+        <SkipTaskButton onSkip={onSkip} />
       </div>
     </section>
   );
@@ -3569,15 +3792,58 @@ const ChoiceItemView = ({
   const orderedOptions = (presentedOrder.length > 0 ? presentedOrder : options.map((option) => option.id))
     .map((optionId) => options.find((option) => option.id === optionId))
     .filter(Boolean) as typeof options;
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const isMultiple = item.selectionMode === "multiple";
+  const selectCount = item.selectCount ?? (Array.isArray(item.correctAnswer) ? item.correctAnswer.length : 1);
+  const unknownOptionId = item.unknownOptionId;
+  const selectedUnknown = Boolean(unknownOptionId && selectedIds.includes(unknownOptionId));
+  const canSubmit = isMultiple
+    ? selectedUnknown || (selectedIds.length > 0 && selectedIds.length <= selectCount)
+    : selectedIds.length === 1;
 
-  const submit = (selectedAnswer: SelectedAnswer) => {
+  const toggleOption = (optionId: string) => {
+    if (optionId === unknownOptionId) {
+      setSelectedIds([optionId]);
+      return;
+    }
+
+    if (!isMultiple) {
+      setSelectedIds([optionId]);
+      return;
+    }
+
+    setSelectedIds((current) => {
+      const withoutUnknown = current.filter((id) => id !== unknownOptionId);
+      if (withoutUnknown.includes(optionId)) {
+        return withoutUnknown.filter((id) => id !== optionId);
+      }
+      if (withoutUnknown.length >= selectCount) {
+        return withoutUnknown;
+      }
+      return [...withoutUnknown, optionId];
+    });
+  };
+
+  const submit = () => {
     onSubmit({
       section,
       item,
-      selectedAnswer,
+      selectedAnswer: isMultiple ? selectedIds : selectedIds[0] ?? null,
       shownOptionOrder: orderedOptions.map((option) => option.id),
     });
   };
+
+  const submitUnknown = () => {
+    onSubmit({
+      section,
+      item,
+      selectedAnswer: unknownOptionId ?? null,
+      shownOptionOrder: orderedOptions.map((option) => option.id),
+    });
+  };
+
+  /* Reguliere opties (unknown-optie gaat naar de footer-knop) */
+  const displayOptions = orderedOptions.filter((o) => o.id !== unknownOptionId);
 
   return (
     <section className="panel stack-md">
@@ -3588,28 +3854,41 @@ const ChoiceItemView = ({
       />
 
       {item.mockup ? <MockupCardView item={item} /> : null}
+      {isMultiple ? (
+        <p className="helper-text">Kies maximaal {selectCount} antwoorden.</p>
+      ) : null}
 
       <div className="option-grid">
-        {orderedOptions.map((option) => {
+        {displayOptions.map((option, idx) => {
+          const letter = String.fromCharCode(65 + idx);
+          const selected = selectedIds.includes(option.id);
           return (
             <button
-              className="option-card"
+              className={`option-card${selected ? " selected" : ""}`}
               key={option.id}
               type="button"
-              onClick={() => submit(option.id)}
+              onClick={() => toggleOption(option.id)}
             >
-              {option.label}
+              <span className="option-letter">{letter}</span>
+              <span className="option-text">{option.label}</span>
+              <span className="option-radio" aria-hidden="true" />
             </button>
           );
         })}
       </div>
 
-      <div className="actions">
-        {item.allowUnknown ? (
-          <button className="ghost-button" type="button" onClick={() => submit(null)}>
-            Weet ik niet
-          </button>
-        ) : null}
+      <div className="q-mc-footer">
+        <button className="q-weet-btn" type="button" onClick={submitUnknown}>
+          Weet ik niet
+        </button>
+        <button
+          className="primary-button q-next-btn"
+          type="button"
+          onClick={submit}
+          disabled={!canSubmit}
+        >
+          Volgende vraag <span className="q-next-arrow" aria-hidden="true">→</span>
+        </button>
       </div>
     </section>
   );
@@ -3693,18 +3972,34 @@ const MockupCardView = ({ item }: { item: AssessmentItem }) => {
     return null;
   }
 
+  const isAddressBar = item.mockup.mediaHint === "Niet-interactieve adresbalk";
+  const isEmailLink = item.mockup.mediaHint === "Niet-interactieve linkweergave";
+  const address = item.mockup.content[0];
+
   return (
     <div className={`mockup-frame mockup-${item.type}`}>
       <div className="mockup-topline">
         <strong>{item.mockup.title}</strong>
         {item.mockup.badge ? <span>{item.mockup.badge}</span> : null}
       </div>
-      {item.mockup.subtitle ? <p className="mockup-subtitle">{item.mockup.subtitle}</p> : null}
-      <div className="mockup-body">
-        {item.mockup.content.map((line) => (
-          <p key={line}>{line}</p>
-        ))}
-      </div>
+      {item.mockup.subtitle && !isEmailLink ? (
+        <p className="mockup-subtitle">{item.mockup.subtitle}</p>
+      ) : null}
+      {isAddressBar || isEmailLink ? (
+        <div className={isEmailLink ? "stimulus-mail" : "stimulus-browser"}>
+          {isEmailLink ? <p>{item.mockup.subtitle}</p> : null}
+          <div className="stimulus-address-bar" aria-label="Webadres">
+            <span className="stimulus-lock" aria-hidden="true" />
+            <span>{address}</span>
+          </div>
+        </div>
+      ) : (
+        <div className="mockup-body">
+          {item.mockup.content.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </div>
+      )}
       {item.mockup.mediaHint ? <div className="media-hint">{item.mockup.mediaHint}</div> : null}
       {item.mockup.footer ? <div className="mockup-footer">{item.mockup.footer}</div> : null}
     </div>
@@ -3733,12 +4028,14 @@ const FileTaskWorkspace = ({
   state,
   onChange,
   onFinish,
+  onSkip,
 }: {
   item: AssessmentItem;
   questionNumber: number;
   state: Pt1State;
   onChange: (nextState: Pt1State) => void;
   onFinish: () => void;
+  onSkip: () => void;
 }) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [contextFolderId, setContextFolderId] = useState<string>(
@@ -3918,6 +4215,24 @@ const FileTaskWorkspace = ({
     return "Bestand";
   };
 
+  const rootId = item.fileTask.simulation.rootId;
+  const rootFolders = state.nodes.filter(
+    (node) => node.parentId === rootId && node.type === "folder",
+  );
+  const quickAccessNames = ["Downloads", "Documenten", "Afbeeldingen"];
+  const meetingFolders = rootFolders.filter(
+    (node) => !quickAccessNames.includes(node.name),
+  );
+  const goToFolder = (folderId: string) => {
+    setContextFolderId(folderId);
+    setSelectedNodeId(null);
+  };
+  const currentPathLabel = (() => {
+    const path = buildPath(state.nodes, activeFolderId);
+    const parts = path.split("/").filter(Boolean);
+    return parts.length === 0 ? "Bureaublad" : parts[parts.length - 1];
+  })();
+
   return (
     <section className="panel stack-lg">
       <QuestionHeader
@@ -3926,213 +4241,106 @@ const FileTaskWorkspace = ({
         instruction={item.instruction}
       />
 
-      <div className="pt1-layout">
-        <aside className="pt1-tasks">
-          <h3>Opdrachten</h3>
-          <ol>
-            {item.fileTask.tasks.map((task) => (
-              <li key={task.id}>{task.description}</li>
-            ))}
-          </ol>
-          <button className="primary-button" type="button" onClick={onFinish}>
-            Taak afronden
-          </button>
-          {state.completed ? (
-            <div className="result-mini">
-              <strong>
-                Score: {state.score} / {item.points}
-              </strong>
-              <ul>
-                {state.taskResults.map((task) => (
-                  <li key={task.taskId}>
-                    {task.correct ? "Goed" : "Nog niet goed"} - {task.description}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-        </aside>
-
-        <div className="workspace-card explorer-card">
-          <div className="explorer-commandbar">
+      <div className="file-explorer">
+        <div className="file-explorer-toolbar">
+          <div className="file-breadcrumb">{currentPathLabel}</div>
+          <div className="file-toolbar-actions">
             <button
-              className="explorer-command"
               type="button"
+              className="file-toolbar-btn"
+              onClick={() => createNewItem("folder")}
+            >
+              <span className="ico" aria-hidden="true">+</span>
+              <span>Nieuwe map</span>
+            </button>
+            <button
+              type="button"
+              className="file-toolbar-btn"
               onClick={() => onChange(undoPt1(state))}
               disabled={state.undoStack.length === 0}
             >
-              <span className="command-icon command-icon-undo" aria-hidden="true" />
-              Ongedaan maken
-            </button>
-            <div className="explorer-new-menu">
-              <button
-                className="explorer-command"
-                type="button"
-                aria-expanded={isNewMenuOpen}
-                onClick={() => setIsNewMenuOpen((open) => !open)}
-              >
-                <span className="command-icon command-icon-new" aria-hidden="true" />
-                Nieuw
-                <span className="command-chevron" aria-hidden="true" />
-              </button>
-              {isNewMenuOpen ? (
-                <div className="explorer-new-dropdown" role="menu" aria-label="Nieuw item">
-                  {explorerNewItems.map((newItem) => (
-                    <button
-                      key={newItem.type}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => createNewItem(newItem.type)}
-                    >
-                      <span
-                        className={`new-item-icon ${newItem.iconClass}`}
-                        aria-hidden="true"
-                      />
-                      {newItem.label}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-            <button
-              className="explorer-command"
-              type="button"
-              disabled={!selectedNode?.parentId}
-              onClick={() => selectedNodeId && setClipboard({ mode: "cut", nodeId: selectedNodeId })}
-            >
-              <span className="command-icon command-icon-cut" aria-hidden="true" />
-              Knippen
-            </button>
-            <button
-              className="explorer-command"
-              type="button"
-              disabled={!selectedNode?.parentId}
-              onClick={() => selectedNodeId && setClipboard({ mode: "copy", nodeId: selectedNodeId })}
-            >
-              <span className="command-icon command-icon-copy" aria-hidden="true" />
-              Kopiëren
-            </button>
-            <button
-              className="explorer-command"
-              type="button"
-              disabled={!clipboardNode}
-              onClick={pasteClipboard}
-            >
-              <span className="command-icon command-icon-paste" aria-hidden="true" />
-              Plakken
-            </button>
-            <button
-              className="explorer-command"
-              type="button"
-              disabled={!selectedNode?.parentId}
-              onClick={renameSelectedNode}
-            >
-              <span className="command-icon command-icon-rename" aria-hidden="true" />
-              Naam wijzigen
-            </button>
-            <button
-              className="explorer-command"
-              type="button"
-              disabled={!selectedNode?.parentId}
-              onClick={() => window.alert("Delen heb je voor deze opdracht niet nodig.")}
-            >
-              <span className="command-icon command-icon-share" aria-hidden="true" />
-              Delen
-            </button>
-            <button
-              className="explorer-command"
-              type="button"
-              disabled={!selectedNode?.parentId}
-              onClick={deleteSelectedNode}
-            >
-              <span className="command-icon command-icon-delete" aria-hidden="true" />
-              Verwijderen
+              <span className="ico" aria-hidden="true">↻</span>
+              <span>Ongedaan</span>
             </button>
           </div>
+        </div>
 
-          <div className="explorer-window">
-            <aside className="explorer-sidebar">
+        <div className="file-explorer-body">
+          <aside className="file-sidebar" aria-label="Mappenlijst">
+            <div className="file-sidebar-group">
+              <div className="file-sidebar-label">Snelle toegang</div>
               <button
                 type="button"
-                className={contextFolderId === item.fileTask.simulation.rootId ? "active" : ""}
-                onClick={() => {
-                  setContextFolderId(item.fileTask?.simulation.rootId ?? activeFolderId);
-                  setSelectedNodeId(null);
-                }}
+                className={`file-sidebar-item ${activeFolderId === rootId ? "active" : ""}`}
+                onClick={() => goToFolder(rootId)}
               >
-                Thuis
+                <span className="ico ico-desktop" aria-hidden="true" />
+                <span className="lbl">Bureaublad</span>
               </button>
-              {getFolder("Galerijen") ? (
-                <button
-                  type="button"
-                  className={contextFolderId === getFolderId("Galerijen") ? "active" : ""}
-                  onClick={() => {
-                    setContextFolderId(getFolderId("Galerijen"));
-                    setSelectedNodeId(null);
-                  }}
-                >
-                  Galerijen
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className={contextFolderId === getFolderId("OneDrive") ? "active" : ""}
-                onClick={() => {
-                  setContextFolderId(getFolderId("OneDrive"));
-                  setSelectedNodeId(null);
-                }}
-              >
-                OneDrive
-              </button>
-              <hr />
-              <button type="button">Bureaublad</button>
               {getFolder("Downloads") ? (
                 <button
                   type="button"
-                  className={contextFolderId === getFolderId("Downloads") ? "active" : ""}
-                  onClick={() => {
-                    setContextFolderId(getFolderId("Downloads"));
-                    setSelectedNodeId(null);
-                  }}
+                  className={`file-sidebar-item ${activeFolderId === getFolderId("Downloads") ? "active" : ""}`}
+                  onClick={() => goToFolder(getFolderId("Downloads"))}
                 >
-                  Downloads
+                  <span className="ico ico-downloads" aria-hidden="true" />
+                  <span className="lbl">Downloads</span>
                 </button>
               ) : null}
               {getFolder("Documenten") ? (
                 <button
                   type="button"
-                  className={contextFolderId === getFolderId("Documenten") ? "active" : ""}
-                  onClick={() => {
-                    setContextFolderId(getFolderId("Documenten"));
-                    setSelectedNodeId(null);
-                  }}
+                  className={`file-sidebar-item ${activeFolderId === getFolderId("Documenten") ? "active" : ""}`}
+                  onClick={() => goToFolder(getFolderId("Documenten"))}
                 >
-                  Documenten
+                  <span className="ico ico-documents" aria-hidden="true" />
+                  <span className="lbl">Documenten</span>
                 </button>
               ) : null}
-            </aside>
+              {getFolder("Afbeeldingen") ? (
+                <button
+                  type="button"
+                  className={`file-sidebar-item ${activeFolderId === getFolderId("Afbeeldingen") ? "active" : ""}`}
+                  onClick={() => goToFolder(getFolderId("Afbeeldingen"))}
+                >
+                  <span className="ico ico-pictures" aria-hidden="true" />
+                  <span className="lbl">Afbeeldingen</span>
+                </button>
+              ) : null}
+            </div>
 
-            <div className="explorer-main">
-              <div className="explorer-address">
-                <span>{buildPath(state.nodes, activeFolderId)}</span>
-                <span>{selectedNode ? `Geselecteerd: ${selectedNode.name}` : "Geen selectie"}</span>
+            {meetingFolders.length > 0 ? (
+              <div className="file-sidebar-group">
+                <div className="file-sidebar-label">Deze meting</div>
+                {meetingFolders.map((folder) => (
+                  <button
+                    key={folder.id}
+                    type="button"
+                    className={`file-sidebar-item ${activeFolderId === folder.id ? "active" : ""}`}
+                    onClick={() => goToFolder(folder.id)}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      const draggedId = event.dataTransfer.getData("text/plain");
+                      handleDrop(draggedId, folder.id);
+                    }}
+                  >
+                    <span className="ico ico-folder" aria-hidden="true" />
+                    <span className="lbl">{folder.name}</span>
+                  </button>
+                ))}
               </div>
+            ) : null}
+          </aside>
+
+          <div className="file-main">
               <div
                 className={`file-grid ${activeItems.length === 0 ? "is-empty" : ""}`}
                 role="list"
                 aria-label="Gesimuleerde Windows Verkenner"
               >
                 {activeItems.length === 0 ? (
-                  <div
-                    style={{
-                      gridColumn: "1 / -1",
-                      textAlign: "center",
-                      padding: "40px 20px",
-                      color: "var(--c-ink-mute)",
-                      fontStyle: "italic",
-                      fontSize: ".9rem",
-                    }}
-                  >
+                  <div className="file-grid-empty">
                     Deze map is leeg — sleep er bestanden in.
                   </div>
                 ) : (
@@ -4213,10 +4421,16 @@ const FileTaskWorkspace = ({
                   {`${clipboard.mode === "cut" ? "Geknipt" : "Gekopieerd"}: ${clipboardNode.name}. Kies een map en klik op Plakken.`}
                 </div>
               ) : null}
-            </div>
           </div>
         </div>
       </div>
+
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel="Klaar — bekijk resultaat"
+        onPrimary={onFinish}
+        onSkip={onSkip}
+      />
 
       {pendingConflict ? (
         <div className="modal-backdrop">
@@ -4346,7 +4560,7 @@ const scoreTone = (percentage: number) => {
 const studentBlockTitle = (title: string) =>
   title.replace(/^PT\d+\s*-\s*/, "").replace("Meerkeuze", "Meerkeuzevragen");
 
-const ResultScreen = ({
+const LegacyResultScreen = ({
   assessment,
   session,
   onClose,
@@ -4412,13 +4626,12 @@ const ResultScreen = ({
         </div>
         <div className="rd-result-copy">
           <span className="eyebrow" style={{ marginBottom: 4 }}>
-            Afgerond — goed gedaan!
+            Afgerond
           </span>
           <h2>Jouw nulmeting is klaar.</h2>
           <p className="intro">
             Je scoorde <strong>{result.totalScore} van de {result.maxScore} punten</strong>.
-            De zelfinschatting telt niet mee in het eindresultaat. Dit is een nulmeting —
-            er is geen "goed" of "fout".
+            De zelfinschatting telt niet mee in het eindresultaat. Dit is geen cijfer.
           </p>
           <p className="meta">Sessie: {displayCode}</p>
           {selfAssessmentScore !== null && selfAssessmentDifference !== null ? (
@@ -4445,7 +4658,7 @@ const ResultScreen = ({
       <div className="rd-result-grid">
         {result.blockScores.map((block) => {
           const percentage = scorePercentage(block.score, block.maxScore);
-          const tone = percentage >= 75 ? "Sterk" : percentage >= 50 ? "Op weg" : "Groeipunt";
+          const tone = `${percentage}%`;
           return (
             <div className="rd-block-card" key={block.blockId}>
               <div className="head">
@@ -4475,6 +4688,216 @@ const ResultScreen = ({
           <span className="arrow-circle">↓</span>
         </button>
       </div>
+    </>
+  );
+};
+
+const comparisonText = (scorePercent: number, selfPercent: number | null) => {
+  if (selfPercent === null) {
+    return "Je inschatting vooraf is niet opgeslagen.";
+  }
+  if (Math.abs(scorePercent - selfPercent) < 10) {
+    return "Je inschatting en je score liggen dicht bij elkaar.";
+  }
+  if (selfPercent > scorePercent + 10) {
+    return "Je schatte jezelf hoger in dan je score op deze nulmeting.";
+  }
+  return "Je score op deze nulmeting was hoger dan je eigen inschatting.";
+};
+
+const totalScoreExplanation =
+  "Je score is het percentage punten dat je op deze nulmeting hebt behaald. Dit is geen cijfer en geen volledig oordeel over wat jij digitaal kunt.";
+const resultDisclaimer =
+  "Dit is geen cijfer. Deze nulmeting geeft een eerste beeld van onderdelen van digitale geletterdheid.";
+
+const subgoalWarning =
+  "Dit onderdeel is gebaseerd op een beperkt aantal vragen of taken. Zie dit als een eerste aanwijzing, niet als een volledig oordeel over wat je kunt.";
+
+const coreGoalText = (goal: GoalScore) => {
+  if (goal.goalId === "21") {
+    return `Bij kerndoel 21 behaalde je ${goal.score} van ${goal.maxScore} punten. Dit geeft een eerste beeld van hoe je digitale technologie en digitale media inzet.`;
+  }
+  if (goal.goalId === "22") {
+    return `Bij kerndoel 22 behaalde je ${goal.score} van ${goal.maxScore} punten. Dit onderdeel bestaat vooral uit taken waarin je iets maakt of programmeert.`;
+  }
+  if (goal.goalId === "23") {
+    return `Bij kerndoel 23 behaalde je ${goal.score} van ${goal.maxScore} punten. Dit geeft een eerste beeld van hoe je veilig, bewust en verantwoordelijk handelt in digitale situaties.`;
+  }
+  return `${goal.goalId}: ${goal.score} van ${goal.maxScore} punten.`;
+};
+
+const ResultScreen = ({
+  assessment,
+  session,
+  onClose,
+}: {
+  assessment: AssessmentVersion;
+  session: AssessmentSession;
+  onClose: () => void;
+}) => {
+  const [closingConfirmed, setClosingConfirmed] = useState(false);
+  const result = calculateResult(session, assessment);
+  const selfAssessmentResult = session.results.find(
+    (entry) => entry.itemId === "self-assessment",
+  );
+  const selfAssessmentScore =
+    typeof session.metadata.selfAssessmentScore === "number"
+      ? session.metadata.selfAssessmentScore
+      : typeof selfAssessmentResult?.selectedAnswer === "number"
+        ? selfAssessmentResult.selectedAnswer
+        : null;
+  const comparison = comparisonText(result.percentage, selfAssessmentScore);
+  const completedDate = session.completedAt ? new Date(session.completedAt) : new Date();
+  const dateLabel = completedDate.toLocaleDateString("nl-NL");
+  const classLabel = session.metadata.classId ?? session.metadata.classCode ?? "niet beschikbaar";
+  const attemptLabel = session.metadata.anonymousAttemptId?.slice(0, 8) ?? session.id.slice(0, 8);
+  const exportBaseName = `nulmeting-${session.versionId}-${attemptLabel}`;
+  const coreGoalScores = result.goalScores.filter((goal) =>
+    ["21", "22", "23"].includes(goal.goalId),
+  );
+  const subgoalScores = result.goalScores.filter((goal) => goal.level === "subgoal");
+
+  const exportPdf = () => {
+    const lines = [
+      "Scoreoverzicht nulmeting Digitale Geletterdheid",
+      "",
+      `Nulmeting: ${assessment.title}`,
+      `Datum: ${dateLabel}`,
+      `Klas of klascode: ${classLabel}`,
+      selfAssessmentScore === null
+        ? "Zelfinschatting: niet opgeslagen"
+        : `Zelfinschatting: ${selfAssessmentScore}%`,
+      `Score op de nulmeting: ${result.percentage}%`,
+      totalScoreExplanation,
+      `Vergelijking: ${comparison}`,
+      resultDisclaimer,
+      "",
+      "Score per kerndoel",
+      ...coreGoalScores.map((goal) => coreGoalText(goal)),
+      "",
+      "Detail per subdoel",
+      subgoalWarning,
+      ...subgoalScores.map(
+        (goal) =>
+          `${goal.goalId} - ${goal.label}: ${goal.score}/${goal.maxScore} punten (${goal.percentage}%)`,
+      ),
+    ];
+
+    downloadFile(
+      `${exportBaseName}.pdf`,
+      createPdfDocument(lines),
+      "application/pdf",
+    );
+  };
+
+  return (
+    <>
+      <section
+        className="rd-result-hero result-summary-plain"
+        style={{ "--pct": result.percentage } as CSSProperties}
+      >
+        <div className="rd-score-meter">
+          <span className="schitter-ster" aria-hidden="true" />
+          <div className="inner">
+            <div className="pct">
+              {result.percentage}%
+              <small>nulmeting</small>
+            </div>
+          </div>
+        </div>
+        <div className="rd-result-copy">
+          <span className="eyebrow" style={{ marginBottom: 4 }}>
+            Resultaat
+          </span>
+          <h2>Jouw nulmeting is klaar.</h2>
+          <p className="intro">
+            {selfAssessmentScore === null
+              ? "Jouw inschatting vooraf: niet opgeslagen"
+              : `Jouw inschatting vooraf: ${selfAssessmentScore}%`}
+          </p>
+          <p className="intro">Jouw score op de nulmeting: {result.percentage}%</p>
+          <p className="meta">{comparison}</p>
+          <p className="meta">{totalScoreExplanation}</p>
+          <p className="meta">{resultDisclaimer}</p>
+          <p className="meta">Klas: {classLabel}</p>
+        </div>
+      </section>
+
+      <section className="result-section">
+        <h3>Score per kerndoel</h3>
+        <div className="goal-score-list">
+          {coreGoalScores.map((goal) => (
+            <div className={`goal-score-row ${goal.level}`} key={goal.goalId}>
+              <div>
+                <strong>Kerndoel {goal.goalId}</strong>
+                <span>{coreGoalText(goal)}</span>
+              </div>
+              <div className="goal-score-value">
+                <span>{goal.percentage}%</span>
+                <small>
+                  {goal.score}/{goal.maxScore}
+                </small>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {subgoalScores.length > 0 ? (
+        <section className="result-section">
+          <h3>Detail per subdoel</h3>
+          <p className="subgoal-warning">{subgoalWarning}</p>
+          <div className="goal-score-list">
+            {subgoalScores.map((goal) => (
+              <div className="goal-score-row subgoal" key={goal.goalId}>
+                <div>
+                  <strong>{goal.goalId}</strong>
+                  <span>{goal.label}</span>
+                </div>
+                <div className="goal-score-value">
+                  <span>{goal.percentage}%</span>
+                  <small>
+                    {goal.score}/{goal.maxScore}
+                  </small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="result-section">
+        <h3>Scoreoverzicht opslaan</h3>
+        <p>
+          Download je scoreoverzicht en sla het op. Als je op volgende klikt,
+          sluit je de zelfscan af. Je kunt dan niet meer bij je scores en je
+          ontvangt dit scoreoverzicht ook niet via e-mail.
+        </p>
+        <div className="rd-result-actions">
+          <button className="btn btn-primary" type="button" onClick={exportPdf}>
+            <span>Download scoreoverzicht als PDF</span>
+            <span className="arrow-circle">↓</span>
+          </button>
+        </div>
+        <label className="check-row result-close-check">
+          <input
+            type="checkbox"
+            checked={closingConfirmed}
+            onChange={(event) => setClosingConfirmed(event.target.checked)}
+          />
+          <span>Ik heb mijn scoreoverzicht opgeslagen en ik sluit nu de zelfscan af.</span>
+        </label>
+        <div className="rd-result-actions">
+          <button
+            className="btn btn-ghost"
+            type="button"
+            onClick={onClose}
+            disabled={!closingConfirmed}
+          >
+            Volgende
+          </button>
+        </div>
+      </section>
     </>
   );
 };

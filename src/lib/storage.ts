@@ -23,9 +23,12 @@ export const readActiveSession = (): AssessmentSession | null => {
 
   return {
     ...session,
-    metadata: session.metadata ?? {
-      anonymousCode: session.accessCode || session.id,
+    metadata: {
+      ...(session.metadata ?? { anonymousCode: session.accessCode || session.id }),
+      anonymousAttemptId:
+        session.metadata?.anonymousAttemptId ?? session.metadata?.anonymousCode ?? session.id,
     },
+    accessCode: session.accessCode ?? session.metadata?.classToken ?? session.id,
     results: session.results ?? [],
     eventLogs: session.eventLogs ?? [],
   };

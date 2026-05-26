@@ -33,8 +33,6 @@ export type SelectedAnswer =
   | Record<string, unknown>
   | null;
 
-export type ResponseType = "correct" | "incorrect" | "unknown" | "skipped";
-
 export interface Option {
   id: string;
   label: string;
@@ -289,7 +287,6 @@ export interface InteractionScoringRule {
     | "matchingAll"
     | "matchingPartial";
   correctOptionIds?: string[];
-  alternativeCorrectOptionIdsByGroup?: Record<string, string[]>;
   forbiddenOptionIds?: string[];
   forbiddenByGroup?: Record<string, string[]>;
   minCorrect?: number;
@@ -307,12 +304,6 @@ export interface InteractionScreen {
 export interface InteractionTaskConfig {
   screens: InteractionScreen[];
   rules: InteractionScoringRule[];
-  scoreCaps?: Array<{
-    id: string;
-    maxScore: number;
-    groupIds?: string[];
-    optionIds: string[];
-  }>;
 }
 
 /* ─── Source evaluation task (lj3-hv "betrouwbaarheid van bronnen") ─── */
@@ -370,15 +361,9 @@ export interface AssessmentItem {
   points: number;
   skillDomain: string;
   kerndoel: string;
-  subgoal?: string;
   allowUnknown?: boolean;
-  unknownOptionId?: string;
   randomizeOptions?: boolean;
-  selectionMode?: "single" | "multiple";
-  selectCount?: number;
-  scoreMode?: "exact" | "unordered_set" | "partial_select";
-  harmfulOptionIds?: string[];
-  harmfulSelectionMaxScore?: number;
+  scoreMode?: "exact" | "unordered_set";
   mockup?: MockupCard;
   table?: SpreadsheetTable;
   codeBlocks?: string[];
@@ -386,10 +371,6 @@ export interface AssessmentItem {
   placeholder?: boolean;
   ankerItemFlag?: boolean;
   aiSnelVeranderendFlag?: boolean;
-  anchorStatus?: string;
-  sourceStatus?: string;
-  pilotReviewStatus?: string;
-  validityNote?: string;
   fileTask?: FileTaskConfig;
   selfAssessmentScale?: SelfAssessmentScaleLabel[];
   mailTask?: MailTaskConfig;
@@ -429,12 +410,7 @@ export interface CodeMapping {
 export interface SessionMetadata {
   learnerCode?: string;
   accessCode?: string;
-  classToken?: string;
-  classId?: string;
   classCode?: string;
-  anonymousAttemptId?: string;
-  privacyConsent?: boolean;
-  selfAssessmentScore?: number;
   anonymousCode: string;
 }
 
@@ -450,8 +426,6 @@ export interface Result {
   isCorrect: boolean | null;
   score: number;
   maxScore: number;
-  responseType?: ResponseType;
-  skipped?: boolean;
   timestamp: string;
   timeSpentMs?: number;
   ankerItemFlag?: boolean;
@@ -472,8 +446,6 @@ export interface EventLog {
   isCorrect?: boolean | null;
   score?: number;
   maxScore?: number;
-  responseType?: ResponseType;
-  skipped?: boolean;
   timeSpentMs?: number;
   ankerItemFlag?: boolean;
   aiSnelVeranderendFlag?: boolean;
@@ -513,22 +485,12 @@ export interface BlockScore {
   maxScore: number;
 }
 
-export interface GoalScore {
-  goalId: string;
-  label: string;
-  level: "kerndoel" | "subgoal";
-  score: number;
-  maxScore: number;
-  percentage: number;
-}
-
 export interface AssessmentResult {
   totalScore: number;
   maxScore: number;
   percentage: number;
   blockScores: BlockScore[];
   domainScores: BlockScore[];
-  goalScores: GoalScore[];
 }
 
 export type InstrumentDefinition = AssessmentVersion;

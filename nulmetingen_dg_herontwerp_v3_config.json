@@ -1,0 +1,95 @@
+{
+  "version": "v3",
+  "assessmentIds": [
+    "lj1-vmbo",
+    "lj1-hv",
+    "lj3-vmbo",
+    "lj3-hv"
+  ],
+  "maxScores": {
+    "selectedResponse": 10,
+    "performanceTasks": 26,
+    "total": 36
+  },
+  "privacy": {
+    "persistentStorageLevel": "aggregate_class_cohort_grade_only",
+    "storeStudentIdentity": false,
+    "storeIndividualResponsesPersistently": false,
+    "showIndividualResultToStudentAtEnd": true,
+    "aggregateKeys": [
+      "assessmentId",
+      "classId",
+      "cohort",
+      "gradeLevel",
+      "track",
+      "assessmentWindow"
+    ]
+  },
+  "selfAssessment": {
+    "question": "Hoe digitaal geletterd schat je jezelf in?",
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "scored": false
+  },
+  "scoringRules": {
+    "singleChoice": {
+      "correct": 1,
+      "incorrect": 0,
+      "unknown": 0
+    },
+    "multipleSelectPartial": {
+      "description": "Partial scoring; no exact-match. Correct selections earn proportional credit. Harmful selections cap item score.",
+      "unknownExclusive": true
+    },
+    "pt8CategoryScoring": {
+      "categories": [
+        "riskRecognition",
+        "noSpreadOrEscalation",
+        "helpOrReport",
+        "safeFollowUp"
+      ],
+      "maxScore": 4,
+      "harmfulSelectionMaxScore": 2
+    }
+  },
+  "performanceTasks": [
+    {
+      "id": "pt1-files",
+      "subgoal": "21A",
+      "maxScore": 4
+    },
+    {
+      "id": "pt2-mail",
+      "subgoal": "21A",
+      "maxScore": 4
+    },
+    {
+      "id": "pt3-security",
+      "subgoal": "23A",
+      "maxScore": 3
+    },
+    {
+      "id": "pt4-data",
+      "subgoal": "21C",
+      "maxScore": 4
+    },
+    {
+      "id": "pt6-screen-share",
+      "subgoal": "23A",
+      "maxScore": 3
+    },
+    {
+      "id": "pt7-programming",
+      "subgoal": "22B",
+      "maxScore": 4
+    },
+    {
+      "id": "pt8-online-behaviour",
+      "subgoal": "23B",
+      "maxScore": 4,
+      "redesignedFromScratch": true
+    }
+  ],
+  "implementationSource": "See nulmetingen_dg_herontwerp_v3_codex.md for full item text, options, rationales and PT specifications."
+}

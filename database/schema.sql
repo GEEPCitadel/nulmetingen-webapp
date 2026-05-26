@@ -4,10 +4,14 @@
 CREATE TABLE IF NOT EXISTS sessions (
   sessionId TEXT PRIMARY KEY,
   instrumentId TEXT NOT NULL,
+  classToken TEXT,
+  classId TEXT,
+  anonymousAttemptId TEXT,
   startTime DATETIME DEFAULT CURRENT_TIMESTAMP,
   endTime DATETIME,
   status TEXT DEFAULT 'active', -- active, completed, abandoned
-  selfRating INTEGER
+  selfAssessmentScore INTEGER,
+  privacyConsent BOOLEAN DEFAULT 0
 );
 
 -- Responses Table (MC, PT2, PT3)
@@ -19,8 +23,12 @@ CREATE TABLE IF NOT EXISTS responses (
   itemId TEXT NOT NULL,
   presentedOptionOrder TEXT, -- JSON array
   selectedOptionId TEXT,
+  selectedOptionIds TEXT, -- JSON array for multiple-select
   selectedUnknown BOOLEAN DEFAULT 0,
+  responseType TEXT, -- correct, incorrect, unknown, skipped
   isCorrect BOOLEAN,
+  score INTEGER DEFAULT 0,
+  maxScore INTEGER DEFAULT 0,
   responseTimeMs INTEGER,
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (sessionId) REFERENCES sessions(sessionId)

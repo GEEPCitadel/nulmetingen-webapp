@@ -1,0 +1,2359 @@
+{
+  "schemaVersion": "dg-nulmetingen-v3.5",
+  "status": "werkversie voor Codex-implementatie, pilotafname en interne review",
+  "source": "nulmetingen_dg_herontwerp_v3_5_codex.md",
+  "selectedResponseItems": [
+    {
+      "id": "lj1v-sr1-pw-passphrase",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "23A",
+      "title": "Wachtwoordzin",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Welk wachtwoord is het veiligst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "MijnKleineKatSlaaptOnderDeBank",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Nora2012SchoolLent",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Welkom!!2026@@",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Qwerty12345!",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "A is lang en niet gebaseerd op duidelijke persoonlijke gegevens of toetsenbordpatronen. De afleiders representeren herkenbare misconcepties: naam/jaar/schoolcontext, symbolen zonder echte sterkte en bekend toetsenbordpatroon."
+    },
+    {
+      "id": "lj1v-sr2-https",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "23A",
+      "title": "Slotje en https",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "stimulus": {
+        "kind": "browser-address-bar",
+        "label": "Rooster login",
+        "address": "https://rooster.citadelcollege.nl/login"
+      },
+      "question": "Welke uitspraak over dit webadres klopt het best?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De verbinding met de website is beter beveiligd.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De website is automatisch betrouwbaar.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De website is zeker van school.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De website kan geen gegevens verzamelen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "pilotReviewStatus": "V3.5-review: visuele stimulus toegevoegd naar DigiCheck-achtige itemvorm. Vraagtekst geeft het herkenningskenmerk niet vooraf weg. Taal vereenvoudigd voor vmbo leerjaar 1.",
+      "validityNote": "Meet of leerlingen de betekenis van een slotje/https in een webadresbalk herkennen. De correcte optie vermijdt het moeilijke woord versleuteld, maar behoudt de kern: het slotje zegt iets over de beveiliging van de verbinding, niet over betrouwbaarheid, eigenaarschap of dataverzameling."
+    },
+    {
+      "id": "lj1v-sr3-phone",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21A",
+      "title": "Trage telefoon",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "De telefoon van Youssef is traag en loopt soms vast. Wat helpt meestal zonder foto’s of accounts te wissen?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ongebruikte apps of downloads opruimen en updates installeren.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De telefoon in vliegtuigstand zetten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alle meldingen aanzetten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Alleen een nieuwe achtergrondfoto kiezen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "De afleiders zijn niet absurd, maar onvoldoende passend bij traagheid en vastlopen."
+    },
+    {
+      "id": "lj1v-sr4-official-source",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21B",
+      "title": "Officiële bron controleren",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "In de groepsapp staat dat school morgen dicht is door storm. Welke bron controleer je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Een bericht van school in de officiële app of mail.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Een screenshot in de groepsapp zonder afzender.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Een bericht van iemand die zegt dat hij het gehoord heeft.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een populair account dat vaak schoolgrappen plaatst.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet broncontrole in een herkenbare schoolcontext."
+    },
+    {
+      "id": "lj1v-sr5-algorithm",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21B",
+      "title": "Aanbevelingen",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Luna kijkt een paar video’s over voetbal. Daarna ziet ze steeds meer voetbalvideo’s. Hoe komt dat meestal?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De app gebruikt haar kijkgedrag om nieuwe video’s te kiezen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Iedere leerling krijgt na schooltijd automatisch voetbalvideo’s.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De maker van één video bepaalt precies wat Luna daarna ziet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De telefoon kiest video’s alleen op basis van batterijpercentage.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet basaal algoritmisch begrip zonder platformnaam."
+    },
+    {
+      "id": "lj1v-sr6-data-poll",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21C",
+      "title": "Kleine poll",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "In een poll stemmen 8 van de 25 leerlingen uit jouw klas op voetbal. Kun je dan zeggen dat voetbal de populairste sport van de hele school is?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Nee, de groep is te klein en komt maar uit één klas.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Ja, want 8 stemmen is altijd genoeg.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Ja, als de poll online stond.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Nee, want je kunt met een poll nooit iets onderzoeken.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet beperkte generaliseerbaarheid van data."
+    },
+    {
+      "id": "lj1v-sr7-ai-startpunt",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21D",
+      "title": "AI als startpunt",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je gebruikt een chatbot om ideeën voor je werkstuk te krijgen. Wat is de beste manier om daarmee om te gaan?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ideeën gebruiken als startpunt en belangrijke feiten daarna controleren.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De tekst meteen overnemen omdat hij netjes klinkt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alleen vragen om langere zinnen zodat het slimmer lijkt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De chatbot laten zeggen dat alles klopt en het dan inleveren.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet verantwoord AI-gebruik zonder het patroon “controleer betrouwbare bron” als enige formule te gebruiken."
+    },
+    {
+      "id": "lj1v-sr8-image-rights",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "22A",
+      "title": "Afbeelding gebruiken",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je vindt een mooie afbeelding voor een schoolposter. Wat doe je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Controleren of je de afbeelding mag gebruiken en welke bron of maker je moet noemen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De afbeelding gebruiken omdat alles op internet vrij is.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De afbeelding kleiner maken; dan is hij van jou.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Er een filter overheen zetten; dan mag het altijd.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Praktische auteursrechtvraag zonder Creative Commons-jargon."
+    },
+    {
+      "id": "lj1v-sr9-photo-consent",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "23B",
+      "title": "Foto delen",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je maakt een foto van drie klasgenoten. Je wilt die in een sociale app zetten. Wat doe je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Vragen of iedereen op de foto dat goed vindt.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Alleen de namen weglaten; dan mag het altijd.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De foto plaatsen en verwijderen als iemand klaagt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De foto alleen in de klassenapp zetten; dan hoef je niets te vragen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet toestemming en verantwoordelijk delen."
+    },
+    {
+      "id": "lj1v-sr10-platform-risk",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "23C",
+      "title": "Afhankelijk van een schoolapp",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "De school gebruikt één app voor rooster, huiswerk en berichten. Wat is het grootste risico?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bij een storing kunnen leerlingen tegelijk hun rooster, huiswerk en berichten niet zien.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Leerlingen moeten soms wennen aan een nieuwe knop.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De school moet uitleg geven over hoe de app werkt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Leerlingen moeten soms de app openen om nieuws te lezen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "A is duidelijk het grootste systeemrisico; de andere opties zijn normale gebruikssituaties of kleinere nadelen."
+    },
+    {
+      "id": "lj1h-sr1-pw-passphrase",
+      "targetGroup": "lj1-hv",
+      "subgoal": "23A",
+      "title": "Wachtwoordzin",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Welk wachtwoord is het veiligst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "DeBlauweTreinStaatNaastDeSporthal",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Daan2012SchoolLent",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Welkom!!2026@@",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "!Qw@#Er$%",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Lange wachtwoordzin zonder voorspelbare persoonlijke gegevens is sterker dan kortere patronen of symbolenreeksen."
+    },
+    {
+      "id": "lj1h-sr2-https-nuance",
+      "targetGroup": "lj1-hv",
+      "subgoal": "23A",
+      "title": "Slotje en betrouwbaarheid",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "stimulus": {
+        "kind": "browser-address-bar",
+        "label": "Leerplein login",
+        "address": "https://leerplein-voorbeeld.nl/login/rooster?groep=1h2"
+      },
+      "question": "Welke uitspraak over dit webadres klopt het best?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De verbinding is beter beveiligd, maar je moet nog controleren of de site echt van school is.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Het slotje of https bewijst dat de website automatisch betrouwbaar is.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Een .nl-adres is altijd veilig voor schoolzaken.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een vraagteken in de link betekent altijd dat de verbinding onveilig is.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "pilotReviewStatus": "V3.5-review: omgezet naar stimulus-item. Vraagtekst noemt slotje of https:// niet meer vooraf; leerling moet de adresbalk zelf interpreteren.",
+      "validityNote": "Meet de HTTPS-nuance via een visuele adresbalk: wel beveiligde verbinding, geen bewijs dat de site officieel of betrouwbaar is. De querystring in het adres blijft zichtbaar, maar is niet de kern van de vraag."
+    },
+    {
+      "id": "lj1h-sr3-phone-actions",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21A",
+      "title": "Trage telefoon",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "Youssefs telefoon is traag en loopt soms vast. Welke twee acties kunnen meestal helpen?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ongebruikte apps en grote bestanden opruimen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Beschikbare updates via de instellingen installeren.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De helderheid van het scherm lager zetten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Het toetsenbordgeluid uitzetten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Het wachtwoord van de telefoon veranderen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "partial-select",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Heldere functionele systeemhandelingen; C is plausibel bij batterijproblemen maar niet bij traagheid."
+    },
+    {
+      "id": "lj1h-sr4-search-query",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21B",
+      "title": "Gerichte zoekopdracht",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je zoekt betrouwbare informatie over hoeveel jongeren in Nederland e-bikes gebruiken. Welke zoekopdracht helpt het best?",
+      "options": [
+        {
+          "id": "A",
+          "text": "onderzoek jongeren e-bike gebruik Nederland",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "e-bike jongeren kopen Nederland",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "jongeren fietsen school Nederland",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "elektrische fiets ervaring jongeren",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "A bevat onderzoek, doelgroep, onderwerp en land."
+    },
+    {
+      "id": "lj1h-sr5-feed-sample",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21B",
+      "title": "Feed is geen steekproef",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je ziet op een videoplatform tien video’s met dezelfde mening. Wat kun je daaruit het best afleiden?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Niet meteen dat iedereen die mening heeft; je feed kan door een algoritme zijn gekozen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Dat de mening zeker waar is.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Dat alle andere meningen zijn verwijderd.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Dat het platform geen invloed heeft op wat je ziet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Combineert algoritmisch begrip met informatiebeoordeling."
+    },
+    {
+      "id": "lj1h-sr6-sample",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21C",
+      "title": "Steekproef",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een dataset bevat alleen antwoorden van leerlingen uit één klas. Waar moet je voor oppassen?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Je kunt niet zomaar zeggen dat dit voor alle leerlingen geldt.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Eén klas is altijd genoeg om iets over heel Nederland te zeggen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De dataset is automatisch fout.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Meer data maakt nooit verschil.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet dataconclusie en generaliseerbaarheid."
+    },
+    {
+      "id": "lj1h-sr7-ai-startpunt",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21D",
+      "title": "AI als hulpmiddel",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je gebruikt AI om ideeën voor een spreekbeurt te krijgen. Wat is de beste werkwijze?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ideeën gebruiken als startpunt en feiten daarna zelf controleren.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De hele tekst inleveren zonder te lezen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alle bronnen overslaan, want AI heeft al gezocht.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Alleen vragen om moeilijkere woorden zodat het slimmer lijkt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet AI als hulpmiddel, niet als vervanging van beoordeling."
+    },
+    {
+      "id": "lj1h-sr8-image-source",
+      "targetGroup": "lj1-hv",
+      "subgoal": "22A",
+      "title": "Afbeelding in presentatie",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je gebruikt een foto in een presentatie voor school. Wat controleer je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Of je de foto mag gebruiken en welke maker of bron je moet noemen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Of de foto veel likes heeft.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Of je de foto zwart-wit kunt maken.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Of de foto groter wordt als je hem kopieert.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Praktisch gebruiksrecht en bronvermelding."
+    },
+    {
+      "id": "lj1h-sr9-threat-message",
+      "targetGroup": "lj1-hv",
+      "subgoal": "23B",
+      "title": "Dreigend privébericht",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "Een klasgenoot stuurt een dreigend privébericht. Welke twee acties zijn verstandig?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Hulp vragen aan een mentor, ouder of vertrouwenspersoon.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Het bericht veilig laten vastleggen door een volwassene, zonder het verder te delen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Het bericht openbaar posten om steun te krijgen.",
+          "isCorrect": false,
+          "isHarmful": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Terugdreigen zodat de ander stopt.",
+          "isCorrect": false,
+          "isHarmful": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Het bericht verwijderen en doen alsof het niet is gebeurd.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
+      "harmfulAnswers": [
+        "C",
+        "D"
+      ],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "partial-select",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "harmfulCap": "0.5"
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Veiliger formulering dan generiek “screenshot maken”."
+    },
+    {
+      "id": "lj1h-sr10-ad-profile",
+      "targetGroup": "lj1-hv",
+      "subgoal": "23C",
+      "title": "Dataprofielen en reclame",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Waarom zie je soms reclame voor iets waar je net online naar zocht?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Websites en apps kunnen gedrag gebruiken om een advertentieprofiel te maken.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Reclame wordt altijd willekeurig gekozen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alle gebruikers zien altijd precies dezelfde reclame.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Reclame wordt gekozen door je mentor.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet dataprofielen zonder de absolute claim dat telefoons altijd live meeluisteren."
+    },
+    {
+      "id": "lj3v-sr1-https-phishing",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "23A",
+      "title": "Slotje bij verdachte link",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "stimulus": {
+        "kind": "email-link",
+        "label": "Bericht",
+        "message": "Je cijferlijst staat klaar.",
+        "address": "https://school-cijfers-login.example.net/controle"
+      },
+      "question": "Wat doe je?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Niet via de link inloggen; via de officiële schoolsite of app controleren.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Wel klikken, want het slotje betekent dat de site echt van school is.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Wel klikken, want de link begint met https.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De link doorsturen naar de klas zodat iedereen kan kijken.",
+          "isCorrect": false,
+          "isHarmful": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [
+        "D"
+      ],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "harmfulCap": "0.5"
+      },
+      "anchorStatus": "concept-anchor",
+      "pilotReviewStatus": "V3.5-review: link/slotje verplaatst naar visuele stimulus. Vraagtekst geeft het herkenningskenmerk niet vooraf weg en blijft handelingsgericht.",
+      "validityNote": "Meet dat een beveiligde verbinding geen bewijs is dat een link officieel of betrouwbaar is. De verdachte domeinnaam en de context van een cijferlijst vragen om controle via de officiële schoolroute."
+    },
+    {
+      "id": "lj3v-sr2-mfa",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "23A",
+      "title": "Onverwachte inlogmelding",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je krijgt een melding: “Wil je deze login goedkeuren?” Je probeert zelf niet in te loggen. Wat kies je?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Afwijzen en je account controleren via de officiële instellingen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Goedkeuren om van de melding af te zijn.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Goedkeuren als de melding maar één keer komt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Negeren en verder niets doen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Sterke concrete securitysituatie."
+    },
+    {
+      "id": "lj3v-sr3-phone-actions",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21A",
+      "title": "Telefoon versnellen",
+      "itemType": "multiple-select",
+      "selectionLimit": 3,
+      "question": "Youssefs telefoon is oud, traag en loopt soms vast. Welke drie acties kunnen meestal helpen?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Oude of ongebruikte apps en bestanden opruimen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Tijdelijke bestanden of cache opruimen via de instellingen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Beschikbare systeemupdates via de instellingen installeren.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De helderheid van het scherm lager zetten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Het toetsenbordgeluid uitzetten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Een andere achtergrondfoto kiezen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "G",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "partial-select",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Drie correcte functionele onderhoudsacties."
+    },
+    {
+      "id": "lj3v-sr4-health-source",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21B",
+      "title": "Gezondheidsinformatie",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je zoekt basisinformatie over slaaptekort. Welke bron is het meest geschikt om als eerste te gebruiken?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Een publieke gezondheidsorganisatie of artsensite met uitleg, datum en bronvermelding.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Een webshop die slaapdrankjes verkoopt en klantreviews toont.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Een influencer die vertelt wat voor hem persoonlijk werkt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een forum met veel reacties van onbekende gebruikers.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Afleiders zijn nu plausibeler: commercieel belang, ervaring en forumwijsheid."
+    },
+    {
+      "id": "lj3v-sr5-sponsored",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21B",
+      "title": "Sponsoring herkennen",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een populaire gamer noemt een energiedrank “de beste voor concentratie” en gebruikt kortingscode GAMER10. Waar moet je op letten?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Het kan reclame of sponsoring zijn.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Een kortingscode bewijst dat het product werkt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Veel volgers maken de uitspraak wetenschappelijk.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een energiedrank in een video is altijd onafhankelijk getest.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet commerciële beïnvloeding."
+    },
+    {
+      "id": "lj3v-sr6-percent",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21C",
+      "title": "Poll en conclusie",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "In een online poll stemmen 12 leerlingen uit klas 3V2. Acht leerlingen kiezen voor “meer pauze”. Een leerling zegt: “De meeste leerlingen van de hele school willen dus meer pauze.” Wat is de beste reactie?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Dat kun je niet zomaar zeggen, want de poll gaat maar over 12 leerlingen uit één klas.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Dat klopt zeker, want acht stemmen is meer dan de helft.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Dat klopt alleen als de poll op een telefoon is ingevuld.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Dat kun je nooit onderzoeken met een poll.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet verhouding tussen data en conclusie."
+    },
+    {
+      "id": "lj3v-sr7-ai-bias",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21D",
+      "title": "AI en trainingsdata",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een AI laat vooral mannen zien als je vraagt om een afbeelding van “een directeur”. Wat is de meest waarschijnlijke oorzaak?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De AI heeft in de voorbeelden waarop hij is getraind vaak mannen in die rol gezien.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De AI kiest altijd wat de laatste gebruiker heeft aangeklikt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De AI gebruikt alleen de woorden uit jouw vraag en geen eerdere voorbeelden.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De AI maakt altijd een neutrale keuze als je geen extra uitleg geeft.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet trainingsdata en bias zonder karikaturale afleiders."
+    },
+    {
+      "id": "lj3v-sr8-music-rights",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "22A",
+      "title": "Muziek onder video",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je maakt een video voor school en wilt een bekend liedje eronder zetten en online plaatsen. Wat is het best?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Controleren of je het liedje mag gebruiken of rechtenvrije muziek kiezen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Het liedje zachter zetten; dan geldt auteursrecht niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alleen de eerste minuut gebruiken; dat mag altijd.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De titel niet noemen, dan merkt niemand het.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Praktische 22A-vraag zonder juridische overprecisie."
+    },
+    {
+      "id": "lj3v-sr9-fake-account",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "23B",
+      "title": "Nepaccount melden",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "Iemand maakt een account aan met jouw naam en foto. Welke twee acties zijn verstandig?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Het account rapporteren bij het platform.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Hulp vragen aan een mentor, ouder of vertrouwenspersoon en bewijs veilig laten vastleggen zonder verder te delen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Zelf ook een nepaccount van die persoon maken.",
+          "isCorrect": false,
+          "isHarmful": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Iedereen vragen het account te volgen om te kijken wat er gebeurt.",
+          "isCorrect": false,
+          "isHarmful": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Je echte account verwijderen zonder iets te melden.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
+      "harmfulAnswers": [
+        "C",
+        "D"
+      ],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "partial-select",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "harmfulCap": "0.5"
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Veilig bewijs is gekoppeld aan hulp en niet aan zelfstandig verspreiden."
+    },
+    {
+      "id": "lj3v-sr10-digital-chances",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "23C",
+      "title": "Online formulier",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een stagebedrijf laat sollicitanten alleen via een ingewikkeld online formulier reageren. Wat kan een gevolg zijn?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Mensen met minder digitale vaardigheden kunnen moeilijker meedoen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Iedereen krijgt automatisch dezelfde kans.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Solliciteren wordt daardoor altijd eerlijker.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Het bedrijf heeft dan geen privacyregels nodig.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet digitale ongelijkheid in beroepsgerichte context."
+    },
+    {
+      "id": "lj3h-sr1-https-limits",
+      "targetGroup": "lj3-hv",
+      "subgoal": "23A",
+      "title": "Grenzen van https",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "stimulus": {
+        "kind": "browser-address-bar",
+        "label": "Nieuwsbericht",
+        "address": "https://leerplein-voorbeeld.nl/nieuws/bericht"
+      },
+      "question": "Welke uitspraak over dit webadres klopt het best?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De verbinding is beveiligd, maar je weet nog niet zeker of de website betrouwbaar is.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De website is van school, omdat er een slotje staat.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De informatie op de website is gecontroleerd, omdat de verbinding veilig is.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De website kan geen gegevens verzamelen, omdat er `https://` staat.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "pilotReviewStatus": "V3.5-review: omgezet naar stimulus-item. Vraagtekst noemt slotje of https:// niet meer vooraf; de nuance blijft inhoudelijk gelijk.",
+      "validityNote": "Meet de grens van HTTPS: wel beveiliging van de verbinding, geen algemene waarheids-, betrouwbaarheids- of privacyclaim. Leerlingen moeten dit afleiden uit de adresbalkstimulus."
+    },
+    {
+      "id": "lj3h-sr2-datalek",
+      "targetGroup": "lj3-hv",
+      "subgoal": "23A",
+      "title": "Wachtwoordlek en hergebruik",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een website waar jij een account hebt, meldt een datalek. Je gebruikte daar hetzelfde wachtwoord als voor school. Wat is de beste actie?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Het schoolwachtwoord direct wijzigen en waar mogelijk tweestapsverificatie controleren.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Alleen het wachtwoord van de gelekte website wijzigen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Wachten tot school zegt dat er iets mis is.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Hetzelfde wachtwoord houden als het sterk genoeg lijkt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet hergebruik, lekimpact en beveiligingsactie."
+    },
+    {
+      "id": "lj3h-sr3-phone-actions",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21A",
+      "title": "Telefoon en onderhoud",
+      "itemType": "multiple-select",
+      "selectionLimit": 3,
+      "question": "Youssefs telefoon wordt traag en loopt vaak vast. Welke drie acties zijn het meest logisch?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Onnodige apps en grote bestanden opruimen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Cache of tijdelijke gegevens opruimen via instellingen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Systeem en apps updaten via officiële instellingen.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Schermhelderheid lager zetten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Alle meldingen aanzetten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Toetsenbordgeluid uitzetten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "G",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "partial-select",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Zelfde ankerconcept, passend complexer door drie acties."
+    },
+    {
+      "id": "lj3h-sr4-triangulation",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21B",
+      "title": "Claim controleren",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je vindt een opvallende claim over een nieuwe schoolregel. Welke controle is het sterkst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Controleren of de school zelf of meerdere betrouwbare bronnen dezelfde regel melden.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Kijken of de post veel gedeeld is.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Kijken of de tekst boos klinkt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De claim geloven als er een screenshot bij staat.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet triangulatie."
+    },
+    {
+      "id": "lj3h-sr5-filterbubble",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21B",
+      "title": "Filterbubbel",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je nieuwsfeed toont vooral berichten die jouw mening bevestigen. Wat is verstandig?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ook actief zoeken naar betrouwbare bronnen met andere invalshoeken.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Aannemen dat bijna iedereen jouw mening deelt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alle bronnen met andere meningen blokkeren.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Alleen nog reacties onder posts lezen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Algoritmische selectie en informatiegedrag."
+    },
+    {
+      "id": "lj3h-sr6-graph-scale",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21C",
+      "title": "Klachten naar verhouding",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een grafiek vergelijkt klachten over twee apps. App A: 20 klachten bij 1.000 gebruikers. App B: 50 klachten bij 10.000 gebruikers. Welke conclusie past het best bij deze data?",
+      "options": [
+        {
+          "id": "A",
+          "text": "App A heeft naar verhouding meer klachten dan App B.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "App B heeft naar verhouding meer klachten, want 50 is meer dan 20.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De apps hebben evenveel klachten, want beide apps hebben klachten.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Je kunt nooit naar verhouding kijken bij gebruikersaantallen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet dataconclusie met verhouding; pilot moet controleren of rekenbelasting passend is."
+    },
+    {
+      "id": "lj3h-sr7-ai-privacy",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21D",
+      "title": "AI en persoonsgegevens",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "Je wilt een AI-tool feedback laten geven op een verslag over een klasgenoot. Welke twee dingen verwijder of vervang je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De volledige naam van de klasgenoot.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Medische of andere persoonlijke details over de klasgenoot.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De vraag: “Maak de tekst duidelijker.”",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een algemene omschrijving zoals “een leerling”.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Een neutrale alinea over de opbouw van het verslag.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "partial-select",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet AI-gebruik met privacygrens."
+    },
+    {
+      "id": "lj3h-sr8-remix-rights",
+      "targetGroup": "lj3-hv",
+      "subgoal": "22A",
+      "title": "Afbeelding aanpassen",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je wilt een afbeelding van internet aanpassen voor een online poster. Wat controleer je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Of de maker dit toestaat, welke bronvermelding nodig is en of bewerken en delen mag.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Of de afbeelding groot genoeg is om de maker niet te hoeven noemen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Of je de kleuren sterk kunt veranderen; dan is het altijd eigen werk.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Of je de poster alleen in een groepsapp deelt; dan gelden geen regels.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet gebruiksrecht, bewerken en delen zonder licentiejargon."
+    },
+    {
+      "id": "lj3h-sr9-private-photo",
+      "targetGroup": "lj3-hv",
+      "subgoal": "23B",
+      "title": "Privéfoto zonder toestemming",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Wat is het beste?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Niet verder delen, hulp inschakelen en laten rapporteren of verwijderen via de juiste route.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Alleen bewaren en verder niets doen.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Doorsturen naar een kleiner groepje dat je vertrouwt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een grap maken zodat de spanning daalt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Vermijdt zelfstandig “bewijs bewaren” bij gevoelig beeldmateriaal."
+    },
+    {
+      "id": "lj3h-sr10-regulation",
+      "targetGroup": "lj3-hv",
+      "subgoal": "23C",
+      "title": "Regels voor platforms",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Waarom maken landen en de EU regels voor grote online platforms?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Omdat platforms veel invloed hebben op informatie, handel en gegevens van burgers.",
+          "isCorrect": true,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Omdat regels ervoor zorgen dat platforms nooit fouten kunnen maken.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Omdat gebruikers dan zelf niet meer hoeven na te denken over privacy.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Omdat platforms alleen betrouwbaar zijn als ze in Europa zijn gemaakt.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isHarmful": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet platformmacht, publieke waarden en regulering."
+    }
+  ]
+}

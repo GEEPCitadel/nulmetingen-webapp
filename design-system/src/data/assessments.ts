@@ -8,19 +8,18 @@ import type {
   FileTaskRequirement,
   InteractionTaskConfig,
   MailTaskConfig,
-  MockupCard,
   Option,
   ProgrammingBlockDefinition,
   Pt1Node,
   Pt1Simulation,
   TeamsTaskConfig,
   ThemeDefinition,
+  ThemeKey,
 } from "../types";
-import selectedResponseSource from "../../nulmetingen_selected_response_herontwerp_v3.json";
 
 export const ADMIN_CODE = "beheer";
 
-export const themes: Record<string, ThemeDefinition> = {
+export const themes: Record<ThemeKey, ThemeDefinition> = {
   /* P4 — Lime · Teal · Cyan · Cream (logo 4) — LJ1 VMBO */
   limeTeal: {
     key: "limeTeal",
@@ -169,106 +168,12 @@ type SelectedResponseSpec = {
   id: string;
   title: string;
   kerndoel: string;
-  subgoal?: string;
-  type?: "single" | "multiple";
-  selectCount?: number | null;
   question: string;
   options: string[];
-  correct: string | string[];
-  harmful?: string[];
-  harmfulSelectionMaxScore?: number;
-  mockup?: MockupCard;
+  correct: string;
   ankerItemFlag?: boolean;
   aiSnelVeranderendFlag?: boolean;
-  anchorStatus?: string;
-  sourceStatus?: string;
-  pilotReviewStatus?: string;
-  validityNote?: string;
 };
-
-type SelectedResponseJsonOption = {
-  id?: string;
-  text: string;
-  correct?: boolean;
-  isCorrect?: boolean;
-  isUnknownOption?: boolean;
-  isHarmful?: boolean;
-};
-
-type SelectedResponseStimulus =
-  | {
-      kind: "browser-address-bar";
-      address: string;
-      label?: string;
-    }
-  | {
-      kind: "email-link";
-      message: string;
-      address: string;
-      label?: string;
-    };
-
-type SelectedResponseJsonItem = {
-  id: string;
-  title: string;
-  target?: AssessmentVersionId;
-  targetGroup?: AssessmentVersionId;
-  kerndoel?: number | string;
-  subgoal: string;
-  type?: "single" | "multiple";
-  itemType?: "single-choice" | "multiple-select";
-  selectCount?: number | null;
-  selectionLimit?: number | null;
-  question: string;
-  stimulus?: SelectedResponseStimulus;
-  options: SelectedResponseJsonOption[];
-  correctAnswer?: string | string[];
-  harmfulAnswers?: string[];
-  scoring?: {
-    harmfulCap?: string | number;
-  };
-  ankerItemFlag?: boolean;
-  aiSnelVeranderendFlag?: boolean;
-  anchorStatus?: string;
-  sourceStatus?: string;
-  pilotReviewStatus?: string;
-  validityNote?: string;
-};
-
-type SelectedResponseJsonAssessment = {
-  id: AssessmentVersionId;
-  selectedResponseItems: SelectedResponseJsonItem[];
-};
-
-type SelectedResponseJson = {
-  assessments?: SelectedResponseJsonAssessment[];
-  selectedResponseItems?: SelectedResponseJsonItem[];
-};
-
-const UNKNOWN_OPTION_LABEL = "Ik weet het niet.";
-
-export const sloLabels: Record<string, string> = {
-  "21": "De leerling zet digitale technologie en digitale media in.",
-  "21A": "De leerling zet digitale systemen functioneel in.",
-  "21B":
-    "De leerling navigeert doelgericht in het digitale media- en informatielandschap voor het verwerven en verwerken van informatie.",
-  "21C": "De leerling verkent het gebruik van data en dataverwerking.",
-  "21D": "De leerling verkent mogelijkheden en beperkingen van AI.",
-  "22": "De leerling creëert digitale producten.",
-  "22A":
-    "De leerling gebruikt passende werkwijzen bij het creëren en gebruiken van verschillende typen digitale producten.",
-  "22B":
-    "De leerling programmeert een computerprogramma met behulp van computationele denkstrategieën.",
-  "23": "De leerling participeert in de gedigitaliseerde wereld.",
-  "23A":
-    "De leerling gaat veilig om met digitale systemen, data en de privacy van zichzelf en anderen.",
-  "23B":
-    "De leerling maakt weloverwogen keuzes bij het gebruik van digitale technologie en digitale media.",
-  "23C":
-    "De leerling analyseert hoe digitale technologie, digitale media en de samenleving elkaar wederzijds beïnvloeden.",
-};
-
-const selectedResponseJson = selectedResponseSource as SelectedResponseJson;
 
 const optionId = (prefix: string, index: number) => `${prefix}-${index + 1}`;
 
@@ -284,139 +189,6 @@ const correctId = (prefix: string, labels: string[], correctLabel: string) => {
     throw new Error(`Correct option not found for ${prefix}: ${correctLabel}`);
   }
   return optionId(prefix, index);
-};
-
-const normalizeUnknownLabel = (label: string) =>
-  label.trim().replace(/\.$/, "").toLowerCase() ===
-  UNKNOWN_OPTION_LABEL.replace(/\.$/, "").toLowerCase()
-    ? UNKNOWN_OPTION_LABEL
-    : label;
-
-const subgoalCodeFrom = (value: string) =>
-  value.match(/\b(21[A-D]?|22[A-B]?|23[A-C]?)\b/)?.[1] ?? value;
-
-const rootGoalFrom = (value: string | number) =>
-  String(value).match(/\b(21|22|23)\b/)?.[1] ?? String(value);
-
-const selectedResponseItemsFor = (versionId: AssessmentVersionId): SelectedResponseJsonItem[] => {
-  if (selectedResponseJson.selectedResponseItems) {
-    return selectedResponseJson.selectedResponseItems.filter(
-      (item) => (item.targetGroup ?? item.target) === versionId,
-    );
-  }
-
-  const sourceAssessment = selectedResponseJson.assessments?.find(
-    (assessment) => assessment.id === versionId,
-  );
-  if (!sourceAssessment) {
-    throw new Error(`Geen selected-response-set gevonden voor ${versionId}.`);
-  }
-  return sourceAssessment.selectedResponseItems;
-};
-
-const correctAnswerIdsFor = (item: SelectedResponseJsonItem) =>
-  new Set(
-    (Array.isArray(item.correctAnswer)
-      ? item.correctAnswer
-      : item.correctAnswer
-        ? [item.correctAnswer]
-        : []
-    ).map(String),
-  );
-
-const harmfulAnswerIdsFor = (item: SelectedResponseJsonItem) =>
-  new Set((item.harmfulAnswers ?? []).map(String));
-
-const selectedResponseTypeFor = (item: SelectedResponseJsonItem): "single" | "multiple" =>
-  item.type ?? (item.itemType === "multiple-select" ? "multiple" : "single");
-
-const mockupForStimulus = (stimulus?: SelectedResponseStimulus): MockupCard | undefined => {
-  if (!stimulus) {
-    return undefined;
-  }
-
-  if (stimulus.kind === "email-link") {
-    return {
-      badge: "E-mail",
-      title: stimulus.label ?? "Bericht",
-      subtitle: stimulus.message,
-      content: [stimulus.address],
-      mediaHint: "Niet-interactieve linkweergave",
-    };
-  }
-
-  return {
-    badge: "Adresbalk",
-    title: stimulus.label ?? "Browser",
-    content: [stimulus.address],
-    mediaHint: "Niet-interactieve adresbalk",
-  };
-};
-
-const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedResponseSpec[] => {
-  const sourceItems = selectedResponseItemsFor(versionId);
-
-  if (sourceItems.length !== 10) {
-    throw new Error(`${versionId} heeft niet precies 10 selected-response-items.`);
-  }
-
-  return sourceItems.map((item) => {
-    const correctAnswerIds = correctAnswerIdsFor(item);
-    const harmfulAnswerIds = harmfulAnswerIdsFor(item);
-    const responseType = selectedResponseTypeFor(item);
-    const contentOptions = item.options
-      .filter(
-        (option) =>
-          option.isUnknownOption !== true &&
-          normalizeUnknownLabel(option.text) !== UNKNOWN_OPTION_LABEL,
-      )
-      .map((option) => ({
-        text: normalizeUnknownLabel(option.text),
-        correct:
-          option.correct === true ||
-          option.isCorrect === true ||
-          (option.id ? correctAnswerIds.has(String(option.id)) : false),
-        harmful:
-          option.isHarmful === true ||
-          (option.id ? harmfulAnswerIds.has(String(option.id)) : false),
-      }));
-    const options = [...contentOptions.map((option) => option.text), UNKNOWN_OPTION_LABEL];
-    const correctOptions = contentOptions
-      .filter((option) => option.correct)
-      .map((option) => option.text);
-    const harmfulOptions = contentOptions
-      .filter((option) => option.harmful)
-      .map((option) => option.text);
-
-    if (correctOptions.length === 0) {
-      throw new Error(`Geen correct antwoord gevonden voor ${item.id}.`);
-    }
-
-    return {
-      id: item.id,
-      title: item.title,
-      kerndoel: rootGoalFrom(item.kerndoel ?? item.subgoal),
-      subgoal: subgoalCodeFrom(item.subgoal),
-      type: responseType,
-      selectCount:
-        responseType === "multiple"
-          ? (item.selectCount ?? item.selectionLimit ?? correctOptions.length)
-          : null,
-      question: item.question,
-      options,
-      correct: responseType === "multiple" ? correctOptions : correctOptions[0],
-      harmful: harmfulOptions,
-      harmfulSelectionMaxScore:
-        item.scoring?.harmfulCap === undefined ? undefined : Number(item.scoring.harmfulCap),
-      mockup: mockupForStimulus(item.stimulus),
-      ankerItemFlag: item.ankerItemFlag ?? item.anchorStatus === "concept-anchor",
-      aiSnelVeranderendFlag: item.aiSnelVeranderendFlag,
-      anchorStatus: item.anchorStatus,
-      sourceStatus: item.sourceStatus,
-      pilotReviewStatus: item.pilotReviewStatus,
-      validityNote: item.validityNote,
-    };
-  });
 };
 
 const createSimulation = (folders: string[], files: string[]): Pt1Simulation => {
@@ -466,14 +238,14 @@ const selfAssessmentItem = (): AssessmentItem => ({
   id: "self-assessment",
   type: "self_assessment",
   title: "Zelfinschatting",
-  instruction:
-    "Hoe digitaal geletterd schat je jezelf in?\nSchuif het bolletje naar jouw keuze. 0 betekent: ik schat mezelf helemaal niet digitaal geletterd in. 100 betekent: ik schat mezelf heel digitaal geletterd in.",
+  instruction: "Hoe digitaal geletterd schat je jezelf in?",
   points: 0,
   skillDomain: "Zelfinschatting",
   kerndoel: "niet-scorend",
   selfAssessmentScale: [
-    { value: 0, label: "helemaal niet digitaal geletterd" },
-    { value: 100, label: "heel digitaal geletterd" },
+    { value: 0, label: "bijna niet" },
+    { value: 50, label: "redelijk" },
+    { value: 100, label: "heel goed" },
   ],
 });
 
@@ -511,7 +283,7 @@ const securityTaskItem = (spec: SecurityTaskSpec): AssessmentItem => ({
   type: "account_security_simulation",
   title: spec.title,
   instruction: spec.instruction,
-  points: 3,
+  points: 4,
   skillDomain: "23A Veiligheid en privacy",
   kerndoel: spec.kerndoel,
   securityTask: spec.config,
@@ -563,53 +335,37 @@ const socialTaskItem = (spec: SocialTaskSpec): AssessmentItem => ({
   type: "social_action_simulation",
   title: spec.title,
   instruction: spec.instruction,
-  points: 4,
+  points: 3,
   skillDomain: "23B Digitaal burgerschap",
   kerndoel: spec.kerndoel,
   aiSnelVeranderendFlag: spec.aiSnelVeranderendFlag,
   socialTask: spec.config,
 });
 
-const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
-  const subgoal = spec.subgoal ?? subgoalCodeFrom(spec.kerndoel);
-  const responseType = spec.type ?? "single";
-
-  return {
-    id: spec.id,
-    type: "multiple_choice",
-    title: spec.title,
-    instruction: spec.question,
-    options: makeOptions(spec.id, spec.options),
-    correctAnswer: Array.isArray(spec.correct)
-      ? spec.correct.map((answer) => correctId(spec.id, spec.options, answer))
-      : correctId(spec.id, spec.options, spec.correct),
-    points: 1,
-    skillDomain: `${subgoal} ${sloLabels[subgoal] ?? ""}`.trim(),
-    kerndoel: spec.kerndoel,
-    subgoal,
-    allowUnknown: false,
-    unknownOptionId: optionId(spec.id, spec.options.length - 1),
-    randomizeOptions: true,
-    selectionMode: responseType === "multiple" ? "multiple" : "single",
-    selectCount: responseType === "multiple" ? (spec.selectCount ?? undefined) : undefined,
-    scoreMode: responseType === "multiple" ? "partial_select" : "exact",
-    harmfulOptionIds: (spec.harmful ?? []).map((answer) => correctId(spec.id, spec.options, answer)),
-    harmfulSelectionMaxScore: spec.harmfulSelectionMaxScore,
-    mockup: spec.mockup,
-    ankerItemFlag: spec.ankerItemFlag,
-    aiSnelVeranderendFlag: spec.aiSnelVeranderendFlag,
-    anchorStatus: spec.anchorStatus,
-    sourceStatus: spec.sourceStatus,
-    pilotReviewStatus: spec.pilotReviewStatus,
-    validityNote: spec.validityNote,
-    developerNotes: [
-      spec.anchorStatus ? `anchorStatus: ${spec.anchorStatus}` : "",
-      spec.sourceStatus ? `sourceStatus: ${spec.sourceStatus}` : "",
-      spec.pilotReviewStatus ? `pilotReviewStatus: ${spec.pilotReviewStatus}` : "",
-      spec.validityNote ? `validityNote: ${spec.validityNote}` : "",
-    ].filter(Boolean),
-  };
-};
+const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => ({
+  id: spec.id,
+  type: "multiple_choice",
+  title: spec.title,
+  instruction: spec.question,
+  options: makeOptions(spec.id, spec.options),
+  correctAnswer: correctId(spec.id, spec.options, spec.correct),
+  points: 1,
+  skillDomain:
+    spec.kerndoel === "21D"
+      ? "21D AI"
+      : spec.kerndoel === "21B"
+        ? "21B Informatievaardigheden"
+        : spec.kerndoel === "22A"
+          ? "22A Creëren met digitale technologie"
+          : spec.kerndoel === "21A"
+            ? "21A Digitale systemen"
+            : "23C Digitale technologie, samenleving en wereld",
+  kerndoel: spec.kerndoel,
+  allowUnknown: true,
+  randomizeOptions: true,
+  ankerItemFlag: spec.ankerItemFlag,
+  aiSnelVeranderendFlag: spec.aiSnelVeranderendFlag,
+});
 
 const makeSections = (spec: VersionSpec): AssessmentSection[] => [
   {
@@ -660,7 +416,7 @@ const makeSections = (spec: VersionSpec): AssessmentSection[] => [
     id: "sr",
     title: "Meerkeuze",
     instruction: "Kies steeds het beste antwoord.",
-    items: getSelectedResponseSpecs(spec.id).map(selectedResponseItem),
+    items: spec.sr.map(selectedResponseItem),
   },
 ];
 
@@ -671,6 +427,10 @@ const buildAssessment = (spec: VersionSpec): AssessmentVersion => {
       sectionSum + section.items.reduce((itemSum, item) => itemSum + item.points, 0),
     0,
   );
+
+  if (maxScore !== 32) {
+    throw new Error(`${spec.id} heeft ${maxScore} punten in plaats van 32.`);
+  }
 
   return {
     id: spec.id,
@@ -1112,7 +872,148 @@ const versionSpecs: VersionSpec[] = [
         ],
       },
     },
-    sr: [],
+    sr: [
+      {
+        id: "lj1v-sr1-pw",
+        title: "SR1 - Wachtwoord",
+        kerndoel: "23A",
+        question: "Welk wachtwoord is het veiligst?",
+        options: [
+          "Een lange zin die jij kunt onthouden: MijnGroeneFietsStaatNaastSchool",
+          "Je naam met een jaartal: Nora2026!",
+          "Een kort woord: fietsbel",
+          "Een rij op het toetsenbord: Qwerty!23",
+        ],
+        correct: "Een lange zin die jij kunt onthouden: MijnGroeneFietsStaatNaastSchool",
+        ankerItemFlag: true,
+      },
+      {
+        id: "lj1v-sr2-device",
+        title: "SR2 - Trage telefoon",
+        kerndoel: "21A",
+        question:
+          "De telefoon van Youssef is traag. Wat helpt meestal zonder foto's of accounts te wissen?",
+        options: [
+          "Ongebruikte apps of downloads opruimen en updates installeren.",
+          "De helderheid van het scherm verlagen.",
+          "Het toetsenbordgeluid uitzetten.",
+          "Alle foto's naar de prullenbak verplaatsen.",
+        ],
+        correct: "Ongebruikte apps of downloads opruimen en updates installeren.",
+      },
+      {
+        id: "lj1v-sr3-ai-check",
+        title: "SR3 - AI-output controleren",
+        kerndoel: "21D",
+        question:
+          "Een chatbot geeft een antwoord voor je werkstuk. Je weet niet of het klopt. Wat kun je het best doen?",
+        options: [
+          "Ik controleer het in een andere bron.",
+          "Ik gebruik het meteen, want het klinkt netjes.",
+          "Ik vraag dezelfde chatbot om het nog eens te zeggen.",
+          "Ik deel het met mijn vrienden.",
+        ],
+        correct: "Ik controleer het in een andere bron.",
+      },
+      {
+        id: "lj1v-sr4-platform",
+        title: "SR4 - Platformafhankelijkheid",
+        kerndoel: "23C",
+        question:
+          "Veel scholen gebruiken dezelfde grote app voor school en contact. Wat kan er dan misgaan?",
+        options: [
+          "Bij een storing kunnen veel scholen tegelijk niet bij hun berichten.",
+          "De app krijgt soms een ander icoon.",
+          "Leerlingen krijgen automatisch hetzelfde wachtwoord.",
+          "De telefoon van leerlingen wordt dan altijd sneller.",
+        ],
+        correct: "Bij een storing kunnen veel scholen tegelijk niet bij hun berichten.",
+      },
+      {
+        id: "lj1v-sr5-source",
+        title: "SR5 - Bron herkennen",
+        kerndoel: "21B",
+        question:
+          "Je leest koppen op internet. Welke kop lijkt het meest betrouwbaar?",
+        options: [
+          "Stadskrant Lentia, 10 juni 2026: Gemeente Lentia geeft geld aan jeugdsportclubs.",
+          "ONGELOOFLIJK!! Stadhuis Nijmegen schenkt geld weg!!!",
+          "Mijn mening over de gemeente",
+          "Jongeren zeggen op TikTok dat...",
+        ],
+        correct: "Stadskrant Lentia, 10 juni 2026: Gemeente Lentia geeft geld aan jeugdsportclubs.",
+      },
+      {
+        id: "lj1v-sr6-algorithm",
+        title: "SR6 - Algoritmische selectie",
+        kerndoel: "21B",
+        question:
+          "Twee leerlingen kijken op TikTok en zien andere video's. Hoe komt dat meestal?",
+        options: [
+          "De app kijkt naar wat iemand eerder bekeek of leuk vond.",
+          "TikTok werkt niet altijd goed op elk apparaat.",
+          "Twee leerlingen zien altijd dezelfde video's.",
+          "Het komt alleen door het tijdstip van de dag.",
+        ],
+        correct: "De app kijkt naar wat iemand eerder bekeek of leuk vond.",
+      },
+      {
+        id: "lj1v-sr7-hallucination",
+        title: "SR7 - AI controleren",
+        kerndoel: "21D",
+        question:
+          "Een AI-tool noemt een naam van een persoon. Je kunt die persoon nergens anders vinden. Wat is het meest waarschijnlijk?",
+        options: [
+          "De AI heeft de naam verzonnen.",
+          "Die persoon bestaat zeker, maar is niet beroemd.",
+          "De AI zegt altijd alleen kloppende dingen.",
+          "De persoon staat alleen in betaalde bronnen.",
+        ],
+        correct: "De AI heeft de naam verzonnen.",
+        aiSnelVeranderendFlag: true,
+      },
+      {
+        id: "lj1v-sr8-copyright",
+        title: "SR8 - Auteursrecht en bronvermelding",
+        kerndoel: "22A",
+        question:
+          "Je vindt een mooie foto op internet voor je werkstuk. Wat doe je eerst?",
+        options: [
+          "Kijken of je de foto mag gebruiken en de bron erbij zetten.",
+          "Foto kopiëren en gebruiken; op internet is alles vrij.",
+          "Foto verkleinen, dan is hij van jou.",
+          "Foto bewerken in een app, dan mag het.",
+        ],
+        correct: "Kijken of je de foto mag gebruiken en de bron erbij zetten.",
+      },
+      {
+        id: "lj1v-sr9-divide",
+        title: "SR9 - Digitale kloof",
+        kerndoel: "23C",
+        question:
+          "Niet alle leerlingen hebben thuis een goede laptop of snel internet. Waarom is dat een probleem?",
+        options: [
+          "Sommige leerlingen kunnen schoolwerk thuis moeilijker maken.",
+          "Hun laptop wordt sneller stuk.",
+          "Ze worden minder slim.",
+          "Ze mogen geen huiswerk meer maken.",
+        ],
+        correct: "Sommige leerlingen kunnen schoolwerk thuis moeilijker maken.",
+      },
+      {
+        id: "lj1v-sr10-energy",
+        title: "SR10 - Energie en duurzaamheid",
+        kerndoel: "23C",
+        question: "Welke optie verbruikt de meeste energie?",
+        options: [
+          "Een uur video streamen in hoge kwaliteit.",
+          "Een kort tekstbericht versturen.",
+          "Een foto opslaan in je galerij.",
+          "Een wekker instellen op je telefoon.",
+        ],
+        correct: "Een uur video streamen in hoge kwaliteit.",
+      },
+    ],
   },
   {
     id: "lj1-hv",
@@ -1351,7 +1252,143 @@ const versionSpecs: VersionSpec[] = [
         ],
       },
     },
-    sr: [],
+    sr: [
+      {
+        id: "lj1h-sr1-pw",
+        title: "SR1 - Wachtwoord",
+        kerndoel: "23A",
+        question: "Welk wachtwoord is het veiligst?",
+        options: ["BlauweTreinLampSchoolTas", "Herfst2026", "Welkom123!", "11112222"],
+        correct: "BlauweTreinLampSchoolTas",
+        ankerItemFlag: true,
+      },
+      {
+        id: "lj1h-sr2-https",
+        title: "SR2 - Versleutelde verbinding",
+        kerndoel: "23A",
+        question: "Aan welk teken zie je dat een verbinding versleuteld is?",
+        options: [
+          "Het slotje in de adresbalk of https:// voor het webadres.",
+          "De website laadt sneller.",
+          "De website heeft .nl in de naam.",
+          "De website heeft kleurrijke afbeeldingen.",
+        ],
+        correct: "Het slotje in de adresbalk of https:// voor het webadres.",
+      },
+      {
+        id: "lj1h-sr3-access",
+        title: "SR3 - Toegang weigeren",
+        kerndoel: "23A",
+        question:
+          'Je krijgt op je leeromgeving de melding "Je hebt geen toegang tot Werkstuk.docx". Wat kun je het best doen?',
+        options: [
+          "Toegang aanvragen bij de eigenaar.",
+          "Het wachtwoord van een klasgenoot lenen.",
+          "Het bestand openbaar laten maken.",
+          "Via een onbekende link downloaden.",
+        ],
+        correct: "Toegang aanvragen bij de eigenaar.",
+      },
+      {
+        id: "lj1h-sr4-ai-verify",
+        title: "SR4 - AI verifiëren",
+        kerndoel: "21D",
+        question: "Een AI-tool noemt een jaartal zonder bron. Welke controle is het sterkst?",
+        options: [
+          "Controleren in een onafhankelijke betrouwbare bron.",
+          "De vraag opnieuw stellen aan dezelfde AI.",
+          "Kijken of de tekst zeker klinkt.",
+          "Het antwoord gebruiken als het lang genoeg is.",
+        ],
+        correct: "Controleren in een onafhankelijke betrouwbare bron.",
+      },
+      {
+        id: "lj1h-sr5-sample",
+        title: "SR5 - Steekproef en generaliseerbaarheid",
+        kerndoel: "21C, 23C",
+        question:
+          "Een dataset bevat alleen antwoorden van leerlingen uit 1 klas. Waar moet je voor oppassen?",
+        options: [
+          "Je kunt niet zomaar zeggen dat dit voor alle leerlingen geldt.",
+          "Een klas is altijd genoeg om iets over heel Nederland te zeggen.",
+          "De dataset is automatisch fout.",
+          "Meer data maakt nooit verschil.",
+        ],
+        correct: "Je kunt niet zomaar zeggen dat dit voor alle leerlingen geldt.",
+      },
+      {
+        id: "lj1h-sr6-source",
+        title: "SR6 - Bron en autoriteit",
+        kerndoel: "21B",
+        question:
+          "Welke bron is naar verwachting het betrouwbaarst voor een werkstuk over klimaat?",
+        options: [
+          "Een artikel van het KNMI met datum en auteur.",
+          "Een viral TikTok van een influencer met veel volgers.",
+          "Een blog zonder auteursnaam met sterke meningen.",
+          "Een meme met cijfers.",
+        ],
+        correct: "Een artikel van het KNMI met datum en auteur.",
+      },
+      {
+        id: "lj1h-sr7-algorithm",
+        title: "SR7 - Algoritme en feed",
+        kerndoel: "21B",
+        question:
+          "Twee leerlingen krijgen op Instagram totaal andere posts te zien. Wat is de belangrijkste oorzaak?",
+        options: [
+          "Het algoritme kiest posts op basis van eerder gedrag van de gebruiker.",
+          "Instagram laadt andere posts bij verschillend internet.",
+          "Iedereen ziet eigenlijk dezelfde posts.",
+          "Posts worden willekeurig getoond.",
+        ],
+        correct:
+          "Het algoritme kiest posts op basis van eerder gedrag van de gebruiker.",
+      },
+      {
+        id: "lj1h-sr8-hallucination",
+        title: "SR8 - AI controleren",
+        kerndoel: "21D",
+        question:
+          "Een AI-chatbot noemt een wetenschappelijk artikel dat je nergens kunt vinden. Wat is het meest waarschijnlijk?",
+        options: [
+          "De AI heeft het artikel waarschijnlijk verzonnen.",
+          "Het artikel staat misschien in een onbekend tijdschrift.",
+          "Het artikel is mogelijk nog niet openbaar gepubliceerd.",
+          "Je zoekterm kan te breed of te smal zijn.",
+        ],
+        correct: "De AI heeft het artikel waarschijnlijk verzonnen.",
+        aiSnelVeranderendFlag: true,
+      },
+      {
+        id: "lj1h-sr9-cc",
+        title: "SR9 - Creative Commons",
+        kerndoel: "22A",
+        question:
+          "Je gebruikt een afbeelding met een Creative Commons BY-licentie in je presentatie. Wat moet je dan doen?",
+        options: [
+          "De maker noemen (naamsvermelding).",
+          "Niets, CC-BY betekent dat alles vrij is.",
+          "Toestemming vragen via e-mail.",
+          "De afbeelding alleen voor commercieel gebruik gebruiken.",
+        ],
+        correct: "De maker noemen (naamsvermelding).",
+      },
+      {
+        id: "lj1h-sr10-divide",
+        title: "SR10 - Digitale ongelijkheid",
+        kerndoel: "23C",
+        question:
+          "Wat is een gevolg van het feit dat niet alle leerlingen thuis een goede laptop en snel internet hebben?",
+        options: [
+          "Schoolwerk en kansen worden ongelijk verdeeld tussen leerlingen.",
+          "Leerlingen zonder laptop worden minder slim.",
+          "Internet wordt voor iedereen langzamer.",
+          "De school moet voor iedereen betalen.",
+        ],
+        correct: "Schoolwerk en kansen worden ongelijk verdeeld tussen leerlingen.",
+      },
+    ],
   },
   {
     id: "lj3-vmbo",
@@ -1672,7 +1709,92 @@ const versionSpecs: VersionSpec[] = [
         ],
       },
     },
-    sr: [],
+    sr: [
+      {
+        id: "lj3v-sr1-ai-check",
+        title: "SR1 - AI controleren",
+        kerndoel: "21D",
+        question:
+          "Een AI-chatbot geeft een zelfverzekerd antwoord zonder bron. Wat is de beste eerste controle?",
+        options: [
+          "De informatie controleren in een onafhankelijke bron.",
+          "De tekst gebruiken omdat hij zelfverzekerd klinkt.",
+          "Dezelfde vraag opnieuw stellen aan dezelfde chatbot.",
+          "Alleen controleren of er moeilijke woorden in staan.",
+        ],
+        correct: "De informatie controleren in een onafhankelijke bron.",
+      },
+      {
+        id: "lj3v-sr2-platform",
+        title: "SR2 - Platformafhankelijkheid",
+        kerndoel: "23C",
+        question:
+          "Scholen en bedrijven gebruiken vaak dezelfde grote techbedrijven. Wat kan er misgaan?",
+        options: [
+          "Een storing of nieuwe regel kan veel mensen tegelijk raken.",
+          "Een bedrijf heeft dan minder werknemers nodig.",
+          "Internet wordt sneller bij minder providers.",
+          "Wachtwoorden zijn dan niet meer nodig.",
+        ],
+        correct: "Een storing of nieuwe regel kan veel mensen tegelijk raken.",
+      },
+      {
+        id: "lj3v-sr3-source",
+        title: "SR3 - Bronkwaliteit",
+        kerndoel: "21B",
+        question:
+          "Welke bron geeft naar verwachting de meest betrouwbare informatie over een gezondheidsvraag?",
+        options: [
+          "Een artikel op Thuisarts.nl van een arts.",
+          "Een YouTuber die zijn ervaring deelt.",
+          "Een advertentie voor pillen.",
+          "Een groepsapp met klasgenoten.",
+        ],
+        correct: "Een artikel op Thuisarts.nl van een arts.",
+      },
+      {
+        id: "lj3v-sr4-bias",
+        title: "SR4 - AI bias en trainingsdata",
+        kerndoel: "21D",
+        question:
+          'Een AI laat alleen mannen zien als je vraagt om een afbeelding van "een directeur". Wat is de meest waarschijnlijke oorzaak?',
+        options: [
+          "De AI heeft vooral voorbeelden met mannen in die rol geleerd.",
+          "De AI vindt mannen aardiger.",
+          "Vrouwen zijn nooit directeur.",
+          "Het programma is kapot.",
+        ],
+        correct:
+          "De AI heeft vooral voorbeelden met mannen in die rol geleerd.",
+        aiSnelVeranderendFlag: true,
+      },
+      {
+        id: "lj3v-sr5-copyright",
+        title: "SR5 - Auteursrecht en bronvermelding",
+        kerndoel: "22A",
+        question: "Je gebruikt een foto in je werkstuk. Wat moet je doen?",
+        options: [
+          "Maker noemen en bron vermelden.",
+          "Foto bewerken zodat je hem als eigen werk kan gebruiken.",
+          "Foto kleiner maken; dan is het geen kopie.",
+          "Foto direct kopiëren; op internet mag alles.",
+        ],
+        correct: "Maker noemen en bron vermelden.",
+      },
+      {
+        id: "lj3v-sr6-energy",
+        title: "SR6 - Streaming en energie",
+        kerndoel: "23C",
+        question: "Wat is een belangrijk gevolg van het massaal kijken van streaming-video?",
+        options: [
+          "Datacenters verbruiken veel energie.",
+          "Internetkabels worden korter.",
+          "Telefoons worden zwaarder.",
+          "Beeld wordt vanzelf scherper.",
+        ],
+        correct: "Datacenters verbruiken veel energie.",
+      },
+    ],
   },
   {
     id: "lj3-hv",
@@ -2036,519 +2158,100 @@ const versionSpecs: VersionSpec[] = [
         ],
       },
     },
-    sr: [],
+    sr: [
+      {
+        id: "lj3h-sr1-bias",
+        title: "SR1 - AI bias en trainingsdata",
+        kerndoel: "21D",
+        question: "Waarom kan een AI-systeem scheve of oneerlijke uitkomsten geven?",
+        options: [
+          "Omdat trainingsdata onvolledig of scheef kunnen zijn.",
+          "Omdat de vraag soms niet precies genoeg is.",
+          "Omdat het systeem op een druk moment trager werkt.",
+          "Omdat de gebruiker een nieuw account heeft.",
+        ],
+        correct: "Omdat trainingsdata onvolledig of scheef kunnen zijn.",
+        aiSnelVeranderendFlag: true,
+      },
+      {
+        id: "lj3h-sr2-regulation",
+        title: "SR2 - Regulering",
+        kerndoel: "23C",
+        question:
+          "Waarom worden grote digitale platforms en AI-systemen vaak op EU-niveau gereguleerd?",
+        options: [
+          "Omdat één land vaak te weinig invloed heeft op wereldwijde bedrijven.",
+          "Omdat alleen Brussel mag beslissen over digitale regels.",
+          "Omdat alle techbedrijven in Nederland zitten.",
+          "Omdat AI zonder regels altijd eerlijk werkt.",
+        ],
+        correct: "Omdat één land vaak te weinig invloed heeft op wereldwijde bedrijven.",
+        aiSnelVeranderendFlag: true,
+      },
+      {
+        id: "lj3h-sr3-hallucination",
+        title: "SR3 - AI-bron controleren",
+        kerndoel: "21D",
+        question:
+          "Een AI-tool noemt een wetenschappelijk artikel met titel en auteurs. Je vindt het artikel niet in zoeksystemen. Wat is waarschijnlijk?",
+        options: [
+          "De AI heeft het artikel waarschijnlijk verzonnen.",
+          "Het artikel staat mogelijk in een tijdschrift zonder open toegang.",
+          "Je zoekt misschien in een database die niet alles indexeert.",
+          "De titel kan licht anders gespeld zijn in de bron.",
+        ],
+        correct: "De AI heeft het artikel waarschijnlijk verzonnen.",
+        aiSnelVeranderendFlag: true,
+      },
+      {
+        id: "lj3h-sr4-filter",
+        title: "SR4 - Filter bubble en polarisatie",
+        kerndoel: "21B",
+        question:
+          "Wat is een mogelijk maatschappelijk effect van algoritmische selectie van nieuws?",
+        options: [
+          "Mensen zien vaker berichten die hun eigen mening bevestigen.",
+          "Iedereen ziet uiteindelijk hetzelfde nieuws.",
+          "Nieuws wordt automatisch waar.",
+          "Algoritmes verminderen verschil van mening.",
+        ],
+        correct:
+          "Mensen zien vaker berichten die hun eigen mening bevestigen.",
+      },
+      {
+        id: "lj3h-sr5-cc-sa",
+        title: "SR5 - Open licenties",
+        kerndoel: "22A",
+        question: "Wat betekent het als content een Creative Commons BY-SA-licentie heeft?",
+        options: [
+          "Je noemt de maker en deelt jouw versie onder dezelfde licentie.",
+          "Je mag het alleen voor commercieel gebruik gebruiken.",
+          "Je hoeft niets te vermelden.",
+          "Het mag alleen op papier worden gedeeld.",
+        ],
+        correct:
+          "Je noemt de maker en deelt jouw versie onder dezelfde licentie.",
+      },
+      {
+        id: "lj3h-sr6-energy",
+        title: "SR6 - Energie en duurzaamheid",
+        kerndoel: "23C",
+        question:
+          "Welk aspect maakt het trainen van grote AI-modellen relatief energie-intensief?",
+        options: [
+          "Het rekenen op grote datasets vereist langdurig veel rekenkracht in datacenters.",
+          "De modellen worden vooral getraind op gewone laptops van gebruikers.",
+          "De meeste energie gaat naar het tonen van het icoon van de app.",
+          "Na de training gebruikt een AI-systeem geen elektriciteit meer.",
+        ],
+        correct:
+          "Het rekenen op grote datasets vereist langdurig veel rekenkracht in datacenters.",
+      },
+    ],
   },
 ];
 
-const v3FileInstruction =
-  "Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Taak afronden.";
-
-const v3MailConfig = ({
-  to,
-  cc = [],
-  forbiddenBcc = false,
-  subject,
-  files,
-  requiredAttachment,
-  forbiddenAttachments = [],
-}: {
-  to: string;
-  cc?: string[];
-  forbiddenBcc?: boolean;
-  subject: string;
-  files: string[];
-  requiredAttachment: string;
-  forbiddenAttachments?: string[];
-}): MailTaskConfig => ({
-  visibleButtons: mailButtons,
-  contacts: [
-    "mentor@school.nl",
-    "docent@school.nl",
-    "stagebegeleider@bedrijf.nl",
-    "projectgenoot@school.nl",
-    "groepsgenoot1@school.nl",
-    "groepsgenoot2@school.nl",
-    "klasgroep@school.nl",
-  ],
-  files,
-  rules: [
-    {
-      id: "to",
-      description: "juiste ontvanger.",
-      points: 1,
-      conditions: [{ field: "to", operator: "includes", value: to }],
-    },
-    ...(cc.length > 0 || forbiddenBcc
-      ? [
-          {
-            id: "cc-bcc",
-            description: "juiste cc en bcc waar nodig.",
-            points: 1,
-            conditions: [
-              ...(cc.length > 0 ? [{ field: "cc" as const, operator: "allInclude" as const, value: cc }] : []),
-              ...(forbiddenBcc ? [{ field: "bcc" as const, operator: "noneInclude" as const, value: ["mentor@school.nl", "docent@school.nl", "klasgroep@school.nl"] }] : []),
-            ],
-          },
-        ]
-      : [
-          {
-            id: "sent",
-            description: "mail is verzonden.",
-            points: 1,
-            conditions: [{ field: "sent" as const, operator: "true" as const }],
-          },
-        ]),
-    {
-      id: "subject",
-      description: "juist onderwerp.",
-      points: 1,
-      conditions: [{ field: "subject", operator: "equals", value: subject }],
-    },
-    {
-      id: "attachment-sent",
-      description: "juiste bijlage en verzonden.",
-      points: 1,
-      conditions: [
-        { field: "attachments", operator: "includes", value: requiredAttachment },
-        ...(forbiddenAttachments.length > 0 ? [{ field: "attachments" as const, operator: "noneInclude" as const, value: forbiddenAttachments }] : []),
-        ...(cc.length > 0 || forbiddenBcc ? [{ field: "sent" as const, operator: "true" as const }] : []),
-      ],
-    },
-  ],
-});
-
-const v3Pt6 = (id: string): TeamsTaskSpec => ({
-  id,
-  title: "PT6 - Veilig en doelgericht schermdelen",
-  instruction:
-    "Je zit in een online les. De docent vraagt je alleen het venster met het filmfragment te delen. Andere vensters mogen niet zichtbaar zijn. Deel alleen het juiste venster en zet computergeluid aan.",
-  kerndoel: "23A",
-  ankerItemFlag: true,
-  config: {
-    scenario:
-      "Deel alleen het venster met het filmfragment. Gebruik computergeluid, maar deel niet je hele scherm.",
-    buttons: ["Camera", "Microfoon", "Chat", "Deelnemers", "Delen", "Meer"],
-    shareOptions: ["Hele scherm", "Venster"],
-    windows: [
-      "Videospeler - filmfragment",
-      "Browser - rooster",
-      "Word - verslag",
-      "Excel - cijfers",
-      "Chat - klasgroep",
-    ],
-    correctWindow: "Videospeler - filmfragment",
-    rules: [
-      {
-        id: "window-not-screen",
-        description: "deelt een venster in plaats van het hele scherm.",
-        points: 1,
-        conditions: ["notWholeScreen"],
-      },
-      {
-        id: "correct-window",
-        description: "kiest het juiste venster met het filmfragment.",
-        points: 1,
-        conditions: ["mediaPlayerSelected"],
-      },
-      {
-        id: "sound",
-        description: "computergeluid staat aan.",
-        points: 1,
-        conditions: ["computerSoundOn"],
-      },
-    ],
-  },
-});
-
-const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
-  const specs: Record<AssessmentVersionId, SecurityTaskSpec> = {
-    "lj1-vmbo": {
-      id: "lj1v-pt3-security",
-      title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Kies veilige acties bij een verdachte roosterlink.",
-      kerndoel: "23A",
-      config: {
-        screens: [
-          {
-            id: "phishinglink",
-            title: "Phishinglink schoolrooster",
-            instruction:
-              "Je krijgt een bericht: `Klik hier om je nieuwe rooster te zien`. De link lijkt op school, maar komt van een onbekende afzender.",
-            groups: [
-              {
-                id: "actions",
-                title: "Acties",
-                inputType: "multi",
-                options: fixedOptions([
-                  "open link",
-                  "controleer rooster via officiële schoolapp",
-                  "stuur link door naar klas",
-                  "meld/laat controleren door mentor",
-                  "negeer alles",
-                ]),
-              },
-            ],
-          },
-        ],
-        rules: [
-          { id: "no-open", description: "niet klikken/openen.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["open link"] },
-          { id: "official", description: "controleren via officiële app.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["controleer rooster via officiële schoolapp"] },
-          { id: "report", description: "mentor/docent laten controleren of melding maken.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["meld/laat controleren door mentor"] },
-        ],
-      },
-    },
-    "lj1-hv": {
-      id: "lj1h-pt3-security",
-      title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Kies veilige acties bij een verzoek om jouw inlogcode.",
-      kerndoel: "23A",
-      config: {
-        screens: [
-          {
-            id: "mfa",
-            title: "MFA-code niet delen",
-            instruction: "Een klasgenoot vraagt om jouw inlogcode om snel iets te testen.",
-            groups: [
-              {
-                id: "actions",
-                title: "Acties",
-                inputType: "multi",
-                options: fixedOptions([
-                  "code niet delen",
-                  "zeggen dat inlogcodes persoonlijk zijn",
-                  "hulp vragen aan docent/mentor of accountinstellingen controleren",
-                  "code sturen als het snel moet",
-                  "code in de groepsapp zetten",
-                ]),
-              },
-            ],
-          },
-        ],
-        rules: [
-          { id: "no-share", description: "code niet delen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["code niet delen"] },
-          { id: "personal", description: "aangeven dat inlogcodes persoonlijk zijn.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["zeggen dat inlogcodes persoonlijk zijn"] },
-          { id: "help", description: "hulp vragen of accountinstellingen controleren.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["hulp vragen aan docent/mentor of accountinstellingen controleren"] },
-        ],
-      },
-    },
-    "lj3-vmbo": {
-      id: "lj3v-pt3-security",
-      title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Kies veilige acties bij een onverwachte login en verdachte bijlage.",
-      kerndoel: "23A",
-      config: {
-        screens: [
-          {
-            id: "login-macro",
-            title: "Onverwachte login en verdachte bijlage",
-            instruction: "Je ziet een onverwachte loginmelding en een document vraagt macro's in te schakelen.",
-            groups: [
-              {
-                id: "actions",
-                title: "Acties",
-                inputType: "multi",
-                options: fixedOptions([
-                  "login afwijzen",
-                  "account controleren/wachtwoord wijzigen via officiële instellingen",
-                  "macro's niet inschakelen en document melden/sluiten",
-                  "login goedkeuren",
-                  "macro's inschakelen",
-                ]),
-              },
-            ],
-          },
-        ],
-        rules: [
-          { id: "reject-login", description: "login afwijzen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["login afwijzen"] },
-          { id: "account", description: "account controleren/wachtwoord wijzigen via officiële instellingen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["account controleren/wachtwoord wijzigen via officiële instellingen"] },
-          { id: "no-macros", description: "macro's niet inschakelen en document melden/sluiten.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["macro's niet inschakelen en document melden/sluiten"] },
-        ],
-      },
-    },
-    "lj3-hv": {
-      id: "lj3h-pt3-security",
-      title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Kies veilige acties bij een datalek en onbekende sessies.",
-      kerndoel: "23A",
-      config: {
-        screens: [
-          {
-            id: "breach",
-            title: "Datalek en sessiebeheer",
-            instruction:
-              "Een externe site meldt een datalek. Je gebruikte hetzelfde wachtwoord als voor school. In je account staan actieve sessies op onbekende apparaten.",
-            groups: [
-              {
-                id: "actions",
-                title: "Acties",
-                inputType: "multi",
-                options: fixedOptions([
-                  "schoolwachtwoord wijzigen",
-                  "tweestapsverificatie controleren/activeren",
-                  "onbekende sessies uitloggen en melding maken",
-                  "niets doen zolang school niets mailt",
-                  "het oude wachtwoord blijven gebruiken",
-                ]),
-              },
-            ],
-          },
-        ],
-        rules: [
-          { id: "password", description: "schoolwachtwoord wijzigen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["schoolwachtwoord wijzigen"] },
-          { id: "mfa", description: "tweestapsverificatie controleren/activeren.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["tweestapsverificatie controleren/activeren"] },
-          { id: "sessions", description: "onbekende sessies uitloggen en melding maken.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["onbekende sessies uitloggen en melding maken"] },
-        ],
-      },
-    },
-  };
-  return specs[versionId];
-};
-
-const v3Pt8 = (versionId: AssessmentVersionId): SocialTaskSpec => {
-  const cap = (optionIds: string[], groupIds?: string[]) => [{ id: "harmful-cap", maxScore: 2, optionIds, groupIds }];
-  const specs: Record<AssessmentVersionId, SocialTaskSpec> = {
-    "lj1-vmbo": {
-      id: "lj1v-pt8-online",
-      title: "PT8 - Online gedrag: groepschat",
-      instruction: "Bekijk de situatie. Beoordeel het probleem en kies alle acties die je zou doen.",
-      kerndoel: "23B",
-      config: {
-        screens: [
-          {
-            id: "judgement",
-            title: "Groepschat: grap of grens?",
-            instruction: "In de klassenchat plaatst iemand een korte video van Sam die struikelt. Er staat bij: \"Stuur door 😂\". Sam schrijft daarna: \"Haal weg, ik vind dit niet leuk.\" Jij ziet het bericht.",
-            groups: [{ id: "problem", title: "Wat is hier het belangrijkste probleem?", inputType: "single", options: fixedOptions(["Sam geeft duidelijk aan dat hij dit niet wil.", "De video is grappig, dus het maakt niet uit.", "Het is pas een probleem als een docent het ziet.", "Het is geen probleem omdat het in een besloten chat staat."]) }],
-          },
-          {
-            id: "actions",
-            title: "Acties",
-            instruction: "Wat doe je? Kies alle acties die je zou doen.",
-            groups: [{ id: "actions", title: "Acties", inputType: "multi", options: fixedOptions(["Niet doorsturen, liken of grappig reageren.", "Sam of een mentor laten weten dat dit niet oké is.", "Vragen of de plaatser de video verwijdert.", "Doorsturen naar één vriend om te vragen wat hij vindt.", "Een grapje terugplaatsen zodat het minder serieus lijkt."]) }],
-          },
-        ],
-        rules: [
-          { id: "risk", description: "herkent het probleem of risico.", points: 1, groupId: "problem", kind: "singleCorrect", correctOptionIds: ["Sam geeft duidelijk aan dat hij dit niet wil."] },
-          { id: "no-spread", description: "voorkomt verdere verspreiding of escalatie.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Niet doorsturen, liken of grappig reageren."] },
-          { id: "help", description: "schakelt passende hulp of melding in.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Sam of een mentor laten weten dat dit niet oké is."] },
-          { id: "followup", description: "kiest een veilige vervolgstap.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Vragen of de plaatser de video verwijdert."] },
-        ],
-        scoreCaps: cap(["Doorsturen naar één vriend om te vragen wat hij vindt.", "Een grapje terugplaatsen zodat het minder serieus lijkt."], ["actions"]),
-      },
-    },
-    "lj1-hv": {
-      id: "lj1h-pt8-online",
-      title: "PT8 - Online gedrag: privéchat",
-      instruction: "Bekijk de situatie. Beoordeel het deelverzoek en kies verstandige vervolgstappen.",
-      kerndoel: "23B",
-      config: {
-        screens: [
-          { id: "judgement", title: "Deelverzoek in privéchat", instruction: "Je krijgt van een klasgenoot een privébericht: \"Stuur deze screenshot van onze chat even door naar de groep, dan ziet iedereen wat Noor zei.\" In de screenshot staat iets persoonlijks over Noor. Noor weet niet dat dit wordt doorgestuurd.", groups: [{ id: "judgement", title: "Wat is de beste beoordeling?", inputType: "single", options: fixedOptions(["Niet doorsturen, want er staat persoonlijke informatie in en Noor gaf geen toestemming.", "Doorsturen mag, want jij hebt de screenshot gekregen.", "Doorsturen mag als je Noors naam weglaat.", "Doorsturen mag als het alleen naar de klasgroep gaat."]) }] },
-          { id: "followup", title: "Vervolgactie", instruction: "Welke vervolgstappen zijn verstandig? Kies alle goede acties.", groups: [{ id: "followup", title: "Vervolgstappen", inputType: "multi", options: fixedOptions(["Uitleggen dat je dit niet doorstuurt.", "Noor waarschuwen of vragen of zij hulp wil.", "Een mentor/ouder/verantwoordelijke volwassene inschakelen als er druk of ruzie ontstaat.", "De screenshot bewerken en dan alsnog delen.", "De screenshot naar een kleinere groep sturen."]) }] },
-        ],
-        rules: [
-          { id: "risk", description: "herkent het probleem of risico.", points: 1, groupId: "judgement", kind: "singleCorrect", correctOptionIds: ["Niet doorsturen, want er staat persoonlijke informatie in en Noor gaf geen toestemming."] },
-          { id: "no-spread", description: "voorkomt verdere verspreiding of escalatie.", points: 1, groupId: "followup", kind: "allSelected", correctOptionIds: ["Uitleggen dat je dit niet doorstuurt."], alternativeCorrectOptionIdsByGroup: { judgement: ["Niet doorsturen, want er staat persoonlijke informatie in en Noor gaf geen toestemming."] } },
-          { id: "help", description: "schakelt passende hulp of melding in.", points: 1, groupId: "followup", kind: "minCorrect", minCorrect: 1, correctOptionIds: ["Noor waarschuwen of vragen of zij hulp wil.", "Een mentor/ouder/verantwoordelijke volwassene inschakelen als er druk of ruzie ontstaat."] },
-          { id: "followup", description: "veilige vervolgstap zonder schadelijke deelactie.", points: 1, groupId: "followup", kind: "allSelected", correctOptionIds: ["Uitleggen dat je dit niet doorstuurt."], forbiddenOptionIds: ["De screenshot bewerken en dan alsnog delen.", "De screenshot naar een kleinere groep sturen."] },
-        ],
-        scoreCaps: cap(["De screenshot bewerken en dan alsnog delen.", "De screenshot naar een kleinere groep sturen."], ["followup"]),
-      },
-    },
-    "lj3-vmbo": {
-      id: "lj3v-pt8-online",
-      title: "PT8 - Online gedrag: nepaccount",
-      instruction: "Bekijk de situatie. Kies de beste eerste aanpak en veilige stappen.",
-      kerndoel: "23B",
-      config: {
-        screens: [
-          { id: "first", title: "Nepaccount met jouw foto", instruction: "Iemand maakt een account aan met jouw naam en profielfoto. Het account stuurt rare berichten naar leerlingen van school. Jij weet niet wie het heeft gedaan.", groups: [{ id: "first", title: "Wat is de beste eerste aanpak?", inputType: "single", options: fixedOptions(["Niet terugdreigen; het account rapporteren en hulp inschakelen.", "Zelf een nepaccount maken om terug te pakken.", "Iedereen vragen het account te volgen om bewijs te verzamelen.", "Je echte account verwijderen en niemand iets vertellen."]) }] },
-          { id: "steps", title: "Veilige stappen", instruction: "Welke stappen zijn veilig? Kies alle goede acties.", groups: [{ id: "steps", title: "Stappen", inputType: "multi", options: fixedOptions(["Het account rapporteren bij het platform.", "Een mentor/ouder/verantwoordelijke volwassene vragen om te helpen bewijs veilig vast te leggen zonder het te verspreiden.", "Je eigen accountinstellingen en privacy controleren.", "Screenshots in de klassenapp zetten zodat iedereen ziet dat het nep is.", "De vermoedelijke dader online beschuldigen."]) }] },
-        ],
-        rules: [
-          { id: "risk", description: "herkent het probleem of risico.", points: 1, groupId: "first", kind: "singleCorrect", correctOptionIds: ["Niet terugdreigen; het account rapporteren en hulp inschakelen."] },
-          { id: "no-escalation", description: "voorkomt verdere verspreiding of escalatie.", points: 1, groupId: "first", kind: "noForbidden", forbiddenOptionIds: ["Zelf een nepaccount maken om terug te pakken.", "Iedereen vragen het account te volgen om bewijs te verzamelen."], forbiddenByGroup: { steps: ["Screenshots in de klassenapp zetten zodat iedereen ziet dat het nep is.", "De vermoedelijke dader online beschuldigen."] } },
-          { id: "report-help", description: "schakelt passende hulp of melding in.", points: 1, groupId: "steps", kind: "minCorrect", minCorrect: 1, correctOptionIds: ["Het account rapporteren bij het platform."], alternativeCorrectOptionIdsByGroup: { first: ["Niet terugdreigen; het account rapporteren en hulp inschakelen."] } },
-          { id: "safe-followup", description: "veilige bewijs- of privacyactie.", points: 1, groupId: "steps", kind: "minCorrect", minCorrect: 1, correctOptionIds: ["Een mentor/ouder/verantwoordelijke volwassene vragen om te helpen bewijs veilig vast te leggen zonder het te verspreiden.", "Je eigen accountinstellingen en privacy controleren."] },
-        ],
-        scoreCaps: cap(["Zelf een nepaccount maken om terug te pakken.", "Iedereen vragen het account te volgen om bewijs te verzamelen.", "Screenshots in de klassenapp zetten zodat iedereen ziet dat het nep is.", "De vermoedelijke dader online beschuldigen."]),
-      },
-    },
-    "lj3-hv": {
-      id: "lj3h-pt8-online",
-      title: "PT8 - Online gedrag: gemanipuleerde schoolpost",
-      instruction: "Bekijk de situatie. Weeg signalen, kies een aanpak en een vervolgstap.",
-      kerndoel: "23B",
-      config: {
-        screens: [
-          { id: "signals", title: "Gemanipuleerde schoolpost", instruction: "In een groepschat verschijnt een screenshot van een zogenaamd schoolbericht: \"Vanaf morgen zijn telefoons verboden. Wie protesteert, krijgt straf.\" Het bericht komt niet uit de schoolapp. De opmaak lijkt op school, maar het account dat het deelt is anoniem. Sommige leerlingen willen het meteen doorsturen.", groups: [{ id: "signals", title: "Welke signalen maken dat je voorzichtig moet zijn?", inputType: "multi", options: fixedOptions(["Het bericht komt niet uit de officiële schoolapp of mail.", "Het account dat het deelt is anoniem.", "Het bericht probeert snelle verspreiding of paniek te veroorzaken.", "Het bericht gebruikt woorden die op schooltaal lijken.", "Veel leerlingen reageren erop."]) }] },
-          { id: "action", title: "Handelen", instruction: "Wat is de beste aanpak voordat je iets doorstuurt?", groups: [{ id: "action", title: "Aanpak", inputType: "single", options: fixedOptions(["Niet doorsturen en eerst controleren via officiële schoolkanalen of mentor/docent.", "Doorsturen met \"ik weet niet of dit klopt\" erbij.", "Alleen reacties lezen en dan beslissen.", "Zelf een aangepast screenshot maken om te laten zien dat het nep kan zijn."]) }] },
-          { id: "followup", title: "Vervolg", instruction: "Wat is een goede vervolgstap als blijkt dat het nep is?", groups: [{ id: "followup", title: "Vervolgstap", inputType: "single", options: fixedOptions(["In de groep melden dat het niet uit een officieel kanaal komt en vragen het niet verder te delen.", "De maker online belachelijk maken.", "Het screenshot bewaren en later opnieuw delen als voorbeeld.", "Een nieuwe versie maken als grap."]) }] },
-        ],
-        rules: [
-          { id: "risk", description: "minimaal twee juiste signalen.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["Het bericht komt niet uit de officiële schoolapp of mail.", "Het account dat het deelt is anoniem.", "Het bericht probeert snelle verspreiding of paniek te veroorzaken."] },
-          { id: "no-spread", description: "niet doorsturen.", points: 1, groupId: "action", kind: "singleCorrect", correctOptionIds: ["Niet doorsturen en eerst controleren via officiële schoolkanalen of mentor/docent."] },
-          { id: "official-check", description: "officiële controle/mentor/docent.", points: 1, groupId: "action", kind: "singleCorrect", correctOptionIds: ["Niet doorsturen en eerst controleren via officiële schoolkanalen of mentor/docent."] },
-          { id: "safe-followup", description: "corrigerende, niet-escalerende vervolgstap.", points: 1, groupId: "followup", kind: "singleCorrect", correctOptionIds: ["In de groep melden dat het niet uit een officieel kanaal komt en vragen het niet verder te delen."] },
-        ],
-        scoreCaps: cap(["Zelf een aangepast screenshot maken om te laten zien dat het nep kan zijn.", "De maker online belachelijk maken.", "Het screenshot bewaren en later opnieuw delen als voorbeeld.", "Een nieuwe versie maken als grap."]),
-      },
-    },
-  };
-  return specs[versionId];
-};
-
-const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
-  const specs: Record<AssessmentVersionId, BlockTaskSpec> = {
-    "lj1-vmbo": {
-      id: "lj1v-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
-      intro: "Programmeer Bizzy door blokken op het werkvlak te slepen.",
-      instruction: "Programmeer Bizzy zodat hij eerst 2 stappen vooruit gaat, daarna naar rechts draait, daarna \"Klaar\" zegt.",
-      config: {
-        device: "bizzy",
-        blocks: [block("bij start", "gebeurtenissen", { isContainer: true }), block("2 stappen vooruit", "beweging"), block("draai naar rechts", "beweging"), block('zeg "Klaar"', "uiterlijk"), block("draai naar links", "beweging", { isCriticalDistractor: true })],
-        correctProgram: ["bij start", "2 stappen vooruit", "draai naar rechts", 'zeg "Klaar"'],
-        rules: [
-          { id: "start", description: "juiste start/gebeurtenisblok.", points: 1, firstBlock: "bij start" },
-          { id: "move", description: "beweging vooruit correct.", points: 1, requiredBlocks: ["2 stappen vooruit"] },
-          { id: "turn", description: "draai naar rechts correct.", points: 1, requiredBlocks: ["draai naar rechts"] },
-          { id: "say", description: "boodschap Klaar na de bewegingen.", points: 1, orderedBlocks: ["2 stappen vooruit", "draai naar rechts", 'zeg "Klaar"'] },
-        ],
-      },
-    },
-    "lj1-hv": {
-      id: "lj1h-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
-      intro: "Programmeer Bizzy door blokken op het werkvlak te slepen.",
-      instruction: "Programmeer Bizzy zodat hij 4 keer hetzelfde patroon uitvoert: 1 stap vooruit en daarna rechts draaien. Aan het einde zegt Bizzy \"Vierkant\".",
-      config: {
-        device: "bizzy",
-        blocks: [block("bij start", "gebeurtenissen", { isContainer: true }), block("herhaal 4 keer", "besturing", { isContainer: true }), block("1 stap vooruit", "beweging"), block("rechts draaien", "beweging"), block('zeg "Vierkant"', "uiterlijk"), block("herhaal 3 keer", "besturing", { isContainer: true, isCriticalDistractor: true })],
-        correctProgram: ["bij start", "herhaal 4 keer", "1 stap vooruit", "rechts draaien", 'zeg "Vierkant"'],
-        rules: [
-          { id: "repeat", description: "gebruikt herhaalblok of correcte equivalente structuur.", points: 1, requiredBlocks: ["herhaal 4 keer"] },
-          { id: "pattern", description: "patroon vooruit + rechts draaien correct.", points: 1, nestedBlocks: [{ parent: "herhaal 4 keer", child: "1 stap vooruit" }, { parent: "herhaal 4 keer", child: "rechts draaien" }] },
-          { id: "repeat-four", description: "herhaling 4 keer correct.", points: 1, requiredBlocks: ["herhaal 4 keer"] },
-          { id: "message", description: "eindboodschap na de herhaling.", points: 1, orderedBlocks: ["herhaal 4 keer", 'zeg "Vierkant"'] },
-        ],
-      },
-    },
-    "lj3-vmbo": {
-      id: "lj3v-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
-      intro: "Programmeer een eenvoudige wachtrij met een teller.",
-      instruction: "Elke klik op knop A verhoogt de teller met 1. Als de teller 5 of hoger is, zegt Bizzy \"Vol\". Anders zegt Bizzy \"Nog plek\".",
-      config: {
-        device: "microbit",
-        blocks: [block("bij start", "gebeurtenissen", { isContainer: true }), block("zet teller op 0", "variabelen"), block("als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }), block("verander teller met 1", "variabelen"), block("als teller >= 5 dan", "besturing", { isContainer: true }), block('zeg "Vol"', "uiterlijk"), block("anders", "besturing", { isContainer: true }), block('zeg "Nog plek"', "uiterlijk")],
-        correctProgram: ["bij start", "zet teller op 0", "als knop A wordt ingedrukt", "verander teller met 1", "als teller >= 5 dan", 'zeg "Vol"', "anders", 'zeg "Nog plek"'],
-        rules: [
-          { id: "variable", description: "teller/variabele correct gebruikt.", points: 1, requiredBlocks: ["zet teller op 0"] },
-          { id: "button", description: "knop A verhoogt teller met 1.", points: 1, nestedBlocks: [{ parent: "als knop A wordt ingedrukt", child: "verander teller met 1" }] },
-          { id: "condition", description: "voorwaarde teller >= 5 correct.", points: 1, requiredBlocks: ["als teller >= 5 dan"] },
-          { id: "outcomes", description: "juiste uitkomstteksten bij beide situaties.", points: 1, requiredBlocks: ['zeg "Vol"', 'zeg "Nog plek"'] },
-        ],
-      },
-    },
-    "lj3-hv": {
-      id: "lj3h-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
-      intro: "Programmeer een waarschuwing met temperatuur en raamstand.",
-      instruction: "Als temperatuur > 25 én raamOpen = ja, toont Bizzy \"Koelen\". Als dat niet zo is, toont Bizzy \"Oké\".",
-      config: {
-        device: "sensor",
-        blocks: [block("lees temperatuur", "waarnemen"), block("lees raamOpen", "waarnemen"), block("als temperatuur > 25 EN raamOpen = ja dan", "besturing", { isContainer: true }), block('toon "Koelen"', "uiterlijk"), block("anders", "besturing", { isContainer: true }), block('toon "Oké"', "uiterlijk"), block("als temperatuur > 25 OF raamOpen = ja dan", "besturing", { isContainer: true, isCriticalDistractor: true })],
-        correctProgram: ["lees temperatuur", "lees raamOpen", "als temperatuur > 25 EN raamOpen = ja dan", 'toon "Koelen"', "anders", 'toon "Oké"'],
-        rules: [
-          { id: "inputs", description: "gebruikt twee invoervariabelen correct.", points: 1, requiredBlocks: ["lees temperatuur", "lees raamOpen"] },
-          { id: "condition", description: "samengestelde EN-voorwaarde correct.", points: 1, requiredBlocks: ["als temperatuur > 25 EN raamOpen = ja dan"] },
-          { id: "true", description: "juiste actie bij waar.", points: 1, nestedBlocks: [{ parent: "als temperatuur > 25 EN raamOpen = ja dan", child: 'toon "Koelen"' }] },
-          { id: "else", description: "juiste actie bij anders.", points: 1, nestedBlocks: [{ parent: "anders", child: 'toon "Oké"' }] },
-        ],
-      },
-    },
-  };
-  return specs[versionId];
-};
-
-const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
-  const files: Record<AssessmentVersionId, FileTaskSpec> = {
-    "lj1-vmbo": {
-      id: "lj1v-pt1-files",
-      title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nMaak in de oefenomgeving een map School. Maak daarin de mappen Nederlands en Mens en Maatschappij. Verplaats werkblad_mens_en_maatschappij.pdf naar de juiste map en hernoem nieuw_document.docx naar verslag_nederlands.docx.`,
-      startFolders: ["Thuis/Oefenomgeving"],
-      startFiles: ["Thuis/Oefenomgeving/werkblad_mens_en_maatschappij.pdf", "Thuis/Oefenomgeving/nieuw_document.docx"],
-      tasks: [
-        { id: "school", description: "map School correct.", expectedPath: "Thuis/Oefenomgeving/School", points: 1 },
-        { id: "subjects", description: "twee vakmappen correct.", expectedPaths: ["Thuis/Oefenomgeving/School/Nederlands", "Thuis/Oefenomgeving/School/Mens en Maatschappij"], points: 1 },
-        { id: "move", description: "bestand correct verplaatst.", expectedPath: "Thuis/Oefenomgeving/School/Mens en Maatschappij/werkblad_mens_en_maatschappij.pdf", points: 1 },
-        { id: "rename", description: "bestand correct hernoemd.", expectedPath: "Thuis/Oefenomgeving/School/Nederlands/verslag_nederlands.docx", forbiddenPaths: ["Thuis/Oefenomgeving/nieuw_document.docx"], points: 1 },
-      ],
-    },
-    "lj1-hv": {
-      id: "lj1h-pt1-files",
-      title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nMaak een map Project Water. Maak daarin Bronnen, Afbeeldingen en Verslag. Verplaats drie bestanden naar de juiste map en hernoem het verslagbestand naar project_water_verslag.docx.`,
-      startFolders: ["Thuis/Oefenomgeving"],
-      startFiles: ["Thuis/Oefenomgeving/bron_water.pdf", "Thuis/Oefenomgeving/waterfoto.png", "Thuis/Oefenomgeving/concept_verslag.docx"],
-      tasks: [
-        { id: "main", description: "hoofdmap correct.", expectedPath: "Thuis/Oefenomgeving/Project Water", points: 1 },
-        { id: "subfolders", description: "submappen correct.", expectedPaths: ["Thuis/Oefenomgeving/Project Water/Bronnen", "Thuis/Oefenomgeving/Project Water/Afbeeldingen", "Thuis/Oefenomgeving/Project Water/Verslag"], points: 1 },
-        { id: "placed", description: "minimaal 2 van 3 bestanden correct geplaatst.", expectedPaths: ["Thuis/Oefenomgeving/Project Water/Bronnen/bron_water.pdf", "Thuis/Oefenomgeving/Project Water/Afbeeldingen/waterfoto.png"], points: 1 },
-        { id: "rename", description: "verslagbestand correct hernoemd.", expectedPath: "Thuis/Oefenomgeving/Project Water/Verslag/project_water_verslag.docx", forbiddenPaths: ["Thuis/Oefenomgeving/concept_verslag.docx"], points: 1 },
-      ],
-    },
-    "lj3-vmbo": {
-      id: "lj3v-pt1-files",
-      title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nOrden een projectmap. Maak Actueel en Archief. Zet de nieuwste versie van het verslag in Actueel, oudere versies in Archief, en hernoem de nieuwste versie volgens stageverslag_v3_definitief.docx.`,
-      startFolders: ["Thuis/Projectmap"],
-      startFiles: ["Thuis/Projectmap/stageverslag_v1.docx", "Thuis/Projectmap/stageverslag_v2.docx", "Thuis/Projectmap/stageverslag_v3.docx"],
-      tasks: [
-        { id: "folders", description: "mappen correct.", expectedPaths: ["Thuis/Projectmap/Actueel", "Thuis/Projectmap/Archief"], points: 1 },
-        { id: "newest", description: "nieuwste versie herkend.", expectedPath: "Thuis/Projectmap/Actueel/stageverslag_v3_definitief.docx", points: 1 },
-        { id: "archive", description: "archief correct gebruikt.", expectedPaths: ["Thuis/Projectmap/Archief/stageverslag_v1.docx", "Thuis/Projectmap/Archief/stageverslag_v2.docx"], points: 1 },
-        { id: "name", description: "juiste naamgeving.", expectedPath: "Thuis/Projectmap/Actueel/stageverslag_v3_definitief.docx", forbiddenPaths: ["Thuis/Projectmap/stageverslag_v3.docx"], points: 1 },
-      ],
-    },
-    "lj3-hv": {
-      id: "lj3h-pt1-files",
-      title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nOrden projectbestanden met versies. Maak Onderzoek, Data, Bronnen en Archief. Plaats bestanden op basis van type en versie. Zet alleen de definitieve versie in de hoofdmap Onderzoek.`,
-      startFolders: ["Thuis/Project"],
-      startFiles: ["Thuis/Project/onderzoek_v1.docx", "Thuis/Project/onderzoek_definitief.docx", "Thuis/Project/data.csv", "Thuis/Project/bron.pdf"],
-      tasks: [
-        { id: "structure", description: "mapstructuur correct.", expectedPaths: ["Thuis/Project/Onderzoek", "Thuis/Project/Onderzoek/Data", "Thuis/Project/Onderzoek/Bronnen", "Thuis/Project/Onderzoek/Archief"], points: 1 },
-        { id: "types", description: "bestanden per type correct geplaatst.", expectedPaths: ["Thuis/Project/Onderzoek/Data/data.csv", "Thuis/Project/Onderzoek/Bronnen/bron.pdf"], points: 1 },
-        { id: "versions", description: "versies correct onderscheiden.", expectedPath: "Thuis/Project/Onderzoek/Archief/onderzoek_v1.docx", points: 1 },
-        { id: "final", description: "definitieve versie correct benoemd/geplaatst.", expectedPath: "Thuis/Project/Onderzoek/onderzoek_definitief.docx", points: 1 },
-      ],
-    },
-  };
-
-  const mail: Record<AssessmentVersionId, MailTaskSpec> = {
-    "lj1-vmbo": { id: "lj1v-pt2-mail", title: "PT2 - E-mail functioneel gebruiken", instruction: "Stuur een verslag naar je mentor. Gebruik de juiste ontvanger, het onderwerp Verslag Nederlands, de juiste bijlage en verzend de mail.", kerndoel: "21A", config: v3MailConfig({ to: "mentor@school.nl", subject: "Verslag Nederlands", files: ["verslag_nederlands.docx", "werkblad_mens_en_maatschappij.pdf"], requiredAttachment: "verslag_nederlands.docx" }) },
-    "lj1-hv": { id: "lj1h-pt2-mail", title: "PT2 - E-mail functioneel gebruiken", instruction: "Stuur een verslag naar je mentor. Vermeld de projectnaam in het onderwerp, voeg de juiste bijlage toe en verzend de mail.", kerndoel: "21A", config: v3MailConfig({ to: "mentor@school.nl", subject: "Project Water verslag", files: ["project_water_verslag.docx", "bron_water.pdf"], requiredAttachment: "project_water_verslag.docx" }) },
-    "lj3-vmbo": { id: "lj3v-pt2-mail", title: "PT2 - E-mail functioneel gebruiken", instruction: "Stuur een e-mail aan je stagebegeleider met een helder onderwerp en de juiste bijlage. Zet je mentor in cc en gebruik geen bcc.", kerndoel: "21A", config: v3MailConfig({ to: "stagebegeleider@bedrijf.nl", cc: ["mentor@school.nl"], forbiddenBcc: true, subject: "Stageverslag definitieve versie", files: ["stageverslag_v3_definitief.docx", "stageverslag_v2.docx"], requiredAttachment: "stageverslag_v3_definitief.docx" }) },
-    "lj3-hv": { id: "lj3h-pt2-mail", title: "PT2 - E-mail functioneel gebruiken", instruction: "Stuur een projectmail naar je docent. Zet de projectgroep in cc, gebruik de juiste onderwerpregel, voeg de juiste bijlage toe en voeg geen verkeerde extra bijlage toe.", kerndoel: "21A", config: v3MailConfig({ to: "docent@school.nl", cc: ["groepsgenoot1@school.nl", "groepsgenoot2@school.nl"], subject: "Definitief onderzoeksverslag", files: ["onderzoeksverslag_definitief.pdf", "onderzoeksverslag_oud.pdf", "bronnenlijst.pdf"], requiredAttachment: "onderzoeksverslag_definitief.pdf", forbiddenAttachments: ["onderzoeksverslag_oud.pdf", "bronnenlijst.pdf"] }) },
-  };
-
-  return {
-    ...spec,
-    pt1: files[spec.id],
-    pt2: mail[spec.id],
-    pt3: v3Pt3(spec.id),
-    pt6: v3Pt6(`${spec.id.replace("-", "").replace("lj", "lj")}-pt6-screen-share`),
-    pt7: v3Pt7(spec.id),
-    pt8: v3Pt8(spec.id),
-  };
-};
-
-export const assessments: AssessmentVersion[] = versionSpecs
-  .map(withV3PerformanceTasks)
-  .map(buildAssessment);
+export const assessments: AssessmentVersion[] = versionSpecs.map(buildAssessment);
 
 export const assessmentMap: Record<AssessmentVersionId, AssessmentVersion> =
   assessments.reduce(

@@ -1,4 +1,4 @@
-import { assessmentMap } from "../data/assessments";
+import { assessmentMap, sloLabels } from "../data/assessments";
 import { buildPath } from "./pt1";
 import type {
   AssessmentItem,
@@ -9,6 +9,7 @@ import type {
   CodeMapping,
   EventLog,
   Pt1State,
+  ResponseType,
   Result,
   SelectedAnswer,
   SessionMetadata,
@@ -39,8 +40,17 @@ const createPresentedOrders = (assessment: AssessmentVersion) => {
       }
 
       const optionIds = item.options.map((option) => option.id);
+      const contentOptionIds = optionIds.filter(
+        (optionId) => optionId !== item.unknownOptionId,
+      );
+      const randomizedIds =
+        item.randomizeOptions === false
+          ? contentOptionIds
+          : randomizeOptions(contentOptionIds);
       presentedOrders[resultKey(section.id, item.id)] =
-        item.randomizeOptions === false ? optionIds : randomizeOptions(optionIds);
+        item.unknownOptionId && optionIds.includes(item.unknownOptionId)
+          ? [...randomizedIds, item.unknownOptionId]
+          : randomizedIds;
     });
   });
 
@@ -82,6 +92,7 @@ export const createSession = (
   versionId: assessment.id,
   instrumentId: assessment.id,
   metadata: metadata ?? {
+    anonymousAttemptId: crypto.randomUUID(),
     anonymousCode: `sessie-${new Date().toISOString().slice(0, 10)}`,
   },
   startedAt: new Date().toISOString(),
@@ -196,6 +207,39 @@ export const parseNumeric = (value: string): number | null => {
   }
   const parsed = Number(cleaned);
   return Number.isFinite(parsed) ? parsed : null;
+};
+
+const scoreMultipleChoiceItem = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => {
+  if (item.scoreMode !== "partial_select" || !Array.isArray(item.correctAnswer)) {
+    const isCorrect = isSameAnswer(selectedAnswer, item.correctAnswer, item.scoreMode);
+    return {
+      isCorrect,
+      score: isCorrect ? item.points : 0,
+      taskResults: [],
+    };
+  }
+
+  const selectedIds = Array.isArray(selectedAnswer) ? selectedAnswer.map(String) : [];
+  if (item.unknownOptionId && selectedIds.includes(item.unknownOptionId)) {
+    return { isCorrect: false, score: 0, taskResults: [] };
+  }
+
+  const correctIds = item.correctAnswer.map(String);
+  const correctSelectedCount = selectedIds.filter((id) => correctIds.includes(id)).length;
+  const rawScore =
+    correctIds.length === 0 ? 0 : (correctSelectedCount / correctIds.length) * item.points;
+  const hasHarmfulSelection = (item.harmfulOptionIds ?? []).some((id) => selectedIds.includes(id));
+  const cappedScore =
+    hasHarmfulSelection && item.harmfulSelectionMaxScore !== undefined
+      ? Math.min(rawScore, item.harmfulSelectionMaxScore)
+      : rawScore;
+  const score = Math.round(cappedScore * 100) / 100;
+
+  return {
+    isCorrect: score === item.points,
+    score,
+    taskResults: [],
+  };
 };
 
 const scoreFileTask = (item: AssessmentItem, state?: Pt1State) => {
@@ -435,7 +479,7 @@ const scoreTeamsTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) =>
       return selectedWindow === item.teamsTask?.correctWindow;
     }
     if (condition === "notWholeScreen") {
-      return selectedWindow !== "Hele scherm";
+      return Boolean(selectedWindow) && selectedWindow !== "Hele scherm";
     }
     return false;
   };
@@ -678,6 +722,11 @@ const scoreInteractionTask = (
         ids.every((id) => !selectedIdsForGroup(state, groupId).includes(id)),
     );
     const correctCount = selectedIds.filter((id) => correctIds.includes(id)).length;
+    const alternativeCorrect = Object.entries(
+      rule.alternativeCorrectOptionIdsByGroup ?? {},
+    ).some(([groupId, ids]) =>
+      ids.some((id) => selectedIdsForGroup(state, groupId).includes(id)),
+    );
     const matches = answerRecord(state[rule.groupId] as SelectedAnswer);
     const matchEntries = Object.entries(rule.correctMatches ?? {});
     const correctMatchCount = matchEntries.filter(
@@ -702,6 +751,7 @@ const scoreInteractionTask = (
                   : rule.kind === "matchingPartial"
                     ? matchEntries.length > 0 && correctMatchCount === matchEntries.length
                   : false;
+    const correct = baseCorrect || alternativeCorrect;
     const awardedPoints =
       rule.kind === "matchingPartial" && forbiddenByGroupOk
         ? correctMatchCount === matchEntries.length
@@ -709,7 +759,7 @@ const scoreInteractionTask = (
           : correctMatchCount > 0
             ? rule.partialPoints ?? 0
             : 0
-        : baseCorrect && forbiddenByGroupOk
+        : correct && forbiddenByGroupOk
           ? rule.points
           : 0;
 
@@ -720,10 +770,19 @@ const scoreInteractionTask = (
       points: awardedPoints,
     };
   });
-  const score = taskResults.reduce((sum, result) => sum + result.points, 0);
+  const uncappedScore = taskResults.reduce((sum, result) => sum + result.points, 0);
+  const caps = config?.scoreCaps ?? [];
+  const capScore = caps.reduce((currentCap, cap) => {
+    const capApplies = (cap.groupIds ?? Object.keys(state)).some((groupId) => {
+      const selectedIds = selectedIdsForGroup(state, groupId);
+      return cap.optionIds.some((optionId) => selectedIds.includes(optionId));
+    });
+    return capApplies ? Math.min(currentCap, cap.maxScore) : currentCap;
+  }, Number.POSITIVE_INFINITY);
+  const score = Number.isFinite(capScore) ? Math.min(uncappedScore, capScore) : uncappedScore;
 
   return {
-    isCorrect: rules.length > 0 && taskResults.every((result) => result.correct),
+    isCorrect: rules.length > 0 && taskResults.every((result) => result.correct) && score === uncappedScore,
     score,
     taskResults,
   };
@@ -734,6 +793,10 @@ export const scoreItem = (
   selectedAnswer: SelectedAnswer,
   state?: Pt1State,
 ) => {
+  if (answerRecord(selectedAnswer).skipped === true) {
+    return { isCorrect: false, score: 0, taskResults: [] };
+  }
+
   if (item.type === "self_assessment") {
     return { isCorrect: null, score: 0, taskResults: [] };
   }
@@ -778,12 +841,34 @@ export const scoreItem = (
     return scoreInteractionTask(item.socialTask, selectedAnswer);
   }
 
-  const isCorrect = isSameAnswer(selectedAnswer, item.correctAnswer, item.scoreMode);
-  return {
-    isCorrect,
-    score: isCorrect ? item.points : 0,
-    taskResults: [],
-  };
+  return scoreMultipleChoiceItem(item, selectedAnswer);
+};
+
+const answerIncludesOption = (selectedAnswer: SelectedAnswer, optionId: string) =>
+  Array.isArray(selectedAnswer)
+    ? selectedAnswer.includes(optionId)
+    : selectedAnswer === optionId;
+
+const responseTypeFor = (
+  item: AssessmentItem,
+  selectedAnswer: SelectedAnswer,
+  scored: ReturnType<typeof scoreItem>,
+  skipped: boolean,
+): ResponseType | undefined => {
+  if (skipped) {
+    return "skipped";
+  }
+  if (item.type === "self_assessment") {
+    return undefined;
+  }
+  if (
+    item.type === "multiple_choice" &&
+    item.unknownOptionId &&
+    answerIncludesOption(selectedAnswer, item.unknownOptionId)
+  ) {
+    return "unknown";
+  }
+  return scored.isCorrect ? "correct" : "incorrect";
 };
 
 const appendOrReplaceResult = (results: Result[], nextResult: Result): Result[] => {
@@ -795,6 +880,22 @@ const appendOrReplaceResult = (results: Result[], nextResult: Result): Result[] 
     return [...results, nextResult];
   }
   return results.map((result, index) => (index === existingIndex ? nextResult : result));
+};
+
+const assessmentGoalIds = (item: AssessmentItem) => {
+  const source = `${item.subgoal ?? ""},${item.kerndoel}`;
+  const matches = Array.from(source.matchAll(/\b(21[A-D]?|22[A-B]?|23[A-C]?)\b/g)).map(
+    (match) => match[1],
+  );
+  const subgoals = Array.from(new Set(matches.filter((goalId) => goalId.length === 3)));
+  const roots = Array.from(
+    new Set([
+      ...subgoals.map((goalId) => goalId.slice(0, 2)),
+      ...matches.filter((goalId) => goalId.length === 2),
+    ]),
+  );
+
+  return { roots, subgoals };
 };
 
 export const submitItemAnswer = ({
@@ -815,8 +916,16 @@ export const submitItemAnswer = ({
   const currentPt1State = session.pt1States[item.id];
   const scored = scoreItem(item, selectedAnswer, currentPt1State);
   const timestamp = new Date().toISOString();
+  const skipped = answerRecord(selectedAnswer).skipped === true;
+  const responseType = responseTypeFor(item, selectedAnswer, scored, skipped);
+  const selfAssessmentScore =
+    item.type === "self_assessment" && typeof selectedAnswer === "number"
+      ? Math.max(0, Math.min(100, Math.round(selectedAnswer)))
+      : undefined;
   const finalState =
-    item.type === "file_task_simulation" && currentPt1State
+    skipped
+      ? JSON.stringify({ skipped: true })
+      : item.type === "file_task_simulation" && currentPt1State
       ? currentPt1State.nodes
           .map((node) => buildPath(currentPt1State.nodes, node.id))
           .sort()
@@ -846,6 +955,8 @@ export const submitItemAnswer = ({
     isCorrect: scored.isCorrect,
     score: scored.score,
     maxScore: item.points,
+    responseType,
+    skipped,
     timestamp,
     timeSpentMs,
     ankerItemFlag: item.ankerItemFlag ?? false,
@@ -865,6 +976,8 @@ export const submitItemAnswer = ({
     isCorrect: scored.isCorrect,
     score: scored.score,
     maxScore: item.points,
+    responseType,
+    skipped,
     timeSpentMs,
     ankerItemFlag: item.ankerItemFlag ?? false,
     aiSnelVeranderendFlag: item.aiSnelVeranderendFlag ?? false,
@@ -872,6 +985,13 @@ export const submitItemAnswer = ({
 
   return {
     ...session,
+    metadata:
+      selfAssessmentScore === undefined
+        ? session.metadata
+        : {
+            ...session.metadata,
+            selfAssessmentScore,
+          },
     results: appendOrReplaceResult(session.results, nextResult),
     eventLogs: [...session.eventLogs, eventLog],
     pt1States:
@@ -912,6 +1032,7 @@ export const calculateResult = (
   const totalScore = blockScores.reduce((sum, block) => sum + block.score, 0);
   const maxScore = blockScores.reduce((sum, block) => sum + block.maxScore, 0);
   const domainMap = new Map<string, { score: number; maxScore: number }>();
+  const goalMap = new Map<string, { score: number; maxScore: number; level: "kerndoel" | "subgoal" }>();
 
   assessment.sections.forEach((section) => {
     section.items
@@ -927,8 +1048,21 @@ export const calculateResult = (
           score: current.score + (itemResult?.score ?? 0),
           maxScore: current.maxScore + item.points,
         });
+
+        const goals = assessmentGoalIds(item);
+        [...goals.roots, ...goals.subgoals].forEach((goalId) => {
+          const level = goalId.length === 2 ? "kerndoel" : "subgoal";
+          const currentGoal = goalMap.get(goalId) ?? { score: 0, maxScore: 0, level };
+          goalMap.set(goalId, {
+            level,
+            score: currentGoal.score + (itemResult?.score ?? 0),
+            maxScore: currentGoal.maxScore + item.points,
+          });
+        });
       });
   });
+
+  const goalOrder = ["21", "21A", "21B", "21C", "21D", "22", "22A", "22B", "23", "23A", "23B", "23C"];
 
   return {
     totalScore,
@@ -941,6 +1075,19 @@ export const calculateResult = (
       score: score.score,
       maxScore: score.maxScore,
     })),
+    goalScores: goalOrder
+      .filter((goalId) => goalMap.has(goalId))
+      .map((goalId) => {
+        const score = goalMap.get(goalId)!;
+        return {
+          goalId,
+          label: sloLabels[goalId] ?? goalId,
+          level: score.level,
+          score: score.score,
+          maxScore: score.maxScore,
+          percentage: score.maxScore === 0 ? 0 : Math.round((score.score / score.maxScore) * 100),
+        };
+      }),
   };
 };
 

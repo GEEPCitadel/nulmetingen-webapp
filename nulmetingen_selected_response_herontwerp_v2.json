@@ -1,0 +1,2793 @@
+{
+  "schemaVersion": "dg-nulmetingen-revision-2026-05-25",
+  "status": "werkversie voor Codex-implementatie en pilotreview",
+  "sourceBase": "nulmetingen_selected_response_herontwerp_v1.md",
+  "changeProposal": "wijzigingsvoorstel_nulmetingen_na_claude.md",
+  "validityClaim": "De nulmetingen Digitale Geletterdheid zijn validiteitsgericht ontworpen als formatieve en diagnostische instrumenten. Ze zijn geschikt als werkversie voor pilotafname en klasdiagnose, maar nog niet als gevalideerd meetinstrument. De resultaten mogen voorlopig niet worden gebruikt voor cijfers, normering of harde individuele beheersingsuitspraken.",
+  "designDecisions": {
+    "useOfScores": [
+      "formatief en diagnostisch",
+      "geen cijfer",
+      "geen normatieve labels",
+      "bedoeld voor klasdiagnose, onderwijsontwikkeling, leerlingreflectie en vergelijking tussen zelfinschatting en score"
+    ],
+    "reporting": "Leerlingen zien primair totaalscore en kerndoelscores voor 21, 22 en 23. Subdoelen worden alleen als voorzichtig detail getoond met puntenaantal en waarschuwing.",
+    "subgoalWarning": "Dit onderdeel is gebaseerd op een beperkt aantal vragen of taken. Zie dit als een eerste aanwijzing, niet als een volledig oordeel over wat je kunt.",
+    "programming22B": "Kerndoel 22B wordt niet via selected-response-items gemeten. Programmeren en computationele denkstrategieën worden gemeten via PT7.",
+    "unknownOption": "Ik weet het niet. scoort 0, staat onderaan, is exclusief en wordt apart geregistreerd als responseType unknown.",
+    "privacy": "Privacyvriendelijk en dataminimaliserend ontworpen; geen leerlingnaam, e-mailadres of leerlingnummer opslaan."
+  },
+  "privacyAndTokens": {
+    "classToken": "staat in de startlink, niet herleidbaar voor leerlingen",
+    "classId": "interne verwijzing naar klas",
+    "anonymousAttemptId": "willekeurige poging-id",
+    "store": [
+      "assessmentId",
+      "classId",
+      "anonymousAttemptId",
+      "startedAt",
+      "completedAt",
+      "selfAssessmentScore",
+      "itemResponses",
+      "performanceTaskResponses",
+      "scoreSummary"
+    ],
+    "doNotStore": [
+      "leerlingnaam",
+      "e-mailadres",
+      "leerlingnummer",
+      "vrije persoonsgegevens"
+    ]
+  },
+  "selfAssessment": {
+    "question": "Hoe hoog schat je je eigen digitale geletterdheid in?",
+    "helpText": "Schuif het bolletje naar jouw keuze. 0 betekent: ik kan dit bijna niet. 100 betekent: ik kan dit heel goed.",
+    "scale": {
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    "countsTowardScore": false
+  },
+  "resultPage": {
+    "totalScoreText": "Je score is het percentage punten dat je op deze nulmeting hebt behaald. Dit is geen cijfer en geen volledig oordeel over wat jij digitaal kunt.",
+    "mainReports": [
+      "selfAssessmentPercent",
+      "actualPercent",
+      "comparisonWithoutNormativeLabels",
+      "coreGoalScores21_22_23"
+    ],
+    "coreGoalTexts": {
+      "21": "Bij kerndoel 21 behaalde je X van Y punten. Dit geeft een eerste beeld van hoe je digitale technologie en digitale media inzet.",
+      "22": "Bij kerndoel 22 behaalde je X van Y punten. Dit onderdeel bestaat vooral uit taken waarin je iets maakt of programmeert.",
+      "23": "Bij kerndoel 23 behaalde je X van Y punten. Dit geeft een eerste beeld van hoe je veilig, bewust en verantwoordelijk handelt in digitale situaties."
+    },
+    "subgoalDetailTemplate": "Detail bij 21B — Digitale media en informatie: X van Y punten. Dit onderdeel is gebaseerd op een beperkt aantal vragen of taken. Zie dit als een eerste aanwijzing, niet als een volledig oordeel.",
+    "pdfDownload": true,
+    "closingCheckbox": "Ik heb mijn scoreoverzicht opgeslagen en ik sluit nu de zelfscan af."
+  },
+  "sloLabels": {
+    "21": "De leerling zet digitale technologie en digitale media in.",
+    "21A": "De leerling zet digitale systemen functioneel in.",
+    "21B": "De leerling navigeert doelgericht in het digitale media- en informatielandschap voor het verwerven en verwerken van informatie.",
+    "21C": "De leerling verkent het gebruik van data en dataverwerking.",
+    "21D": "De leerling verkent mogelijkheden en beperkingen van AI.",
+    "22": "De leerling creëert digitale producten.",
+    "22A": "De leerling gebruikt passende werkwijzen bij het creëren en gebruiken van verschillende typen digitale producten.",
+    "22B": "De leerling programmeert een computerprogramma met behulp van computationele denkstrategieën.",
+    "23": "De leerling participeert in de gedigitaliseerde wereld.",
+    "23A": "De leerling gaat veilig om met digitale systemen, data en de privacy van zichzelf en anderen.",
+    "23B": "De leerling maakt weloverwogen keuzes bij het gebruik van digitale technologie en digitale media.",
+    "23C": "De leerling analyseert hoe digitale technologie, digitale media en de samenleving elkaar wederzijds beïnvloeden."
+  },
+  "coverage": {
+    "selectedResponsePerVersion": {
+      "lj1-vmbo": {
+        "23A": 2,
+        "21A": 1,
+        "21B": 2,
+        "21C": 1,
+        "21D": 1,
+        "22A": 1,
+        "23B": 1,
+        "23C": 1
+      },
+      "lj1-hv": {
+        "23A": 2,
+        "21A": 1,
+        "21B": 2,
+        "21C": 1,
+        "21D": 1,
+        "22A": 1,
+        "23B": 1,
+        "23C": 1
+      },
+      "lj3-vmbo": {
+        "23A": 2,
+        "21A": 1,
+        "21B": 2,
+        "21C": 1,
+        "21D": 1,
+        "22A": 1,
+        "23B": 1,
+        "23C": 1
+      },
+      "lj3-hv": {
+        "23A": 2,
+        "21A": 1,
+        "21B": 2,
+        "21C": 1,
+        "21D": 1,
+        "22A": 1,
+        "23B": 1,
+        "23C": 1
+      }
+    },
+    "combinedDomainBalance": [
+      {
+        "subgoal": "21A",
+        "srCoverage": "aanwezig",
+        "ptCoverage": "sterk via PT1/PT2/PT6",
+        "interpretation": "Breed gemeten via kennis en handelen."
+      },
+      {
+        "subgoal": "21B",
+        "srCoverage": "aanwezig",
+        "ptCoverage": "beperkt",
+        "interpretation": "Vooral via SR."
+      },
+      {
+        "subgoal": "21C",
+        "srCoverage": "aanwezig",
+        "ptCoverage": "sterk via PT4",
+        "interpretation": "Via SR en spreadsheettaak."
+      },
+      {
+        "subgoal": "21D",
+        "srCoverage": "aanwezig",
+        "ptCoverage": "beperkt via PT8 leerjaar 3",
+        "interpretation": "Vooral via SR en online-media-context."
+      },
+      {
+        "subgoal": "22A",
+        "srCoverage": "aanwezig",
+        "ptCoverage": "beperkt/indirect",
+        "interpretation": "Vooral via SR."
+      },
+      {
+        "subgoal": "22B",
+        "srCoverage": "niet aanwezig",
+        "ptCoverage": "sterk via PT7",
+        "interpretation": "Bewust performance-only."
+      },
+      {
+        "subgoal": "23A",
+        "srCoverage": "aanwezig",
+        "ptCoverage": "via PT3/PT6/PT8",
+        "interpretation": "Via SR en handelen."
+      },
+      {
+        "subgoal": "23B",
+        "srCoverage": "aanwezig",
+        "ptCoverage": "via PT8",
+        "interpretation": "Via SR en handelen."
+      },
+      {
+        "subgoal": "23C",
+        "srCoverage": "aanwezig",
+        "ptCoverage": "beperkt via PT8",
+        "interpretation": "Vooral via SR."
+      }
+    ]
+  },
+  "selectedResponseItems": [
+    {
+      "id": "lj1v-sr1-pw-passphrase",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "23A",
+      "construct": "wachtwoordzin",
+      "title": "Wachtwoordzin",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Welk wachtwoord is het veiligst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "MijnKleineKatSlaaptOnderDeBank",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Nora2012SchoolLent",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Welkom!!2026@@",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Qwerty12345!",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "Verbeterde huidige vraag + DigiCheck-variant",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "A is een lange wachtwoordzin zonder voorspelbare persoonlijke gegevens of toetsenbordpatroon. B lijkt lang, maar bevat voorspelbare persoonlijke of schoolcontext. C gebruikt speciale tekens maar blijft patroonmatig. D bevat een bekend toetsenbordpatroon.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1v-sr2-https",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "23A",
+      "construct": "slotje en https",
+      "title": "Slotje en https",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je ziet een slotje en `https://` voor een webadres. Wat betekent dat?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De verbinding met de website is versleuteld.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De website is altijd eerlijk.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De website is altijd van school.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De website bewaart nooit gegevens.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "DigiCheck-variant + huidige HTTPS-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet basisbegrip van HTTPS in eenvoudige taal. De vraag maakt nog geen brede betrouwbaarheidsclaim; in hogere leerjaren wordt die nuance explicieter gemaakt.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1v-sr3-phone",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21A",
+      "construct": "trage telefoon",
+      "title": "Trage telefoon",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "De telefoon van Youssef is traag. Wat helpt meestal zonder foto’s of accounts te wissen?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ongebruikte apps of downloads opruimen en updates installeren.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De telefoon in vliegtuigstand zetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Het toetsenbordgeluid uitzetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een populaire game opnieuw installeren.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "Verbeterde huidige vraag + DigiCheck-variant telefoon van Stan",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet praktisch systeemgebruik en probleemoplossing bij een herkenbaar apparaatprobleem. De afleiders zijn mogelijk klinkende, maar onvoldoende passende acties; geen afleider wordt rechtstreeks uitgesloten door de vraagstam.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1v-sr4-official-source",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21B",
+      "construct": "officiële bron controleren",
+      "title": "Officiële bron controleren",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "In de groepsapp staat dat school morgen dicht is door storm. Welke bron controleer je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Een bericht van school in de officiële app of mail.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Een screenshot in de groepsapp zonder afzender.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Een reactie onder een video van iemand uit een andere stad.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een fanaccount met veel likes.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item, aangepast",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet bronbetrouwbaarheid in een herkenbare context. Geen internetgebruik nodig tijdens de afname.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1v-sr5-algorithm",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21B",
+      "construct": "aanbevelingen",
+      "title": "Aanbevelingen",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Luna kijkt een paar video's over voetbal. Daarna ziet ze steeds meer voetbalvideo's. Hoe komt dat meestal?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De app gebruikt haar kijkgedrag om nieuwe video's te kiezen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De maker van een video bepaalt precies welke leerling de video ziet.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Iedereen uit haar klas krijgt dezelfde aanbevelingen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Het komt alleen door het tijdstip van de dag.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Verbeterde huidige algoritmevraag + nieuw itembank-item",
+      "anchorStatus": "replaceable",
+      "validityNote": "Toetst dat leerlingen personalisatie door platforms herkennen. Dit sluit aan bij sociale media die aandacht trekken en vasthouden.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj1v-sr6-data-poll",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21C",
+      "construct": "kleine poll",
+      "title": "Kleine poll",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "In een poll stemmen 8 van de 25 leerlingen uit jouw klas op voetbal. Kun je dan zeggen dat voetbal de populairste sport van de hele school is?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Nee, de groep is te klein en komt maar uit één klas.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Ja, want 8 stemmen is altijd genoeg.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Ja, als de poll online stond.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Nee, online polls tellen nooit mee.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet 21C op basisniveau: beperkte data mag je niet te breed uitleggen.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1v-sr7-ai-check",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21D",
+      "construct": "ai controleren",
+      "title": "AI controleren",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een chatbot geeft een antwoord voor je werkstuk. Je weet niet of het klopt. Wat kun je het best doen?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ik controleer het in een betrouwbare andere bron.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Ik gebruik het meteen, want het klinkt netjes.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Ik vraag dezelfde chatbot of hij zeker is.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Ik kies de langste zin uit het antwoord.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Verbeterde huidige AI-vraag",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet verantwoord en kritisch omgaan met AI zonder dat de leerling internet hoeft te gebruiken.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1v-sr8-image-rights",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "22A",
+      "construct": "afbeelding gebruiken",
+      "title": "Afbeelding gebruiken",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je vindt een mooie afbeelding voor een schoolposter. Wat doe je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Kijken of je de afbeelding mag gebruiken en de maker of bron noemen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De afbeelding gebruiken, want alles op internet is vrij.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De afbeelding kleiner maken; dan is hij van jou.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Er een filter overheen zetten; dan mag het altijd.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Verbeterde huidige auteursrechtvraag",
+      "anchorStatus": "replaceable",
+      "validityNote": "Beperkte SR-dekking van 22A zonder Creative Commons-terminologie. De vraag blijft concreet en eenduidig.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj1v-sr9-photo-consent",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "23B",
+      "construct": "foto delen",
+      "title": "Foto delen",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je maakt een foto van drie klasgenoten. Je wilt die in een sociale app zetten. Wat doe je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Vragen of iedereen op de foto dat goed vindt.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Alleen de namen weglaten; dan mag het altijd.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De foto plaatsen en verwijderen als iemand klaagt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De foto alleen in de klassenapp zetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet respectvol en verantwoordelijk online handelen in eenvoudige taal.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1v-sr10-platform",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "23C",
+      "construct": "afhankelijk van een schoolapp",
+      "title": "Afhankelijk van een schoolapp",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "De school gebruikt één app voor rooster, huiswerk en berichten. Wat is een risico?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bij een storing kunnen leerlingen tegelijk hun rooster, huiswerk en berichten niet zien.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Leerlingen moeten soms wennen aan een nieuwe knop in de app.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De school moet uitleg geven over hoe de app werkt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Leerlingen moeten soms op een andere plek controleren of er nieuws is.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Verbeterde huidige platformvraag + nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet 23C: afhankelijkheid van digitale systemen en platformen. Het item blijft basisniveau, maar de afleiders zijn minder karikaturaal.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr1-pw-passphrase",
+      "targetGroup": "lj1-hv",
+      "subgoal": "23A",
+      "construct": "wachtwoordzin",
+      "title": "Wachtwoordzin",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Welk wachtwoord is het veiligst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "DeBlauweTreinStaatNaastDeSporthal",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Daan2012SchoolLent",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Welkom!!2026@@",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "!Qw@#Er$%",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "Verbeterde huidige vraag + DigiCheck-variant",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "A is een lange wachtwoordzin zonder voorspelbare persoonlijke gegevens of patroon. B is lang maar bevat naam/jaar/schoolcontext. C en D lijken sterk door speciale tekens, maar zijn korter of patroonmatiger.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr2-https-nuance",
+      "targetGroup": "lj1-hv",
+      "subgoal": "23A",
+      "construct": "slotje en betrouwbaarheid",
+      "title": "Slotje en betrouwbaarheid",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je ziet dit webadres: 🔒 https://leerplein-voorbeeld.nl/login/rooster?groep=1h2. Welke uitspraak klopt?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De verbinding is versleuteld, maar je moet nog steeds controleren of de site echt van school is.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De website is automatisch betrouwbaar door het slotje.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De website is veilig omdat er .nl in staat.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De verbinding is onveilig omdat er een vraagteken in de link staat.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "DigiCheck-variant + analyse HTTPS-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Oplopende moeilijkheid: niet alleen herkennen van https, maar ook weten wat het wel en niet garandeert.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr3-phone-actions",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21A",
+      "construct": "trage telefoon",
+      "title": "Trage telefoon",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "Youssef zijn telefoon is traag en loopt soms vast. Kies twee acties die meestal kunnen helpen.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ongebruikte apps en bestanden opruimen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Beschikbare updates via de instellingen installeren.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De helderheid van het scherm lager zetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Het toetsenbordgeluid uitzetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Het wachtwoord van de telefoon veranderen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-set",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "DigiCheck-variant telefoon van Stan + huidige telefoonitem",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Multiple select maakt het item iets moeilijker dan VMBO leerjaar 1, maar blijft concreet.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr4-search-query",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21B",
+      "construct": "gerichte zoekopdracht",
+      "title": "Gerichte zoekopdracht",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je zoekt betrouwbare informatie over hoeveel jongeren in Nederland e-bikes gebruiken. Welke zoekopdracht helpt het best?",
+      "options": [
+        {
+          "id": "A",
+          "text": "onderzoek jongeren e-bike gebruik Nederland",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "e-bike jongeren kopen Nederland",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "jongeren fietsen school Nederland",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "elektrische fiets ervaring jongeren",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Alle inhoudelijke opties zijn vergelijkbaar qua lengte en onderwerp. A is het beste omdat deze zoekt naar onderzoek, doelgroep, onderwerp en land.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr5-feed",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21B",
+      "construct": "feed is geen steekproef",
+      "title": "Feed is geen steekproef",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je ziet op een videoplatform tien video's met dezelfde mening. Wat kun je daaruit het best afleiden?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Niet meteen dat iedereen die mening heeft; je feed kan door een algoritme zijn gekozen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Dat de mening zeker waar is.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Dat alle andere meningen zijn verwijderd.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Dat het platform geen invloed heeft op wat je ziet.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Combineert algoritmisch begrip met informatiebeoordeling. Past bij het SLO-onderdeel over aandacht en beïnvloeding door sociale media.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr6-sample",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21C",
+      "construct": "steekproef",
+      "title": "Steekproef",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een dataset bevat alleen antwoorden van leerlingen uit een klas. Waar moet je voor oppassen?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Je kunt niet zomaar zeggen dat dit voor alle leerlingen geldt.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Een klas is altijd genoeg om iets over heel Nederland te zeggen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De dataset is automatisch fout.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Meer data maakt nooit verschil.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "teacher-designed",
+      "sourceStatusOriginal": "Huidig item, licht geredigeerd",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Behoudt het sterke construct van de huidige vraag, maar de taal blijft direct.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr7-ai-startpunt",
+      "targetGroup": "lj1-hv",
+      "subgoal": "21D",
+      "construct": "ai als hulpmiddel",
+      "title": "AI als hulpmiddel",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je gebruikt AI om ideeën voor een spreekbeurt te krijgen. Wat is de beste werkwijze?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ideeën gebruiken als startpunt en feiten daarna zelf controleren.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De hele tekst inleveren zonder te lezen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alle bronnen overslaan, want AI heeft al gezocht.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Alleen vragen om langere zinnen zodat het slimmer lijkt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Nieuw itembank-item + huidige AI-verifieervraag",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet doelgericht en kritisch interacteren met AI. Minder dubbeling dan een tweede losse hallucinatiewvraag.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr8-image-source",
+      "targetGroup": "lj1-hv",
+      "subgoal": "22A",
+      "construct": "afbeelding in presentatie",
+      "title": "Afbeelding in presentatie",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je gebruikt een foto in een presentatie voor school. Wat controleer je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Of je de foto mag gebruiken en welke maker of bron je moet noemen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Of de foto veel likes heeft.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Of je de foto zwart-wit kunt maken.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Of de foto groter wordt als je hem kopieert.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Vervanging voor huidige CC-vraag",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Vervangt Creative Commons-terminologie door basisgedrag rond auteursrecht, bron- en naamsvermelding.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr9-threat-message",
+      "targetGroup": "lj1-hv",
+      "subgoal": "23B",
+      "construct": "dreigend privébericht",
+      "title": "Dreigend privébericht",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "Een klasgenoot stuurt een dreigend privébericht. Kies twee verstandige acties.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bewijs bewaren, bijvoorbeeld een screenshot.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Melden bij een mentor, ouder of vertrouwenspersoon.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Het bericht openbaar posten om steun te krijgen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Terugdreigen zodat de ander stopt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Het bericht verwijderen en doen alsof het niet is gebeurd.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-set",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet adequaat omgaan met ongepast gedrag, zonder open antwoord of rubric.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj1h-sr10-ad-profile",
+      "targetGroup": "lj1-hv",
+      "subgoal": "23C",
+      "construct": "dataprofielen en reclame",
+      "title": "Dataprofielen en reclame",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Waarom zie je soms reclame voor iets waar je net online naar zocht?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Websites en apps kunnen gedrag gebruiken om een advertentieprofiel te maken.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Je telefoon luistert altijd live mee met elk gesprek.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alle reclames zijn voor iedereen hetzelfde.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Reclame wordt gekozen door je mentor.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet maatschappelijke werking van data en platforms in herkenbare taal.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj3v-sr1-https-phishing",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "23A",
+      "construct": "slotje bij verdachte link",
+      "title": "Slotje bij verdachte link",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je krijgt een mail: 'Je cijferlijst staat klaar.' De link is 🔒 https://school-cijfers-login.example.net/controle. Wat doe je?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Niet via de link inloggen; via de officiële schoolsite of app controleren.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Wel klikken, want het slotje betekent dat de site echt van school is.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Wel klikken, want de link begint met https.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De link doorsturen naar de klas zodat iedereen kan kijken.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "DigiCheck-variant + nieuw phishing-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Oudere leerlingen krijgen de nuance dat https geen bewijs is dat de site betrouwbaar of echt is.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3v-sr2-mfa",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "23A",
+      "construct": "onverwachte inlogmelding",
+      "title": "Onverwachte inlogmelding",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je krijgt een melding: 'Wil je deze login goedkeuren?' Je probeert zelf niet in te loggen. Wat kies je?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Afwijzen en je account controleren via de officiële instellingen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Goedkeuren om van de melding af te zijn.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Goedkeuren als de melding maar een keer komt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Negeren en verder niets doen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet beschermen tegen zwakke plekken en risicobewust handelen bij accountbeveiliging.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj3v-sr3-phone-actions",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21A",
+      "construct": "telefoon versnellen",
+      "title": "Telefoon versnellen",
+      "itemType": "multiple-select",
+      "selectionLimit": 3,
+      "question": "De telefoon van Youssef is oud, traag en loopt soms vast. Kies drie acties die meestal kunnen helpen.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Oude of ongebruikte apps en bestanden opruimen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Tijdelijke bestanden of cache opruimen via de instellingen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Beschikbare systeemupdates via de instellingen installeren.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De helderheid van het scherm lager zetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Het toetsenbordgeluid uitzetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Een andere achtergrondfoto kiezen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "G",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-set",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "DigiCheck-variant telefoon van Stan",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Gebaseerd op de DigiCheck-telefoonvraag, maar met de naam Youssef en met heldere, scoreerbare keuzes.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3v-sr4-health-source",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21B",
+      "construct": "gezondheidsinformatie",
+      "title": "Gezondheidsinformatie",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je zoekt informatie over slaaptekort. Welke bron is het meest geschikt voor betrouwbare basisinformatie?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Een gezondheidswebsite van artsen of een publieke organisatie met datum en uitleg.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Een webshop die slaapdrankjes verkoopt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Een influencer die zegt dat hij nooit slaapt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een losse reactie onder een video.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Nieuw itembank-item + huidige bronkwaliteit",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Versterkt informatievaardigheid in leerjaar 3 zonder actuele links of zoekopdracht.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3v-sr5-sponsored",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21B",
+      "construct": "sponsoring herkennen",
+      "title": "Sponsoring herkennen",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een populaire gamer noemt een energiedrank 'de beste voor concentratie' en gebruikt kortingscode GAMER10. Waar moet je op letten?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Het kan reclame of sponsoring zijn.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Een kortingscode bewijst dat het product werkt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Gamers mogen geen reclame maken.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Veel volgers maken de uitspraak wetenschappelijk.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet bronbelang en commerciële beïnvloeding. Past bij mediawijsheid en is minder talig dan abstracte brondefinities.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj3v-sr6-percent",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21C",
+      "construct": "poll en conclusie",
+      "title": "Poll en conclusie",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "In een online poll stemmen 12 leerlingen uit klas 3V2. Acht leerlingen kiezen voor “meer pauze”. Een leerling zegt: “De meeste leerlingen van de hele school willen dus meer pauze.” Wat is de beste reactie?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Dat kun je niet zomaar zeggen, want de poll gaat maar over 12 leerlingen uit één klas.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Dat klopt zeker, want acht stemmen is meer dan de helft.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Dat klopt alleen als de poll op een telefoon is ingevuld.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Dat kun je nooit onderzoeken met een poll.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet 21C beter dan een kale rekensom: een dataset geeft een beperkt beeld van de werkelijkheid; conclusies moeten passen bij de groep waarover data is verzameld.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3v-sr7-ai-bias",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "21D",
+      "construct": "ai en trainingsdata",
+      "title": "AI en trainingsdata",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een AI laat vooral mannen zien als je vraagt om een afbeelding van “een directeur”. Wat is de meest waarschijnlijke oorzaak?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De AI heeft in de voorbeelden waarop hij is getraind vaak mannen in die rol gezien.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De AI kiest altijd de afbeeldingen die het vaakst zijn aangeklikt door de gebruiker.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De AI gebruikt alleen de woorden uit jouw vraag en geen eerdere voorbeelden.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De AI maakt altijd een neutrale keuze als je geen extra uitleg geeft.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Verbeterde huidige AI-biasvraag",
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet begrip van bias en trainingsdata zonder stereotyperende of absurde afleiders. B, C en D zijn plausibele maar onjuiste vereenvoudigingen.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj3v-sr8-music-rights",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "22A",
+      "construct": "muziek onder video",
+      "title": "Muziek onder video",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je maakt een video voor school en wilt een bekend liedje eronder zetten en online plaatsen. Wat is het best?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Controleren of je het liedje mag gebruiken of rechtenvrije muziek kiezen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Het liedje zachter zetten; dan geldt auteursrecht niet.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alleen de eerste minuut gebruiken; dat mag altijd.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De titel niet noemen, dan merkt niemand het.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "replaceable",
+      "validityNote": "Beperkte, praktische 22A-dekking zonder Creative Commons-terminologie.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj3v-sr9-fake-account",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "23B",
+      "construct": "nepaccount melden",
+      "title": "Nepaccount melden",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "Iemand maakt een account aan met jouw naam en foto. Kies twee goede acties.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Het account rapporteren bij het platform.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Bewijs bewaren, bijvoorbeeld screenshots van profiel en berichten.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Zelf ook een nepaccount van die persoon maken.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Iedereen vragen het account te volgen om te kijken wat er gebeurt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Je echte account verwijderen zonder iets te melden.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-set",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet adequaat reageren op ongepast online gedrag. Multiple select past bij leerjaar 3.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3v-sr10-digital-chances",
+      "targetGroup": "lj3-vmbo",
+      "subgoal": "23C",
+      "construct": "online formulier",
+      "title": "Online formulier",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een stagebedrijf laat sollicitanten alleen via een ingewikkeld online formulier reageren. Wat kan een gevolg zijn?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Mensen met minder digitale vaardigheden kunnen moeilijker meedoen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Iedereen krijgt automatisch dezelfde kans.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Solliciteren wordt daardoor altijd eerlijker.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Het bedrijf heeft dan geen privacyregels nodig.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet digitale ongelijkheid in een beroepsgerichte context, passend bij VMBO leerjaar 3.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj3h-sr1-https-limits",
+      "targetGroup": "lj3-hv",
+      "subgoal": "23A",
+      "construct": "grenzen van https",
+      "title": "Grenzen van https",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je ziet bij een website een slotje en `https://`. Wat weet je dan wél en wat weet je nog niet zeker?",
+      "options": [
+        {
+          "id": "A",
+          "text": "De verbinding is versleuteld, maar je weet nog niet zeker of de website betrouwbaar is.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "De website is van school, omdat er een slotje staat.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De informatie op de website is gecontroleerd, omdat de verbinding veilig is.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De website kan geen gegevens verzamelen, omdat er `https://` staat.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "DigiCheck-variant + analyse HTTPS-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet geavanceerder begrip van HTTPS: wel transportbeveiliging, geen algemene betrouwbaarheids- of waarheidsclaim. Past bij leerjaar 3 havo/vwo.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3h-sr2-datalek",
+      "targetGroup": "lj3-hv",
+      "subgoal": "23A",
+      "construct": "wachtwoordlek en hergebruik",
+      "title": "Wachtwoordlek en hergebruik",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een website waar jij een account hebt, meldt een datalek. Je gebruikte daar hetzelfde wachtwoord als voor school. Wat is de beste actie?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Het schoolwachtwoord direct wijzigen en waar mogelijk tweestapsverificatie controleren.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Alleen het wachtwoord van de gelekte website wijzigen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Wachten tot school zegt dat er iets mis is.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Hetzelfde wachtwoord houden als het sterk genoeg lijkt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Vervolgt het wachtwoordanker op hoger niveau: niet alleen sterkte, maar ook hergebruik en schade na een lek.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3h-sr3-phone-actions",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21A",
+      "construct": "telefoon en onderhoud",
+      "title": "Telefoon en onderhoud",
+      "itemType": "multiple-select",
+      "selectionLimit": 3,
+      "question": "Youssef zijn telefoon wordt traag en loopt vaak vast. Kies drie acties die het meest logisch zijn.",
+      "options": [
+        {
+          "id": "A",
+          "text": "Onnodige apps en grote bestanden opruimen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Cache of tijdelijke gegevens opruimen via instellingen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Systeem en apps updaten via officiële instellingen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Schermhelderheid lager zetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Alle meldingen aanzetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Toetsenbordgeluid uitzetten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "G",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-set",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "digicheck-inspired",
+      "sourceStatusOriginal": "DigiCheck-variant telefoon van Stan",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "DigiCheck-concept wordt gebruikt als functioneel systeemonderhoud, met precies drie juiste keuzes.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3h-sr4-triangulation",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21B",
+      "construct": "claim controleren",
+      "title": "Claim controleren",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je vindt een opvallende claim over een nieuwe schoolregel. Welke controle is het sterkst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Controleren of de school zelf of meerdere betrouwbare bronnen dezelfde regel melden.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Kijken of de post veel gedeeld is.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Kijken of de tekst boos klinkt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "De claim geloven als er een screenshot bij staat.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet triangulatie en broncontrole zonder afhankelijkheid van actuele websites.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3h-sr5-filterbubble",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21B",
+      "construct": "filterbubbel",
+      "title": "Filterbubbel",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je nieuwsfeed toont vooral berichten die jouw mening bevestigen. Wat is verstandig?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ook actief zoeken naar betrouwbare bronnen met andere invalshoeken.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Aannemen dat bijna iedereen jouw mening deelt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Alle bronnen met andere meningen blokkeren.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Alleen nog reacties onder posts lezen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Nieuw itembank-item + huidige filterbubblevraag",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Verbindt algoritmische selectie met eigen interpretatie en voorkeuren, passend bij havo/vwo.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3h-sr6-graph-scale",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21C",
+      "construct": "klachten naar verhouding",
+      "title": "Klachten naar verhouding",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Een grafiek vergelijkt het aantal klachten over twee apps. App A: 20 klachten bij 1.000 gebruikers. App B: 50 klachten bij 10.000 gebruikers. Welke conclusie past het best bij deze data?",
+      "options": [
+        {
+          "id": "A",
+          "text": "App A heeft naar verhouding meer klachten dan App B.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "App B heeft naar verhouding meer klachten, want 50 is meer dan 20.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De apps hebben evenveel klachten, want beide apps hebben klachten.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Je kunt nooit naar verhouding kijken bij gebruikersaantallen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet datageletterdheid via verhouding en interpretatie van gebruikersdata. Het rekenen staat in dienst van een dataconclusie.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj3h-sr7-ai-privacy",
+      "targetGroup": "lj3-hv",
+      "subgoal": "21D",
+      "construct": "ai en persoonsgegevens",
+      "title": "AI en persoonsgegevens",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "Je wilt een AI-tool feedback laten geven op een verslag over een klasgenoot. Kies twee dingen die je beter eerst verwijdert of vervangt.",
+      "options": [
+        {
+          "id": "A",
+          "text": "De volledige naam van de klasgenoot.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Medische of andere persoonlijke details over de klasgenoot.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "De vraag: 'Maak de tekst duidelijker.'",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een algemene omschrijving zoals 'een leerling'.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Een neutrale alinea over de opbouw van het verslag.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "F",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-set",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item",
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet verantwoord en kritisch interacteren met AI, met privacy als concrete grens.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj3h-sr8-remix-rights",
+      "targetGroup": "lj3-hv",
+      "subgoal": "22A",
+      "construct": "afbeelding aanpassen",
+      "title": "Afbeelding aanpassen",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je wilt een afbeelding van internet aanpassen voor een online poster. Wat controleer je eerst?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Of de maker dit toestaat, welke bronvermelding nodig is en of bewerken en delen mag.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Of de afbeelding groot genoeg is om de maker niet te hoeven noemen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Of je de kleuren sterk kunt veranderen; dan is het altijd eigen werk.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Of je de poster alleen in een groepsapp deelt; dan gelden geen regels.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Vervanging voor huidige CC-BY-SA-vraag",
+      "anchorStatus": "replaceable",
+      "validityNote": "Houdt 22A praktisch en vermijdt Creative Commons-afkortingen als toetsterm.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    },
+    {
+      "id": "lj3h-sr9-private-photo",
+      "targetGroup": "lj3-hv",
+      "subgoal": "23B",
+      "construct": "privéfoto zonder toestemming",
+      "title": "Privéfoto zonder toestemming",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Iemand deelt een privéfoto van een klasgenoot in een besloten groep. Die klasgenoot gaf geen toestemming. Wat is het beste?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Niet verder delen, rapporteren en hulp inschakelen.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Alleen bewaren en verder niets doen.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Doorsturen naar een kleiner groepje dat je vertrouwt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Een grap maken zodat de spanning daalt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "new-itembank",
+      "sourceStatusOriginal": "Nieuw itembank-item, minder expliciet geformuleerd",
+      "anchorStatus": "concept-anchor",
+      "validityNote": "Meet grenzen, toestemming en verantwoordelijk online handelen bij een serieuze situatie.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "ready-for-pilot"
+    },
+    {
+      "id": "lj3h-sr10-regulation",
+      "targetGroup": "lj3-hv",
+      "subgoal": "23C",
+      "construct": "regels voor platforms",
+      "title": "Regels voor platforms",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Waarom maken landen en de EU regels voor grote online platforms?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Omdat platforms veel invloed hebben op informatie, handel en gegevens van burgers.",
+          "isCorrect": true,
+          "isUnknownOption": false
+        },
+        {
+          "id": "B",
+          "text": "Omdat regels ervoor zorgen dat platforms nooit fouten kunnen maken.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "C",
+          "text": "Omdat gebruikers dan zelf niet meer hoeven na te denken over privacy.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "D",
+          "text": "Omdat platforms alleen betrouwbaar zijn als ze in Europa zijn gemaakt.",
+          "isCorrect": false,
+          "isUnknownOption": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "isCorrect": false,
+          "isUnknownOption": true
+        }
+      ],
+      "correctAnswer": "A",
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true,
+        "responseTypeValues": [
+          "correct",
+          "incorrect",
+          "unknown",
+          "skipped"
+        ]
+      },
+      "sourceStatus": "current-revised",
+      "sourceStatusOriginal": "Verbeterde huidige reguleringsvraag + nieuw itembank-item",
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet 23C: regulering, platformmacht en bescherming van publieke waarden. De afleiders zijn plausibeler als misconcepties, maar blijven eenduidig fout.",
+      "distractorNote": "Afleiders zijn bedoeld als plausibele misconcepties; de optie “Ik weet het niet.” is exclusief en scoort 0.",
+      "languageNote": "Leerlingtekst gecontroleerd op eenvoudige formulering, interpunctie en Nederlandse diakrieten.",
+      "pilotReviewStatus": "needs-review"
+    }
+  ],
+  "performanceTaskMetadata": [
+    {
+      "id": "pt1-files",
+      "subgoal": "21A",
+      "construct": "bestanden en mappen beheren",
+      "evidenceType": "performance-task",
+      "scoringEvidence": "eindtoestand van mappen, bestandsnamen en bestandslocaties",
+      "validityNote": "Praktisch bewijs voor functioneel gebruik van digitale systemen."
+    },
+    {
+      "id": "pt2-mail",
+      "subgoal": "21A",
+      "construct": "e-mail functioneel gebruiken",
+      "evidenceType": "performance-task",
+      "scoringEvidence": "ontvanger, cc waar nodig, onderwerp, bijlage en verzendactie",
+      "validityNote": "Procedureel bewijs voor digitale communicatie en systeemgebruik."
+    },
+    {
+      "id": "pt3-security",
+      "subgoal": "23A",
+      "construct": "account, apparaat en verbinding beveiligen",
+      "evidenceType": "performance-task",
+      "scoringEvidence": "gekozen veilige acties bij verdachte meldingen",
+      "validityNote": "Komt voor in leerjaar 3; meet risicobewust handelen."
+    },
+    {
+      "id": "pt4-data",
+      "subgoal": "21C",
+      "construct": "data sorteren, filteren en interpreteren",
+      "evidenceType": "performance-task",
+      "scoringEvidence": "juiste code of uitkomst na filter- en sorteerhandeling",
+      "validityNote": "Gedragsbewijs voor dataverwerking in een spreadsheetcontext."
+    },
+    {
+      "id": "pt6-screen-share",
+      "subgoal": "23A",
+      "construct": "veilig en doelgericht schermdelen",
+      "evidenceType": "performance-task",
+      "scoringEvidence": "delen via venster, juiste vensterkeuze en computergeluid",
+      "validityNote": "Meet samenwerking en privacybewust handelen in een videovergadering."
+    },
+    {
+      "id": "pt7-programming",
+      "subgoal": "22B",
+      "construct": "programmeren met computationele denkstrategieën",
+      "evidenceType": "performance-task",
+      "scoringEvidence": "gekozen blokken, volgorde, nesting en/of eindgedrag",
+      "validityNote": "22B wordt bewust via PT7 gemeten en niet via SR-items.",
+      "anchorStatus": "concept-anchor"
+    },
+    {
+      "id": "pt8-online-behaviour",
+      "subgoal": "23B",
+      "construct": "online gedrag, misleiding, delen en melden",
+      "evidenceType": "performance-task",
+      "scoringEvidence": "gekozen beoordeling, signalen, deelinstellingen en veilige acties",
+      "validityNote": "Meet digitaal burgerschap en online veiligheidsbeslissingen in context."
+    }
+  ],
+  "codexImplementationInstruction": "Implementeer de nulmetingen Digitale Geletterdheid op basis van de herziene Markdown- en JSON-bestanden. 22B wordt uitsluitend gemeten via PT7. Toon primair totaalscore en kerndoelscores 21/22/23. Toon subdoelscores alleen als voorzichtig detail met puntenaantal. Gebruik geen normatieve labels. Registreer 'Ik weet het niet' apart zonder bonuspunten. Gebruik classToken/classId/anonymousAttemptId en sla geen leerlingidentiteit op. Gebruik anchorStatus-metadata voor beheer. Controleer alle leerlingteksten op correct Nederlands en diakrieten."
+}
