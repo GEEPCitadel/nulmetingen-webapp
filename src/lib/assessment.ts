@@ -26,6 +26,16 @@ const randomizeOptions = (ids: string[]) => {
 };
 
 const resultKey = (sectionId: string, itemId: string) => `${sectionId}:${itemId}`;
+const interactionOrderKey = (
+  sectionId: string,
+  itemId: string,
+  screenId: string,
+  groupId: string,
+  kind: "cards" | "options",
+) => `${sectionId}:${itemId}:${screenId}:${groupId}:${kind}`;
+
+const isUnknownOption = (option: { id: string; label: string }) =>
+  option.id.endsWith("-unknown") || option.label.trim().toLowerCase() === "ik weet het niet.";
 
 export const getMappingCodes = (mapping: CodeMapping): string[] =>
   mapping.codes.map((code) => code.trim()).filter(Boolean);
@@ -36,6 +46,29 @@ const createPresentedOrders = (assessment: AssessmentVersion) => {
   assessment.sections.forEach((section) => {
     section.items.forEach((item) => {
       if (!item.options) {
+        const interactionTask = item.securityTask ?? item.socialTask;
+        interactionTask?.screens.forEach((screen) => {
+          screen.groups.forEach((group) => {
+            if (group.cards) {
+              presentedOrders[
+                interactionOrderKey(section.id, item.id, screen.id, group.id, "cards")
+              ] = randomizeOptions(group.cards.map((card) => card.id));
+            }
+            if (group.options) {
+              const unknownOptionIds = group.options
+                .filter(isUnknownOption)
+                .map((option) => option.id);
+              const randomizedOptionIds = randomizeOptions(
+                group.options
+                  .filter((option) => !isUnknownOption(option))
+                  .map((option) => option.id),
+              );
+              presentedOrders[
+                interactionOrderKey(section.id, item.id, screen.id, group.id, "options")
+              ] = randomizedOptionIds.concat(unknownOptionIds);
+            }
+          });
+        });
         return;
       }
 
@@ -145,6 +178,18 @@ export const getPresentedOrder = (
   sectionId: string,
   itemId: string,
 ) => session.presentedOrders[resultKey(sectionId, itemId)] ?? [];
+
+export const getPresentedInteractionOrder = (
+  session: AssessmentSession,
+  sectionId: string,
+  itemId: string,
+  screenId: string,
+  groupId: string,
+  kind: "cards" | "options",
+) =>
+  session.presentedOrders[
+    interactionOrderKey(sectionId, itemId, screenId, groupId, kind)
+  ] ?? [];
 
 const isSameAnswer = (
   selectedAnswer: SelectedAnswer,
@@ -479,7 +524,7 @@ const scoreTeamsTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) =>
       return selectedWindow === item.teamsTask?.correctWindow;
     }
     if (condition === "notWholeScreen") {
-      return Boolean(selectedWindow) && selectedWindow !== "Hele scherm";
+      return Boolean(selectedWindow) && selectedWindow !== "Hele scherm" && selectedWindow !== "Scherm";
     }
     return false;
   };

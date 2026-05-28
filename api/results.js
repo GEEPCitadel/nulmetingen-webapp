@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
+const aggregateOnlyItemIds = new Set(["lj1v-sr4-official-source-v36"]);
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
@@ -90,6 +91,46 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS anonymous_attempt_id`;
 };
 
+const aggregateOptionSelections = (session) => {
+  const counters = {};
+  for (const itemId of aggregateOnlyItemIds) {
+    counters[itemId] = {
+      attempts: 0,
+      selectedCountsByOptionId: {},
+      correctCount: 0,
+      unknownCount: 0,
+    };
+  }
+
+  for (const result of session?.results ?? []) {
+    if (!aggregateOnlyItemIds.has(result.itemId)) continue;
+    const counter = counters[result.itemId];
+    const selectedIds = Array.isArray(result.selectedAnswer)
+      ? result.selectedAnswer.map(String)
+      : result.selectedAnswer == null
+        ? []
+        : [String(result.selectedAnswer)];
+    counter.attempts += 1;
+    if (result.isCorrect === true) counter.correctCount += 1;
+    if (selectedIds.includes("unknown")) counter.unknownCount += 1;
+    for (const optionId of selectedIds) {
+      counter.selectedCountsByOptionId[optionId] =
+        (counter.selectedCountsByOptionId[optionId] ?? 0) + 1;
+    }
+  }
+
+  return counters;
+};
+
+const redactAggregateOnlyAnswer = (entry) =>
+  aggregateOnlyItemIds.has(entry?.itemId)
+    ? {
+        ...entry,
+        selectedAnswer: "[aggregate-only]",
+        finalState: undefined,
+      }
+    : entry;
+
 const anonymizeSession = (session, classCode, classId) => ({
   ...session,
   accessCode: session.id,
@@ -101,6 +142,9 @@ const anonymizeSession = (session, classCode, classId) => ({
     privacyConsent: session.metadata?.privacyConsent === true,
     selfAssessmentScore: session.metadata?.selfAssessmentScore,
   },
+  results: (session.results ?? []).map(redactAggregateOnlyAnswer),
+  eventLogs: (session.eventLogs ?? []).map(redactAggregateOnlyAnswer),
+  aggregateOptionSelections: aggregateOptionSelections(session),
 });
 
 const listClassResults = async (sql) => {
@@ -193,6 +237,7 @@ export default async function handler(request, response) {
     }
 
     const anonymousSession = anonymizeSession(session, classCode, classId);
+    const persistedEventLogs = (anonymousSession.eventLogs ?? []).map(redactAggregateOnlyAnswer);
 
     await sql`
       INSERT INTO assessment_results (
@@ -221,7 +266,7 @@ export default async function handler(request, response) {
         ${session.startedAt ? new Date(session.startedAt).toISOString() : null},
         ${new Date(session.completedAt).toISOString()},
         ${JSON.stringify({ session: anonymousSession, result })}::jsonb,
-        ${JSON.stringify(session.eventLogs ?? [])}::jsonb
+        ${JSON.stringify(persistedEventLogs)}::jsonb
       )
       ON CONFLICT (session_id)
       DO UPDATE SET

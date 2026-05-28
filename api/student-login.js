@@ -1,6 +1,36 @@
 import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
+const testStudents = {
+  TESTVMBO1: {
+    participant_label: "Testleerling VMBO leerjaar 1",
+    access_code: "TESTVMBO1",
+    class_code: "test-vmbo1",
+    version_id: "lj1-vmbo",
+    status: "not_started",
+  },
+  TESTHV1: {
+    participant_label: "Testleerling HAVO/VWO leerjaar 1",
+    access_code: "TESTHV1",
+    class_code: "test-hv1",
+    version_id: "lj1-hv",
+    status: "not_started",
+  },
+  TESTVMBO3: {
+    participant_label: "Testleerling VMBO leerjaar 3",
+    access_code: "TESTVMBO3",
+    class_code: "test-vmbo3",
+    version_id: "lj3-vmbo",
+    status: "not_started",
+  },
+  TESTHV3: {
+    participant_label: "Testleerling HAVO/VWO leerjaar 3",
+    access_code: "TESTHV3",
+    class_code: "test-hv3",
+    version_id: "lj3-hv",
+    status: "not_started",
+  },
+};
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
@@ -70,18 +100,32 @@ export default async function handler(request, response) {
     return;
   }
 
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    response.status(500).json({ ok: false });
-    return;
-  }
-
   try {
     const body = await readJsonBody(request);
     const code = typeof body.code === "string" ? body.code.trim().toUpperCase() : "";
+    const testStudent = testStudents[code];
 
-    if (!/^[A-Z0-9]{6}$/.test(code)) {
+    if (!/^[A-Z0-9]{6,12}$/.test(code)) {
       response.status(400).json({ ok: false });
+      return;
+    }
+
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      if (testStudent) {
+        response.status(200).json({
+          ok: true,
+          status: "not_started",
+          student: {
+            participantLabel: testStudent.participant_label,
+            accessCode: testStudent.access_code,
+            classCode: testStudent.class_code,
+            versionId: testStudent.version_id,
+          },
+        });
+        return;
+      }
+      response.status(500).json({ ok: false });
       return;
     }
 
@@ -94,7 +138,7 @@ export default async function handler(request, response) {
       WHERE access_code = ${code}
       LIMIT 1
     `;
-    const student = rows[0];
+    const student = rows[0] ?? testStudent;
 
     if (!student || !validVersionIds.has(student.version_id)) {
       response.status(404).json({ ok: false });

@@ -116,8 +116,8 @@ body {
   --t-panel-ink: #1f3f4f;
   --t-accent:    var(--p3-orange-d);
   --t-accent-deep: var(--p3-purple);
-  --t-action:    var(--p3-orange-d);
-  --t-action-hover: #c46e00;
+  --t-action:    var(--p3-purple);
+  --t-action-hover: #4f1c66;
   --t-gradient:  linear-gradient(95deg, var(--p3-yellow) 0%, var(--p3-orange) 50%, var(--p3-orange-d) 100%);
   --t-photo-a: var(--p3-yellow); --t-photo-b: var(--p3-orange-d);
   --t-slinger: url("/brand/shapes/slinger-3.png");
@@ -454,20 +454,6 @@ body {
   transform: rotate(-6deg);
   filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--p1-purple) 25%, transparent));
 }
-.hero-shapes .shape-payoff {
-  position: absolute;
-  right: 8%;
-  bottom: 10%;
-  z-index: 4;
-  font-family: var(--font-script);
-  font-weight: 400;
-  font-size: clamp(1.6rem, 2.4vw, 2.4rem);
-  line-height: 1.05;
-  color: var(--p1-purple);
-  text-align: right;
-  letter-spacing: .005em;
-  transform: rotate(-4deg);
-}
 
 /* Placeholder voor het oude .hero-photo blok: nu ongebruikt, maar als
    een andere view nog .hero-photo gebruikt blijft het opvallend. */
@@ -731,8 +717,7 @@ body {
   background: conic-gradient(var(--t-accent) calc(var(--pct,0) * 1%), rgba(255,255,255,.5) 0);
   box-shadow: inset 0 0 0 12px rgba(255,255,255,.5), var(--shadow-md);
 }
-/* "Je schittert" — ster-vorm uit het brandbook als celebratory accent
-   linksboven van de meter, met drop-shadow in de palet-deep kleur. */
+/* Ster-vorm uit het brandbook als celebratory accent linksboven van de meter. */
 .rd-score-meter .schitter-ster {
   position: absolute;
   top: -22px; left: -28px;
@@ -990,6 +975,77 @@ body {
 }
 .filter-chip:hover { color: var(--c-ink); }
 .filter-chip.active { background: var(--t-accent-deep); color: #fff; border-color: var(--t-accent-deep); }
+.filter-chip.disabled {
+  opacity: .5;
+  pointer-events: none;
+}
+.admin-filter-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--c-bg-soft);
+  border: 1px solid var(--c-line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: .82rem;
+  color: var(--c-ink-soft);
+}
+.admin-filter-select span {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.admin-filter-select select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--c-ink);
+  font: inherit;
+  cursor: pointer;
+  padding-right: 4px;
+}
+.admin-filter-select select:focus { outline: none; }
+.admin-filter-menu,
+.admin-export-menu {
+  position: relative;
+}
+.admin-filter-menu summary,
+.admin-export-menu summary {
+  list-style: none;
+}
+.admin-filter-menu summary::-webkit-details-marker,
+.admin-export-menu summary::-webkit-details-marker {
+  display: none;
+}
+.admin-filter-popover,
+.admin-export-options {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+  min-width: 190px;
+  background: #fff;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 10px;
+}
+.admin-filter-popover .check-row.compact {
+  margin: 0;
+  padding: 7px 4px;
+  font-size: .86rem;
+}
+.admin-export-options {
+  display: grid;
+  gap: 8px;
+  min-width: 130px;
+}
+.admin-export-options .filter-chip {
+  width: 100%;
+  text-align: left;
+}
 
 .rd-student-table {
   background: #fff;
@@ -1087,7 +1143,7 @@ body {
   background: #fff;
   border-radius: var(--radius-xl);
   padding: 40px 44px;
-  max-width: 460px;
+  max-width: 560px;
   width: 100%;
   box-shadow: var(--shadow-lg);
   display: flex; flex-direction: column; gap: 16px;
@@ -1408,13 +1464,13 @@ body {
 }
 
 .welcome-card--wide {
-  max-width: 600px;
+  max-width: 680px;
   align-items: stretch;
 }
 
 .welcome-logo-img {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   background-image: var(--t-logo, url("/brand/logos/citadel-logo-1-fc.png"));
   background-size: contain;
   background-repeat: no-repeat;
@@ -1870,7 +1926,6 @@ body {
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
   .hero-shapes { min-height: 280px; }
-  .hero-shapes .shape-payoff { font-size: 1.4rem; right: 6%; bottom: 8%; }
   .q-wrap { grid-template-columns: 1fr; }
   .q-side { position: static; }
   .rd-result-hero { grid-template-columns: 1fr; padding: 36px 28px; gap: 28px; }
@@ -1903,13 +1958,6 @@ body {
   flex-wrap: wrap;
   border-top: 1px solid var(--c-line);
   color: var(--c-ink-soft);
-}
-.site-footer .payoff {
-  font-family: var(--font-script);
-  font-size: 1.6rem;
-  line-height: 1;
-  color: var(--t-accent-deep);
-  transform: rotate(-2deg);
 }
 .site-footer .site-url {
   font-family: var(--font-display); font-weight: 900;
@@ -1987,7 +2035,7 @@ body {
    Performance-tasks — gedeelde stijl
    Mailtaak (composer) + bestandsbeheer (verkenner) volgen
    hetzelfde patroon: licht-beige binnenpaneel + onderbalk
-   met "Vorige" / "Opdracht X" / primaire CTA. Géén merknamen.
+   met "Opdracht X" / primaire CTA. Geen merknamen.
    ───────────────────────────────────────────────────────── */
 .mail-shell {
   display: block;
@@ -2088,6 +2136,33 @@ body {
 .mail-shell .rb-icon-only[aria-label="Lettertype"] { width: 52px; }
 .mail-shell .rb-icon-only[aria-label="Lettergrootte"] { width: 40px; }
 .mail-shell .rb-icon-only[aria-label="BCC tonen"] { width: 44px; font-size: .78rem; }
+.mail-ribbon-button-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.rb-icon-italic { font-style: italic; }
+.rb-icon-underline { text-decoration: underline; text-underline-offset: 3px; }
+.classic-paperclip {
+  width: 8px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-left-width: 0;
+  border-radius: 0 9px 9px 0;
+  display: inline-block;
+  position: relative;
+  transform: rotate(42deg);
+}
+.classic-paperclip::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-left-width: 0;
+  border-radius: 0 6px 6px 0;
+}
 .mail-shell .rb-divider {
   width: 1px;
   align-self: stretch;
@@ -2201,6 +2276,10 @@ body {
   border-bottom: 1px solid #a9a9a9;
   position: relative;
   min-height: 44px;
+}
+.mail-shell .mail-field-address {
+  grid-template-columns: 50px minmax(0, 1fr);
+  cursor: pointer;
 }
 .mail-shell .mail-field > .label {
   display: inline-flex;
@@ -2422,11 +2501,124 @@ body {
   text-decoration: underline;
 }
 
+.incoming-mail-shell {
+  margin: 14px 0 18px;
+}
+
+.incoming-mail-shell .mail-ribbon {
+  min-height: 48px;
+}
+
+.incoming-mail-shell .rb-readonly {
+  color: #555;
+  background: #fff;
+  border-color: #d7d7d7;
+  cursor: default;
+}
+
+.incoming-mail-header {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e3e3e3;
+  background: #fff;
+}
+
+.incoming-mail-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #0f6cbd;
+  color: #fff;
+  font-weight: 800;
+  font-size: .8rem;
+}
+
+.incoming-mail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  color: #333;
+  font-size: .88rem;
+}
+
+.incoming-mail-meta strong {
+  color: #111;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.incoming-mail-meta span {
+  overflow-wrap: anywhere;
+}
+
+.incoming-mail-header time {
+  color: #666;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+
+.incoming-mail-shell .incoming-attachments {
+  padding-left: 16px;
+}
+
+.incoming-mail-shell .incoming-mail-body {
+  min-height: 180px;
+  padding: 18px 22px 24px;
+  color: #111;
+  font-size: .98rem;
+  line-height: 1.55;
+}
+
+.incoming-mail-body p {
+  margin: 0;
+}
+
+.incoming-link-block {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 10px 14px;
+  border: 1px solid #b9d5f2;
+  border-radius: 4px;
+  background: #f5f9ff;
+  color: #0f4d8f;
+  font-weight: 700;
+}
+
+.incoming-link-block code {
+  max-width: 100%;
+  color: #555;
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
 /* Bijlage-picker (selecteer bestand) */
 .mail-attach-picker {
   background: var(--c-bg-soft);
   border-top: 1px solid var(--c-line);
   padding: 14px 20px 16px;
+}
+.mail-attach-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: min(360px, calc(100vw - 48px));
+  background: #fff;
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  box-shadow: var(--shadow-md);
+  padding: 10px;
 }
 .mail-attach-picker-label {
   display: block;
@@ -2447,6 +2639,12 @@ body {
   border-top: 1px solid var(--c-line);
   background: #fafafa;
   margin: 0;
+}
+.mail-shell .mail-attachments-inline {
+  border-top: none;
+  border-bottom: 1px solid #a9a9a9;
+  background: #fff;
+  padding: 8px 0 10px 60px;
 }
 .mail-attach-paperclip {
   font-size: 1rem;
@@ -2935,12 +3133,12 @@ body {
 /* ─────────────────────────────────────────────────────────
    Task-nav footer
    Gedeelde onderbalk voor performance-tasks:
-   roze ← Vorige | gecentreerde voortgang | teal primaire CTA
+   voortgang | teal primaire CTA
    ───────────────────────────────────────────────────────── */
 .task-nav {
   margin-top: 24px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
@@ -2948,31 +3146,6 @@ body {
   border: 1px solid var(--c-line);
   border-radius: var(--radius-lg);
 }
-.task-nav-back {
-  appearance: none;
-  background: var(--p1-magenta, #E51C73);
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 10px 22px 10px 18px;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: .92rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: background var(--dur) var(--ease-out),
-              transform var(--dur-fast) var(--ease-out),
-              box-shadow var(--dur) var(--ease-out);
-  box-shadow: 0 4px 12px rgba(229,28,115,.18);
-}
-.task-nav-back:hover {
-  background: #c41864;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(229,28,115,.22);
-}
-.task-nav-arrow { font-size: 1rem; }
 .task-nav-progress {
   text-align: center;
   font-family: var(--font-sans);
@@ -3101,7 +3274,6 @@ body {
   .hero-copy h1 { font-size: clamp(1.8rem, 6vw + .5rem, 2.6rem); }
   .hero-copy .intro { font-size: 1rem; line-height: 1.55; }
   .hero-shapes { min-height: 240px; border-radius: var(--radius-xl); }
-  .hero-shapes .shape-payoff { font-size: 1.3rem; right: 8%; bottom: 8%; }
 
   .field-row { grid-template-columns: 1fr; max-width: none; }
 
@@ -3188,7 +3360,6 @@ body {
     align-items: flex-start;
     gap: 8px;
   }
-  .site-footer .payoff { font-size: 1.35rem; }
 
   .btn { padding: 12px 22px 12px 18px; font-size: .95rem; gap: 10px; }
   .btn .arrow-circle { width: 24px; height: 24px; font-size: 12px; }
@@ -3211,7 +3382,6 @@ body {
   .hero-copy h1 { font-size: clamp(1.6rem, 7vw + .3rem, 2.2rem); line-height: 1.08; }
   .hero-copy .intro { font-size: .96rem; }
   .hero-shapes { min-height: 180px; }
-  .hero-shapes .shape-payoff { font-size: 1.1rem; bottom: 6%; right: 6%; }
 
   .admin-hero {
     padding: 22px 18px;
@@ -3365,14 +3535,13 @@ body {
   }
 
   .task-nav {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     grid-template-areas:
-      "progress progress"
-      "back     primary";
+      "progress"
+      "primary";
     gap: 10px;
     padding: 12px 14px;
   }
-  .task-nav-back { grid-area: back; justify-self: start; padding: 9px 16px; }
   .task-nav-progress { grid-area: progress; text-align: left; }
   .task-nav-primary { grid-area: primary; justify-self: end; padding: 9px 14px 9px 18px; }
 }
@@ -3400,6 +3569,20 @@ body {
   .powerpoint-titlebar {
     padding: 8px 12px;
     font-size: .85rem;
+  }
+  .incoming-mail-header {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+  .incoming-mail-avatar {
+    width: 36px;
+    height: 36px;
+  }
+  .incoming-mail-header time {
+    grid-column: 2;
+    white-space: normal;
+  }
+  .incoming-mail-shell .incoming-attachments {
+    padding-left: 14px;
   }
   .explorer-window {
     min-height: 0;
@@ -3713,6 +3896,26 @@ body {
   color: #fff;
 }
 .option-text { flex: 1; }
+.source-card-grid {
+  gap: 12px;
+}
+.source-option-card {
+  align-items: start;
+}
+.source-option-card .option-text {
+  display: grid;
+  gap: 6px;
+}
+.source-option-card .option-text strong {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+.source-option-card .option-text small {
+  color: color-mix(in srgb, var(--c-ink) 72%, transparent);
+  font-size: .92rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
 /* Radio-rondje rechts */
 .option-radio {
   width: 20px; height: 20px;
@@ -4099,8 +4302,7 @@ body {
   align-items: center;
 }
 
-[data-screen="assessment"] .q-weet-btn,
-[data-screen="assessment"] .task-nav-back {
+[data-screen="assessment"] .q-weet-btn {
   min-height: 44px;
   border: 2px solid var(--t-panel);
   border-radius: 12px;
@@ -4133,7 +4335,7 @@ body {
 
 [data-screen="assessment"] .task-nav {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 16px;
 }
@@ -4172,7 +4374,6 @@ body {
 
   [data-screen="assessment"] .q-weet-btn,
   [data-screen="assessment"] .primary-button,
-  [data-screen="assessment"] .task-nav-back,
   [data-screen="assessment"] .task-nav-primary {
     width: 100%;
     justify-content: center;
@@ -4304,7 +4505,6 @@ body {
     padding: 12px 0;
   }
 
-  [data-screen="assessment"] .task-nav-back,
   [data-screen="assessment"] .task-nav-primary,
   [data-screen="assessment"] .q-weet-btn,
   [data-screen="assessment"] .primary-button {

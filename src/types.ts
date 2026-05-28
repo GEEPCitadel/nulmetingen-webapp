@@ -38,6 +38,8 @@ export type ResponseType = "correct" | "incorrect" | "unknown" | "skipped";
 export interface Option {
   id: string;
   label: string;
+  description?: string;
+  sourceType?: string;
 }
 
 export interface ThemeDefinition {
@@ -274,6 +276,18 @@ export interface InteractionGroup {
   cards?: Option[];
 }
 
+export interface IncomingMailStimulus {
+  fromName: string;
+  fromEmail: string;
+  toEmail: string;
+  date: string;
+  subject: string;
+  body: string[];
+  linkLabel?: string;
+  linkUrl?: string;
+  attachments?: string[];
+}
+
 export interface InteractionScoringRule {
   id: string;
   description: string;
@@ -301,6 +315,7 @@ export interface InteractionScreen {
   title: string;
   instruction: string;
   body?: string;
+  emailStimulus?: IncomingMailStimulus;
   groups: InteractionGroup[];
 }
 
@@ -374,6 +389,7 @@ export interface AssessmentItem {
   allowUnknown?: boolean;
   unknownOptionId?: string;
   randomizeOptions?: boolean;
+  renderOptionsAsSourceCards?: boolean;
   selectionMode?: "single" | "multiple";
   selectCount?: number;
   scoreMode?: "exact" | "unordered_set" | "partial_select";

@@ -173,11 +173,12 @@ type SelectedResponseSpec = {
   type?: "single" | "multiple";
   selectCount?: number | null;
   question: string;
-  options: string[];
+  options: SelectedResponseOptionSpec[];
   correct: string | string[];
   harmful?: string[];
   harmfulSelectionMaxScore?: number;
   mockup?: MockupCard;
+  renderOptionsAsSourceCards?: boolean;
   ankerItemFlag?: boolean;
   aiSnelVeranderendFlag?: boolean;
   anchorStatus?: string;
@@ -186,13 +187,26 @@ type SelectedResponseSpec = {
   validityNote?: string;
 };
 
+type SelectedResponseOptionSpec = {
+  id: string;
+  label: string;
+  description?: string;
+  sourceType?: string;
+  isUnknown?: boolean;
+};
+
 type SelectedResponseJsonOption = {
   id?: string;
+  optionId?: string;
+  label?: string;
+  sourceType?: string;
   text: string;
   correct?: boolean;
   isCorrect?: boolean;
   isUnknownOption?: boolean;
+  unknown?: boolean;
   isHarmful?: boolean;
+  score?: number;
 };
 
 type SelectedResponseStimulus =
@@ -210,22 +224,41 @@ type SelectedResponseStimulus =
 
 type SelectedResponseJsonItem = {
   id: string;
+  replaces?: string;
   title: string;
   target?: AssessmentVersionId;
   targetGroup?: AssessmentVersionId;
+  variantFor?: AssessmentVersionId;
   kerndoel?: number | string;
   subgoal: string;
-  type?: "single" | "multiple";
+  type?: "single" | "multiple" | "single_choice" | "multiple_choice";
+  maxScore?: number;
   itemType?: "single-choice" | "multiple-select";
   selectCount?: number | null;
   selectionLimit?: number | null;
   question: string;
   stimulus?: SelectedResponseStimulus;
+  context?: {
+    chatMessage?: {
+      sender: string;
+      text: string;
+    };
+  };
+  ui?: {
+    renderAsSourceCards?: boolean;
+    pinUnknownOptionLast?: boolean;
+  };
   options: SelectedResponseJsonOption[];
   correctAnswer?: string | string[];
   harmfulAnswers?: string[];
   scoring?: {
     harmfulCap?: string | number;
+    method?: string;
+    correctOptionId?: string;
+    maxScore?: number;
+    unknownScore?: number;
+    scoreBy?: string;
+    doNotScoreBy?: string[];
   };
   ankerItemFlag?: boolean;
   aiSnelVeranderendFlag?: boolean;
@@ -275,6 +308,14 @@ const optionId = (prefix: string, index: number) => `${prefix}-${index + 1}`;
 const makeOptions = (prefix: string, labels: string[]): Option[] =>
   labels.map((label, index) => ({ id: optionId(prefix, index), label }));
 
+const makeSelectedResponseOptions = (options: SelectedResponseOptionSpec[]): Option[] =>
+  options.map((option) => ({
+    id: option.id,
+    label: option.label,
+    description: option.description,
+    sourceType: option.sourceType,
+  }));
+
 const fixedOptions = (labels: string[]): Option[] =>
   labels.map((label) => ({ id: label, label }));
 
@@ -301,7 +342,7 @@ const rootGoalFrom = (value: string | number) =>
 const selectedResponseItemsFor = (versionId: AssessmentVersionId): SelectedResponseJsonItem[] => {
   if (selectedResponseJson.selectedResponseItems) {
     return selectedResponseJson.selectedResponseItems.filter(
-      (item) => (item.targetGroup ?? item.target) === versionId,
+      (item) => (item.targetGroup ?? item.target ?? item.variantFor) === versionId,
     );
   }
 
@@ -328,7 +369,9 @@ const harmfulAnswerIdsFor = (item: SelectedResponseJsonItem) =>
   new Set((item.harmfulAnswers ?? []).map(String));
 
 const selectedResponseTypeFor = (item: SelectedResponseJsonItem): "single" | "multiple" =>
-  item.type ?? (item.itemType === "multiple-select" ? "multiple" : "single");
+  item.type === "multiple" || item.type === "multiple_choice" || item.itemType === "multiple-select"
+    ? "multiple"
+    : "single";
 
 const mockupForStimulus = (stimulus?: SelectedResponseStimulus): MockupCard | undefined => {
   if (!stimulus) {
@@ -353,6 +396,19 @@ const mockupForStimulus = (stimulus?: SelectedResponseStimulus): MockupCard | un
   };
 };
 
+const mockupForContext = (context?: SelectedResponseJsonItem["context"]): MockupCard | undefined => {
+  if (!context?.chatMessage) {
+    return undefined;
+  }
+
+  return {
+    badge: "Groepsapp",
+    title: context.chatMessage.sender,
+    content: [context.chatMessage.text],
+    mediaHint: "Contextbericht",
+  };
+};
+
 const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedResponseSpec[] => {
   const sourceItems = selectedResponseItemsFor(versionId);
 
@@ -365,28 +421,58 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
     const harmfulAnswerIds = harmfulAnswerIdsFor(item);
     const responseType = selectedResponseTypeFor(item);
     const contentOptions = item.options
-      .filter(
-        (option) =>
-          option.isUnknownOption !== true &&
-          normalizeUnknownLabel(option.text) !== UNKNOWN_OPTION_LABEL,
-      )
-      .map((option) => ({
-        text: normalizeUnknownLabel(option.text),
-        correct:
-          option.correct === true ||
-          option.isCorrect === true ||
-          (option.id ? correctAnswerIds.has(String(option.id)) : false),
-        harmful:
-          option.isHarmful === true ||
-          (option.id ? harmfulAnswerIds.has(String(option.id)) : false),
-      }));
-    const options = [...contentOptions.map((option) => option.text), UNKNOWN_OPTION_LABEL];
+      .filter((option) => {
+        const label = normalizeUnknownLabel(option.label ?? option.text);
+        return option.isUnknownOption !== true && option.unknown !== true && label !== UNKNOWN_OPTION_LABEL;
+      })
+      .map((option) => {
+        const id = String(option.optionId ?? option.id ?? option.text);
+        return {
+          id,
+          label: normalizeUnknownLabel(option.label ?? option.text),
+          description:
+            option.label && normalizeUnknownLabel(option.label) !== normalizeUnknownLabel(option.text)
+              ? option.text
+              : undefined,
+          sourceType: option.sourceType,
+          correct:
+            option.correct === true ||
+            option.isCorrect === true ||
+            option.score === 1 ||
+            correctAnswerIds.has(id) ||
+            item.scoring?.correctOptionId === id,
+          harmful: option.isHarmful === true || harmfulAnswerIds.has(id),
+        };
+      });
+    const unknownSource = item.options.find((option) => {
+      const label = normalizeUnknownLabel(option.label ?? option.text);
+      return option.isUnknownOption === true || option.unknown === true || label === UNKNOWN_OPTION_LABEL;
+    });
+    const unknownOption: SelectedResponseOptionSpec = {
+      id: String(unknownSource?.optionId ?? unknownSource?.id ?? `${item.id}-unknown`),
+      label: UNKNOWN_OPTION_LABEL,
+      description:
+        unknownSource?.text && normalizeUnknownLabel(unknownSource.text) !== UNKNOWN_OPTION_LABEL
+          ? unknownSource.text
+          : undefined,
+      sourceType: unknownSource?.sourceType,
+      isUnknown: true,
+    };
+    const options: SelectedResponseOptionSpec[] = [
+      ...contentOptions.map((option) => ({
+        id: option.id,
+        label: option.label,
+        description: option.description,
+        sourceType: option.sourceType,
+      })),
+      unknownOption,
+    ];
     const correctOptions = contentOptions
       .filter((option) => option.correct)
-      .map((option) => option.text);
+      .map((option) => option.id);
     const harmfulOptions = contentOptions
       .filter((option) => option.harmful)
-      .map((option) => option.text);
+      .map((option) => option.id);
 
     if (correctOptions.length === 0) {
       throw new Error(`Geen correct antwoord gevonden voor ${item.id}.`);
@@ -408,7 +494,8 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
       harmful: harmfulOptions,
       harmfulSelectionMaxScore:
         item.scoring?.harmfulCap === undefined ? undefined : Number(item.scoring.harmfulCap),
-      mockup: mockupForStimulus(item.stimulus),
+      mockup: mockupForStimulus(item.stimulus) ?? mockupForContext(item.context),
+      renderOptionsAsSourceCards: item.ui?.renderAsSourceCards,
       ankerItemFlag: item.ankerItemFlag ?? item.anchorStatus === "concept-anchor",
       aiSnelVeranderendFlag: item.aiSnelVeranderendFlag,
       anchorStatus: item.anchorStatus,
@@ -580,21 +667,22 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
     type: "multiple_choice",
     title: spec.title,
     instruction: spec.question,
-    options: makeOptions(spec.id, spec.options),
+    options: makeSelectedResponseOptions(spec.options),
     correctAnswer: Array.isArray(spec.correct)
-      ? spec.correct.map((answer) => correctId(spec.id, spec.options, answer))
-      : correctId(spec.id, spec.options, spec.correct),
+      ? spec.correct
+      : spec.correct,
     points: 1,
     skillDomain: `${subgoal} ${sloLabels[subgoal] ?? ""}`.trim(),
     kerndoel: spec.kerndoel,
     subgoal,
     allowUnknown: false,
-    unknownOptionId: optionId(spec.id, spec.options.length - 1),
+    unknownOptionId: spec.options.find((option) => option.isUnknown)?.id,
     randomizeOptions: true,
+    renderOptionsAsSourceCards: spec.renderOptionsAsSourceCards,
     selectionMode: responseType === "multiple" ? "multiple" : "single",
     selectCount: responseType === "multiple" ? (spec.selectCount ?? undefined) : undefined,
     scoreMode: responseType === "multiple" ? "partial_select" : "exact",
-    harmfulOptionIds: (spec.harmful ?? []).map((answer) => correctId(spec.id, spec.options, answer)),
+    harmfulOptionIds: spec.harmful ?? [],
     harmfulSelectionMaxScore: spec.harmfulSelectionMaxScore,
     mockup: spec.mockup,
     ankerItemFlag: spec.ankerItemFlag,
@@ -699,7 +787,7 @@ const shareRules = (): TeamsTaskConfig["rules"] => [
   },
   {
     id: "media-window-selected",
-    description: "Windows Media Player in de juiste volgorde geselecteerd.",
+    description: "videospeler met filmfragment in de juiste volgorde geselecteerd.",
     points: 1,
     conditions: ["selected_windows_media_player"],
   },
@@ -839,24 +927,24 @@ const createAdvancedMailConfig = (): MailTaskConfig => ({
 });
 
 const fakeTeamsInstruction =
-  "Voer in de Teams-vergadering het juiste klikpad uit: klik op Delen, kies Venster en selecteer Windows Media Player.";
+  "Voer in Macrohard Teams het juiste klikpad uit: klik op Delen, kies Venster en selecteer Videospeler - filmfragment.";
 
 const excelInstruction = (filename: string) =>
   `Download ${filename}. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.`;
 
 const createFakeTeamsConfig = (): TeamsTaskConfig => ({
   scenario:
-    "Je zit in een Teams-achtige vergadering als Leerling Anoniem. Deel alleen het venster van Windows Media Player.",
+    "Deel alleen het venster met het filmfragment. Gebruik computergeluid, maar deel niet je hele scherm.",
   buttons: ["Camera", "Microfoon", "Chat", "Deelnemers", "Reageren", "Delen", "Meer"],
   shareOptions: ["Scherm", "Venster"],
   windows: [
-    "Windows Media Player",
+    "Videospeler - filmfragment",
     "Browser - schoolsite",
     "Word - Verslag Nederlands",
     "Excel - Cijferlijst",
-    "Teams chat",
+    "Chat - klasgroep",
   ],
-  correctWindow: "Windows Media Player",
+  correctWindow: "Videospeler - filmfragment",
   rules: shareRules(),
 });
 
@@ -2120,9 +2208,9 @@ const v3MailConfig = ({
 
 const v3Pt6 = (id: string): TeamsTaskSpec => ({
   id,
-  title: "PT6 - Veilig en doelgericht schermdelen",
+  title: "Schermdelen in een online les",
   instruction:
-    "Je zit in een online les. De docent vraagt je alleen het venster met het filmfragment te delen. Andere vensters mogen niet zichtbaar zijn. Deel alleen het juiste venster en zet computergeluid aan.",
+    "Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.",
   kerndoel: "23A",
   ankerItemFlag: true,
   config: {
@@ -2165,153 +2253,257 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
   const specs: Record<AssessmentVersionId, SecurityTaskSpec> = {
     "lj1-vmbo": {
       id: "lj1v-pt3-security",
-      title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Kies veilige acties bij een verdachte roosterlink.",
+      title: "PT3 - Bericht beoordelen",
+      instruction: "Bekijk de e-mail en kies je antwoorden.",
       kerndoel: "23A",
       config: {
         screens: [
           {
-            id: "phishinglink",
-            title: "Phishinglink schoolrooster",
+            id: "rooster-mail",
+            title: "Mail over je rooster",
             instruction:
-              "Je krijgt een bericht: `Klik hier om je nieuwe rooster te zien`. De link lijkt op school, maar komt van een onbekende afzender.",
+              "Sanne krijgt deze mail op haar schoolaccount. Ze twijfelt wat ze ermee moet doen.",
+            emailStimulus: {
+              fromName: "Rooster service",
+              fromEmail: "r0st3r-88xq91@mx7-info-update.net",
+              toEmail: "sanne@leerling.citadelcollege.nl",
+              date: "Vandaag 08:14",
+              subject: "Nieuw rooster staat klaar",
+              body: [
+                "Hallo leerling,",
+                "Je nieuwe rooster staat klaar. Log vandaag nog in om te voorkomen dat je lessen mist.",
+                "Gebruik de knop hieronder om je rooster direct te openen.",
+              ],
+              linkLabel: "Rooster bekijken",
+              linkUrl: "https://school-rooster-login-24.example.net/start",
+            },
             groups: [
               {
-                id: "actions",
-                title: "Acties",
+                id: "signals",
+                title: "Wat valt op aan deze mail?",
                 inputType: "multi",
                 options: fixedOptions([
-                  "open link",
-                  "controleer rooster via officiële schoolapp",
-                  "stuur link door naar klas",
-                  "meld/laat controleren door mentor",
-                  "negeer alles",
+                  "Het afzenderadres lijkt niet van school te zijn.",
+                  "De mail vraagt om via een link in te loggen.",
+                  "De mail zet druk met 'vandaag nog'.",
+                  "Er staat een roosterlink in de mail.",
+                  "De mail begint met 'Hallo leerling'.",
+                ]),
+              },
+              {
+                id: "actions",
+                title: "Wat is een goede volgende stap?",
+                inputType: "multi",
+                options: fixedOptions([
+                  "Niet op de link klikken.",
+                  "Rooster openen via de schoolapp of bekende schoolsite.",
+                  "De mail laten controleren door mentor of docent.",
+                  "De link openen omdat het over school gaat.",
+                  "De mail doorsturen naar de klas.",
                 ]),
               },
             ],
           },
         ],
         rules: [
-          { id: "no-open", description: "niet klikken/openen.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["open link"] },
-          { id: "official", description: "controleren via officiële app.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["controleer rooster via officiële schoolapp"] },
-          { id: "report", description: "mentor/docent laten controleren of melding maken.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["meld/laat controleren door mentor"] },
+          { id: "signals", description: "herkent minimaal twee signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["Het afzenderadres lijkt niet van school te zijn.", "De mail vraagt om via een link in te loggen.", "De mail zet druk met 'vandaag nog'."] },
+          { id: "safe-route", description: "kiest een bekende officiele route.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Niet op de link klikken.", "Rooster openen via de schoolapp of bekende schoolsite."] },
+          { id: "no-spread", description: "kiest geen onveilige vervolgactie.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["De link openen omdat het over school gaat.", "De mail doorsturen naar de klas."] },
         ],
       },
     },
     "lj1-hv": {
       id: "lj1h-pt3-security",
-      title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Kies veilige acties bij een verzoek om jouw inlogcode.",
+      title: "PT3 - Bericht beoordelen",
+      instruction: "Bekijk de e-mail en kies je antwoorden.",
       kerndoel: "23A",
       config: {
         screens: [
           {
-            id: "mfa",
-            title: "MFA-code niet delen",
-            instruction: "Een klasgenoot vraagt om jouw inlogcode om snel iets te testen.",
+            id: "code-mail",
+            title: "Mail over accountcontrole",
+            instruction: "Noor krijgt deze mail op haar schoolaccount. Ze vertrouwt de mail niet helemaal.",
+            emailStimulus: {
+              fromName: "ICT controle",
+              fromEmail: "ict-472kq9-check@safe-login-mailer.info",
+              toEmail: "noor@leerling.citadelcollege.nl",
+              date: "Vandaag 10:02",
+              subject: "Controleer je schoolaccount",
+              body: [
+                "Beste leerling,",
+                "Wij controleren alle accounts. Stuur je tijdelijke inlogcode terug zodat je account actief blijft.",
+                "Reageer binnen 30 minuten.",
+              ],
+              linkLabel: "Code bevestigen",
+              linkUrl: "https://citadel-controle.example.org/code",
+            },
             groups: [
               {
-                id: "actions",
-                title: "Acties",
+                id: "signals",
+                title: "Wat maakt deze mail onbetrouwbaar?",
                 inputType: "multi",
                 options: fixedOptions([
-                  "code niet delen",
-                  "zeggen dat inlogcodes persoonlijk zijn",
-                  "hulp vragen aan docent/mentor of accountinstellingen controleren",
-                  "code sturen als het snel moet",
-                  "code in de groepsapp zetten",
+                  "Het afzenderadres is geen duidelijk schooladres.",
+                  "De mail vraagt om een persoonlijke inlogcode.",
+                  "De mail gebruikt tijdsdruk.",
+                  "Er staat 'Beste leerling' in plaats van een naam.",
+                  "De mail gaat over school.",
+                ]),
+              },
+              {
+                id: "actions",
+                title: "Wat doet Noor?",
+                inputType: "multi",
+                options: fixedOptions([
+                  "Geen code delen.",
+                  "Account of melding controleren via de normale schoolroute.",
+                  "De mail melden of aan ICT/docent laten zien.",
+                  "De code terugsturen zodat het account actief blijft.",
+                  "De link openen en daar de code invullen.",
                 ]),
               },
             ],
           },
         ],
         rules: [
-          { id: "no-share", description: "code niet delen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["code niet delen"] },
-          { id: "personal", description: "aangeven dat inlogcodes persoonlijk zijn.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["zeggen dat inlogcodes persoonlijk zijn"] },
-          { id: "help", description: "hulp vragen of accountinstellingen controleren.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["hulp vragen aan docent/mentor of accountinstellingen controleren"] },
+          { id: "signals", description: "herkent minimaal twee signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["Het afzenderadres is geen duidelijk schooladres.", "De mail vraagt om een persoonlijke inlogcode.", "De mail gebruikt tijdsdruk.", "Er staat 'Beste leerling' in plaats van een naam."] },
+          { id: "safe-actions", description: "kiest veilige vervolgstappen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Geen code delen.", "Account of melding controleren via de normale schoolroute."] },
+          { id: "no-code", description: "deelt de code niet via mail of link.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["De code terugsturen zodat het account actief blijft.", "De link openen en daar de code invullen."] },
         ],
       },
     },
     "lj3-vmbo": {
       id: "lj3v-pt3-security",
-      title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Kies veilige acties bij een onverwachte login en verdachte bijlage.",
+      title: "PT3 - Bericht beoordelen",
+      instruction: "Bekijk de e-mail en kies je antwoorden.",
       kerndoel: "23A",
       config: {
         screens: [
           {
-            id: "login-macro",
-            title: "Onverwachte login en verdachte bijlage",
-            instruction: "Je ziet een onverwachte loginmelding en een document vraagt macro's in te schakelen.",
+            id: "attachment-mail",
+            title: "Mail met bestand",
+            instruction: "Jayden krijgt deze mail vlak voor een toetsweek.",
+            emailStimulus: {
+              fromName: "Cijfersysteem",
+              fromEmail: "c1jf3r-upd8-771@doc-viewer-login.com",
+              toEmail: "jayden@leerling.citadelcollege.nl",
+              date: "Gisteren 19:48",
+              subject: "Cijferlijst controleren",
+              body: [
+                "Hallo,",
+                "Er is een fout gevonden in je cijferlijst. Open de bijlage en schakel bewerken in om de nieuwe cijfers te bekijken.",
+                "Controleer dit voor morgen.",
+              ],
+              attachments: ["Cijferlijst_update.xlsm"],
+              linkLabel: "Online bekijken",
+              linkUrl: "https://cijfers-school-update.example.net/login",
+            },
             groups: [
               {
-                id: "actions",
-                title: "Acties",
+                id: "signals",
+                title: "Welke signalen vragen om extra controle?",
                 inputType: "multi",
                 options: fixedOptions([
-                  "login afwijzen",
-                  "account controleren/wachtwoord wijzigen via officiële instellingen",
-                  "macro's niet inschakelen en document melden/sluiten",
-                  "login goedkeuren",
-                  "macro's inschakelen",
+                  "Het afzenderadres hoort niet duidelijk bij school.",
+                  "De bijlage is een macrobestand.",
+                  "De mail vraagt om bewerken of macro's in te schakelen.",
+                  "De mail zet druk met een korte deadline.",
+                  "De mail gaat over cijfers.",
+                ]),
+              },
+              {
+                id: "actions",
+                title: "Wat is veilig om te doen?",
+                inputType: "multi",
+                options: fixedOptions([
+                  "Bijlage niet openen of macro's niet inschakelen.",
+                  "Cijfers controleren via het normale schoolportaal.",
+                  "De mail melden of laten controleren.",
+                  "Bijlage openen en bewerken inschakelen.",
+                  "Inloggen via de link in de mail.",
                 ]),
               },
             ],
           },
         ],
         rules: [
-          { id: "reject-login", description: "login afwijzen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["login afwijzen"] },
-          { id: "account", description: "account controleren/wachtwoord wijzigen via officiële instellingen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["account controleren/wachtwoord wijzigen via officiële instellingen"] },
-          { id: "no-macros", description: "macro's niet inschakelen en document melden/sluiten.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["macro's niet inschakelen en document melden/sluiten"] },
+          { id: "signals", description: "herkent minimaal twee signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["Het afzenderadres hoort niet duidelijk bij school.", "De bijlage is een macrobestand.", "De mail vraagt om bewerken of macro's in te schakelen.", "De mail zet druk met een korte deadline."] },
+          { id: "safe-actions", description: "kiest veilige controle- en meldactie.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Bijlage niet openen of macro's niet inschakelen.", "Cijfers controleren via het normale schoolportaal."] },
+          { id: "no-danger", description: "kiest geen risicovolle actie.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["Bijlage openen en bewerken inschakelen.", "Inloggen via de link in de mail."] },
         ],
       },
     },
     "lj3-hv": {
       id: "lj3h-pt3-security",
-      title: "PT3 - Account, apparaat en verbinding beveiligen",
-      instruction: "Kies veilige acties bij een datalek en onbekende sessies.",
+      title: "PT3 - Bericht beoordelen",
+      instruction: "Bekijk de e-mail en kies je antwoorden.",
       kerndoel: "23A",
       config: {
         screens: [
           {
-            id: "breach",
-            title: "Datalek en sessiebeheer",
+            id: "session-mail",
+            title: "Mail over accountactiviteit",
             instruction:
-              "Een externe site meldt een datalek. Je gebruikte hetzelfde wachtwoord als voor school. In je account staan actieve sessies op onbekende apparaten.",
+              "Mila krijgt deze mail nadat ze thuis heeft ingelogd op haar schoolaccount.",
+            emailStimulus: {
+              fromName: "Account team",
+              fromEmail: "acc-veilig-90z1@verify-device-center.co",
+              toEmail: "mila@leerling.citadelcollege.nl",
+              date: "Vandaag 21:06",
+              subject: "Onbekend apparaat gevonden",
+              body: [
+                "Beste Mila,",
+                "Er is een onbekend apparaat gekoppeld. Voorkom afsluiting van je account door je wachtwoord via onderstaande knop te vernieuwen.",
+                "Gebruik dezelfde gegevens als je schoolaccount.",
+              ],
+              linkLabel: "Wachtwoord vernieuwen",
+              linkUrl: "https://citadel-device-check.example.com/security",
+            },
             groups: [
               {
-                id: "actions",
-                title: "Acties",
+                id: "signals",
+                title: "Welke signalen maken dat Mila voorzichtig moet zijn?",
                 inputType: "multi",
                 options: fixedOptions([
-                  "schoolwachtwoord wijzigen",
-                  "tweestapsverificatie controleren/activeren",
-                  "onbekende sessies uitloggen en melding maken",
-                  "niets doen zolang school niets mailt",
-                  "het oude wachtwoord blijven gebruiken",
+                  "Het domein van de afzender is geen herkenbaar schooldomein.",
+                  "De link gebruikt een andere domeinnaam dan de schoolsite.",
+                  "De mail dreigt met afsluiting van het account.",
+                  "De mail vraagt om schoolgegevens in te vullen via een link.",
+                  "De mail noemt Mila bij naam.",
+                ]),
+              },
+              {
+                id: "actions",
+                title: "Wat is de beste aanpak?",
+                inputType: "multi",
+                options: fixedOptions([
+                  "Niet via de link inloggen.",
+                  "Zelf naar de officiele accountinstellingen gaan.",
+                  "Actieve sessies en tweestapsverificatie controleren.",
+                  "Wachtwoord invullen via de knop om afsluiting te voorkomen.",
+                  "De mail negeren zonder verder te controleren.",
                 ]),
               },
             ],
           },
         ],
         rules: [
-          { id: "password", description: "schoolwachtwoord wijzigen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["schoolwachtwoord wijzigen"] },
-          { id: "mfa", description: "tweestapsverificatie controleren/activeren.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["tweestapsverificatie controleren/activeren"] },
-          { id: "sessions", description: "onbekende sessies uitloggen en melding maken.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["onbekende sessies uitloggen en melding maken"] },
+          { id: "signals", description: "herkent minimaal drie signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 3, correctOptionIds: ["Het domein van de afzender is geen herkenbaar schooldomein.", "De link gebruikt een andere domeinnaam dan de schoolsite.", "De mail dreigt met afsluiting van het account.", "De mail vraagt om schoolgegevens in te vullen via een link."] },
+          { id: "account-check", description: "kiest controle via eigen accountinstellingen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Niet via de link inloggen.", "Zelf naar de officiele accountinstellingen gaan.", "Actieve sessies en tweestapsverificatie controleren."] },
+          { id: "no-link", description: "vermijdt link en passief negeren.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["Wachtwoord invullen via de knop om afsluiting te voorkomen.", "De mail negeren zonder verder te controleren."] },
         ],
       },
     },
   };
   return specs[versionId];
 };
-
 const v3Pt8 = (versionId: AssessmentVersionId): SocialTaskSpec => {
   const cap = (optionIds: string[], groupIds?: string[]) => [{ id: "harmful-cap", maxScore: 2, optionIds, groupIds }];
   const specs: Record<AssessmentVersionId, SocialTaskSpec> = {
     "lj1-vmbo": {
       id: "lj1v-pt8-online",
       title: "PT8 - Online gedrag: groepschat",
-      instruction: "Bekijk de situatie. Beoordeel het probleem en kies alle acties die je zou doen.",
+      instruction: "Bekijk wat er in de groepschat gebeurt. Kies per scherm de beste reactie.",
       kerndoel: "23B",
       config: {
         screens: [
@@ -2396,6 +2588,78 @@ const v3Pt8 = (versionId: AssessmentVersionId): SocialTaskSpec => {
       },
     },
   };
+  specs["lj1-vmbo"] = {
+    id: "pt8-lj1v-online-behaviour-groepschat-v35",
+    title: "PT8 - Online gedrag: groepschat",
+    instruction: "Bekijk wat er in de groepschat gebeurt. Kies per scherm de beste reactie.",
+    kerndoel: "23B",
+    config: {
+      screens: [
+        {
+          id: "screen1",
+          title: "Groepschat: grap of grens?",
+          instruction: "Wat is nu de beste eerste reactie van jou?",
+          body: "In de klassenchat deelt iemand een korte video van Sam. In de video struikelt Sam op het schoolplein.\n\nBij de video staat:\n\n\"Haha kijk Sam 😂 stuur door\"\n\nEen paar leerlingen reageren met lach-emoji's.\n\nIemand schrijft:\n\n\"Ik zet hem ook in de andere klasgroep.\"\n\nSam reageert daarna:\n\n\"Haal weg. Ik wil dit niet online.\"",
+          groups: [{ id: "screen1", title: "Kies de beste reactie", inputType: "single", options: [
+            { id: "s1-no-share-no-react", label: "Niet reageren met een lach-emoji en de video niet verder verspreiden." },
+            { id: "s1-wait-for-group", label: "Eerst kijken hoeveel anderen lachen voordat je beslist wat je doet." },
+            { id: "s1-send-one-friend", label: "De video naar één goede vriend sturen om te vragen of het echt erg is." },
+            { id: "s1-joke-back", label: "Een grapje maken, zodat Sam merkt dat het niet gemeen bedoeld is." },
+            { id: "s1-unknown", label: "Ik weet het niet." },
+          ] }],
+        },
+        {
+          id: "screen2",
+          title: "Herstelactie richting plaatser",
+          instruction: "Wat kun je het beste tegen de plaatser zeggen?",
+          groups: [{ id: "screen2", title: "Kies de beste reactie", inputType: "single", options: [
+            { id: "s2-remove-and-stop", label: "Sam wil dit niet. Haal de video weg en stuur hem niet verder." },
+            { id: "s2-send-to-others", label: "Stuur hem alleen naar mensen die Sam niet goed kennen." },
+            { id: "s2-wait-for-teacher", label: "Verwijder hem pas als een docent er iets van zegt." },
+            { id: "s2-make-sticker", label: "Maak er dan maar een sticker van, dan is het minder serieus." },
+            { id: "s2-unknown", label: "Ik weet het niet." },
+          ] }],
+        },
+        {
+          id: "screen3",
+          title: "Respectvolle steun",
+          instruction: "Wat is een goede reactie naar Sam?",
+          groups: [{ id: "screen3", title: "Kies de beste reactie", inputType: "single", options: [
+            { id: "s3-support-sam", label: "Sam laten weten dat je de video niet doorstuurt en dat hij hulp kan vragen als hij dat wil." },
+            { id: "s3-dont-exaggerate", label: "Sam zeggen dat hij zich niet zo moet aanstellen, omdat iedereen weleens struikelt." },
+            { id: "s3-more-videos", label: "Sam vragen of hij nog meer filmpjes van zichzelf heeft, zodat het eerlijk blijft." },
+            { id: "s3-leave-chat", label: "Sam adviseren om uit de groepschat te gaan, dan ziet hij het niet meer." },
+            { id: "s3-unknown", label: "Ik weet het niet." },
+          ] }],
+        },
+        {
+          id: "screen4",
+          title: "Hulp of melding",
+          instruction: "Wanneer is het verstandig om een mentor of andere volwassene in te schakelen?",
+          groups: [{ id: "screen4", title: "Kies de beste reactie", inputType: "single", options: [
+            { id: "s4-if-continues-or-harms", label: "Als de video blijft rondgaan of Sam er last van blijft houden." },
+            { id: "s4-only-after-100-views", label: "Alleen als de video meer dan honderd keer bekeken is." },
+            { id: "s4-only-if-me", label: "Alleen als jij zelf in de video te zien bent." },
+            { id: "s4-never-private-chat", label: "Nooit, want wat in een groepschat gebeurt moet in de groepschat blijven." },
+            { id: "s4-unknown", label: "Ik weet het niet." },
+          ] }],
+        },
+      ],
+      rules: [
+        { id: "screen1", description: "niet verspreiden en niet meedoen aan groepsdruk.", points: 1, groupId: "screen1", kind: "singleCorrect", correctOptionIds: ["s1-no-share-no-react"] },
+        { id: "screen2", description: "benoemt Sams grens en vraagt om verwijderen/niet doorsturen.", points: 1, groupId: "screen2", kind: "singleCorrect", correctOptionIds: ["s2-remove-and-stop"] },
+        { id: "screen3", description: "biedt Sam respectvolle steun zonder verdere verspreiding.", points: 1, groupId: "screen3", kind: "singleCorrect", correctOptionIds: ["s3-support-sam"] },
+        { id: "screen4", description: "herkent wanneer hulp of melding nodig is.", points: 1, groupId: "screen4", kind: "singleCorrect", correctOptionIds: ["s4-if-continues-or-harms"] },
+      ],
+      scoreCaps: [
+        { id: "harmful-share-cap", maxScore: 2, optionIds: ["s1-send-one-friend", "s2-send-to-others"] },
+        { id: "escalation-as-joke-cap", maxScore: 2, optionIds: ["s1-joke-back", "s2-make-sticker", "s3-more-videos"] },
+        { id: "victim-blaming-cap", maxScore: 3, optionIds: ["s3-dont-exaggerate", "s3-leave-chat"] },
+        { id: "rejects-help-cap", maxScore: 3, optionIds: ["s4-never-private-chat"] },
+      ],
+    },
+  };
+
   return specs[versionId];
 };
 
@@ -2530,10 +2794,62 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
   };
 
   const mail: Record<AssessmentVersionId, MailTaskSpec> = {
-    "lj1-vmbo": { id: "lj1v-pt2-mail", title: "PT2 - E-mail functioneel gebruiken", instruction: "Stuur een verslag naar je mentor. Gebruik de juiste ontvanger, het onderwerp Verslag Nederlands, de juiste bijlage en verzend de mail.", kerndoel: "21A", config: v3MailConfig({ to: "mentor@school.nl", subject: "Verslag Nederlands", files: ["verslag_nederlands.docx", "werkblad_mens_en_maatschappij.pdf"], requiredAttachment: "verslag_nederlands.docx" }) },
-    "lj1-hv": { id: "lj1h-pt2-mail", title: "PT2 - E-mail functioneel gebruiken", instruction: "Stuur een verslag naar je mentor. Vermeld de projectnaam in het onderwerp, voeg de juiste bijlage toe en verzend de mail.", kerndoel: "21A", config: v3MailConfig({ to: "mentor@school.nl", subject: "Project Water verslag", files: ["project_water_verslag.docx", "bron_water.pdf"], requiredAttachment: "project_water_verslag.docx" }) },
-    "lj3-vmbo": { id: "lj3v-pt2-mail", title: "PT2 - E-mail functioneel gebruiken", instruction: "Stuur een e-mail aan je stagebegeleider met een helder onderwerp en de juiste bijlage. Zet je mentor in cc en gebruik geen bcc.", kerndoel: "21A", config: v3MailConfig({ to: "stagebegeleider@bedrijf.nl", cc: ["mentor@school.nl"], forbiddenBcc: true, subject: "Stageverslag definitieve versie", files: ["stageverslag_v3_definitief.docx", "stageverslag_v2.docx"], requiredAttachment: "stageverslag_v3_definitief.docx" }) },
-    "lj3-hv": { id: "lj3h-pt2-mail", title: "PT2 - E-mail functioneel gebruiken", instruction: "Stuur een projectmail naar je docent. Zet de projectgroep in cc, gebruik de juiste onderwerpregel, voeg de juiste bijlage toe en voeg geen verkeerde extra bijlage toe.", kerndoel: "21A", config: v3MailConfig({ to: "docent@school.nl", cc: ["groepsgenoot1@school.nl", "groepsgenoot2@school.nl"], subject: "Definitief onderzoeksverslag", files: ["onderzoeksverslag_definitief.pdf", "onderzoeksverslag_oud.pdf", "bronnenlijst.pdf"], requiredAttachment: "onderzoeksverslag_definitief.pdf", forbiddenAttachments: ["onderzoeksverslag_oud.pdf", "bronnenlijst.pdf"] }) },
+    "lj1-vmbo": {
+      id: "lj1v-pt2-mail",
+      title: "E-mail opstellen",
+      instruction:
+        "Stuur een verslag van Nederlands via e-mail naar je mentor.\n1. Kies de juiste ontvanger in het juiste veld.\n2. Gebruik het juiste onderwerp: Verslag Nederlands.\n3. Voeg de juiste bijlage toe.\n4. Verzend de e-mail.",
+      kerndoel: "21A",
+      config: v3MailConfig({
+        to: "mentor@school.nl",
+        subject: "Verslag Nederlands",
+        files: ["Aantekeningen.docx", "Foto_vakantie.jpg", "Rooster.pdf", "Verslag_Nederlands.docx"],
+        requiredAttachment: "Verslag_Nederlands.docx",
+      }),
+    },
+    "lj1-hv": {
+      id: "lj1h-pt2-mail",
+      title: "E-mail opstellen",
+      instruction:
+        "Stuur een verslag van Nederlands via e-mail naar je mentor.\n1. Kies de juiste ontvanger in het juiste veld.\n2. Gebruik het juiste onderwerp: Project Water verslag.\n3. Voeg de juiste bijlage toe.\n4. Verzend de e-mail.",
+      kerndoel: "21A",
+      config: v3MailConfig({
+        to: "mentor@school.nl",
+        subject: "Project Water verslag",
+        files: ["Bron_water.pdf", "Foto_projectdag.jpg", "Project_Water_verslag.docx", "Rooster.pdf"],
+        requiredAttachment: "Project_Water_verslag.docx",
+      }),
+    },
+    "lj3-vmbo": {
+      id: "lj3v-pt2-mail",
+      title: "E-mail opstellen",
+      instruction:
+        "Stuur een e-mail aan je stagebegeleider.\n1. Kies de stagebegeleider als ontvanger in Aan.\n2. Zet je mentor in Cc en gebruik geen Bcc.\n3. Gebruik het juiste onderwerp: Stageverslag definitieve versie.\n4. Voeg de juiste bijlage toe.\n5. Verzend de e-mail.",
+      kerndoel: "21A",
+      config: v3MailConfig({
+        to: "stagebegeleider@bedrijf.nl",
+        cc: ["mentor@school.nl"],
+        forbiddenBcc: true,
+        subject: "Stageverslag definitieve versie",
+        files: ["Beoordeling_stage.pdf", "Planning_stage.xlsx", "Stageverslag_v2.docx", "Stageverslag_v3_definitief.docx"],
+        requiredAttachment: "Stageverslag_v3_definitief.docx",
+      }),
+    },
+    "lj3-hv": {
+      id: "lj3h-pt2-mail",
+      title: "E-mail opstellen",
+      instruction:
+        "Stuur een projectmail naar je docent.\n1. Kies de docent als ontvanger in Aan.\n2. Zet beide groepsgenoten in Cc.\n3. Gebruik het juiste onderwerp: Definitief onderzoeksverslag.\n4. Voeg alleen de juiste bijlage toe.\n5. Verzend de e-mail.",
+      kerndoel: "21A",
+      config: v3MailConfig({
+        to: "docent@school.nl",
+        cc: ["groepsgenoot1@school.nl", "groepsgenoot2@school.nl"],
+        subject: "Definitief onderzoeksverslag",
+        files: ["Bronnenlijst.pdf", "Onderzoeksverslag_definitief.pdf", "Onderzoeksverslag_oud.pdf", "Resultaten.xlsx"],
+        requiredAttachment: "Onderzoeksverslag_definitief.pdf",
+        forbiddenAttachments: ["Bronnenlijst.pdf", "Onderzoeksverslag_oud.pdf", "Resultaten.xlsx"],
+      }),
+    },
   };
 
   return {
@@ -2561,8 +2877,8 @@ export const assessmentMap: Record<AssessmentVersionId, AssessmentVersion> =
   );
 
 export const defaultCodeMappings: CodeMapping[] = [
-  { codes: ["vmbo1", "6663"], instrumentId: "lj1-vmbo", label: "Leerjaar 1 VMBO" },
-  { codes: ["hv1"], instrumentId: "lj1-hv", label: "Leerjaar 1 HAVO/VWO" },
-  { codes: ["vmbo3", "vmbo 3"], instrumentId: "lj3-vmbo", label: "Leerjaar 3 VMBO" },
-  { codes: ["hv3"], instrumentId: "lj3-hv", label: "Leerjaar 3 HAVO/VWO" },
+  { codes: ["vmbo1", "6663", "testvmbo1"], instrumentId: "lj1-vmbo", label: "Leerjaar 1 VMBO" },
+  { codes: ["hv1", "testhv1"], instrumentId: "lj1-hv", label: "Leerjaar 1 HAVO/VWO" },
+  { codes: ["vmbo3", "vmbo 3", "testvmbo3"], instrumentId: "lj3-vmbo", label: "Leerjaar 3 VMBO" },
+  { codes: ["hv3", "testhv3"], instrumentId: "lj3-hv", label: "Leerjaar 3 HAVO/VWO" },
 ];

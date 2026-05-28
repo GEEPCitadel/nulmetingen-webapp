@@ -321,6 +321,30 @@ button { cursor: pointer; }
   padding: 14px 16px;
 }
 
+.source-card-grid {
+  grid-template-columns: 1fr;
+}
+
+.source-option-card {
+  align-items: flex-start;
+}
+
+.source-option-card .option-text {
+  display: grid;
+  gap: 6px;
+}
+
+.source-option-card .option-text strong {
+  line-height: 1.25;
+}
+
+.source-option-card .option-text small {
+  color: rgba(60, 60, 59, 0.72);
+  font-size: 0.94rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
 .mockup-frame {
   display: grid;
   gap: 12px;
@@ -369,38 +393,39 @@ button { cursor: pointer; }
 
 .stimulus-address-bar {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
+  grid-template-columns: 18px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 10px 14px;
-  border: 1px solid rgba(60, 60, 59, 0.18);
-  border-radius: 10px;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid #cfd4dc;
+  border-radius: 999px;
   background: #fff;
   color: #1f2937;
-  font-family: "Courier New", monospace;
-  font-size: 0.94rem;
+  font-family: Arial, sans-serif;
+  font-size: 0.9rem;
   overflow-wrap: anywhere;
 }
 
 .stimulus-lock {
   position: relative;
-  width: 16px;
-  height: 13px;
-  border-radius: 3px;
-  background: #16805f;
+  width: 11px;
+  height: 9px;
+  border: 1.6px solid #6b7280;
+  border-radius: 2px;
+  background: transparent;
 }
 
 .stimulus-lock::before {
   content: "";
   position: absolute;
-  left: 3px;
-  top: -9px;
-  width: 10px;
-  height: 10px;
-  border: 3px solid #16805f;
+  left: 1.5px;
+  top: -7px;
+  width: 6px;
+  height: 7px;
+  border: 1.6px solid #6b7280;
   border-bottom: 0;
-  border-radius: 10px 10px 0 0;
+  border-radius: 7px 7px 0 0;
 }
 
 .media-hint {
@@ -997,6 +1022,12 @@ button { cursor: pointer; }
   gap: 16px;
 }
 
+.excel-question-stack {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+}
+
 .interaction-screen {
   display: grid;
   align-content: start;
@@ -1111,7 +1142,7 @@ button { cursor: pointer; }
 
 .fake-teams-titlebar {
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   min-height: 48px;
@@ -1128,13 +1159,6 @@ button { cursor: pointer; }
   border-radius: 6px;
   background: #6264a7;
   font-weight: 900;
-}
-
-.fake-teams-meeting-title {
-  justify-self: end;
-  min-width: 0;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 0.92rem;
 }
 
 .fake-teams-content {
@@ -1591,12 +1615,221 @@ button { cursor: pointer; }
 .fake-window-preview {
   display: grid;
   place-items: center;
-  height: 42px;
+  min-height: 74px;
   border-radius: 6px;
+  overflow: hidden;
   background: linear-gradient(135deg, #e9ecff, #f8fafc);
   color: #464775;
   font-family: "Courier New", monospace;
   font-weight: 900;
+}
+
+.window-art {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 72px;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.window-art.large {
+  min-height: 372px;
+  border-radius: 0;
+}
+
+.window-art-media {
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(160deg, #224c67, #101821 52%, #4a2b3b);
+}
+
+.window-art-media .film-sky {
+  position: absolute;
+  inset: 10% 12% 24%;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 22% 24%, #f8fafc 0 4%, transparent 5%),
+    linear-gradient(160deg, #62b6cb 0 44%, #22333b 45% 100%);
+  opacity: .9;
+}
+
+.window-art-media .film-play {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .92);
+  color: #111827;
+  font-size: 1.1rem;
+}
+
+.window-art-media.large .film-play {
+  width: 74px;
+  font-size: 1.8rem;
+}
+
+.window-art-media .film-controls {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 12%;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.window-art-media .film-controls span:first-child {
+  width: 20px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.window-art-media .film-controls span:last-child {
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #d92d20 0 42%, #4b5563 42% 100%);
+}
+
+.window-art-word {
+  background: #eef3ff;
+}
+
+.window-art-word .word-ribbon {
+  display: flex;
+  gap: 5px;
+  padding: 7px 8px;
+  background: #2454a6;
+}
+
+.window-art-word .word-ribbon span {
+  width: 28px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .8);
+}
+
+.window-art-word .word-page {
+  display: grid;
+  gap: 7px;
+  width: 68%;
+  min-height: 54%;
+  margin: 10px auto;
+  padding: 12px;
+  background: #fff;
+  color: #1f2937;
+  box-shadow: 0 8px 18px rgba(31, 41, 55, .16);
+}
+
+.window-art-word.large .word-page {
+  min-height: 260px;
+  margin-top: 28px;
+  padding: 28px;
+}
+
+.window-art-word .word-page strong {
+  text-align: center;
+}
+
+.window-art-word .word-page span {
+  height: 8px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.window-art-word .word-page span.short {
+  width: 64%;
+}
+
+.window-art-excel {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 10px;
+  background: #e7f3eb;
+}
+
+.window-art-excel span {
+  min-height: 18px;
+  border-right: 1px solid #b7d6c2;
+  border-bottom: 1px solid #b7d6c2;
+  background: #fff;
+}
+
+.window-art-excel span.head {
+  background: #217346;
+}
+
+.window-art-browser {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: #eaf2ff;
+}
+
+.window-art-browser .browser-bar {
+  height: 18px;
+  margin: 8px;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.window-art-browser .browser-card {
+  display: grid;
+  gap: 8px;
+  margin: 0 12px 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2937;
+}
+
+.window-art-browser .browser-card span {
+  height: 8px;
+  border-radius: 999px;
+  background: #bfdbfe;
+}
+
+.window-art-chat {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f4f5fb;
+}
+
+.window-art-chat .bubble {
+  height: 16px;
+  width: 68%;
+  border-radius: 999px;
+  background: #d9dced;
+}
+
+.window-art-chat .bubble.right {
+  justify-self: end;
+  background: #6264a7;
+}
+
+.window-art-chat .bubble.short {
+  width: 52%;
+}
+
+.window-art-desktop {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 14px;
+  background: linear-gradient(160deg, #1e293b, #0f172a);
+}
+
+.window-art-desktop span {
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .84);
 }
 
 .fake-sound-toggle {

@@ -11,6 +11,7 @@ import {
   createSession,
   getAssessment,
   getItemByStep,
+  getPresentedInteractionOrder,
   getPresentedOrder,
   getSectionById,
   getStepDescriptors,
@@ -39,6 +40,7 @@ import type {
   AssessmentVersion,
   EventLog,
   GoalScore,
+  IncomingMailStimulus,
   InteractionGroup,
   Pt1Node,
   Pt1State,
@@ -315,30 +317,6 @@ const shuffleItems = <T,>(items: T[]): T[] => {
     [clone[index], clone[randomIndex]] = [clone[randomIndex], clone[index]];
   }
   return clone;
-};
-
-const interactionOrderKey = (screenId: string, groupId: string, kind: "cards" | "options") =>
-  `${screenId}:${groupId}:${kind}`;
-
-const createInteractionOrders = (
-  task: AssessmentItem["securityTask"] | AssessmentItem["socialTask"],
-) => {
-  const orders: Record<string, string[]> = {};
-  task?.screens.forEach((screen) => {
-    screen.groups.forEach((group) => {
-      if (group.cards) {
-        orders[interactionOrderKey(screen.id, group.id, "cards")] = shuffleItems(
-          group.cards.map((card) => card.id),
-        );
-      }
-      if (group.options) {
-        orders[interactionOrderKey(screen.id, group.id, "options")] = shuffleItems(
-          group.options.map((option) => option.id),
-        );
-      }
-    });
-  });
-  return orders;
 };
 
 const QuestionHeader = ({
@@ -789,7 +767,6 @@ const AppShell = ({
     <img className="slinger" src={theme.ribbon} alt="" aria-hidden="true" />
     {screen !== "assessment" && screen !== "adminAccess" ? (
       <footer className="site-footer">
-        <span className="payoff">je leert, je groeit, je schittert.</span>
         <a
           className="site-url"
           href="https://www.citadelcollege.nl"
@@ -836,12 +813,8 @@ const StudentStartScreen = ({
         <div className="welcome-card">
           <div className="welcome-logo-img" role="img" aria-label="Citadel College" />
           <h1 className="welcome-title">
-            Welkom bij de<br />voortgangsmeting
+            Welkom bij de voortgangsmeting Digitale Geletterdheid
           </h1>
-          <p className="welcome-subtitle">
-            Digitale Geletterdheid · {assessmentLabels[selectedAssessmentId]}
-          </p>
-
           <label className="field-block welcome-field">
             <span className="field-label">Jouw persoonlijke afnamecode</span>
             <input
@@ -891,17 +864,16 @@ const StudentStartScreen = ({
 
         <div className="instruction-box">
           <ul className="instruction-list">
-            <li>De voortgangsmeting bestaat uit meerdere opdrachten en duurt <strong>ongeveer 30 minuten</strong>.</li>
-            <li>Sommige vragen zijn makkelijker, andere moeilijker. Weet je het echt niet? Kies dan <em>'Ik weet het niet.'</em> Dat is prima — geen stress.</li>
-            <li>Je hoeft geen internet te gebruiken voor de vragen.</li>
+            <li>De voortgangsmeting bestaat uit <strong>16</strong> opdrachten en duurt ongeveer 30 minuten.</li>
+            <li>Weet je het antwoord op een vraag echt niet, kies dan: <em>&quot;Ik weet het niet.&quot;</em> Zoek geen antwoorden op op internet.</li>
             <li>Per ongeluk afgesloten? Vul dezelfde afnamecode opnieuw in.</li>
-            <li>Aan het einde zie je hoeveel punten je hebt gehaald.</li>
+            <li>Aan het einde zie je welke score jij hebt gehaald.</li>
           </ul>
         </div>
 
         <div className="privacy-consent-box">
           <p>
-            Deze voortgangsmeting wordt aangeboden door Citadel College. Je antwoorden worden <strong>zonder naam</strong> opgeslagen — de uitkomsten zijn niet terug te leiden naar jou persoonlijk. De school bekijkt de resultaten per klas.
+            Deze voortgangsmeting wordt aangeboden door Citadel College. Je antwoorden worden <strong>zonder naam</strong> opgeslagen — de uitkomsten zijn niet terug te leiden naar jou persoonlijk. De school bekijkt de resultaten per klas en per leerjaar.
           </p>
           <p>Meedoen is niet verplicht.</p>
           <label className="check-row">
@@ -1105,8 +1077,9 @@ const AdminScreen = ({
     }));
 
   const exportBaseName = () => {
-    const suffix = paletteFilter === "all" ? "alle-klassen" : paletteFilter;
-    return `afnamecodes-${suffix}-${new Date().toISOString().slice(0, 10)}`;
+    const yearSuffix = yearFilter === "all" ? "alle-leerjaren" : yearFilter;
+    const classSuffix = classFilter.length === 0 ? "alle-klassen" : classFilter.join("-");
+    return `afnamecodes-${yearSuffix}-${classSuffix}-${new Date().toISOString().slice(0, 10)}`;
   };
 
   const exportCodesExcel = async () => {
@@ -1175,11 +1148,34 @@ const AdminScreen = ({
     "lj3-hv": "p5",
   };
 
-  const [paletteFilter, setPaletteFilter] = useState<"all" | "p2" | "p3" | "p4" | "p5">("all");
-  const filteredStudents =
-    paletteFilter === "all"
+  const getYearForVersion = (id: AssessmentVersion["id"]) =>
+    id.startsWith("lj1") ? "lj1" : "lj3";
+
+  const [yearFilter, setYearFilter] = useState<"all" | "lj1" | "lj3">("all");
+  const [classFilter, setClassFilter] = useState<string[]>([]);
+  const yearFilteredStudents =
+    yearFilter === "all"
       ? students
-      : students.filter((s) => versionToPalette[s.versionId] === paletteFilter);
+      : students.filter((student) => getYearForVersion(student.versionId) === yearFilter);
+  const availableClassCodes = Array.from(
+    new Set(yearFilteredStudents.map((student) => student.classCode).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b, "nl"));
+  const filteredStudents =
+    classFilter.length === 0
+      ? yearFilteredStudents
+      : yearFilteredStudents.filter((student) => classFilter.includes(student.classCode));
+  const classFilterLabel =
+    classFilter.length === 0
+      ? "Alle klassen"
+      : classFilter.length === 1
+        ? classFilter[0]
+        : `${classFilter.length} klassen`;
+
+  useEffect(() => {
+    setClassFilter((selected) =>
+      selected.filter((classCode) => availableClassCodes.includes(classCode)),
+    );
+  }, [availableClassCodes.join("|")]);
 
   const completedCount = students.filter((s) => s.status === "completed").length;
   const busyCount = students.filter((s) => s.status === "in_progress").length;
@@ -1345,24 +1341,49 @@ const AdminScreen = ({
           </div>
           <div className="rd-section-head" style={{ marginBottom: 0, gap: 12 }}>
             <div className="filters">
-              {(
-                [
-                  ["all", "Alle"],
-                  ["p4", "LJ1 VMBO"],
-                  ["p3", "LJ1 HV"],
-                  ["p2", "LJ3 VMBO"],
-                  ["p5", "LJ3 HV"],
-                ] as const
-              ).map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  className={`filter-chip ${paletteFilter === id ? "active" : ""}`}
-                  onClick={() => setPaletteFilter(id)}
+              <label className="admin-filter-select">
+                <span>Leerjaar</span>
+                <select
+                  value={yearFilter}
+                  onChange={(event) => {
+                    setYearFilter(event.target.value as "all" | "lj1" | "lj3");
+                    setClassFilter([]);
+                  }}
                 >
-                  {label}
-                </button>
-              ))}
+                  <option value="all">Alle leerjaren</option>
+                  <option value="lj1">Leerjaar 1</option>
+                  <option value="lj3">Leerjaar 3</option>
+                </select>
+              </label>
+              <details className="admin-filter-menu">
+                <summary className="filter-chip">Klas: {classFilterLabel}</summary>
+                <div className="admin-filter-popover">
+                  <label className="check-row compact">
+                    <input
+                      type="checkbox"
+                      checked={classFilter.length === 0}
+                      onChange={() => setClassFilter([])}
+                    />
+                    <span>Alle klassen</span>
+                  </label>
+                  {availableClassCodes.map((classCode) => (
+                    <label className="check-row compact" key={classCode}>
+                      <input
+                        type="checkbox"
+                        checked={classFilter.includes(classCode)}
+                        onChange={(event) => {
+                          setClassFilter((selected) =>
+                            event.target.checked
+                              ? Array.from(new Set([...selected, classCode]))
+                              : selected.filter((item) => item !== classCode),
+                          );
+                        }}
+                      />
+                      <span>{classCode}</span>
+                    </label>
+                  ))}
+                </div>
+              </details>
             </div>
             <button
               className="filter-chip"
@@ -1372,15 +1393,22 @@ const AdminScreen = ({
             >
               ↻ Vernieuwen
             </button>
-            <button className="filter-chip" type="button" onClick={exportCodesExcel} disabled={filteredStudents.length === 0}>
-              Excel
-            </button>
-            <button className="filter-chip" type="button" onClick={exportCodesWord} disabled={filteredStudents.length === 0}>
-              Word
-            </button>
-            <button className="filter-chip" type="button" onClick={exportCodesPdf} disabled={filteredStudents.length === 0}>
-              PDF
-            </button>
+            <details className="admin-export-menu">
+              <summary className={`filter-chip ${filteredStudents.length === 0 ? "disabled" : ""}`}>
+                Exporteer
+              </summary>
+              <div className="admin-export-options">
+                <button className="filter-chip" type="button" onClick={exportCodesWord} disabled={filteredStudents.length === 0}>
+                  Word
+                </button>
+                <button className="filter-chip" type="button" onClick={exportCodesExcel} disabled={filteredStudents.length === 0}>
+                  Excel
+                </button>
+                <button className="filter-chip" type="button" onClick={exportCodesPdf} disabled={filteredStudents.length === 0}>
+                  PDF
+                </button>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -1635,7 +1663,6 @@ const AssessmentScreen = ({
           state={session.pt1States[item.id]}
           onChange={(nextState) => onUpdateFileTaskState(item, nextState)}
           onFinish={() => onFinishFileTask(section, item)}
-          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1645,12 +1672,12 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
-          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
       {item.type === "account_security_simulation" ? (
         <InteractionTaskView
+          session={session}
           section={section}
           item={item}
           questionNumber={questionNumber ?? 1}
@@ -1712,6 +1739,7 @@ const AssessmentScreen = ({
 
       {item.type === "social_action_simulation" ? (
         <InteractionTaskView
+          session={session}
           section={section}
           item={item}
           questionNumber={questionNumber ?? 1}
@@ -1799,13 +1827,11 @@ const MailTaskView = ({
   item,
   questionNumber,
   onSubmit,
-  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
-  onSkip: () => void;
 }) => {
   type AddressField = "to" | "cc" | "bcc";
   type CommandPanel = "attachments" | "link" | null;
@@ -2035,15 +2061,18 @@ const MailTaskView = ({
     const dot = filename.lastIndexOf(".");
     return dot >= 0 ? filename.slice(dot + 1).toUpperCase().slice(0, 4) : "FILE";
   };
-  const ribbonIcon = (button: string) => {
+  const sortedFiles = [...task.files].sort((a, b) =>
+    a.localeCompare(b, "nl", { sensitivity: "base" }),
+  );
+  const ribbonIcon = (button: string): ReactNode => {
     if (button === "Ongedaan maken") return "↶";
     if (button === "Lettertype") return "Aa";
     if (button === "Lettergrootte") return draft.fontSize;
     if (button === "Vet") return "B";
-    if (button === "Cursief") return "I";
-    if (button === "Onderstrepen") return "U";
+    if (button === "Cursief") return <span className="rb-icon-italic">I</span>;
+    if (button === "Onderstrepen") return <span className="rb-icon-underline">U</span>;
     if (button === "BCC tonen") return "Bcc";
-    if (button === "Bestand invoegen") return "📎";
+    if (button === "Bestand invoegen") return <span className="classic-paperclip" />;
     if (button === "Hyperlink invoegen") return "🔗";
     if (button === "Prioriteit") return "!";
     if (button === "Afdrukken") return "⎙";
@@ -2084,9 +2113,8 @@ const MailTaskView = ({
                   (button === "Cursief" && draft.italic) ||
                   (button === "Onderstrepen" && draft.underline) ||
                   (button === "BCC tonen" && draft.bccVisible);
-                return (
+                const buttonElement = (
                   <button
-                    key={button}
                     className={`rb rb-icon-only ${isActive ? "active" : ""}`}
                     type="button"
                     onClick={() => handleRibbonCommand(button)}
@@ -2095,6 +2123,35 @@ const MailTaskView = ({
                   >
                     <span className="rb-ico" aria-hidden="true">{ribbonIcon(button)}</span>
                   </button>
+                );
+                if (button !== "Bestand invoegen") {
+                  return <span key={button}>{buttonElement}</span>;
+                }
+                return (
+                  <span className="mail-ribbon-button-wrap" key={button}>
+                    {buttonElement}
+                    {activeCommandPanel === "attachments" ? (
+                      <div className="mail-attach-menu">
+                        <strong className="mail-attach-picker-label">Bestand kiezen</strong>
+                        <div className="mail-attach-list">
+                          {sortedFiles.map((file) => {
+                            const picked = draft.attachments.includes(file);
+                            return (
+                              <button
+                                key={file}
+                                type="button"
+                                className={`attach-chip is-picker ${picked ? "is-picked" : ""}`}
+                                onClick={() => toggleListValue("attachments", file)}
+                              >
+                                <span className="file-pic">{fileExt(file)}</span>
+                                <span className="attach-name">{file}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </span>
                 );
               })}
             </div>
@@ -2122,7 +2179,7 @@ const MailTaskView = ({
             >
               ▾
             </button>
-            <span className="mail-from">Van: vrbril@citadelcollege.nl</span>
+            <span className="mail-from">Van: 01234@leerling.citadelcollege.nl</span>
           </div>
 
           {activeCommandPanel === "link" ? (
@@ -2165,7 +2222,14 @@ const MailTaskView = ({
           <div className="mail-fields">
           {(["to", "cc", "bcc"] as const).map((field) =>
             fieldVisible(field) ? (
-              <div className="mail-field" key={field}>
+              <div
+                className="mail-field mail-field-address"
+                key={field}
+                onClick={() => {
+                  setActiveAddressField((current) => (current === field ? null : field));
+                  setActiveCommandPanel(null);
+                }}
+              >
                 <span className="label">{fieldLabel(field)}</span>
                 <div className="chips-row">
                   {draft[field].map((contact) => (
@@ -2175,7 +2239,10 @@ const MailTaskView = ({
                       <button
                         type="button"
                         className="x"
-                        onClick={() => toggleListValue(field, contact)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleListValue(field, contact);
+                        }}
                         aria-label={`${contact} verwijderen`}
                       >
                         ×
@@ -2186,16 +2253,6 @@ const MailTaskView = ({
                     <span className="chips-placeholder">Voeg een ontvanger toe…</span>
                   ) : null}
                 </div>
-                <button
-                  className="add-btn"
-                  type="button"
-                  onClick={() =>
-                    setActiveAddressField((current) => (current === field ? null : field))
-                  }
-                  aria-expanded={activeAddressField === field}
-                >
-                  + Contact
-                </button>
                 {activeAddressField === field ? (
                   <div className="mail-picker-inline">
                     <div className="mail-picker-header">Contactenlijst</div>
@@ -2205,7 +2262,10 @@ const MailTaskView = ({
                         <button
                           key={`${field}-pick-${contact}`}
                           type="button"
-                          onClick={() => toggleListValue(field, contact)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            toggleListValue(field, contact);
+                          }}
                           className={`mail-picker-item ${isPicked ? "is-picked" : ""}`}
                         >
                           <span className="avatar">{contactInitials(contact)}</span>
@@ -2235,6 +2295,25 @@ const MailTaskView = ({
               <span className="priority-flag" aria-label="Hoge prioriteit">!</span>
             ) : null}
           </div>
+          {draft.attachments.length > 0 ? (
+            <div className="mail-attachments mail-attachments-inline">
+              <span className="classic-paperclip" aria-hidden="true" />
+              {draft.attachments.map((attachment) => (
+                <span className="attach-chip" key={attachment}>
+                  <span className="file-pic">{fileExt(attachment)}</span>
+                  <span className="attach-name">{attachment}</span>
+                  <button
+                    type="button"
+                    className="attach-remove"
+                    aria-label={`${attachment} verwijderen`}
+                    onClick={() => toggleListValue("attachments", attachment)}
+                  >
+                    Ã—
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : null}
           </div>
 
           <div className="mail-body-area">
@@ -2259,56 +2338,13 @@ const MailTaskView = ({
             ) : null}
           </div>
 
-          {activeCommandPanel === "attachments" ? (
-            <div className="mail-attach-picker">
-              <strong className="mail-attach-picker-label">Beschikbare bestanden</strong>
-              <div className="mail-attach-list">
-                {task.files.map((file) => {
-                  const picked = draft.attachments.includes(file);
-                  return (
-                    <button
-                      key={file}
-                      type="button"
-                      className={`attach-chip is-picker ${picked ? "is-picked" : ""}`}
-                      onClick={() => toggleListValue("attachments", file)}
-                    >
-                      <span className="file-pic">{fileExt(file)}</span>
-                      <span className="attach-name">{file}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
-
-          {draft.attachments.length > 0 ? (
-            <div className="mail-attachments">
-              <span className="mail-attach-paperclip" aria-hidden="true">📎</span>
-              {draft.attachments.map((attachment) => (
-                <span className="attach-chip" key={attachment}>
-                  <span className="file-pic">{fileExt(attachment)}</span>
-                  <span className="attach-name">{attachment}</span>
-                  <button
-                    type="button"
-                    className="attach-remove"
-                    aria-label={`${attachment} verwijderen`}
-                    onClick={() => toggleListValue("attachments", attachment)}
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-          ) : null}
-
         </div>
       </div>
 
       <TaskNavFooter
         questionNumber={questionNumber}
-        primaryLabel={draft.sent ? "Taak afronden" : "Verstuur"}
+        primaryLabel={draft.sent ? "Taak afronden" : "Volgende"}
         onPrimary={draft.sent ? submit : () => { sendMessage(); submit(); }}
-        onSkip={onSkip}
       />
     </section>
   );
@@ -2319,21 +2355,15 @@ const TaskNavFooter = ({
   totalCount,
   primaryLabel,
   onPrimary,
-  onSkip,
   primaryDisabled,
 }: {
   questionNumber: number;
   totalCount?: number;
   primaryLabel: string;
   onPrimary: () => void;
-  onSkip: () => void;
   primaryDisabled?: boolean;
 }) => (
   <div className="task-nav">
-    <button className="task-nav-back" type="button" onClick={onSkip}>
-      <span className="task-nav-arrow" aria-hidden="true">←</span>
-      <span>Vorige</span>
-    </button>
     <span className="task-nav-progress">
       {totalCount ? `Opdracht ${questionNumber} van ${totalCount}` : `Opdracht ${questionNumber}`}
     </span>
@@ -2350,6 +2380,7 @@ const TaskNavFooter = ({
 );
 
 const InteractionTaskView = ({
+  session,
   section,
   item,
   questionNumber,
@@ -2357,6 +2388,7 @@ const InteractionTaskView = ({
   onSubmit,
   onSkip,
 }: {
+  session: AssessmentSession;
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
@@ -2365,7 +2397,6 @@ const InteractionTaskView = ({
   onSkip: () => void;
 }) => {
   const [state, setState] = useState<Record<string, unknown>>({});
-  const [optionOrders] = useState(() => createInteractionOrders(task));
   if (!task) {
     return null;
   }
@@ -2374,7 +2405,15 @@ const InteractionTaskView = ({
     screenId: string,
     group: InteractionGroup,
     kind: "cards" | "options",
-  ) => optionOrders[interactionOrderKey(screenId, group.id, kind)] ?? [];
+  ) =>
+    getPresentedInteractionOrder(
+      session,
+      section.id,
+      item.id,
+      screenId,
+      group.id,
+      kind,
+    );
   const orderedEntries = (entries: NonNullable<InteractionGroup["options"]>, order: string[]) =>
     (order.length > 0 ? order : entries.map((entry) => entry.id))
       .map((id) => entries.find((entry) => entry.id === id))
@@ -2388,7 +2427,12 @@ const InteractionTaskView = ({
       ? orderedEntries(group.options, orderFor(screenId, group, "options"))
       : undefined,
   });
-  const shownOptionOrder = Object.values(optionOrders).flat();
+  const shownOptionOrder = task.screens.flatMap((screen) =>
+    screen.groups.flatMap((group) => [
+      ...orderFor(screen.id, group, "cards"),
+      ...orderFor(screen.id, group, "options"),
+    ]),
+  );
 
   const setGroupValue = (groupId: string, value: unknown) => {
     setState((current) => ({ ...current, [groupId]: value }));
@@ -2418,6 +2462,7 @@ const InteractionTaskView = ({
               <p>{screen.instruction}</p>
               {screen.body ? <div className="notice-banner">{screen.body}</div> : null}
             </div>
+            {screen.emailStimulus ? <IncomingMailStimulusView email={screen.emailStimulus} /> : null}
             {screen.groups.map((group) => (
             <InteractionGroupControl
               key={group.id}
@@ -2440,6 +2485,63 @@ const InteractionTaskView = ({
     </section>
   );
 };
+
+const IncomingMailStimulusView = ({ email }: { email: IncomingMailStimulus }) => (
+  <div className="mail-shell incoming-mail-shell" aria-label="E-mailbericht">
+    <div className="mail-main">
+      <div className="mail-titlebar">E-mail</div>
+      <div className="mail-tabs" aria-label="Menubalk">
+        {["Bestand", "Bericht", "Invoegen", "Opties"].map((tab) => (
+          <span key={tab} className={tab === "Bericht" ? "active" : ""}>{tab}</span>
+        ))}
+      </div>
+      <div className="mail-ribbon">
+        <div className="mail-ribbon-group">
+          {["Beantwoorden", "Doorsturen", "Verwijderen", "Markeren"].map((button) => (
+            <button className="rb rb-readonly" type="button" disabled key={button}>
+              {button}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="incoming-mail-header">
+        <div className="incoming-mail-avatar" aria-hidden="true">
+          {email.fromName.slice(0, 2).toUpperCase()}
+        </div>
+        <div className="incoming-mail-meta">
+          <strong>{email.subject}</strong>
+          <span>
+            Van: {email.fromName} &lt;{email.fromEmail}&gt;
+          </span>
+          <span>Aan: {email.toEmail}</span>
+        </div>
+        <time>{email.date}</time>
+      </div>
+      {email.attachments && email.attachments.length > 0 ? (
+        <div className="mail-attachments mail-attachments-inline incoming-attachments">
+          <span className="classic-paperclip" aria-hidden="true" />
+          {email.attachments.map((attachment) => (
+            <span className="attach-chip" key={attachment}>
+              <span className="file-pic">{attachment.split(".").pop()?.toUpperCase().slice(0, 4) ?? "FILE"}</span>
+              <span className="attach-name">{attachment}</span>
+            </span>
+          ))}
+        </div>
+      ) : null}
+      <div className="mail-body-area incoming-mail-body">
+        {email.body.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+        {email.linkLabel && email.linkUrl ? (
+          <div className="incoming-link-block">
+            <span>{email.linkLabel}</span>
+            <code>{email.linkUrl}</code>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  </div>
+);
 
 const InteractionGroupControl = ({
   group,
@@ -2592,7 +2694,7 @@ const ExcelDownloadTaskView = ({
         Open dit bestand in Microsoft Excel of Excel Online.
       </div>
 
-      <div className="task-screen-grid">
+      <div className="excel-question-stack">
         {task.questions.map((question) => (
           <label className="field" key={question.id}>
             <span>{question.prompt}</span>
@@ -2898,6 +3000,104 @@ const actionName = (label: string) =>
 
 const teamsPortraitImage = "/teams/meeting-portraits.png";
 
+const windowKind = (windowName: string) => {
+  const normalized = windowName.toLowerCase();
+  if (normalized.includes("videospeler") || normalized.includes("media player")) {
+    return "media";
+  }
+  if (normalized.includes("word")) {
+    return "word";
+  }
+  if (normalized.includes("excel")) {
+    return "excel";
+  }
+  if (normalized.includes("browser")) {
+    return "browser";
+  }
+  if (normalized.includes("chat")) {
+    return "chat";
+  }
+  return "desktop";
+};
+
+const WindowPreviewArt = ({ windowName, large = false }: { windowName: string; large?: boolean }) => {
+  const kind = windowKind(windowName);
+
+  if (kind === "media") {
+    return (
+      <div className={`window-art window-art-media ${large ? "large" : ""}`}>
+        <div className="film-sky" />
+        <div className="film-play">▶</div>
+        <div className="film-controls"><span /><span /></div>
+      </div>
+    );
+  }
+
+  if (kind === "word") {
+    return (
+      <div className={`window-art window-art-word ${large ? "large" : ""}`}>
+        <div className="word-ribbon"><span /><span /><span /></div>
+        <div className="word-page">
+          <strong>Verslag</strong>
+          <span />
+          <span />
+          <span className="short" />
+        </div>
+      </div>
+    );
+  }
+
+  if (kind === "excel") {
+    return (
+      <div className={`window-art window-art-excel ${large ? "large" : ""}`}>
+        {Array.from({ length: 20 }, (_, index) => (
+          <span className={index < 5 ? "head" : ""} key={index} />
+        ))}
+      </div>
+    );
+  }
+
+  if (kind === "browser") {
+    return (
+      <div className={`window-art window-art-browser ${large ? "large" : ""}`}>
+        <div className="browser-bar" />
+        <div className="browser-card"><strong>Rooster</strong><span /><span /></div>
+      </div>
+    );
+  }
+
+  if (kind === "chat") {
+    return (
+      <div className={`window-art window-art-chat ${large ? "large" : ""}`}>
+        <span className="bubble left" />
+        <span className="bubble right" />
+        <span className="bubble left short" />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`window-art window-art-desktop ${large ? "large" : ""}`}>
+      <span />
+      <span />
+      <span />
+    </div>
+  );
+};
+
+const SharedWindowStage = ({ windowName }: { windowName: string }) => (
+  <div className="fake-shared-stage">
+    <div className="fake-sharing-label">Je deelt nu dit venster</div>
+    <div className="fake-shared-window">
+      <div className="fake-window-titlebar">
+        <span>Macrohard Teams</span>
+        <span>{windowName}</span>
+      </div>
+      <WindowPreviewArt windowName={windowName} large />
+    </div>
+  </div>
+);
+
 const TeamsVideoTile = ({
   person,
   initials,
@@ -3050,11 +3250,10 @@ const FakeTeamsTask = ({
         <div className="notice-banner">{task.scenario}</div>
       </QuestionHeader>
 
-      <div className="fake-teams-shell" aria-label="Fake Teams-vergadering">
+      <div className="fake-teams-shell" aria-label="Macrohard Teams-vergadering">
         <div className="fake-teams-titlebar">
-          <div className="fake-teams-appmark">T</div>
-          <span>Microsoft Teams</span>
-          <span className="fake-teams-meeting-title">Nulmeting DG</span>
+          <div className="fake-teams-appmark">M</div>
+          <span>Macrohard Teams</span>
         </div>
 
         <div className={`fake-teams-content ${state.participantsOpen ? "" : "participants-hidden"}`}>
@@ -3062,7 +3261,7 @@ const FakeTeamsTask = ({
             <aside className="fake-teams-side">
               <strong>Vergadering</strong>
               <span>Nu bezig</span>
-              <div className="fake-participant active">Leerling Anoniem</div>
+              <div className="fake-participant active">Mark Canbers</div>
               <div className="fake-participant">Docent</div>
               <button
                 className="fake-invite-button"
@@ -3076,14 +3275,20 @@ const FakeTeamsTask = ({
 
           <div className="fake-teams-main">
             <div className="fake-teams-stage">
-              <TeamsVideoTile
-                person="Leerling Anoniem"
-                initials="LA"
-                cameraOn={state.cameraOn}
-                photoSide="learner"
-                blurred={state.backgroundBlurred}
-              />
-              <TeamsVideoTile person="Docent" initials="D" cameraOn photoSide="teacher" small />
+              {state.selectedWindow === task.correctWindow ? (
+                <SharedWindowStage windowName={state.selectedWindow} />
+              ) : (
+                <>
+                  <TeamsVideoTile
+                    person="Mark Canbers"
+                    initials="MC"
+                    cameraOn={state.cameraOn}
+                    photoSide="learner"
+                    blurred={state.backgroundBlurred}
+                  />
+                  <TeamsVideoTile person="Docent" initials="D" cameraOn photoSide="teacher" small />
+                </>
+              )}
             </div>
 
             {state.reactionBursts.map((reaction, index) => (
@@ -3133,7 +3338,9 @@ const FakeTeamsTask = ({
                         });
                       }}
                     >
-                      <span className="fake-share-icon" aria-hidden="true" />
+                      <span className="fake-share-icon" aria-hidden="true">
+                        <WindowPreviewArt windowName={option} />
+                      </span>
                       <span>{option}</span>
                     </button>
                   ))}
@@ -3155,12 +3362,16 @@ const FakeTeamsTask = ({
                           windowName === task.correctWindow
                             ? "selected_windows_media_player"
                             : `selected_${actionName(windowName).replace(/^clicked_/, "")}`,
-                          { selectedWindow: windowName },
+                          {
+                            selectedWindow: windowName,
+                            shareOpened: windowName === task.correctWindow ? false : state.shareOpened,
+                            windowPickerOpen: windowName === task.correctWindow ? false : state.windowPickerOpen,
+                          },
                         );
                       }}
                     >
                       <span className="fake-window-preview" aria-hidden="true">
-                        {windowName === "Windows Media Player" ? ">" : ""}
+                        <WindowPreviewArt windowName={windowName} />
                       </span>
                       <span>{windowName}</span>
                     </button>
@@ -3178,7 +3389,7 @@ const FakeTeamsTask = ({
                   </button>
                 </div>
                 <div className="fake-chat-messages" aria-live="polite">
-                  <div className="fake-chat-message received">Welkom bij de nulmeting.</div>
+                  <div className="fake-chat-message received">Welkom bij de meting DG</div>
                   {state.chatMessages.map((message) => (
                     <div className="fake-chat-message sent" key={message.id}>
                       {message.text}
@@ -3260,7 +3471,10 @@ const FakeTeamsTask = ({
               type="button"
               onClick={() => {
                 if (button === "Delen") {
-                  logAction("clicked_share", { shareOpened: true, windowPickerOpen: false });
+                  logAction("clicked_share", {
+                    shareOpened: !state.shareOpened,
+                    windowPickerOpen: false,
+                  });
                   return;
                 }
                 if (button === "Camera") {
@@ -3299,7 +3513,7 @@ const FakeTeamsTask = ({
         {state.selectedWindow ? (
           <div className="fake-teams-status">
             {state.selectedWindow === task.correctWindow
-              ? "Windows Media Player wordt gedeeld"
+              ? `${task.correctWindow} wordt gedeeld`
               : `${state.selectedWindow} is geselecteerd`}
           </div>
         ) : null}
@@ -4003,19 +4217,22 @@ const ChoiceItemView = ({
         <p className="helper-text">Kies maximaal {selectCount} antwoorden.</p>
       ) : null}
 
-      <div className="option-grid">
+      <div className={item.renderOptionsAsSourceCards ? "option-grid source-card-grid" : "option-grid"}>
         {displayOptions.map((option, idx) => {
           const letter = String.fromCharCode(65 + idx);
           const selected = selectedIds.includes(option.id);
           return (
             <button
-              className={`option-card${selected ? " selected" : ""}`}
+              className={`option-card${item.renderOptionsAsSourceCards ? " source-option-card" : ""}${selected ? " selected" : ""}`}
               key={option.id}
               type="button"
               onClick={() => toggleOption(option.id)}
             >
               <span className="option-letter">{letter}</span>
-              <span className="option-text">{option.label}</span>
+              <span className="option-text">
+                <strong>{option.label}</strong>
+                {option.description ? <small>{option.description}</small> : null}
+              </span>
               <span className="option-radio" aria-hidden="true" />
             </button>
           );
@@ -4173,14 +4390,12 @@ const FileTaskWorkspace = ({
   state,
   onChange,
   onFinish,
-  onSkip,
 }: {
   item: AssessmentItem;
   questionNumber: number;
   state: Pt1State;
   onChange: (nextState: Pt1State) => void;
   onFinish: () => void;
-  onSkip: () => void;
 }) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [contextFolderId, setContextFolderId] = useState<string>(
@@ -4727,7 +4942,6 @@ const FileTaskWorkspace = ({
         questionNumber={questionNumber}
         primaryLabel="Klaar — bekijk resultaat"
         onPrimary={onFinish}
-        onSkip={onSkip}
       />
 
       {pendingConflict ? (

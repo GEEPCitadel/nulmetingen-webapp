@@ -3,6 +3,48 @@ import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
 const codeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const testStudents = [
+  {
+    participantLabel: "Testleerling VMBO leerjaar 1",
+    accessCode: "TESTVMBO1",
+    classCode: "test-vmbo1",
+    versionId: "lj1-vmbo",
+    importBatch: "Standaard test",
+    status: "not_started",
+    completedAt: null,
+    updatedAt: null,
+  },
+  {
+    participantLabel: "Testleerling HAVO/VWO leerjaar 1",
+    accessCode: "TESTHV1",
+    classCode: "test-hv1",
+    versionId: "lj1-hv",
+    importBatch: "Standaard test",
+    status: "not_started",
+    completedAt: null,
+    updatedAt: null,
+  },
+  {
+    participantLabel: "Testleerling VMBO leerjaar 3",
+    accessCode: "TESTVMBO3",
+    classCode: "test-vmbo3",
+    versionId: "lj3-vmbo",
+    importBatch: "Standaard test",
+    status: "not_started",
+    completedAt: null,
+    updatedAt: null,
+  },
+  {
+    participantLabel: "Testleerling HAVO/VWO leerjaar 3",
+    accessCode: "TESTHV3",
+    classCode: "test-hv3",
+    versionId: "lj3-hv",
+    importBatch: "Standaard test",
+    status: "not_started",
+    completedAt: null,
+    updatedAt: null,
+  },
+];
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
@@ -118,7 +160,7 @@ const listStudents = async (sql) => {
     LIMIT 10000
   `;
 
-  return rows.map((row) => ({
+  const storedStudents = rows.map((row) => ({
     participantLabel: row.participant_label ?? "",
     accessCode: row.access_code,
     classCode: row.class_code,
@@ -128,6 +170,11 @@ const listStudents = async (sql) => {
     completedAt: row.completed_at,
     updatedAt: row.updated_at,
   }));
+  const storedCodes = new Set(storedStudents.map((student) => student.accessCode));
+  return [
+    ...testStudents.filter((student) => !storedCodes.has(student.accessCode)),
+    ...storedStudents,
+  ];
 };
 
 export default async function handler(request, response) {
@@ -164,7 +211,7 @@ export default async function handler(request, response) {
       }
 
       const accessCode = String(body.accessCode ?? "").trim().toUpperCase();
-      if (!/^[A-Z0-9]{6}$/.test(accessCode)) {
+      if (!/^[A-Z0-9]{6,12}$/.test(accessCode)) {
         response.status(400).json({ ok: false, error: "Afnamecode ontbreekt." });
         return;
       }

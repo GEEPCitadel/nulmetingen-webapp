@@ -52,7 +52,7 @@ for (const versionId of versionIds) {
     if (text.includes("reverse image search") || text.includes("omgekeerd zoeken")) {
       failures.push(`${item.id} bevat reverse image search.`);
     }
-    if (/zoek.*internet|google|bing/.test(text)) {
+    if (/zoek.*(internet|google|bing)|google.*zoek|bing.*zoek/.test(text)) {
       failures.push(`${item.id} lijkt live internetzoeken te vragen.`);
     }
   }
