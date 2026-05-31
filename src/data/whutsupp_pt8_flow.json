@@ -1,0 +1,2284 @@
+{
+  "taskId": "pt8-whutsupp-sam-video",
+  "title": "Whutsupp: video in de groepschat",
+  "version": "1.0-codex-ready-pilot",
+  "subgoal": "23B",
+  "maxPoints": 4,
+  "engine": "WhutsuppScenarioTask",
+  "ui": {
+    "brandName": "Whutsupp",
+    "doNotUseRealWhatsappLogo": true,
+    "layout": "smartphone_chat_frame",
+    "showOneDecisionAtATime": true,
+    "randomizeChoices": true,
+    "pinChoiceIdsToBottom": [
+      "unknown"
+    ],
+    "showScoreDuringTask": false,
+    "feedbackTiming": "results_report_only",
+    "assets": {
+      "videoCardSvg": "/assets/pt8/whutsupp_sam_video_card.svg",
+      "videoCardGifFallback": "/assets/pt8/whutsupp_sam_video_card.gif"
+    }
+  },
+  "scoring": {
+    "categories": [
+      "risk_boundary",
+      "no_spread",
+      "support_target",
+      "help_report"
+    ],
+    "mainChoiceScore": {
+      "correct": 1,
+      "incorrect": 0,
+      "unknown": 0
+    },
+    "recoveryChoice": {
+      "restoresMainPoint": false,
+      "logOnly": true,
+      "field": "recoverySafeCount"
+    },
+    "caps": [
+      {
+        "flag": "harmful_share",
+        "maxScore": 2.0,
+        "reason": "Video of schadelijke inhoud verder verspreid."
+      },
+      {
+        "flag": "retaliation",
+        "maxScore": 2.0,
+        "reason": "Wraakactie of terugpesten gekozen."
+      },
+      {
+        "flag": "unsafe_evidence_share",
+        "maxScore": 3.0,
+        "reason": "Bewijs onveilig gedeeld, waardoor verspreiding groter kan worden."
+      },
+      {
+        "flag": "ridicule_reaction",
+        "maxScore": 3.0,
+        "reason": "Mee lachen of versterken gekozen."
+      }
+    ],
+    "aggregateCounters": [
+      "attemptCount",
+      "completedCount",
+      "pt8ScoreRawSum",
+      "pt8ScoreCappedSum",
+      "categoryCorrectCounts",
+      "choiceCounts",
+      "unknownCount",
+      "harmfulShareCount",
+      "ridiculeCount",
+      "unsafeEvidenceCount",
+      "retaliationCount",
+      "recoverySafeCount"
+    ]
+  },
+  "sharedCharacters": {
+    "sam": {
+      "displayName": "Sam",
+      "role": "klasgenoot in video"
+    },
+    "noah": {
+      "displayName": "Noah",
+      "role": "plaatser"
+    },
+    "mila": {
+      "displayName": "Mila",
+      "role": "doorstuurder"
+    },
+    "jay": {
+      "displayName": "Jay",
+      "role": "meelacher"
+    },
+    "elin": {
+      "displayName": "Elin",
+      "role": "mogelijke helper"
+    }
+  },
+  "variants": [
+    {
+      "assessmentId": "lj1-vmbo",
+      "gradeLabel": "Leerjaar 1 vmbo",
+      "languageLevel": "very_low",
+      "groupTitle": "Klas 1B zonder docent",
+      "introText": "Je zit in de Whutsupp-groep van je klas. Er komt een video van Sam in de chat. Kies wat jij doet.",
+      "nodes": [
+        {
+          "nodeId": "n1",
+          "category": "risk_boundary",
+          "prompt": "Wat doe jij eerst?",
+          "messages": [
+            {
+              "sender": "Noah",
+              "text": "Haha kijk Sam 😂",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Noah",
+              "kind": "videoCard",
+              "assetKey": "samStumbleVideo",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Ik stuur hem ook naar de andere klas.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Stop pls.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n1_safe_boundary",
+              "label": "Ik stuur: ‘Niet doorsturen. Sam wil dit niet.’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Herkenning van grens en directe normstelling.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_ridicule",
+              "label": "Ik zet 😂 maar stuur niet door.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "ridicule_reaction"
+              ],
+              "unknown": "Mee lachen versterkt de groep.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_forward_friend",
+              "label": "Ik stuur de video alleen naar mijn beste vriend.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share"
+              ],
+              "unknown": "Ook privé doorsturen is verspreiden.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_wait",
+              "label": "Ik wacht wat de rest doet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Passief blijven stopt de verspreiding niet.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_remove",
+                "label": "Ik stuur: ‘Stop. Haal weg.’",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_wait",
+                "label": "Ik wacht weer af.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "passive"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n2",
+          "category": "no_spread",
+          "prompt": "Wat stuur je nu?",
+          "messages": [
+            {
+              "sender": "Noah",
+              "text": "Rustig, het is maar een grap.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Doorsturen?",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Nee. Haal weg.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n2_safe_no_spread",
+              "label": "Ik stuur: ‘Haal weg en stuur niet door.’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Verspreiding stoppen.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_sticker",
+              "label": "Ik stuur: ‘Maak er dan een sticker van.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share",
+                "ridicule_reaction"
+              ],
+              "unknown": "Meme maken vergroot de schade.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_only_known",
+              "label": "Ik stuur: ‘Alleen naar mensen die Sam goed kennen.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share"
+              ],
+              "unknown": "Beperkt doorsturen blijft doorsturen.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_teacher_later",
+              "label": "Ik wacht tot een docent er iets van zegt.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Wachten is onvoldoende als de ander duidelijk stop zegt.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_remove",
+                "label": "Ik stuur: ‘Stop. Haal weg.’",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_wait",
+                "label": "Ik wacht weer af.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "passive"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n3",
+          "category": "support_target",
+          "prompt": "Wat stuur je naar Sam?",
+          "messages": [
+            {
+              "sender": "Sam",
+              "text": "Ik vind dit echt vervelend.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n3_safe_support",
+              "label": "Ik stuur Sam: ‘Ik stuur niks door. Wil je dat ik met je meega naar de mentor?’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Respectvolle steun en hulp aanbieden.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_minimize",
+              "label": "Ik stuur: ‘Trek je er niks van aan.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "victim_blaming_or_minimizing"
+              ],
+              "unknown": "Bagatelliseren helpt niet.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_leave_chat",
+              "label": "Ik stuur: ‘Ga gewoon uit de groep.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "victim_blaming_or_minimizing"
+              ],
+              "unknown": "De verantwoordelijkheid wordt bij Sam gelegd.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_ask_more",
+              "label": "Ik vraag of Sam nog meer filmpjes heeft.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "ridicule_reaction"
+              ],
+              "unknown": "Dit vergroot de druk op Sam.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_remove",
+                "label": "Ik stuur: ‘Stop. Haal weg.’",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_wait",
+                "label": "Ik wacht weer af.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "passive"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n4",
+          "category": "help_report",
+          "prompt": "Wat doe je nu?",
+          "messages": [
+            {
+              "sender": "Elin",
+              "text": "Hij staat nu ook in een andere groep.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Ze blijven hem sturen. Ik wil dit echt niet.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n4_safe_help_report",
+              "label": "Ik deel de video niet en vraag hulp bij een mentor, ouder of andere volwassene.",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Hulp/melding via veilige route.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_unsafe_evidence",
+              "label": "Ik stuur de video naar de mentor in de groepschat, zodat iedereen bewijs ziet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unsafe_evidence_share"
+              ],
+              "unknown": "Bewijs breed delen kan de schade vergroten.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_retaliate",
+              "label": "Ik maak een grap terug over Noah.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "retaliation"
+              ],
+              "unknown": "Wraak verergert de situatie.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_wait",
+              "label": "Ik wacht tot het vanzelf stopt.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Bij doorgaan is hulp vragen passend.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_remove",
+                "label": "Ik stuur: ‘Stop. Haal weg.’",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_wait",
+                "label": "Ik wacht weer af.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "passive"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        }
+      ],
+      "resultsFeedbackRules": [
+        {
+          "condition": "categoryCorrect.no_spread",
+          "text": "Je koos ervoor de video niet verder te verspreiden."
+        },
+        {
+          "condition": "categoryCorrect.support_target",
+          "text": "Je koos ervoor Sam steun te geven zonder hem de schuld te geven."
+        },
+        {
+          "condition": "categoryCorrect.help_report",
+          "text": "Je koos ervoor hulp te vragen of veilig te melden toen het bleef doorgaan."
+        },
+        {
+          "condition": "hasFlag.harmful_share",
+          "text": "Let op: ook naar één vriend doorsturen maakt de verspreiding groter."
+        },
+        {
+          "condition": "hasFlag.unsafe_evidence_share",
+          "text": "Bewijs breed delen kan de schade vergroten. Bewaar bewijs alleen via een veilige afspraak."
+        },
+        {
+          "condition": "hasFlag.ridicule_reaction",
+          "text": "Meelachen of een emoji plaatsen kan het voor de ander erger maken."
+        },
+        {
+          "condition": "hasRecoverySafe",
+          "text": "Je stuurde later bij met een veiligere keuze."
+        }
+      ]
+    },
+    {
+      "assessmentId": "lj1-hv",
+      "gradeLabel": "Leerjaar 1 havo/vwo",
+      "languageLevel": "low",
+      "groupTitle": "Klas 1H2 zonder docent",
+      "introText": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+      "nodes": [
+        {
+          "nodeId": "n1",
+          "category": "risk_boundary",
+          "prompt": "Wat doe jij eerst?",
+          "messages": [
+            {
+              "sender": "Noah",
+              "text": "Haha kijk Sam 😂",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Noah",
+              "kind": "videoCard",
+              "assetKey": "samStumbleVideo",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Ik stuur hem ook naar de andere klas.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Stop pls.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n1_safe_boundary",
+              "label": "Ik stuur: ‘Niet doorsturen. Sam wil dit niet.’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Herkenning van grens en directe normstelling.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_ridicule",
+              "label": "Ik zet 😂 maar stuur niet door.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "ridicule_reaction"
+              ],
+              "unknown": "Mee lachen versterkt de groep.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_forward_friend",
+              "label": "Ik stuur de video alleen naar mijn beste vriend.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share"
+              ],
+              "unknown": "Ook privé doorsturen is verspreiden.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_wait",
+              "label": "Ik wacht wat de rest doet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Passief blijven stopt de verspreiding niet.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_support",
+                "label": "Ik stuur: ‘Haal weg. Sam wil dit niet.’",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_private_only",
+                "label": "Ik stuur alleen privé naar Sam: ‘Ik kan er niks aan doen.’",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "passive"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n2",
+          "category": "no_spread",
+          "prompt": "Wat stuur je nu?",
+          "messages": [
+            {
+              "sender": "Noah",
+              "text": "Rustig, het is maar een grap.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Doorsturen?",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Nee. Haal weg.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n2_safe_no_spread",
+              "label": "Ik stuur: ‘Haal weg en stuur niet door.’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Verspreiding stoppen.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_sticker",
+              "label": "Ik stuur: ‘Maak er dan een sticker van.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share",
+                "ridicule_reaction"
+              ],
+              "unknown": "Meme maken vergroot de schade.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_only_known",
+              "label": "Ik stuur: ‘Alleen naar mensen die Sam goed kennen.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share"
+              ],
+              "unknown": "Beperkt doorsturen blijft doorsturen.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_teacher_later",
+              "label": "Ik wacht tot een docent er iets van zegt.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Wachten is onvoldoende als de ander duidelijk stop zegt.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_support",
+                "label": "Ik stuur: ‘Haal weg. Sam wil dit niet.’",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_private_only",
+                "label": "Ik stuur alleen privé naar Sam: ‘Ik kan er niks aan doen.’",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "passive"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n3",
+          "category": "support_target",
+          "prompt": "Wat stuur je naar Sam?",
+          "messages": [
+            {
+              "sender": "Sam",
+              "text": "Ik vind dit echt vervelend.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n3_safe_support",
+              "label": "Ik stuur Sam: ‘Ik stuur niks door. Wil je dat ik met je meega naar de mentor?’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Respectvolle steun en hulp aanbieden.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_minimize",
+              "label": "Ik stuur: ‘Trek je er niks van aan.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "victim_blaming_or_minimizing"
+              ],
+              "unknown": "Bagatelliseren helpt niet.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_leave_chat",
+              "label": "Ik stuur: ‘Ga gewoon uit de groep.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "victim_blaming_or_minimizing"
+              ],
+              "unknown": "De verantwoordelijkheid wordt bij Sam gelegd.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_ask_more",
+              "label": "Ik vraag of Sam nog meer filmpjes heeft.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "ridicule_reaction"
+              ],
+              "unknown": "Dit vergroot de druk op Sam.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_support",
+                "label": "Ik stuur: ‘Haal weg. Sam wil dit niet.’",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_private_only",
+                "label": "Ik stuur alleen privé naar Sam: ‘Ik kan er niks aan doen.’",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "passive"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n4",
+          "category": "help_report",
+          "prompt": "Wat doe je nu?",
+          "messages": [
+            {
+              "sender": "Elin",
+              "text": "Hij staat nu ook in een andere groep.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Ze blijven hem sturen. Ik wil dit echt niet.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n4_safe_help_report",
+              "label": "Ik deel de video niet en vraag hulp bij een mentor, ouder of andere volwassene.",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Hulp/melding via veilige route.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_unsafe_evidence",
+              "label": "Ik stuur de video naar de mentor in de groepschat, zodat iedereen bewijs ziet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unsafe_evidence_share"
+              ],
+              "unknown": "Bewijs breed delen kan de schade vergroten.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_retaliate",
+              "label": "Ik maak een grap terug over Noah.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "retaliation"
+              ],
+              "unknown": "Wraak verergert de situatie.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_wait",
+              "label": "Ik wacht tot het vanzelf stopt.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Bij doorgaan is hulp vragen passend.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_support",
+                "label": "Ik stuur: ‘Haal weg. Sam wil dit niet.’",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_private_only",
+                "label": "Ik stuur alleen privé naar Sam: ‘Ik kan er niks aan doen.’",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "passive"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        }
+      ],
+      "resultsFeedbackRules": [
+        {
+          "condition": "categoryCorrect.no_spread",
+          "text": "Je koos ervoor de video niet verder te verspreiden."
+        },
+        {
+          "condition": "categoryCorrect.support_target",
+          "text": "Je koos ervoor Sam steun te geven zonder hem de schuld te geven."
+        },
+        {
+          "condition": "categoryCorrect.help_report",
+          "text": "Je koos ervoor hulp te vragen of veilig te melden toen het bleef doorgaan."
+        },
+        {
+          "condition": "hasFlag.harmful_share",
+          "text": "Let op: ook naar één vriend doorsturen maakt de verspreiding groter."
+        },
+        {
+          "condition": "hasFlag.unsafe_evidence_share",
+          "text": "Bewijs breed delen kan de schade vergroten. Bewaar bewijs alleen via een veilige afspraak."
+        },
+        {
+          "condition": "hasFlag.ridicule_reaction",
+          "text": "Meelachen of een emoji plaatsen kan het voor de ander erger maken."
+        },
+        {
+          "condition": "hasRecoverySafe",
+          "text": "Je stuurde later bij met een veiligere keuze."
+        }
+      ]
+    },
+    {
+      "assessmentId": "lj3-vmbo",
+      "gradeLabel": "Leerjaar 3 vmbo",
+      "languageLevel": "medium",
+      "groupTitle": "Klas 3V2 zonder docent",
+      "introText": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+      "nodes": [
+        {
+          "nodeId": "n1",
+          "category": "risk_boundary",
+          "prompt": "Wat doe jij eerst?",
+          "messages": [
+            {
+              "sender": "Noah",
+              "text": "Haha kijk Sam 😂",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Noah",
+              "kind": "videoCard",
+              "assetKey": "samStumbleVideo",
+              "side": "left"
+            },
+            {
+              "sender": "Jay",
+              "text": "Maak er een sticker van.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Ik stuur hem ook naar de andere klas.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Stop. Ik wil dit niet online.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n1_safe_boundary",
+              "label": "Ik stuur: ‘Niet doorsturen. Sam zegt dat hij dit niet wil.’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Herkenning van grens en directe normstelling.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_ridicule",
+              "label": "Ik reageer met 😂, maar stuur de video niet door.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "ridicule_reaction"
+              ],
+              "unknown": "Mee lachen versterkt de groep.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_forward_friend",
+              "label": "Ik stuur de video alleen privé door naar één vriend.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share"
+              ],
+              "unknown": "Ook privé doorsturen is verspreiden.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_wait",
+              "label": "Ik wacht af; misschien stopt het vanzelf.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Passief blijven stopt de verspreiding niet.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_report",
+                "label": "Ik stop met reageren, deel niets verder en vraag hulp via een veilige route.",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_public_proof",
+                "label": "Ik stuur de video in de groep als bewijs dat het echt gebeurt.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unsafe_evidence_share"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n2",
+          "category": "no_spread",
+          "prompt": "Welke reactie past nu het best?",
+          "messages": [
+            {
+              "sender": "Noah",
+              "text": "Rustig, dit is gewoon een grap.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Zal ik hem in de parallelklas zetten?",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Nee. Haal de video weg.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Jay",
+              "text": "Als hij niet online wil, had hij maar niet moeten vallen.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n2_safe_no_spread",
+              "label": "Ik stuur: ‘Haal de video weg en stuur hem niet verder.’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Verspreiding stoppen.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_sticker",
+              "label": "Ik stel voor er een sticker of meme van te maken.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share",
+                "ridicule_reaction"
+              ],
+              "unknown": "Meme maken vergroot de schade.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_only_known",
+              "label": "Ik zeg dat doorsturen alleen mag naar mensen die Sam goed kennen.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share"
+              ],
+              "unknown": "Beperkt doorsturen blijft doorsturen.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_teacher_later",
+              "label": "Ik laat het staan tot school of een docent reageert.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Wachten is onvoldoende als de ander duidelijk stop zegt.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_report",
+                "label": "Ik stop met reageren, deel niets verder en vraag hulp via een veilige route.",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_public_proof",
+                "label": "Ik stuur de video in de groep als bewijs dat het echt gebeurt.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unsafe_evidence_share"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n3",
+          "category": "support_target",
+          "prompt": "Wat stuur je naar Sam?",
+          "messages": [
+            {
+              "sender": "Sam",
+              "text": "Ik vind dit echt vervelend. Ik wil niet dat iedereen dit ziet.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Ik durf niks meer in de groep te zetten.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n3_safe_support",
+              "label": "Ik stuur Sam: ‘Ik deel niets. Wil je dat ik met je meega naar de mentor of help met melden?’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Respectvolle steun en hulp aanbieden.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_minimize",
+              "label": "Ik stuur: ‘Laat maar, morgen is iedereen het vergeten.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "victim_blaming_or_minimizing"
+              ],
+              "unknown": "Bagatelliseren helpt niet.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_leave_chat",
+              "label": "Ik adviseer Sam om zelf uit de groepschat te gaan.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "victim_blaming_or_minimizing"
+              ],
+              "unknown": "De verantwoordelijkheid wordt bij Sam gelegd.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_ask_more",
+              "label": "Ik vraag Sam of er nog meer video’s zijn, zodat ik kan zien hoe erg het is.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "ridicule_reaction"
+              ],
+              "unknown": "Dit vergroot de druk op Sam.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_report",
+                "label": "Ik stop met reageren, deel niets verder en vraag hulp via een veilige route.",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_public_proof",
+                "label": "Ik stuur de video in de groep als bewijs dat het echt gebeurt.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unsafe_evidence_share"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n4",
+          "category": "help_report",
+          "prompt": "Wat doe je nu?",
+          "messages": [
+            {
+              "sender": "Elin",
+              "text": "De video staat nu ook in een andere groepschat.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Ze blijven hem sturen. Ik wil dat dit stopt.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Iemand wil hem straks op story zetten.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n4_safe_help_report",
+              "label": "Ik deel niets verder en vraag hulp bij mentor of ouder. Bewijs bewaar ik alleen volgens schoolafspraak.",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Hulp/melding via veilige route.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_unsafe_evidence",
+              "label": "Ik stuur de video in de klasgroep zodat iedereen ziet wat er gebeurt.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unsafe_evidence_share"
+              ],
+              "unknown": "Bewijs breed delen kan de schade vergroten.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_retaliate",
+              "label": "Ik maak een gênante post over Noah terug.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "retaliation"
+              ],
+              "unknown": "Wraak verergert de situatie.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_wait",
+              "label": "Ik doe niets; misschien zakt het vanzelf weg.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Bij doorgaan is hulp vragen passend.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_report",
+                "label": "Ik stop met reageren, deel niets verder en vraag hulp via een veilige route.",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_public_proof",
+                "label": "Ik stuur de video in de groep als bewijs dat het echt gebeurt.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unsafe_evidence_share"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        }
+      ],
+      "resultsFeedbackRules": [
+        {
+          "condition": "categoryCorrect.no_spread",
+          "text": "Je koos ervoor de video niet verder te verspreiden."
+        },
+        {
+          "condition": "categoryCorrect.support_target",
+          "text": "Je koos ervoor Sam steun te geven zonder hem de schuld te geven."
+        },
+        {
+          "condition": "categoryCorrect.help_report",
+          "text": "Je koos ervoor hulp te vragen of veilig te melden toen het bleef doorgaan."
+        },
+        {
+          "condition": "hasFlag.harmful_share",
+          "text": "Let op: ook naar één vriend doorsturen maakt de verspreiding groter."
+        },
+        {
+          "condition": "hasFlag.unsafe_evidence_share",
+          "text": "Bewijs breed delen kan de schade vergroten. Bewaar bewijs alleen via een veilige afspraak."
+        },
+        {
+          "condition": "hasFlag.ridicule_reaction",
+          "text": "Meelachen of een emoji plaatsen kan het voor de ander erger maken."
+        },
+        {
+          "condition": "hasRecoverySafe",
+          "text": "Je stuurde later bij met een veiligere keuze."
+        }
+      ]
+    },
+    {
+      "assessmentId": "lj3-hv",
+      "gradeLabel": "Leerjaar 3 havo/vwo",
+      "languageLevel": "medium_plus",
+      "groupTitle": "Klas 3H4 zonder docent",
+      "introText": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+      "nodes": [
+        {
+          "nodeId": "n1",
+          "category": "risk_boundary",
+          "prompt": "Wat doe jij eerst?",
+          "messages": [
+            {
+              "sender": "Noah",
+              "text": "Haha kijk Sam 😂",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Noah",
+              "kind": "videoCard",
+              "assetKey": "samStumbleVideo",
+              "side": "left"
+            },
+            {
+              "sender": "Jay",
+              "text": "Maak er een sticker van.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Ik stuur hem ook naar de andere klas.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Stop. Ik wil dit niet online.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n1_safe_boundary",
+              "label": "Ik stuur: ‘Niet doorsturen. Sam zegt dat hij dit niet wil.’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Herkenning van grens en directe normstelling.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_ridicule",
+              "label": "Ik reageer met 😂, maar stuur de video niet door.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "ridicule_reaction"
+              ],
+              "unknown": "Mee lachen versterkt de groep.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_forward_friend",
+              "label": "Ik stuur de video alleen privé door naar één vriend.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share"
+              ],
+              "unknown": "Ook privé doorsturen is verspreiden.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n1_wait",
+              "label": "Ik wacht af; misschien stopt het vanzelf.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Passief blijven stopt de verspreiding niet.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_report",
+                "label": "Ik stop met reageren, deel niets verder en vraag hulp via een veilige route.",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_public_proof",
+                "label": "Ik stuur de video in de groep als bewijs dat het echt gebeurt.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unsafe_evidence_share"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n2",
+          "category": "no_spread",
+          "prompt": "Welke reactie past nu het best?",
+          "messages": [
+            {
+              "sender": "Noah",
+              "text": "Rustig, dit is gewoon een grap.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Zal ik hem in de parallelklas zetten?",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Nee. Haal de video weg.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Jay",
+              "text": "Als hij niet online wil, had hij maar niet moeten vallen.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n2_safe_no_spread",
+              "label": "Ik stuur: ‘Haal de video weg en stuur hem niet verder.’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Verspreiding stoppen.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_sticker",
+              "label": "Ik stel voor er een sticker of meme van te maken.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share",
+                "ridicule_reaction"
+              ],
+              "unknown": "Meme maken vergroot de schade.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_only_known",
+              "label": "Ik zeg dat doorsturen alleen mag naar mensen die Sam goed kennen.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "harmful_share"
+              ],
+              "unknown": "Beperkt doorsturen blijft doorsturen.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n2_teacher_later",
+              "label": "Ik laat het staan tot school of een docent reageert.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Wachten is onvoldoende als de ander duidelijk stop zegt.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_report",
+                "label": "Ik stop met reageren, deel niets verder en vraag hulp via een veilige route.",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_public_proof",
+                "label": "Ik stuur de video in de groep als bewijs dat het echt gebeurt.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unsafe_evidence_share"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n3",
+          "category": "support_target",
+          "prompt": "Wat stuur je naar Sam?",
+          "messages": [
+            {
+              "sender": "Sam",
+              "text": "Ik vind dit echt vervelend. Ik wil niet dat iedereen dit ziet.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Ik durf niks meer in de groep te zetten.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n3_safe_support",
+              "label": "Ik stuur Sam: ‘Ik deel niets. Wil je dat ik met je meega naar de mentor of help met melden?’",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Respectvolle steun en hulp aanbieden.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_minimize",
+              "label": "Ik stuur: ‘Laat maar, morgen is iedereen het vergeten.’",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "victim_blaming_or_minimizing"
+              ],
+              "unknown": "Bagatelliseren helpt niet.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_leave_chat",
+              "label": "Ik adviseer Sam om zelf uit de groepschat te gaan.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "victim_blaming_or_minimizing"
+              ],
+              "unknown": "De verantwoordelijkheid wordt bij Sam gelegd.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n3_ask_more",
+              "label": "Ik vraag Sam of er nog meer video’s zijn, zodat ik kan zien hoe erg het is.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "ridicule_reaction"
+              ],
+              "unknown": "Dit vergroot de druk op Sam.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_report",
+                "label": "Ik stop met reageren, deel niets verder en vraag hulp via een veilige route.",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_public_proof",
+                "label": "Ik stuur de video in de groep als bewijs dat het echt gebeurt.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unsafe_evidence_share"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        },
+        {
+          "nodeId": "n4",
+          "category": "help_report",
+          "prompt": "Wat doe je nu?",
+          "messages": [
+            {
+              "sender": "Elin",
+              "text": "De video staat nu ook in een andere groepschat.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Sam",
+              "text": "Ze blijven hem sturen. Ik wil dat dit stopt.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Mila",
+              "text": "Iemand wil hem straks op story zetten.",
+              "kind": "text",
+              "side": "left"
+            },
+            {
+              "sender": "Jay",
+              "text": "Ik heb er al tekst bij gezet: ‘Sam faalt weer’.",
+              "kind": "text",
+              "side": "left"
+            }
+          ],
+          "choices": [
+            {
+              "choiceId": "n4_safe_help_report",
+              "label": "Ik deel niets verder, maak veilig melding bij mentor/platform en bewaar bewijs alleen volgens schoolafspraak.",
+              "isCorrect": true,
+              "score": 1,
+              "flags": [],
+              "unknown": "Hulp/melding via veilige route.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_unsafe_evidence",
+              "label": "Ik zet de video met uitleg in de groep, zodat iedereen bewijs heeft.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unsafe_evidence_share"
+              ],
+              "unknown": "Bewijs breed delen kan de schade vergroten.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_retaliate",
+              "label": "Ik maak een gênante post over Noah terug.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "retaliation"
+              ],
+              "unknown": "Wraak verergert de situatie.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "n4_wait",
+              "label": "Ik doe niets; misschien zakt het vanzelf weg.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "passive"
+              ],
+              "unknown": "Bij doorgaan is hulp vragen passend.",
+              "rationale": ""
+            },
+            {
+              "choiceId": "unknown",
+              "label": "Ik weet het niet.",
+              "isCorrect": false,
+              "score": 0,
+              "flags": [
+                "unknown"
+              ],
+              "unknown": true,
+              "rationale": ""
+            }
+          ],
+          "recovery": {
+            "triggerFlags": [
+              "harmful_share",
+              "ridicule_reaction",
+              "passive",
+              "unsafe_evidence_share",
+              "retaliation"
+            ],
+            "prompt": "Je merkt dat dit niet helpt. Wat doe je nu?",
+            "scoreEffect": "log_only_no_point_restoration",
+            "choices": [
+              {
+                "choiceId": "recovery_safe_report",
+                "label": "Ik stop met reageren, deel niets verder en vraag hulp via een veilige route.",
+                "isCorrect": true,
+                "score": 1,
+                "flags": [
+                  "recovery_safe"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "recovery_public_proof",
+                "label": "Ik stuur de video in de groep als bewijs dat het echt gebeurt.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unsafe_evidence_share"
+                ],
+                "unknown": false,
+                "rationale": ""
+              },
+              {
+                "choiceId": "unknown",
+                "label": "Ik weet het niet.",
+                "isCorrect": false,
+                "score": 0,
+                "flags": [
+                  "unknown"
+                ],
+                "unknown": true,
+                "rationale": ""
+              }
+            ]
+          }
+        }
+      ],
+      "resultsFeedbackRules": [
+        {
+          "condition": "categoryCorrect.no_spread",
+          "text": "Je koos ervoor de video niet verder te verspreiden."
+        },
+        {
+          "condition": "categoryCorrect.support_target",
+          "text": "Je koos ervoor Sam steun te geven zonder hem de schuld te geven."
+        },
+        {
+          "condition": "categoryCorrect.help_report",
+          "text": "Je koos ervoor hulp te vragen of veilig te melden toen het bleef doorgaan."
+        },
+        {
+          "condition": "hasFlag.harmful_share",
+          "text": "Let op: ook naar één vriend doorsturen maakt de verspreiding groter."
+        },
+        {
+          "condition": "hasFlag.unsafe_evidence_share",
+          "text": "Bewijs breed delen kan de schade vergroten. Bewaar bewijs alleen via een veilige afspraak."
+        },
+        {
+          "condition": "hasFlag.ridicule_reaction",
+          "text": "Meelachen of een emoji plaatsen kan het voor de ander erger maken."
+        },
+        {
+          "condition": "hasRecoverySafe",
+          "text": "Je stuurde later bij met een veiligere keuze."
+        }
+      ]
+    }
+  ]
+}

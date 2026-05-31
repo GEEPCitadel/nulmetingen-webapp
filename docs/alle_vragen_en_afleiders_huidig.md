@@ -176,30 +176,32 @@ Klik daarna op Taak afronden.
 ### PT7 - Blokprogrammeren
 
 - Item-id: `lj1v-pt7-programming`
-- Intro: Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.
-- Instructie: Programmeer Bizzy zo:
+- Intro: Dit is Bizzy, een karakter dat kan bewegen, draaien, zeggen en denken. Programmeer Bizzy door blokken op het werkvlak te slepen.
+- Instructie: Als er op afspelen wordt geklikt:
 - Stappen:
+  - Bizzy zegt "Hoi!".
   - Laat Bizzy 1 meter vooruit bewegen.
   - Laat Bizzy 180 graden draaien.
-  - Na 1 seconde zegt Bizzy: Hoi!
+  - Bizzy denkt "Klaar!".
 - Beschikbare blokken:
   - Wanneer er geklikt wordt op afspelen
   - wanneer er op Bizzy wordt geklikt
   - verander animatie van Bizzy naar niet animeren
   - Bizzy zegt "Hoi!"
+  - Bizzy denkt "Klaar!"
   - verplaats Bizzy 1 meter vooruit in 1 sec.
+  - verplaats Bizzy 1 meter achteruit in 1 sec.
   - draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.
-  - herhaal 1 keer
-  - speel geluid applaus
+  - draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.
   - wacht 1 seconde
-  - zet score op 0
-  - verplaats Bizzy 5 meters achteruit in 1 sec.
+  - herstart scene
+  - als 1 < 2
 - Correct programma:
   - Wanneer er geklikt wordt op afspelen
+  - Bizzy zegt "Hoi!"
   - verplaats Bizzy 1 meter vooruit in 1 sec.
   - draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.
-  - wacht 1 seconde
-  - Bizzy zegt "Hoi!"
+  - Bizzy denkt "Klaar!"
 
 ### PT8 - Online gedrag: delen en pesten
 
@@ -381,29 +383,36 @@ Klik daarna op Taak afronden.
 ### PT7 - Blokprogrammeren
 
 - Item-id: `lj1h-pt7-programming`
-- Intro: Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.
-- Instructie: Programmeer Bizzy zo: laat Bizzy Hoi! zeggen en laat hem daarna drie keer 1 meter vooruit bewegen.
+- Intro: Dit is Bizzy, een karakter dat kan bewegen, draaien, zeggen en denken. Programmeer Bizzy door blokken op het werkvlak te slepen.
+- Instructie: Laat Bizzy "Klaar voor de start!" zeggen, drie keer 1 meter vooruit lopen met een herhaal-blok, en daarna naar 180 graden draaien.
 - Stappen:
-  - Typ Hoi! in het zeg-blok.
+  - Gebruik het zeg-blok met "Klaar voor de start!".
   - Stel Herhaal in op 3 keer.
   - Stel verplaats in op 1 meter vooruit in 1 seconde.
   - Zet het verplaats-blok in de herhaling.
+  - Zet het draai-180-blok na de herhaling.
 - Beschikbare blokken:
   - Wanneer er geklikt wordt op afspelen
   - verander animatie van Bizzy naar niet animeren
-  - Bizzy zegt "Hoi!"
+  - Bizzy zegt "Klaar voor de start!"
+  - Bizzy denkt "Hm..."
   - verplaats Bizzy 1 meter vooruit in 1 sec.
+  - verplaats Bizzy 3 meter vooruit in 1 sec.
+  - verplaats Bizzy 1 meter achteruit in 1 sec.
   - draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.
+  - draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.
   - herhaal 1 keer
+  - herhaal 3 keer
   - herhaal 10 keer
-  - speel geluid applaus
   - wacht 1 seconde
-  - stop alles
+  - als 1 < 2
+  - herstart scene
 - Correct programma:
   - Wanneer er geklikt wordt op afspelen
-  - Bizzy zegt "Hoi!"
+  - Bizzy zegt "Klaar voor de start!"
   - herhaal 3 keer
   - verplaats Bizzy 1 meter vooruit in 1 sec.
+  - draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.
 
 ### PT8 - Online gedrag: misleidende appmelding
 
@@ -590,29 +599,36 @@ Klik daarna op Taak afronden.
 ### PT7 - Blokprogrammeren
 
 - Item-id: `lj3v-pt7-programming`
-- Intro: Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.
-- Instructie: Programmeer Bizzy zo: laat Bizzy dansen, 2 meter vooruit bewegen, 90 graden draaien en daarna Hoi! zeggen.
+- Intro: Dit is Bizzy, een karakter dat kan bewegen, draaien, zeggen en denken. Programmeer Bizzy door blokken op het werkvlak te slepen.
+- Instructie: Bizzy loopt een vierkant: 4 keer 1 meter vooruit en 90 graden draaien. Bizzy zegt vooraf "Start!" en denkt achteraf "Klaar!".
 - Stappen:
-  - Kies Dansen bij het animatieblok.
-  - Stel verplaats in op 2 meter vooruit in 1 seconde.
-  - Stel draaien in op 90 graden in 1 seconde.
-  - Typ Hoi! in het zeg-blok.
+  - Zet "Start!" voor de herhaling.
+  - Gebruik herhaal 4 keer.
+  - Zet verplaats 1 meter vooruit en draai 90 graden in de herhaling.
+  - Zet denken "Klaar!" na de herhaling.
 - Beschikbare blokken:
   - Wanneer er geklikt wordt op afspelen
   - verander animatie van Bizzy naar niet animeren
-  - Bizzy zegt "Hoi!"
+  - Bizzy zegt "Start!"
+  - Bizzy denkt "Klaar!"
+  - Bizzy zegt "Klaar!"
   - verplaats Bizzy 1 meter vooruit in 1 sec.
+  - verplaats Bizzy 1 meter achteruit in 1 sec.
+  - draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.
   - draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.
-  - herhaal 1 keer
-  - speel geluid applaus
+  - herhaal 4 keer
+  - herhaal 3 keer
+  - herhaal 2 keer
   - wacht 1 seconde
-  - stop alles
+  - als 1 < 2
+  - herstart scene
 - Correct programma:
   - Wanneer er geklikt wordt op afspelen
-  - verander animatie van Bizzy naar Dansen
-  - verplaats Bizzy 2 meter vooruit in 1 sec.
+  - Bizzy zegt "Start!"
+  - herhaal 4 keer
+  - verplaats Bizzy 1 meter vooruit in 1 sec.
   - draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.
-  - Bizzy zegt "Hoi!"
+  - Bizzy denkt "Klaar!"
 
 ### PT8 - Online gedrag: deepfake/pesten
 
@@ -773,29 +789,36 @@ Klik daarna op Taak afronden.
 ### PT7 - Blokprogrammeren
 
 - Item-id: `lj3h-pt7-programming`
-- Intro: Dit is robot Bizzy. Programmeer Bizzy door codeblokken op het werkvlak te slepen.
-- Instructie: Programmeer Bizzy zo: laat Bizzy lopen, herhaal twee keer een beweging van 1 meter vooruit en laat Bizzy daarna Hoi! zeggen.
+- Intro: Dit is Bizzy, een karakter dat kan bewegen, draaien, zeggen en denken. Programmeer Bizzy door blokken op het werkvlak te slepen.
+- Instructie: Bizzy danst drie keer hetzelfde heen-en-weer-rondje: 2 meter vooruit, 180 graden draaien, 2 meter vooruit, 180 graden draaien. Aan het eind zegt hij "Bravo!".
 - Stappen:
-  - Kies Lopen bij het animatieblok.
-  - Stel Herhaal in op 2 keer.
-  - Stel verplaats in op 1 meter vooruit in 1 seconde en zet dit in de herhaling.
-  - Typ Hoi! in het zeg-blok.
+  - Gebruik herhaal 3 keer.
+  - Zet de vier heen-en-weer-blokken in de herhaling.
+  - Zet "Bravo!" na de herhaling.
 - Beschikbare blokken:
   - Wanneer er geklikt wordt op afspelen
   - verander animatie van Bizzy naar niet animeren
-  - Bizzy zegt "Hoi!"
+  - Bizzy zegt "Bravo!"
+  - Bizzy denkt "Bravo!"
+  - verplaats Bizzy 2 meter vooruit in 1 sec.
   - verplaats Bizzy 1 meter vooruit in 1 sec.
+  - verplaats Bizzy 2 meter achteruit in 1 sec.
   - draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.
-  - herhaal 1 keer
-  - speel geluid applaus
+  - draai Bizzy met de wijzers van de klok mee naar 90 graden in 1 sec.
+  - herhaal 3 keer
+  - herhaal 6 keer
+  - herhaal 2 keer
   - wacht 1 seconde
-  - stop alles
+  - als 1 < 2
+  - herstart scene
 - Correct programma:
   - Wanneer er geklikt wordt op afspelen
-  - verander animatie van Bizzy naar Lopen
-  - herhaal 2 keer
-  - verplaats Bizzy 1 meter vooruit in 1 sec.
-  - Bizzy zegt "Hoi!"
+  - herhaal 3 keer
+  - verplaats Bizzy 2 meter vooruit in 1 sec.
+  - draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.
+  - verplaats Bizzy 2 meter vooruit in 1 sec.
+  - draai Bizzy met de wijzers van de klok mee naar 180 graden in 1 sec.
+  - Bizzy zegt "Bravo!"
 
 ### PT8 - Online gedrag: gemanipuleerde video
 
@@ -883,4 +906,3 @@ Kies een verificatieactie.
   - De meeste energie gaat naar het tonen van het icoon van de app.
   - Na de training gebruikt een AI-systeem geen elektriciteit meer.
 - Correct: Het rekenen op grote datasets vereist langdurig veel rekenkracht in datacenters.
-

@@ -5,6 +5,7 @@ import type {
   AssessmentVersionId,
   BlockProgrammingTaskConfig,
   CodeMapping,
+  DataStimulus,
   FileTaskRequirement,
   InteractionTaskConfig,
   MailTaskConfig,
@@ -15,8 +16,10 @@ import type {
   Pt1Simulation,
   TeamsTaskConfig,
   ThemeDefinition,
+  WhutsuppTaskConfig,
 } from "../types";
 import selectedResponseSource from "../../nulmetingen_selected_response_herontwerp_v3.json";
+import whutsuppPt8Flow from "./whutsupp_pt8_flow.json";
 
 export const ADMIN_CODE = "beheer";
 
@@ -100,7 +103,7 @@ type VersionSpec = {
   pt4: ExcelTaskSpec;
   pt6: TeamsTaskSpec;
   pt7: BlockTaskSpec;
-  pt8: SocialTaskSpec;
+  pt8: Pt8TaskSpec;
   sr: SelectedResponseSpec[];
 };
 
@@ -165,6 +168,16 @@ type SocialTaskSpec = {
   aiSnelVeranderendFlag?: boolean;
 };
 
+type WhutsuppTaskSpec = {
+  id: string;
+  title: string;
+  instruction: string;
+  kerndoel: string;
+  config: WhutsuppTaskConfig;
+};
+
+type Pt8TaskSpec = SocialTaskSpec | WhutsuppTaskSpec;
+
 type SelectedResponseSpec = {
   id: string;
   title: string;
@@ -178,6 +191,7 @@ type SelectedResponseSpec = {
   harmful?: string[];
   harmfulSelectionMaxScore?: number;
   mockup?: MockupCard;
+  dataStimulus?: DataStimulus;
   renderOptionsAsSourceCards?: boolean;
   ankerItemFlag?: boolean;
   aiSnelVeranderendFlag?: boolean;
@@ -220,7 +234,8 @@ type SelectedResponseStimulus =
       message: string;
       address: string;
       label?: string;
-    };
+    }
+  | DataStimulus;
 
 type SelectedResponseJsonItem = {
   id: string;
@@ -374,7 +389,7 @@ const selectedResponseTypeFor = (item: SelectedResponseJsonItem): "single" | "mu
     : "single";
 
 const mockupForStimulus = (stimulus?: SelectedResponseStimulus): MockupCard | undefined => {
-  if (!stimulus) {
+  if (!stimulus || !("kind" in stimulus)) {
     return undefined;
   }
 
@@ -395,6 +410,9 @@ const mockupForStimulus = (stimulus?: SelectedResponseStimulus): MockupCard | un
     mediaHint: "Niet-interactieve adresbalk",
   };
 };
+
+const dataStimulusForStimulus = (stimulus?: SelectedResponseStimulus): DataStimulus | undefined =>
+  stimulus && "type" in stimulus ? stimulus : undefined;
 
 const mockupForContext = (context?: SelectedResponseJsonItem["context"]): MockupCard | undefined => {
   if (!context?.chatMessage) {
@@ -495,6 +513,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
       harmfulSelectionMaxScore:
         item.scoring?.harmfulCap === undefined ? undefined : Number(item.scoring.harmfulCap),
       mockup: mockupForStimulus(item.stimulus) ?? mockupForContext(item.context),
+      dataStimulus: dataStimulusForStimulus(item.stimulus),
       renderOptionsAsSourceCards: item.ui?.renderAsSourceCards,
       ankerItemFlag: item.ankerItemFlag ?? item.anchorStatus === "concept-anchor",
       aiSnelVeranderendFlag: item.aiSnelVeranderendFlag,
@@ -658,6 +677,24 @@ const socialTaskItem = (spec: SocialTaskSpec): AssessmentItem => ({
   socialTask: spec.config,
 });
 
+const whutsuppTaskItem = (spec: WhutsuppTaskSpec): AssessmentItem => ({
+  id: spec.id,
+  type: "whutsupp_scenario_task",
+  title: spec.title,
+  instruction: spec.instruction,
+  points: spec.config.maxPoints,
+  skillDomain: "23B Digitaal burgerschap",
+  kerndoel: spec.kerndoel,
+  subgoal: spec.config.subgoal,
+  whutsuppTask: spec.config,
+});
+
+const isWhutsuppTaskSpec = (spec: Pt8TaskSpec): spec is WhutsuppTaskSpec =>
+  "engine" in spec.config;
+
+const pt8TaskItem = (spec: Pt8TaskSpec): AssessmentItem =>
+  isWhutsuppTaskSpec(spec) ? whutsuppTaskItem(spec) : socialTaskItem(spec);
+
 const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
   const subgoal = spec.subgoal ?? subgoalCodeFrom(spec.kerndoel);
   const responseType = spec.type ?? "single";
@@ -685,6 +722,7 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
     harmfulOptionIds: spec.harmful ?? [],
     harmfulSelectionMaxScore: spec.harmfulSelectionMaxScore,
     mockup: spec.mockup,
+    dataStimulus: spec.dataStimulus,
     ankerItemFlag: spec.ankerItemFlag,
     aiSnelVeranderendFlag: spec.aiSnelVeranderendFlag,
     anchorStatus: spec.anchorStatus,
@@ -743,7 +781,7 @@ const makeSections = (spec: VersionSpec): AssessmentSection[] => [
   {
     id: "pt8",
     title: "PT8 - Online gedrag",
-    items: [socialTaskItem(spec.pt8)],
+    items: [pt8TaskItem(spec.pt8)],
   },
   {
     id: "sr",
@@ -1042,38 +1080,44 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1v-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
+        'Dit is Bizzy, een karakter dat kan bewegen, draaien, zeggen en denken. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren. Je hoeft niet alle blokken te gebruiken.',
       instruction:
-        "Maak een programma dat dit doet: na klikken op Afspelen zegt Bizzy Hoi!, gaat hij 1 meter vooruit en draait hij naar 180 graden.",
+        'Als er op afspelen wordt geklikt: Bizzy zegt "Hoi!", loopt 1 meter vooruit, draait naar 180°, en denkt tot slot "Klaar!".',
       config: {
         device: "bizzy",
         codingSteps: [
           "Gebruik het startblok Wanneer er geklikt wordt op afspelen.",
-          "Laat Bizzy Hoi! zeggen.",
+          'Laat Bizzy "Hoi!" zeggen.',
           "Laat Bizzy 1 meter vooruit bewegen.",
-          "Laat Bizzy naar 180 graden draaien.",
+          "Laat Bizzy naar 180° draaien.",
+          'Laat Bizzy daarna "Klaar!" denken.',
         ],
         blocks: [
           block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
           block("wanneer er op Bizzy wordt geklikt", "gebeurtenissen"),
           block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
           block('Bizzy zegt "Hoi!"', "uiterlijk"),
+          block('Bizzy denkt "Klaar!"', "uiterlijk"),
           block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
-          block("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.", "beweging"),
-          block("als 1 < 2", "besturing", { isCriticalDistractor: true }),
-          block("speel geluid applaus", "geluid"),
-          block("wacht 1 seconde", "besturing"),
-          block("zet score op 0", "variabelen"),
-          block("verplaats Bizzy 5 meters achteruit in 1 sec.", "beweging", {
+          block("verplaats Bizzy 1 meter achteruit in 1 sec.", "beweging", {
             isCriticalDistractor: true,
           }),
+          block("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.", "beweging"),
+          block("draai Bizzy met de wijzers van de klok mee naar 90° in 1 sec.", "beweging", {
+            isCriticalDistractor: true,
+          }),
+          block("wacht 1 seconde", "besturing"),
+          block("herstart scene", "besturing", { isCriticalDistractor: true }),
+          block("als 1 < 2", "besturing", { isCriticalDistractor: true }),
         ],
         correctProgram: [
           "Wanneer er geklikt wordt op afspelen",
           'Bizzy zegt "Hoi!"',
           "verplaats Bizzy 1 meter vooruit in 1 sec.",
           "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.",
+          'Bizzy denkt "Klaar!"',
         ],
+        criteriaSpec: "pt7-lj1v-v7",
         rules: [
           {
             id: "start",
@@ -1298,38 +1342,49 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1h-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
+        "Dit is Bizzy, een karakter dat kan bewegen, draaien, zeggen en denken. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren. Je hoeft niet alle blokken te gebruiken.",
       instruction:
-        "Maak een programma dat dit doet: na klikken op Afspelen zegt Bizzy Hoi! en beweegt hij drie keer vooruit.",
+        'Als er op afspelen wordt geklikt: Bizzy zegt "Klaar voor de start!", loopt drie keer 1 meter vooruit met een herhaal-blok, en draait naar 180°.',
       config: {
         device: "bizzy",
         codingSteps: [
           "Gebruik het startblok Wanneer er geklikt wordt op afspelen.",
-          "Laat Bizzy Hoi! zeggen.",
+          'Laat Bizzy "Klaar voor de start!" zeggen.',
           "Gebruik herhaal 3 keer.",
           "Zet verplaats Bizzy 1 meter vooruit in de herhaling.",
+          "Laat Bizzy na de herhaling naar 180° draaien.",
         ],
         blocks: [
           block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
-          block("wanneer er op Bizzy wordt geklikt", "gebeurtenissen"),
           block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
-          block('Bizzy zegt "Hoi!"', "uiterlijk"),
+          block('Bizzy zegt "Klaar voor de start!"', "uiterlijk"),
+          block('Bizzy denkt "Hm..."', "uiterlijk", { isCriticalDistractor: true }),
           block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
+          block("verplaats Bizzy 3 meter vooruit in 1 sec.", "beweging", {
+            isCriticalDistractor: true,
+          }),
+          block("verplaats Bizzy 1 meter achteruit in 1 sec.", "beweging", {
+            isCriticalDistractor: true,
+          }),
           block("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.", "beweging"),
+          block("draai Bizzy met de wijzers van de klok mee naar 90° in 1 sec.", "beweging", {
+            isCriticalDistractor: true,
+          }),
           block("als 1 < 2", "besturing", { isContainer: true, isCriticalDistractor: true }),
           block("herhaal 3 keer", "besturing", { isContainer: true }),
-          block("herhaal 10 keer", "besturing", { isContainer: true }),
-          block("speel geluid start", "geluid"),
-          block("zet snelheid op 2", "variabelen"),
-          block("als Bizzy rand raakt", "waarnemen", { isContainer: true }),
-          block("stop alles", "besturing"),
+          block("herhaal 10 keer", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("herhaal 1 keer", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("wacht 1 seconde", "besturing"),
+          block("herstart scene", "besturing", { isCriticalDistractor: true }),
         ],
         correctProgram: [
           "Wanneer er geklikt wordt op afspelen",
-          'Bizzy zegt "Hoi!"',
+          'Bizzy zegt "Klaar voor de start!"',
           "herhaal 3 keer",
           "verplaats Bizzy 1 meter vooruit in 1 sec.",
+          "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.",
         ],
+        criteriaSpec: "pt7-lj1h-v7",
         rules: [
           {
             id: "start",
@@ -1612,42 +1667,47 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3v-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Dit is een micro:bit-achtig apparaat met een klein scherm en twee knoppen (A en B). Programmeer een teller die op het scherm verschijnt. Klik op ▶ om je programma uit te voeren; klik daarna op A of B om de knoppen te testen.",
+        "Dit is Bizzy, een karakter dat kan bewegen, draaien, zeggen en denken. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren. Je hoeft niet alle blokken te gebruiken.",
       instruction:
-        "Maak een programma. De teller begint op 0. Elke keer dat knop A wordt ingedrukt, gaat de teller 1 omhoog. Bij 5 of meer toont het scherm vol.",
+        'Bizzy loopt een vierkant op het werkvlak. Elke zijde is 1 meter; op elke hoek draait Bizzy een kwartslag (90°). Bizzy zegt vóór het lopen "Start!" en denkt na het lopen "Klaar!".',
       config: {
-        device: "microbit",
+        device: "bizzy",
         codingSteps: [
-          "Zet de teller bij start op 0.",
-          "Laat knop A de teller met 1 verhogen.",
-          "Controleer of de teller 5 of meer is.",
-          "Toon vol als de teller 5 of meer is.",
+          'Laat Bizzy eerst "Start!" zeggen.',
+          "Gebruik herhaal 4 keer.",
+          "Zet daarin verplaats 1 meter vooruit en daarna draai 90°.",
+          'Laat Bizzy na het vierkant "Klaar!" denken.',
         ],
         blocks: [
-          block("bij start", "gebeurtenissen", { isContainer: true }),
-          block("zet teller op 0", "variabelen"),
-          block("als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }),
-          block("als knop B wordt ingedrukt", "gebeurtenissen", { isContainer: true }),
-          block("verander teller met 1", "variabelen"),
-          block("verander teller met -1", "variabelen"),
-          block("als teller >= 5 dan", "besturing", { isContainer: true }),
-          block("als teller < 5 dan", "besturing", {
-            isContainer: true,
+          block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
+          block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
+          block('Bizzy zegt "Start!"', "uiterlijk"),
+          block('Bizzy denkt "Klaar!"', "uiterlijk"),
+          block('Bizzy zegt "Klaar!"', "uiterlijk", { isCriticalDistractor: true }),
+          block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging"),
+          block("verplaats Bizzy 1 meter achteruit in 1 sec.", "beweging", {
             isCriticalDistractor: true,
           }),
-          block('toon "vol"', "uiterlijk"),
-          block('toon "leeg"', "uiterlijk"),
-          block("wacht 10 seconden", "besturing"),
-          block("speel geluid klaar", "geluid"),
+          block("draai Bizzy met de wijzers van de klok mee naar 90° in 1 sec.", "beweging"),
+          block("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.", "beweging", {
+            isCriticalDistractor: true,
+          }),
+          block("herhaal 4 keer", "besturing", { isContainer: true }),
+          block("herhaal 3 keer", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("herhaal 2 keer", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("wacht 1 seconde", "besturing"),
+          block("als 1 < 2", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("herstart scene", "besturing", { isCriticalDistractor: true }),
         ],
         correctProgram: [
-          "bij start",
-          "zet teller op 0",
-          "als knop A wordt ingedrukt",
-          "verander teller met 1",
-          "als teller >= 5 dan",
-          'toon "vol"',
+          "Wanneer er geklikt wordt op afspelen",
+          'Bizzy zegt "Start!"',
+          "herhaal 4 keer",
+          "verplaats Bizzy 1 meter vooruit in 1 sec.",
+          "draai Bizzy met de wijzers van de klok mee naar 90° in 1 sec.",
+          'Bizzy denkt "Klaar!"',
         ],
+        criteriaSpec: "pt7-lj3v-v7",
         rules: [
           {
             id: "init",
@@ -1949,50 +2009,49 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3h-pt7-programming",
       title: "PT7 - Blokprogrammeren",
       intro:
-        "Een sensor meet temperatuur en raamstand. Op het scherm verschijnt waarschuwing of ok. Programmeer de logica met blokken; klik op ▶ om te testen met de schuifregelaars voor temperatuur en raamstand.",
+        "Dit is Bizzy, een karakter dat kan bewegen, draaien, zeggen en denken. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren. Je hoeft niet alle blokken te gebruiken.",
       instruction:
-        "Maak een programma. Als de temperatuur hoger is dan 25 en het raam open staat, toon waarschuwing. Anders toon ok.",
+        'Bizzy danst een choreografie. Drie keer maakt hij hetzelfde heen-en-weer-rondje: 2 meter vooruit, omdraaien (180°), 2 meter vooruit (= terug), opnieuw omdraaien (180°). Aan het eind zegt hij "Bravo!".',
       config: {
-        device: "sensor",
+        device: "bizzy",
         codingSteps: [
-          "Lees de temperatuur en de raamstand.",
-          "Gebruik de voorwaarde temperatuur hoger dan 25 EN raam open.",
-          "Toon waarschuwing in de dan-tak.",
-          "Toon ok in de anders-tak.",
+          "Gebruik herhaal 3 keer.",
+          "Zet daarin: verplaats 2 meter vooruit, draai 180°, verplaats 2 meter vooruit, draai 180°.",
+          'Laat Bizzy na de herhaling "Bravo!" zeggen.',
         ],
         blocks: [
-          block("bij start", "gebeurtenissen", { isContainer: true }),
-          block("lees temperatuur", "waarnemen"),
-          block("lees raamstand", "waarnemen"),
-          block("als (temperatuur > 25) EN (raam = open) dan", "besturing", {
-            isContainer: true,
-          }),
-          block("als (temperatuur > 25) OF (raam = open) dan", "besturing", {
-            isContainer: true,
+          block("Wanneer er geklikt wordt op afspelen", "gebeurtenissen"),
+          block("verander animatie van Bizzy naar niet animeren", "uiterlijk"),
+          block('Bizzy zegt "Bravo!"', "uiterlijk"),
+          block('Bizzy denkt "Bravo!"', "uiterlijk", { isCriticalDistractor: true }),
+          block("verplaats Bizzy 2 meter vooruit in 1 sec.", "beweging"),
+          block("verplaats Bizzy 1 meter vooruit in 1 sec.", "beweging", {
             isCriticalDistractor: true,
           }),
-          block("als (temperatuur < 25) EN (raam = open) dan", "besturing", {
-            isContainer: true,
+          block("verplaats Bizzy 2 meter achteruit in 1 sec.", "beweging", {
             isCriticalDistractor: true,
           }),
-          block('toon "waarschuwing"', "uiterlijk"),
-          block('toon "ok"', "uiterlijk"),
-          block('toon "koud"', "uiterlijk"),
-          block("anders", "besturing", { isContainer: true }),
-          block("herhaal altijd", "besturing", { isContainer: true }),
-          block("verwijder temperatuur", "data"),
-          block("zet temperatuur op 0", "variabelen"),
-          block("speel alarmgeluid", "geluid"),
+          block("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.", "beweging"),
+          block("draai Bizzy met de wijzers van de klok mee naar 90° in 1 sec.", "beweging", {
+            isCriticalDistractor: true,
+          }),
+          block("herhaal 3 keer", "besturing", { isContainer: true }),
+          block("herhaal 6 keer", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("herhaal 2 keer", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("wacht 1 seconde", "besturing"),
+          block("als 1 < 2", "besturing", { isContainer: true, isCriticalDistractor: true }),
+          block("herstart scene", "besturing", { isCriticalDistractor: true }),
         ],
         correctProgram: [
-          "bij start",
-          "lees temperatuur",
-          "lees raamstand",
-          "als (temperatuur > 25) EN (raam = open) dan",
-          'toon "waarschuwing"',
-          "anders",
-          'toon "ok"',
+          "Wanneer er geklikt wordt op afspelen",
+          "herhaal 3 keer",
+          "verplaats Bizzy 2 meter vooruit in 1 sec.",
+          "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.",
+          "verplaats Bizzy 2 meter vooruit in 1 sec.",
+          "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.",
+          'Bizzy zegt "Bravo!"',
         ],
+        criteriaSpec: "pt7-lj3h-v7",
         rules: [
           {
             id: "read",
@@ -2130,7 +2189,7 @@ const versionSpecs: VersionSpec[] = [
 ];
 
 const v3FileInstruction =
-  "Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Taak afronden.";
+  "Gebruik de verkenner hieronder. Voer de taken uit en klik daarna op 'Volgende'.";
 
 const v3MailConfig = ({
   to,
@@ -2254,7 +2313,7 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
     "lj1-vmbo": {
       id: "lj1v-pt3-security",
       title: "PT3 - Bericht beoordelen",
-      instruction: "Bekijk de e-mail en kies je antwoorden.",
+      instruction: "Bekijk de e-mail en kies het beste antwoord.",
       kerndoel: "23A",
       config: {
         screens: [
@@ -2279,43 +2338,28 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
             },
             groups: [
               {
-                id: "signals",
-                title: "Wat valt op aan deze mail?",
-                inputType: "multi",
+                id: "action",
+                title: "Je krijgt deze mail over je rooster. Wat doe je?",
+                inputType: "single",
                 options: fixedOptions([
-                  "Het afzenderadres lijkt niet van school te zijn.",
-                  "De mail vraagt om via een link in te loggen.",
-                  "De mail zet druk met 'vandaag nog'.",
-                  "Er staat een roosterlink in de mail.",
-                  "De mail begint met 'Hallo leerling'.",
-                ]),
-              },
-              {
-                id: "actions",
-                title: "Wat is een goede volgende stap?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Niet op de link klikken.",
-                  "Rooster openen via de schoolapp of bekende schoolsite.",
-                  "De mail laten controleren door mentor of docent.",
-                  "De link openen omdat het over school gaat.",
-                  "De mail doorsturen naar de klas.",
+                  "Ik klik op de knop in de mail.",
+                  "Ik open mijn rooster via de roosterapp van school.",
+                  "Ik stuur de mail door naar mijn klas.",
+                  "Ik antwoord op de mail met mijn schoolaccount.",
                 ]),
               },
             ],
           },
         ],
         rules: [
-          { id: "signals", description: "herkent minimaal twee signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["Het afzenderadres lijkt niet van school te zijn.", "De mail vraagt om via een link in te loggen.", "De mail zet druk met 'vandaag nog'."] },
-          { id: "safe-route", description: "kiest een bekende officiele route.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Niet op de link klikken.", "Rooster openen via de schoolapp of bekende schoolsite."] },
-          { id: "no-spread", description: "kiest geen onveilige vervolgactie.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["De link openen omdat het over school gaat.", "De mail doorsturen naar de klas."] },
+          { id: "safe-route", description: "kiest de roosterapp van school in plaats van de mailknop.", points: 1, groupId: "action", kind: "singleCorrect", correctOptionIds: ["Ik open mijn rooster via de roosterapp van school."] },
         ],
       },
     },
     "lj1-hv": {
       id: "lj1h-pt3-security",
       title: "PT3 - Bericht beoordelen",
-      instruction: "Bekijk de e-mail en kies je antwoorden.",
+      instruction: "Bekijk de e-mail en kies het beste antwoord.",
       kerndoel: "23A",
       config: {
         screens: [
@@ -2339,43 +2383,28 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
             },
             groups: [
               {
-                id: "signals",
-                title: "Wat maakt deze mail onbetrouwbaar?",
-                inputType: "multi",
+                id: "action",
+                title: "Je krijgt deze mail over accountcontrole. Wat doe je?",
+                inputType: "single",
                 options: fixedOptions([
-                  "Het afzenderadres is geen duidelijk schooladres.",
-                  "De mail vraagt om een persoonlijke inlogcode.",
-                  "De mail gebruikt tijdsdruk.",
-                  "Er staat 'Beste leerling' in plaats van een naam.",
-                  "De mail gaat over school.",
-                ]),
-              },
-              {
-                id: "actions",
-                title: "Wat doet Noor?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Geen code delen.",
-                  "Account of melding controleren via de normale schoolroute.",
-                  "De mail melden of aan ICT/docent laten zien.",
-                  "De code terugsturen zodat het account actief blijft.",
+                  "Ik stuur mijn tijdelijke inlogcode terug, omdat de mail over mijn account gaat.",
                   "De link openen en daar de code invullen.",
+                  "Ik controleer mijn account via de normale schoolroute en deel geen code.",
+                  "Ik stuur de mail door naar klasgenoten om te vragen of zij hem ook hebben.",
                 ]),
               },
             ],
           },
         ],
         rules: [
-          { id: "signals", description: "herkent minimaal twee signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["Het afzenderadres is geen duidelijk schooladres.", "De mail vraagt om een persoonlijke inlogcode.", "De mail gebruikt tijdsdruk.", "Er staat 'Beste leerling' in plaats van een naam."] },
-          { id: "safe-actions", description: "kiest veilige vervolgstappen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Geen code delen.", "Account of melding controleren via de normale schoolroute."] },
-          { id: "no-code", description: "deelt de code niet via mail of link.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["De code terugsturen zodat het account actief blijft.", "De link openen en daar de code invullen."] },
+          { id: "safe-account-route", description: "controleert via de normale schoolroute en deelt geen code.", points: 1, groupId: "action", kind: "singleCorrect", correctOptionIds: ["Ik controleer mijn account via de normale schoolroute en deel geen code."] },
         ],
       },
     },
     "lj3-vmbo": {
       id: "lj3v-pt3-security",
       title: "PT3 - Bericht beoordelen",
-      instruction: "Bekijk de e-mail en kies je antwoorden.",
+      instruction: "Bekijk de e-mail en kies het beste antwoord.",
       kerndoel: "23A",
       config: {
         screens: [
@@ -2400,43 +2429,28 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
             },
             groups: [
               {
-                id: "signals",
-                title: "Welke signalen vragen om extra controle?",
-                inputType: "multi",
+                id: "action",
+                title: "Je krijgt deze mail over je cijferlijst. Wat doe je?",
+                inputType: "single",
                 options: fixedOptions([
-                  "Het afzenderadres hoort niet duidelijk bij school.",
-                  "De bijlage is een macrobestand.",
-                  "De mail vraagt om bewerken of macro's in te schakelen.",
-                  "De mail zet druk met een korte deadline.",
-                  "De mail gaat over cijfers.",
-                ]),
-              },
-              {
-                id: "actions",
-                title: "Wat is veilig om te doen?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Bijlage niet openen of macro's niet inschakelen.",
-                  "Cijfers controleren via het normale schoolportaal.",
-                  "De mail melden of laten controleren.",
-                  "Bijlage openen en bewerken inschakelen.",
-                  "Inloggen via de link in de mail.",
+                  "Ik open de bijlage en schakel bewerken in, want het gaat over mijn cijfers.",
+                  "Ik log in via de link en controleer daarna of mijn cijfers kloppen.",
+                  "Ik controleer mijn cijfers via het normale schoolportaal en open de bijlage niet.",
+                  "Ik stuur de bijlage naar een klasgenoot om te vragen of die hem kan openen.",
                 ]),
               },
             ],
           },
         ],
         rules: [
-          { id: "signals", description: "herkent minimaal twee signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["Het afzenderadres hoort niet duidelijk bij school.", "De bijlage is een macrobestand.", "De mail vraagt om bewerken of macro's in te schakelen.", "De mail zet druk met een korte deadline."] },
-          { id: "safe-actions", description: "kiest veilige controle- en meldactie.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Bijlage niet openen of macro's niet inschakelen.", "Cijfers controleren via het normale schoolportaal."] },
-          { id: "no-danger", description: "kiest geen risicovolle actie.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["Bijlage openen en bewerken inschakelen.", "Inloggen via de link in de mail."] },
+          { id: "safe-grade-route", description: "controleert cijfers via het schoolportaal en opent de bijlage niet.", points: 1, groupId: "action", kind: "singleCorrect", correctOptionIds: ["Ik controleer mijn cijfers via het normale schoolportaal en open de bijlage niet."] },
         ],
       },
     },
     "lj3-hv": {
       id: "lj3h-pt3-security",
       title: "PT3 - Bericht beoordelen",
-      instruction: "Bekijk de e-mail en kies je antwoorden.",
+      instruction: "Bekijk de e-mail en kies het beste antwoord.",
       kerndoel: "23A",
       config: {
         screens: [
@@ -2461,36 +2475,21 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
             },
             groups: [
               {
-                id: "signals",
-                title: "Welke signalen maken dat Mila voorzichtig moet zijn?",
-                inputType: "multi",
+                id: "action",
+                title: "Je krijgt deze mail over accountactiviteit. Wat doe je?",
+                inputType: "single",
                 options: fixedOptions([
-                  "Het domein van de afzender is geen herkenbaar schooldomein.",
-                  "De link gebruikt een andere domeinnaam dan de schoolsite.",
-                  "De mail dreigt met afsluiting van het account.",
-                  "De mail vraagt om schoolgegevens in te vullen via een link.",
-                  "De mail noemt Mila bij naam.",
-                ]),
-              },
-              {
-                id: "actions",
-                title: "Wat is de beste aanpak?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Niet via de link inloggen.",
-                  "Zelf naar de officiele accountinstellingen gaan.",
-                  "Actieve sessies en tweestapsverificatie controleren.",
-                  "Wachtwoord invullen via de knop om afsluiting te voorkomen.",
-                  "De mail negeren zonder verder te controleren.",
+                  "Ik vernieuw mijn wachtwoord via de knop, omdat de mail mij bij naam noemt.",
+                  "Ik ga zelf naar de officiele accountinstellingen en controleer sessies en beveiliging daar.",
+                  "Ik antwoord op de mail en vraag of de afzender kan bewijzen dat het van school is.",
+                  "Ik negeer de mail zonder verder te controleren, want dan kan er niets gebeuren.",
                 ]),
               },
             ],
           },
         ],
         rules: [
-          { id: "signals", description: "herkent minimaal drie signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 3, correctOptionIds: ["Het domein van de afzender is geen herkenbaar schooldomein.", "De link gebruikt een andere domeinnaam dan de schoolsite.", "De mail dreigt met afsluiting van het account.", "De mail vraagt om schoolgegevens in te vullen via een link."] },
-          { id: "account-check", description: "kiest controle via eigen accountinstellingen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Niet via de link inloggen.", "Zelf naar de officiele accountinstellingen gaan.", "Actieve sessies en tweestapsverificatie controleren."] },
-          { id: "no-link", description: "vermijdt link en passief negeren.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["Wachtwoord invullen via de knop om afsluiting te voorkomen.", "De mail negeren zonder verder te controleren."] },
+          { id: "safe-account-settings", description: "controleert accountactiviteit via de officiele accountinstellingen.", points: 1, groupId: "action", kind: "singleCorrect", correctOptionIds: ["Ik ga zelf naar de officiele accountinstellingen en controleer sessies en beveiliging daar."] },
         ],
       },
     },
@@ -2663,6 +2662,20 @@ const v3Pt8 = (versionId: AssessmentVersionId): SocialTaskSpec => {
   return specs[versionId];
 };
 
+const whutsuppPt8 = (versionId: AssessmentVersionId): WhutsuppTaskSpec => {
+  const flow = whutsuppPt8Flow as WhutsuppTaskConfig;
+  const variant = flow.variants.find((candidate) => candidate.assessmentId === versionId);
+  return {
+    id: flow.taskId,
+    title: flow.title,
+    instruction:
+      variant?.introText ??
+      "Je zit in een Whutsupp-groepschat. Kies wat jij doet.",
+    kerndoel: flow.subgoal,
+    config: flow,
+  };
+};
+
 const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
   const specs: Record<AssessmentVersionId, BlockTaskSpec> = {
     "lj1-vmbo": {
@@ -2742,7 +2755,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     "lj1-vmbo": {
       id: "lj1v-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nWerk in OneDrive. Maak de map Project Dieren. Maak daarin de submappen Tekst, Afbeeldingen en Bronnen. Verplaats de drie projectbestanden naar de juiste submappen en hernoem concept_dieren.docx naar project_dieren_verslag.docx.`,
+      instruction: `${v3FileInstruction}\n1. Maak in OneDrive een map aan met de naam Project Dieren.\n2. Maak in de map Project Dieren drie nieuwe mappen aan: Tekst, Afbeeldingen en Bronnen.\n3. Verplaats het pdf-bestand naar Bronnen, het docx-bestand naar Tekst en het jpg-bestand naar Afbeeldingen.\n4. Verander de naam van concept_dieren.docx in project_dieren_verslag.docx.`,
       startFolders: ["Thuis/OneDrive"],
       startFiles: ["Thuis/OneDrive/concept_dieren.docx", "Thuis/OneDrive/foto_kat.jpg", "Thuis/OneDrive/bron_dieren.pdf"],
       tasks: [
@@ -2755,7 +2768,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     "lj1-hv": {
       id: "lj1h-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nWerk in OneDrive. Maak de hoofdmap Project Water. Maak daarin Bronnen, Afbeeldingen en Verslag. Verplaats de vier bestanden naar de juiste map. Hernoem concept_verslag.docx naar project_water_verslag.docx en presentatie_water.pptx naar project_water_presentatie.pptx.`,
+      instruction: `${v3FileInstruction}\n1. Maak in OneDrive een map aan met de naam Project Water.\n2. Maak in Project Water de submappen Bronnen, Afbeeldingen en Verslag.\n3. Verplaats bron_water.pdf naar Bronnen.\n4. Verplaats waterfoto.png naar Afbeeldingen.\n5. Verplaats concept_verslag.docx naar Verslag en hernoem het bestand naar project_water_verslag.docx.\n6. Verplaats presentatie_water.pptx naar Verslag en hernoem het bestand naar project_water_presentatie.pptx.`,
       startFolders: ["Thuis/OneDrive"],
       startFiles: ["Thuis/OneDrive/bron_water.pdf", "Thuis/OneDrive/waterfoto.png", "Thuis/OneDrive/concept_verslag.docx", "Thuis/OneDrive/presentatie_water.pptx"],
       tasks: [
@@ -2768,7 +2781,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     "lj3-vmbo": {
       id: "lj3v-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nWerk in OneDrive in de map Stageproject. Maak de mappen Actueel en Oud. Zet de nieuwste versie van het stageverslag in Actueel, zet oudere versies in Oud en hernoem stageverslag_v3.docx naar stageverslag_2026_definitief.docx.`,
+      instruction: `${v3FileInstruction}\n1. Open in OneDrive de map Stageproject.\n2. Maak in Stageproject de submappen Actueel en Oud.\n3. Verplaats stageverslag_v1.docx en stageverslag_v2.docx naar Oud.\n4. Verplaats stageverslag_v3.docx naar Actueel en hernoem het bestand naar stageverslag_2026_definitief.docx.`,
       startFolders: ["Thuis/OneDrive/Stageproject"],
       startFiles: ["Thuis/OneDrive/Stageproject/stageverslag_v1.docx", "Thuis/OneDrive/Stageproject/stageverslag_v2.docx", "Thuis/OneDrive/Stageproject/stageverslag_v3.docx", "Thuis/OneDrive/Stageproject/foto_stage.jpg"],
       tasks: [
@@ -2781,7 +2794,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     "lj3-hv": {
       id: "lj3h-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nWerk in OneDrive in Project Onderzoek. Maak daarin de mappen Data, Bronnen, Beelden en Archief. Plaats bestanden op basis van type en versie. Zet alleen de definitieve versie in Project Onderzoek en archiveer de oude versie.`,
+      instruction: `${v3FileInstruction}\n1. Open in OneDrive de map Project Onderzoek.\n2. Maak in Project Onderzoek de submappen Data, Bronnen, Beelden en Archief.\n3. Verplaats resultaten.csv naar Data.\n4. Verplaats bron_artikel.pdf naar Bronnen.\n5. Verplaats grafiek.png naar Beelden.\n6. Verplaats onderzoek_v1.docx naar Archief.\n7. Laat onderzoek_definitief.docx in Project Onderzoek staan.`,
       startFolders: ["Thuis/OneDrive/Project Onderzoek"],
       startFiles: ["Thuis/OneDrive/Project Onderzoek/onderzoek_v1.docx", "Thuis/OneDrive/Project Onderzoek/onderzoek_definitief.docx", "Thuis/OneDrive/Project Onderzoek/resultaten.csv", "Thuis/OneDrive/Project Onderzoek/bron_artikel.pdf", "Thuis/OneDrive/Project Onderzoek/grafiek.png"],
       tasks: [
@@ -2858,8 +2871,8 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     pt2: mail[spec.id],
     pt3: v3Pt3(spec.id),
     pt6: v3Pt6(`${spec.id.replace("-", "").replace("lj", "lj")}-pt6-screen-share`),
-    pt7: v3Pt7(spec.id),
-    pt8: v3Pt8(spec.id),
+    pt7: spec.pt7,
+    pt8: whutsuppPt8(spec.id),
   };
 };
 

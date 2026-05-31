@@ -24,7 +24,8 @@ export type AssessmentItemType =
   | "teams_share_simulation"
   | "block_programming_task"
   | "source_evaluation"
-  | "social_action_simulation";
+  | "social_action_simulation"
+  | "whutsupp_scenario_task";
 
 export type SelectedAnswer =
   | string
@@ -64,6 +65,44 @@ export interface MockupCard {
   footer?: string;
   mediaHint?: string;
 }
+
+export interface PollResultCardStimulus {
+  type: "pollResultCard";
+  title: string;
+  subtitle: string;
+  rows: Array<{
+    label: string;
+    value: number;
+  }>;
+  footer?: string;
+  claimBox?: string;
+  visualRequirements?: {
+    renderAs: "html-table-card" | "html-table-card-with-claim";
+    showBars?: boolean;
+    barMax?: number;
+    doNotUseColorOnly: boolean;
+    altText: string;
+  };
+}
+
+export interface DataDashboardCardStimulus {
+  type: "dataDashboardCard";
+  title: string;
+  subtitle: string;
+  columns: string[];
+  rows: Array<Record<string, string | number>>;
+  claimBox?: string;
+  visualRequirements?: {
+    renderAs: "dashboard-table-card";
+    showMiniBars?: boolean;
+    showComplaintBarsOnly?: boolean;
+    doNotShowCalculatedRatios?: boolean;
+    doNotUseColorOnly: boolean;
+    altText: string;
+  };
+}
+
+export type DataStimulus = PollResultCardStimulus | DataDashboardCardStimulus;
 
 export interface Pt1Node {
   id: string;
@@ -251,7 +290,15 @@ export interface ProgrammingBlockDefinition {
   isCriticalDistractor?: boolean;
 }
 
-export type BlockCriteriaSpec = "pt7-lj1v" | "pt7-lj1h" | "pt7-lj3v" | "pt7-lj3h";
+export type BlockCriteriaSpec =
+  | "pt7-lj1v"
+  | "pt7-lj1h"
+  | "pt7-lj3v"
+  | "pt7-lj3h"
+  | "pt7-lj1v-v7"
+  | "pt7-lj1h-v7"
+  | "pt7-lj3v-v7"
+  | "pt7-lj3h-v7";
 
 export interface BlockProgrammingTaskConfig {
   intro?: string;
@@ -330,6 +377,109 @@ export interface InteractionTaskConfig {
   }>;
 }
 
+export type WhutsuppFlag =
+  | "harmful_share"
+  | "retaliation"
+  | "unsafe_evidence_share"
+  | "ridicule_reaction"
+  | "passive"
+  | "unknown"
+  | "recovery_safe"
+  | "victim_blaming_or_minimizing"
+  | string;
+
+export interface WhutsuppChoice {
+  choiceId: string;
+  label: string;
+  isCorrect: boolean;
+  score: number;
+  flags: WhutsuppFlag[];
+  unknown?: boolean | string;
+  rationale?: string;
+}
+
+export interface WhutsuppMessage {
+  sender: string;
+  text?: string;
+  kind: "text" | "videoCard";
+  assetKey?: string;
+  side?: "left" | "right";
+  timestamp?: string;
+}
+
+export interface WhutsuppRecovery {
+  triggerFlags: WhutsuppFlag[];
+  prompt: string;
+  scoreEffect: string;
+  choices: WhutsuppChoice[];
+}
+
+export interface WhutsuppNode {
+  nodeId: string;
+  category: string;
+  prompt: string;
+  messages: WhutsuppMessage[];
+  choices: WhutsuppChoice[];
+  recovery?: WhutsuppRecovery;
+}
+
+export interface WhutsuppFeedbackRule {
+  condition: string;
+  text: string;
+}
+
+export interface WhutsuppVariant {
+  assessmentId: AssessmentVersionId;
+  gradeLabel: string;
+  languageLevel: string;
+  groupTitle: string;
+  introText: string;
+  nodes: WhutsuppNode[];
+  resultsFeedbackRules?: WhutsuppFeedbackRule[];
+}
+
+export interface WhutsuppTaskConfig {
+  taskId: string;
+  title: string;
+  version: string;
+  subgoal: string;
+  maxPoints: number;
+  engine: "WhutsuppScenarioTask";
+  ui: {
+    brandName: string;
+    randomizeChoices: boolean;
+    pinChoiceIdsToBottom: string[];
+    assets: {
+      videoCardSvg: string;
+      videoCardGifFallback?: string;
+    };
+  };
+  scoring: {
+    categories: string[];
+    caps: Array<{
+      flag: WhutsuppFlag;
+      maxScore: number;
+      reason: string;
+    }>;
+    aggregateCounters?: string[];
+  };
+  variants: WhutsuppVariant[];
+}
+
+export interface WhutsuppPathEntry {
+  nodeId: string;
+  choiceId: string;
+  recoveryChoiceId?: string;
+  shownChoiceOrder?: string[];
+  shownRecoveryChoiceOrder?: string[];
+}
+
+export interface WhutsuppAnswer {
+  assessmentId: AssessmentVersionId;
+  variantId: string;
+  path: WhutsuppPathEntry[];
+}
+
 /* ─── Source evaluation task (lj3-hv "betrouwbaarheid van bronnen") ─── */
 
 export interface SourceEvaluationOption {
@@ -396,6 +546,7 @@ export interface AssessmentItem {
   harmfulOptionIds?: string[];
   harmfulSelectionMaxScore?: number;
   mockup?: MockupCard;
+  dataStimulus?: DataStimulus;
   table?: SpreadsheetTable;
   codeBlocks?: string[];
   developerNotes?: string[];
@@ -417,6 +568,7 @@ export interface AssessmentItem {
   blockTask?: BlockProgrammingTaskConfig;
   sourceEvaluationTask?: SourceEvaluationTaskConfig;
   socialTask?: InteractionTaskConfig;
+  whutsuppTask?: WhutsuppTaskConfig;
 }
 
 export interface AssessmentSection {

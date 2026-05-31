@@ -240,89 +240,32 @@
       "title": "Aanbevelingen",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Luna kijkt drie voetbalvideo’s helemaal af. Eén video vindt ze leuk. Daarna ziet ze meer voetbalvideo’s. Wat is de beste uitleg?",
-      "options": [
-        {
-          "id": "opt_watch_like",
-          "text": "De app gebruikt wat Luna kijkt en leuk vindt om nieuwe video’s te kiezen.",
-          "isCorrect": true,
-          "isHarmful": false,
-          "isUnknownOption": false
-        },
-        {
-          "id": "opt_same_school",
-          "text": "De app laat alle leerlingen na schooltijd dezelfde voetbalvideo’s zien.",
-          "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
-        },
-        {
-          "id": "opt_creator_controls",
-          "text": "De maker van één video bepaalt precies wat Luna daarna ziet.",
-          "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
-        },
-        {
-          "id": "opt_battery",
-          "text": "De batterij van Luna’s telefoon bepaalt welke video’s ze ziet.",
-          "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
-        },
-        {
-          "id": "unknown",
-          "text": "Ik weet het niet.",
-          "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": true
-        }
-      ],
-      "correctAnswer": "opt_watch_like",
-      "harmfulAnswers": [],
-      "scoring": {
-        "maxPoints": 1,
-        "rule": "exact-choice",
-        "unknownScoresZero": true,
-        "unknownExclusive": true
-      },
-      "anchorStatus": "replaceable",
-      "validityNote": "Meet basisbegrip van aanbevelingssystemen in eenvoudige taal. Correct: apps kunnen signalen zoals kijken en leuk vinden gebruiken voor nieuwe aanbevelingen.",
-      "pilotReviewStatus": "V3.6-review: vervangen volgens aangeleverde v3.6 SR21B-bijlage."
-    },
-    {
-      "id": "lj1v-sr6-data-poll",
-      "targetGroup": "lj1-vmbo",
-      "subgoal": "21C",
-      "title": "Kleine poll",
-      "itemType": "single-choice",
-      "selectionLimit": 1,
-      "question": "In een poll stemmen 8 van de 25 leerlingen uit jouw klas op voetbal. Kun je dan zeggen dat voetbal de populairste sport van de hele school is?",
+      "question": "Luna ziet steeds meer voetbalvideo’s nadat ze een paar voetbalvideo’s heeft gekeken. Wat kan ze hieruit het best afleiden?",
       "options": [
         {
           "id": "A",
-          "text": "Nee, de groep is te klein en komt maar uit één klas.",
+          "text": "Haar feed laat waarschijnlijk meer voetbal zien omdat de app haar kijkgedrag gebruikt.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "Ja, want 8 stemmen is altijd genoeg.",
+          "text": "Voetbal is daardoor zeker het populairste onderwerp onder alle leerlingen.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "Ja, als de poll online stond.",
+          "text": "Alle andere onderwerpen zijn door de app verwijderd.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Nee, want je kunt met een poll nooit iets onderzoeken.",
+          "text": "De makers van voetbalvideo’s bepalen samen precies wat Luna ziet.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -343,8 +286,128 @@
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet basisbegrip van aanbevelingssystemen in eenvoudige taal. Correct: apps kunnen signalen zoals kijken en leuk vinden gebruiken voor nieuwe aanbevelingen.",
+      "pilotReviewStatus": "V3.6-review: vervangen volgens aangeleverde v3.6 SR21B-bijlage."
+    },
+    {
+      "id": "lj1v-sr6-data-poll",
+      "targetGroup": "lj1-vmbo",
+      "subgoal": "21C",
+      "title": "Kleine poll",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Iemand zegt: “Voetbal is dus de populairste sport van de hele school.” Wat is de beste reactie?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Dat kun je niet zomaar zeggen, want deze poll is alleen ingevuld door klas 1B.",
+          "score": 1,
+          "correct": true,
+          "isCorrect": true,
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
+        },
+        {
+          "id": "B",
+          "text": "Dat klopt, want voetbal heeft in deze klas de meeste stemmen.",
+          "score": 0,
+          "correct": false,
+          "isCorrect": false,
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
+        },
+        {
+          "id": "C",
+          "text": "Dat klopt alleen als de poll online is ingevuld.",
+          "score": 0,
+          "correct": false,
+          "isCorrect": false,
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
+        },
+        {
+          "id": "D",
+          "text": "Dat kun je met deze poll niet eens over klas 1B zeggen.",
+          "score": 0,
+          "correct": false,
+          "isCorrect": false,
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
+        },
+        {
+          "id": "E",
+          "text": "Ik weet het niet.",
+          "score": 0,
+          "correct": false,
+          "isCorrect": false,
+          "unknown": true,
+          "isUnknownOption": true,
+          "isHarmful": false
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
       "anchorStatus": "concept-anchor",
-      "validityNote": "Meet beperkte generaliseerbaarheid van data."
+      "validityNote": "Meet beperkte generaliseerbaarheid van data.",
+      "questionType": "single",
+      "maxScore": 1,
+      "stimulus": {
+        "type": "pollResultCard",
+        "title": "Poll in klas 1B",
+        "subtitle": "Vraag: Welke sport doe je het liefst?",
+        "rows": [
+          {
+            "label": "Voetbal",
+            "value": 8
+          },
+          {
+            "label": "Dansen",
+            "value": 7
+          },
+          {
+            "label": "Fitness",
+            "value": 5
+          },
+          {
+            "label": "Hockey",
+            "value": 3
+          },
+          {
+            "label": "Anders",
+            "value": 2
+          }
+        ],
+        "footer": "Totaal: 25 leerlingen uit klas 1B",
+        "visualRequirements": {
+          "renderAs": "html-table-card",
+          "showBars": true,
+          "barMax": 8,
+          "doNotUseColorOnly": true,
+          "altText": "Polluitslag van klas 1B. Voetbal 8 stemmen, dansen 7, fitness 5, hockey 3, anders 2. Totaal 25 leerlingen."
+        }
+      },
+      "rationale": "Leerlingen moeten onderscheid maken tussen een toegestane conclusie over klas 1B en een te brede conclusie over de hele school. Voetbal heeft wel de meeste stemmen in deze klas, maar de data komen niet van de hele school.",
+      "qualityControl": {
+        "reviewStatus": "revised-v3.6",
+        "replaces": "v3.5 text-only poll item",
+        "improvement": "Visuele polluitslag toegevoegd; afleider B is bewust half waar en toetst generaliseerbaarheid scherper.",
+        "pilotWatch": [
+          "correctRate",
+          "unknownRate",
+          "distractorBRate"
+        ]
+      }
     },
     {
       "id": "lj1v-sr7-ai-check",
@@ -843,42 +906,57 @@
       "title": "Steekproef",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Een dataset bevat alleen antwoorden van leerlingen uit één klas. Waar moet je voor oppassen?",
+      "question": "Welke conclusie past het best bij deze data?",
       "options": [
         {
           "id": "A",
-          "text": "Je kunt niet zomaar zeggen dat dit voor alle leerlingen geldt.",
+          "text": "In klas 1H2 komt de grootste groep meestal met de fiets.",
+          "score": 1,
+          "correct": true,
           "isCorrect": true,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "B",
-          "text": "Eén klas is altijd genoeg om iets over heel Nederland te zeggen.",
+          "text": "Op de hele school komt bijna iedereen met de fiets.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "C",
-          "text": "De dataset is automatisch fout.",
+          "text": "De data zijn waardeloos, want maar één klas heeft gereageerd.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "D",
-          "text": "Meer data maakt nooit verschil.",
+          "text": "De poll is betrouwbaar voor de hele school, omdat alle 25 leerlingen reageerden.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "E",
           "text": "Ik weet het niet.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": true
+          "unknown": true,
+          "isUnknownOption": true,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -890,7 +968,51 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "validityNote": "Meet dataconclusie en generaliseerbaarheid."
+      "validityNote": "Meet dataconclusie en generaliseerbaarheid.",
+      "questionType": "single",
+      "maxScore": 1,
+      "stimulus": {
+        "type": "pollResultCard",
+        "title": "Online formulier in klas 1H2",
+        "subtitle": "Vraag: Hoe kom je meestal naar school?",
+        "rows": [
+          {
+            "label": "Fiets",
+            "value": 18
+          },
+          {
+            "label": "Bus",
+            "value": 4
+          },
+          {
+            "label": "Lopend",
+            "value": 2
+          },
+          {
+            "label": "Auto",
+            "value": 1
+          }
+        ],
+        "footer": "Totaal: 25 reacties uit klas 1H2",
+        "visualRequirements": {
+          "renderAs": "html-table-card",
+          "showBars": true,
+          "barMax": 18,
+          "doNotUseColorOnly": true,
+          "altText": "Polluitslag uit klas 1H2. Fiets 18, bus 4, lopend 2, auto 1. Totaal 25 reacties."
+        }
+      },
+      "rationale": "Dit item meet of leerlingen een passende conclusie kunnen kiezen. De data zeggen iets over klas 1H2, niet automatisch over de hele school.",
+      "qualityControl": {
+        "reviewStatus": "revised-v3.6",
+        "replaces": "v3.5 abstract dataset item",
+        "improvement": "Van abstracte tekstvraag naar concrete online formulieruitslag met visuele stimulus.",
+        "pilotWatch": [
+          "correctRate",
+          "unknownRate",
+          "distractorDRate"
+        ]
+      }
     },
     {
       "id": "lj1h-sr7-ai-startpunt",
@@ -1402,42 +1524,57 @@
       "title": "Poll en conclusie",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "In een online poll stemmen 12 leerlingen uit klas 3V2. Acht leerlingen kiezen voor “meer pauze”. Een leerling zegt: “De meeste leerlingen van de hele school willen dus meer pauze.” Wat is de beste reactie?",
+      "question": "Wat is de beste beoordeling van deze tekst voor de schoolwebsite?",
       "options": [
         {
           "id": "A",
-          "text": "Dat kun je niet zomaar zeggen, want de poll gaat maar over 12 leerlingen uit één klas.",
+          "text": "Niet goed: de poll laat alleen iets zien over 12 reacties uit één klas.",
+          "score": 1,
+          "correct": true,
           "isCorrect": true,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "B",
-          "text": "Dat klopt zeker, want acht stemmen is meer dan de helft.",
+          "text": "Goed: 8 van de 12 is meer dan de helft, dus dit geldt voor de hele school.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "C",
-          "text": "Dat klopt alleen als de poll op een telefoon is ingevuld.",
+          "text": "Niet goed: met een online poll kun je nooit een mening onderzoeken.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "D",
-          "text": "Dat kun je nooit onderzoeken met een poll.",
+          "text": "Goed: als een poll in een groepschat staat, zijn de antwoorden automatisch eerlijk.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "E",
           "text": "Ik weet het niet.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": true
+          "unknown": true,
+          "isUnknownOption": true,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -1449,7 +1586,49 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "validityNote": "Meet verhouding tussen data en conclusie."
+      "validityNote": "Meet verhouding tussen data en conclusie.",
+      "questionType": "single",
+      "maxScore": 1,
+      "stimulus": {
+        "type": "pollResultCard",
+        "title": "Poll in groepschat 3V2",
+        "subtitle": "Vraag: Wil je langere pauzes?",
+        "rows": [
+          {
+            "label": "Ja",
+            "value": 8
+          },
+          {
+            "label": "Nee",
+            "value": 3
+          },
+          {
+            "label": "Maakt niet uit",
+            "value": 1
+          }
+        ],
+        "footer": "Totaal: 12 reacties uit klas 3V2",
+        "claimBox": "Tekst voor schoolwebsite: “De meeste leerlingen van onze school willen langere pauzes.”",
+        "visualRequirements": {
+          "renderAs": "html-table-card-with-claim",
+          "showBars": true,
+          "barMax": 8,
+          "doNotUseColorOnly": true,
+          "altText": "Poll in groepschat 3V2 over langere pauzes. Ja 8, nee 3, maakt niet uit 1. Totaal 12 reacties. Claim: De meeste leerlingen van onze school willen langere pauzes."
+        }
+      },
+      "rationale": "8 van de 12 is binnen de reacties een meerderheid, maar de poll is te smal om een schoolbrede claim te doen. Dit meet responsgroep, steekproef en generaliseerbaarheid.",
+      "qualityControl": {
+        "reviewStatus": "revised-v3.6",
+        "replaces": "v3.5 text-only school poll item",
+        "improvement": "Maakt de publicatieclaim zichtbaar en laat leerlingen beoordelen of de claim past bij de data.",
+        "pilotWatch": [
+          "correctRate",
+          "unknownRate",
+          "distractorBRate",
+          "distractorCRate"
+        ]
+      }
     },
     {
       "id": "lj3v-sr7-ai-factcheck",
@@ -1959,42 +2138,57 @@
       "title": "Klachten naar verhouding",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Een grafiek vergelijkt klachten over twee apps. App A: 20 klachten bij 1.000 gebruikers. App B: 50 klachten bij 10.000 gebruikers. Welke conclusie past het best bij deze data?",
+      "question": "Welke reactie is het best?",
       "options": [
         {
           "id": "A",
-          "text": "App A heeft naar verhouding meer klachten dan App B.",
+          "text": "Niet zomaar: je moet klachten vergelijken met het aantal gebruikers. App A heeft naar verhouding meer klachten.",
+          "score": 1,
+          "correct": true,
           "isCorrect": true,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "B",
-          "text": "App B heeft naar verhouding meer klachten, want 50 is meer dan 20.",
+          "text": "Klopt: 50 klachten is altijd erger dan 20 klachten.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "C",
-          "text": "De apps hebben evenveel klachten, want beide apps hebben klachten.",
+          "text": "Je kunt apps alleen vergelijken als ze precies evenveel gebruikers hebben.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "D",
-          "text": "Je kunt nooit naar verhouding kijken bij gebruikersaantallen.",
+          "text": "Je moet de klachten van beide apps bij elkaar optellen om te weten welke app slechter is.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": false
+          "unknown": false,
+          "isUnknownOption": false,
+          "isHarmful": false
         },
         {
           "id": "E",
           "text": "Ik weet het niet.",
+          "score": 0,
+          "correct": false,
           "isCorrect": false,
-          "isHarmful": false,
-          "isUnknownOption": true
+          "unknown": true,
+          "isUnknownOption": true,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -2005,8 +2199,53 @@
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "anchorStatus": "concept-anchor",
-      "validityNote": "Meet dataconclusie met verhouding; pilot moet controleren of rekenbelasting passend is."
+      "anchorStatus": "replaceable",
+      "validityNote": "Meet dataconclusie met verhouding; pilot moet controleren of rekenbelasting passend is.",
+      "questionType": "single",
+      "maxScore": 1,
+      "stimulus": {
+        "type": "dataDashboardCard",
+        "title": "Dashboard roosterapps",
+        "subtitle": "Klachten deze maand",
+        "columns": [
+          "App",
+          "Gebruikers",
+          "Klachten"
+        ],
+        "rows": [
+          {
+            "app": "App A",
+            "users": 1000,
+            "complaints": 20
+          },
+          {
+            "app": "App B",
+            "users": 10000,
+            "complaints": 50
+          }
+        ],
+        "claimBox": "Reactie van een leerling: “App B heeft het grootste probleem, want die heeft 50 klachten en App A maar 20.”",
+        "visualRequirements": {
+          "renderAs": "dashboard-table-card",
+          "showMiniBars": true,
+          "showComplaintBarsOnly": true,
+          "doNotShowCalculatedRatios": true,
+          "doNotUseColorOnly": true,
+          "altText": "Dashboard over twee roosterapps. App A heeft 1000 gebruikers en 20 klachten. App B heeft 10000 gebruikers en 50 klachten. Een leerling zegt dat App B het grootste probleem heeft omdat 50 meer is dan 20."
+        }
+      },
+      "rationale": "Dit item meet verhouding-denken bij digitale data. App B heeft absoluut meer klachten, maar App A heeft relatief meer klachten per gebruiker.",
+      "qualityControl": {
+        "reviewStatus": "revised-v3.6",
+        "replaces": "v3.5 text-only app complaints item",
+        "improvement": "Dashboardstimulus toegevoegd; denkfout absolute aantallen versus verhouding expliciet gemaakt.",
+        "pilotWatch": [
+          "correctRate",
+          "unknownRate",
+          "distractorBRate",
+          "distractorCRate"
+        ]
+      }
     },
     {
       "id": "lj3h-sr7-ai-source-check",

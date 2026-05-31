@@ -14,6 +14,10 @@ import type {
   SelectedAnswer,
   SessionMetadata,
   StepDescriptor,
+  WhutsuppAnswer,
+  WhutsuppChoice,
+  WhutsuppFlag,
+  WhutsuppTaskConfig,
 } from "../types";
 
 const randomizeOptions = (ids: string[]) => {
@@ -33,9 +37,34 @@ const interactionOrderKey = (
   groupId: string,
   kind: "cards" | "options",
 ) => `${sectionId}:${itemId}:${screenId}:${groupId}:${kind}`;
+const whutsuppOrderKey = (
+  sectionId: string,
+  itemId: string,
+  variantId: string,
+  nodeId: string,
+  kind: "choices" | "recovery",
+) => `${sectionId}:${itemId}:${variantId}:${nodeId}:${kind}`;
 
 const isUnknownOption = (option: { id: string; label: string }) =>
   option.id.endsWith("-unknown") || option.label.trim().toLowerCase() === "ik weet het niet.";
+
+const orderedWhutsuppChoiceIds = (
+  choices: WhutsuppChoice[],
+  task: WhutsuppTaskConfig,
+) => {
+  const pinnedIds = new Set(task.ui.pinChoiceIdsToBottom ?? ["unknown"]);
+  const pinned = choices.filter((choice) => pinnedIds.has(choice.choiceId));
+  const randomized = task.ui.randomizeChoices === false
+    ? choices.filter((choice) => !pinnedIds.has(choice.choiceId))
+    : randomizeOptions(
+        choices
+          .filter((choice) => !pinnedIds.has(choice.choiceId))
+          .map((choice) => choice.choiceId),
+      )
+        .map((choiceId) => choices.find((choice) => choice.choiceId === choiceId))
+        .filter(Boolean) as WhutsuppChoice[];
+  return randomized.concat(pinned).map((choice) => choice.choiceId);
+};
 
 export const getMappingCodes = (mapping: CodeMapping): string[] =>
   mapping.codes.map((code) => code.trim()).filter(Boolean);
@@ -46,6 +75,22 @@ const createPresentedOrders = (assessment: AssessmentVersion) => {
   assessment.sections.forEach((section) => {
     section.items.forEach((item) => {
       if (!item.options) {
+        const whutsuppTask = item.whutsuppTask;
+        if (whutsuppTask) {
+          whutsuppTask.variants.forEach((variant) => {
+            variant.nodes.forEach((node) => {
+              presentedOrders[
+                whutsuppOrderKey(section.id, item.id, variant.assessmentId, node.nodeId, "choices")
+              ] = orderedWhutsuppChoiceIds(node.choices, whutsuppTask);
+              if (node.recovery) {
+                presentedOrders[
+                  whutsuppOrderKey(section.id, item.id, variant.assessmentId, node.nodeId, "recovery")
+                ] = orderedWhutsuppChoiceIds(node.recovery.choices, whutsuppTask);
+              }
+            });
+          });
+          return;
+        }
         const interactionTask = item.securityTask ?? item.socialTask;
         interactionTask?.screens.forEach((screen) => {
           screen.groups.forEach((group) => {
@@ -189,6 +234,18 @@ export const getPresentedInteractionOrder = (
 ) =>
   session.presentedOrders[
     interactionOrderKey(sectionId, itemId, screenId, groupId, kind)
+  ] ?? [];
+
+export const getPresentedWhutsuppOrder = (
+  session: AssessmentSession,
+  sectionId: string,
+  itemId: string,
+  variantId: string,
+  nodeId: string,
+  kind: "choices" | "recovery",
+) =>
+  session.presentedOrders[
+    whutsuppOrderKey(sectionId, itemId, variantId, nodeId, kind)
   ] ?? [];
 
 const isSameAnswer = (
@@ -605,11 +662,352 @@ const blockIndex = (program: Array<{ label: string; indent: number }>, label: st
 const countBlock = (program: string[], label: string) =>
   program.filter((entry) => entry === label).length;
 
+type ProgramEntry = { label: string; indent: number };
+type SimEvent = {
+  type: "zeg" | "denk" | "verplaats" | "draai" | "wacht" | "herhaal_start" | "herhaal_end" | "verander_animatie" | "scene_restart";
+  value?: string | number;
+  tick: number;
+};
+
+type SimState = {
+  startX: number;
+  startY: number;
+  x: number;
+  y: number;
+  startHeading: number;
+  heading: number;
+  lastSpoken: string | null;
+  lastThought: string | null;
+  events: SimEvent[];
+};
+
+const normalizeHeading = (heading: number) => ((heading % 360) + 360) % 360;
+
+const headingEquivalent = (a: number, b: number) => {
+  const diff = normalizeHeading(a - b);
+  return diff < 1 || diff > 359;
+};
+
+const textFromQuotedBlock = (label: string) => label.match(/"([^"]+)"/)?.[1] ?? "";
+
+const moveFromLabel = (label: string): { afstand: number; richting: "vooruit" | "achteruit" } | null => {
+  const match = label.match(/verplaats Bizzy (\d+) meter[s]? (vooruit|achteruit)/);
+  return match ? { afstand: Number(match[1]), richting: match[2] as "vooruit" | "achteruit" } : null;
+};
+
+const turnFromLabel = (label: string): number | null => {
+  const match = label.match(/naar (\d+)(?:°| graden)/);
+  return match ? Number(match[1]) : null;
+};
+
+const repeatFromLabel = (label: string): number | null => {
+  const match = label.match(/^herhaal (\d+) keer$/);
+  return match ? Number(match[1]) : null;
+};
+
+const immediateChildren = (program: ProgramEntry[], parentIndex: number) => {
+  const parentIndent = program[parentIndex]?.indent ?? 0;
+  const children: ProgramEntry[] = [];
+  for (let index = parentIndex + 1; index < program.length; index += 1) {
+    const entry = program[index];
+    if (entry.indent <= parentIndent) break;
+    if (entry.indent === parentIndent + 1) children.push(entry);
+  }
+  return children;
+};
+
+const findContainerIndex = (
+  program: ProgramEntry[],
+  label: string,
+) => program.findIndex((entry) => entry.label === label);
+
+const childrenOf = (program: ProgramEntry[], label: string) => {
+  const parentIndex = findContainerIndex(program, label);
+  return parentIndex === -1 ? [] : immediateChildren(program, parentIndex);
+};
+
+const hasImmediateChild = (program: ProgramEntry[], parent: string, child: string) =>
+  childrenOf(program, parent).some((entry) => entry.label === child);
+
+const hasNoCritical = (program: string[], forbidden: string[]) =>
+  forbidden.every((label) => !program.includes(label));
+
+const simulateBizzyProgram = (program: ProgramEntry[]): SimState => {
+  const state: SimState = {
+    startX: 0,
+    startY: 0,
+    x: 0,
+    y: 0,
+    startHeading: 0,
+    heading: 0,
+    lastSpoken: null,
+    lastThought: null,
+    events: [],
+  };
+  let tick = 0;
+  const push = (type: SimEvent["type"], value?: string | number) => {
+    state.events.push({ type, value, tick: tick++ });
+  };
+  const executeEntry = (entry: ProgramEntry) => {
+    const label = entry.label;
+    if (label.startsWith("Bizzy zegt")) {
+      state.lastSpoken = textFromQuotedBlock(label);
+      push("zeg", state.lastSpoken);
+      return;
+    }
+    if (label.startsWith("Bizzy denkt")) {
+      state.lastThought = textFromQuotedBlock(label);
+      push("denk", state.lastThought);
+      return;
+    }
+    const move = moveFromLabel(label);
+    if (move) {
+      const direction = move.richting === "vooruit" ? 1 : -1;
+      const radians = (state.heading * Math.PI) / 180;
+      state.x += Math.cos(radians) * move.afstand * direction;
+      state.y += Math.sin(radians) * move.afstand * direction;
+      push("verplaats", move.richting === "vooruit" ? move.afstand : -move.afstand);
+      return;
+    }
+    const turn = turnFromLabel(label);
+    if (turn !== null && label.startsWith("draai Bizzy")) {
+      state.heading = normalizeHeading(state.heading + turn);
+      push("draai", turn);
+      return;
+    }
+    if (label.startsWith("wacht")) {
+      push("wacht", 1);
+      return;
+    }
+    if (label.startsWith("verander animatie")) {
+      push("verander_animatie", label);
+      return;
+    }
+    if (label === "herstart scene") {
+      state.x = state.startX;
+      state.y = state.startY;
+      state.heading = state.startHeading;
+      push("scene_restart");
+    }
+  };
+  const executeRange = (startIndex: number, endIndex: number, indent: number) => {
+    let index = startIndex;
+    while (index < endIndex) {
+      const entry = program[index];
+      if (entry.indent !== indent) {
+        index += 1;
+        continue;
+      }
+      const repeat = repeatFromLabel(entry.label);
+      const nextSibling = (() => {
+        for (let cursor = index + 1; cursor < endIndex; cursor += 1) {
+          if (program[cursor].indent <= indent) return cursor;
+        }
+        return endIndex;
+      })();
+      if (repeat !== null) {
+        push("herhaal_start", repeat);
+        for (let round = 0; round < repeat; round += 1) {
+          executeRange(index + 1, nextSibling, indent + 1);
+        }
+        push("herhaal_end", repeat);
+      } else {
+        executeEntry(entry);
+      }
+      index = nextSibling;
+    }
+  };
+
+  const startIsPlay =
+    program.length > 0 && program[0].label === "Wanneer er geklikt wordt op afspelen";
+  if (startIsPlay) {
+    executeRange(1, program.length, 0);
+  }
+  return state;
+};
+
+const eventIndex = (state: SimState, predicate: (event: SimEvent) => boolean) =>
+  state.events.findIndex(predicate);
+
+const lastEventIndex = (state: SimState, predicate: (event: SimEvent) => boolean) => {
+  for (let index = state.events.length - 1; index >= 0; index -= 1) {
+    if (predicate(state.events[index])) return index;
+  }
+  return -1;
+};
+
+const atStartPosition = (state: SimState) =>
+  Math.abs(state.x - state.startX) < 0.1 && Math.abs(state.y - state.startY) < 0.1;
+
+const scoreV7BlockTask = (
+  item: AssessmentItem,
+  selectedAnswer: SelectedAnswer,
+  criteriaSpec: string,
+) => {
+  const state = answerRecord(selectedAnswer);
+  const executed = state.executed === true;
+  const programEntries = getProgramEntries(selectedAnswer);
+  const program = programEntries.map((entry) => entry.label);
+  const sim = executed ? simulateBizzyProgram(programEntries) : simulateBizzyProgram([]);
+  const has = (label: string) => program.includes(label);
+  const noCritical = (labels: string[]) => hasNoCritical(program, labels);
+  const criteria = {
+    "pt7-lj1v-v7": [
+      { id: "say-hoi", description: 'Bizzy zegt "Hoi!" gebruikt.', points: 1, correct: has('Bizzy zegt "Hoi!"') },
+      { id: "move-1m", description: "verplaats 1 meter vooruit gebruikt.", points: 1, correct: has("verplaats Bizzy 1 meter vooruit in 1 sec.") },
+      { id: "turn-180", description: "draai 180 graden gebruikt.", points: 1, correct: has("draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.") },
+      {
+        id: "behavior",
+        description: 'eindgedrag klopt met "Hoi!", 1m vooruit, 180 graden en denken "Klaar!" in volgorde.',
+        points: 1,
+        correct: (() => {
+          const hoi = eventIndex(sim, (event) => (event.type === "zeg" || event.type === "denk") && event.value === "Hoi!");
+          const move = eventIndex(sim, (event) => event.type === "verplaats");
+          const turn = eventIndex(sim, (event) => event.type === "draai");
+          const klaar = eventIndex(sim, (event) => (event.type === "zeg" || event.type === "denk") && event.value === "Klaar!");
+          return Math.abs(sim.x - 1) < 0.1 &&
+            Math.abs(sim.y) < 0.1 &&
+            headingEquivalent(sim.heading, 180) &&
+            hoi !== -1 &&
+            move !== -1 &&
+            turn !== -1 &&
+            klaar !== -1 &&
+            hoi < move &&
+            move < turn &&
+            turn < klaar &&
+            noCritical([
+              "wanneer er op Bizzy wordt geklikt",
+              "verplaats Bizzy 1 meter achteruit in 1 sec.",
+              "als 1 < 2",
+              "herstart scene",
+            ]);
+        })(),
+      },
+    ],
+    "pt7-lj1h-v7": [
+      { id: "say-start", description: 'Bizzy zegt "Klaar voor de start!".', points: 1, correct: has('Bizzy zegt "Klaar voor de start!"') },
+      { id: "repeat-three", description: "herhaal 3 keer aanwezig.", points: 1, correct: has("herhaal 3 keer") },
+      { id: "nested-move", description: "verplaats 1 meter vooruit staat in een herhaalblok.", points: 1, correct: hasImmediateChild(programEntries, "herhaal 3 keer", "verplaats Bizzy 1 meter vooruit in 1 sec.") || hasImmediateChild(programEntries, "herhaal 10 keer", "verplaats Bizzy 1 meter vooruit in 1 sec.") || hasImmediateChild(programEntries, "herhaal 1 keer", "verplaats Bizzy 1 meter vooruit in 1 sec.") },
+      {
+        id: "behavior",
+        description: "eindgedrag klopt: 3 meter vooruit en 180 graden gedraaid; geen kritieke afleider.",
+        points: 1,
+        correct:
+          Math.abs(sim.x - 3) < 0.1 &&
+          Math.abs(sim.y) < 0.1 &&
+          headingEquivalent(sim.heading, 180) &&
+          noCritical([
+            "verplaats Bizzy 3 meter vooruit in 1 sec.",
+            "herhaal 10 keer",
+            "herhaal 1 keer",
+            "verplaats Bizzy 1 meter achteruit in 1 sec.",
+            "als 1 < 2",
+            "herstart scene",
+          ]),
+      },
+    ],
+    "pt7-lj3v-v7": [
+      { id: "repeat-four", description: "herhaal 4 keer aanwezig.", points: 1, correct: has("herhaal 4 keer") },
+      {
+        id: "repeat-body",
+        description: "herhaal-4 bevat precies verplaats 1m vooruit gevolgd door draai 90 graden.",
+        points: 1,
+        correct: (() => {
+          const children = childrenOf(programEntries, "herhaal 4 keer");
+          return children.length === 2 &&
+            children[0].label === "verplaats Bizzy 1 meter vooruit in 1 sec." &&
+            children[1].label === "draai Bizzy met de wijzers van de klok mee naar 90° in 1 sec.";
+        })(),
+      },
+      { id: "closed-square", description: "eindpositie en eindorientatie zijn terug bij start.", points: 1, correct: atStartPosition(sim) && headingEquivalent(sim.heading, sim.startHeading) },
+      {
+        id: "say-think-order",
+        description: 'Bizzy zegt "Start!" voor het lopen en denkt "Klaar!" na het lopen; geen kritieke afleider.',
+        points: 1,
+        correct: (() => {
+          const startIdx = eventIndex(sim, (event) => event.type === "zeg" && event.value === "Start!");
+          const firstAction = eventIndex(sim, (event) => event.type === "verplaats" || event.type === "draai" || event.type === "herhaal_start");
+          const lastAction = lastEventIndex(sim, (event) => event.type === "verplaats" || event.type === "draai" || event.type === "herhaal_end");
+          const klaarIdx = eventIndex(sim, (event) => event.type === "denk" && event.value === "Klaar!");
+          return startIdx !== -1 && firstAction !== -1 && lastAction !== -1 && klaarIdx !== -1 &&
+            startIdx < firstAction &&
+            klaarIdx > lastAction &&
+            noCritical([
+              "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.",
+              "verplaats Bizzy 1 meter achteruit in 1 sec.",
+              "als 1 < 2",
+              "herstart scene",
+              'Bizzy zegt "Klaar!"',
+            ]);
+        })(),
+      },
+    ],
+    "pt7-lj3h-v7": [
+      { id: "repeat-three", description: "herhaal 3 keer aanwezig.", points: 1, correct: has("herhaal 3 keer") },
+      {
+        id: "repeat-body",
+        description: "herhaal-3 bevat precies de heen-en-weer-body in de juiste volgorde.",
+        points: 1,
+        correct: (() => {
+          const children = childrenOf(programEntries, "herhaal 3 keer");
+          return children.length === 4 &&
+            children[0].label === "verplaats Bizzy 2 meter vooruit in 1 sec." &&
+            children[1].label === "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec." &&
+            children[2].label === "verplaats Bizzy 2 meter vooruit in 1 sec." &&
+            children[3].label === "draai Bizzy met de wijzers van de klok mee naar 180° in 1 sec.";
+        })(),
+      },
+      {
+        id: "return-and-bravo",
+        description: 'eindpositie en eindorientatie zijn start; "Bravo!" wordt na de herhaling gezegd.',
+        points: 1,
+        correct: (() => {
+          const herhaalEnd = lastEventIndex(sim, (event) => event.type === "herhaal_end");
+          const bravo = eventIndex(sim, (event) => event.type === "zeg" && event.value === "Bravo!");
+          return atStartPosition(sim) && headingEquivalent(sim.heading, sim.startHeading) && herhaalEnd !== -1 && bravo > herhaalEnd;
+        })(),
+      },
+      {
+        id: "parameter-precision",
+        description: "geen parameter-afleiders gebruikt.",
+        points: 1,
+        correct: noCritical([
+          "verplaats Bizzy 1 meter vooruit in 1 sec.",
+          "verplaats Bizzy 2 meter achteruit in 1 sec.",
+          "draai Bizzy met de wijzers van de klok mee naar 90° in 1 sec.",
+          "herhaal 6 keer",
+          "als 1 < 2",
+          "herstart scene",
+        ]),
+      },
+    ],
+  }[criteriaSpec];
+
+  if (!criteria) {
+    throw new Error(`Geen criteria gedefinieerd voor criteriaSpec=${criteriaSpec}`);
+  }
+
+  const taskResults = criteria.map((criterion) => ({
+    taskId: criterion.id,
+    description: criterion.description,
+    correct: criterion.correct,
+  }));
+  const score = criteria.reduce((sum, criterion) => sum + (criterion.correct ? criterion.points : 0), 0);
+  return {
+    isCorrect: taskResults.every((result) => result.correct),
+    score,
+    taskResults,
+  };
+};
+
 const scoreV6BlockTask = (
   item: AssessmentItem,
   selectedAnswer: SelectedAnswer,
   criteriaSpec: string,
 ) => {
+  if (criteriaSpec.endsWith("-v7")) {
+    return scoreV7BlockTask(item, selectedAnswer, criteriaSpec);
+  }
   const state = answerRecord(selectedAnswer);
   const programEntries = getProgramEntries(selectedAnswer);
   const program = programEntries.map((entry) => entry.label);
@@ -833,6 +1231,135 @@ const scoreInteractionTask = (
   };
 };
 
+const whutsuppAnswer = (selectedAnswer: SelectedAnswer): WhutsuppAnswer | null => {
+  const state = answerRecord(selectedAnswer);
+  if (!Array.isArray(state.path)) {
+    return null;
+  }
+  return {
+    assessmentId: String(state.assessmentId ?? "") as WhutsuppAnswer["assessmentId"],
+    variantId: String(state.variantId ?? ""),
+    path: state.path
+      .filter((entry) => entry && typeof entry === "object")
+      .map((entry) => {
+        const record = entry as Record<string, unknown>;
+        return {
+          nodeId: String(record.nodeId ?? ""),
+          choiceId: String(record.choiceId ?? ""),
+          recoveryChoiceId:
+            typeof record.recoveryChoiceId === "string"
+              ? record.recoveryChoiceId
+              : undefined,
+          shownChoiceOrder: Array.isArray(record.shownChoiceOrder)
+            ? record.shownChoiceOrder.map(String)
+            : undefined,
+          shownRecoveryChoiceOrder: Array.isArray(record.shownRecoveryChoiceOrder)
+            ? record.shownRecoveryChoiceOrder.map(String)
+            : undefined,
+        };
+      }),
+  };
+};
+
+const flagCounts = (flags: WhutsuppFlag[]) => ({
+  harmfulShareCount: flags.filter((flag) => flag === "harmful_share").length,
+  ridiculeCount: flags.filter((flag) => flag === "ridicule_reaction").length,
+  unsafeEvidenceCount: flags.filter((flag) => flag === "unsafe_evidence_share").length,
+  retaliationCount: flags.filter((flag) => flag === "retaliation").length,
+});
+
+export const summarizeWhutsuppAnswer = (
+  config: WhutsuppTaskConfig,
+  selectedAnswer: SelectedAnswer,
+) => {
+  const answer = whutsuppAnswer(selectedAnswer);
+  const variant =
+    config.variants.find((candidate) => candidate.assessmentId === answer?.assessmentId) ??
+    config.variants[0];
+  const categoryScores = Object.fromEntries(
+    config.scoring.categories.map((category) => [category, 0]),
+  ) as Record<string, number>;
+  const selectedChoiceIds: string[] = [];
+  const selectedRecoveryChoiceIds: string[] = [];
+  const flags: WhutsuppFlag[] = [];
+  let unknownCount = 0;
+  let recoverySafeCount = 0;
+
+  variant?.nodes.forEach((node) => {
+    const pathEntry = answer?.path.find((entry) => entry.nodeId === node.nodeId);
+    const choice = node.choices.find((candidate) => candidate.choiceId === pathEntry?.choiceId);
+    if (!choice) {
+      return;
+    }
+    selectedChoiceIds.push(choice.choiceId);
+    if (choice.unknown === true || choice.flags.includes("unknown")) {
+      unknownCount += 1;
+    }
+    flags.push(...choice.flags);
+    categoryScores[node.category] = choice.isCorrect ? 1 : 0;
+
+    const recoveryChoice = node.recovery?.choices.find(
+      (candidate) => candidate.choiceId === pathEntry?.recoveryChoiceId,
+    );
+    if (recoveryChoice) {
+      selectedRecoveryChoiceIds.push(recoveryChoice.choiceId);
+      flags.push(...recoveryChoice.flags);
+      if (recoveryChoice.unknown === true || recoveryChoice.flags.includes("unknown")) {
+        unknownCount += 1;
+      }
+      if (recoveryChoice.flags.includes("recovery_safe") || recoveryChoice.isCorrect) {
+        recoverySafeCount += 1;
+      }
+    }
+  });
+
+  const pt8ScoreRaw = Object.values(categoryScores).reduce((sum, score) => sum + score, 0);
+  const capScore = config.scoring.caps.reduce((currentCap, cap) => {
+    return flags.includes(cap.flag) ? Math.min(currentCap, cap.maxScore) : currentCap;
+  }, Number.POSITIVE_INFINITY);
+  const pt8ScoreCapped = Number.isFinite(capScore)
+    ? Math.min(pt8ScoreRaw, capScore)
+    : pt8ScoreRaw;
+
+  return {
+    assessmentId: answer?.assessmentId ?? variant?.assessmentId ?? "",
+    variantId: answer?.variantId ?? variant?.assessmentId ?? "",
+    selectedChoiceIds,
+    selectedRecoveryChoiceIds,
+    flags,
+    categoryScores,
+    pt8ScoreRaw,
+    pt8ScoreCapped,
+    unknownCount,
+    recoverySafeCount,
+    ...flagCounts(flags),
+  };
+};
+
+const scoreWhutsuppTask = (
+  config: WhutsuppTaskConfig | undefined,
+  selectedAnswer: SelectedAnswer,
+) => {
+  if (!config) {
+    return { isCorrect: false, score: 0, taskResults: [] };
+  }
+  const summary = summarizeWhutsuppAnswer(config, selectedAnswer);
+  const taskResults = config.scoring.categories.map((category) => ({
+    taskId: category,
+    description: category,
+    correct: (summary.categoryScores[category] ?? 0) === 1,
+    points: summary.categoryScores[category] ?? 0,
+  }));
+  return {
+    isCorrect:
+      taskResults.length > 0 &&
+      taskResults.every((result) => result.correct) &&
+      summary.pt8ScoreCapped === summary.pt8ScoreRaw,
+    score: summary.pt8ScoreCapped,
+    taskResults,
+  };
+};
+
 export const scoreItem = (
   item: AssessmentItem,
   selectedAnswer: SelectedAnswer,
@@ -884,6 +1411,10 @@ export const scoreItem = (
 
   if (item.type === "social_action_simulation") {
     return scoreInteractionTask(item.socialTask, selectedAnswer);
+  }
+
+  if (item.type === "whutsupp_scenario_task") {
+    return scoreWhutsuppTask(item.whutsuppTask, selectedAnswer);
   }
 
   return scoreMultipleChoiceItem(item, selectedAnswer);
@@ -985,6 +1516,7 @@ export const submitItemAnswer = ({
             "block_programming_task",
             "source_evaluation",
             "social_action_simulation",
+            "whutsupp_scenario_task",
           ].includes(item.type)
         ? JSON.stringify(selectedAnswer)
       : undefined;

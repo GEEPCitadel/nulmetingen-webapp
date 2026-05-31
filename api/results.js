@@ -2,7 +2,10 @@ import crypto from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
-const aggregateOnlyItemIds = new Set(["lj1v-sr4-official-source-v36"]);
+const aggregateOnlyItemIds = new Set([
+  "lj1v-sr4-official-source-v36",
+  "pt8-whutsupp-sam-video",
+]);
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
@@ -105,7 +108,12 @@ const aggregateOptionSelections = (session) => {
   for (const result of session?.results ?? []) {
     if (!aggregateOnlyItemIds.has(result.itemId)) continue;
     const counter = counters[result.itemId];
-    const selectedIds = Array.isArray(result.selectedAnswer)
+    const selectedIds = result.itemId === "pt8-whutsupp-sam-video"
+      ? (result.selectedAnswer?.path ?? [])
+          .flatMap((entry) => [entry?.choiceId, entry?.recoveryChoiceId])
+          .filter(Boolean)
+          .map(String)
+      : Array.isArray(result.selectedAnswer)
       ? result.selectedAnswer.map(String)
       : result.selectedAnswer == null
         ? []
@@ -116,6 +124,15 @@ const aggregateOptionSelections = (session) => {
     for (const optionId of selectedIds) {
       counter.selectedCountsByOptionId[optionId] =
         (counter.selectedCountsByOptionId[optionId] ?? 0) + 1;
+    }
+    if (result.itemId === "pt8-whutsupp-sam-video") {
+      const answer = result.selectedAnswer ?? {};
+      const path = Array.isArray(answer.path) ? answer.path : [];
+      counter.completedCount = (counter.completedCount ?? 0) + (path.length >= 4 ? 1 : 0);
+      counter.pt8ScoreCappedSum = (counter.pt8ScoreCappedSum ?? 0) + Number(result.score ?? 0);
+      counter.variantCounts = counter.variantCounts ?? {};
+      const variantId = String(answer.variantId ?? answer.assessmentId ?? "unknown");
+      counter.variantCounts[variantId] = (counter.variantCounts[variantId] ?? 0) + 1;
     }
   }
 

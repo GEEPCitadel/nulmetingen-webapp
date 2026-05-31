@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "test": "node scripts/pt7-v7-tests.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "verify:anchors": "node scripts/verify-anchors.js",

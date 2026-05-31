@@ -13,8 +13,10 @@ import {
   getItemByStep,
   getPresentedInteractionOrder,
   getPresentedOrder,
+  getPresentedWhutsuppOrder,
   getSectionById,
   getStepDescriptors,
+  summarizeWhutsuppAnswer,
   submitItemAnswer,
 } from "./lib/assessment";
 import {
@@ -38,6 +40,7 @@ import type {
   AssessmentSection,
   AssessmentSession,
   AssessmentVersion,
+  DataStimulus,
   EventLog,
   GoalScore,
   IncomingMailStimulus,
@@ -49,6 +52,10 @@ import type {
   SessionMetadata,
   StepDescriptor,
   ThemeDefinition,
+  WhutsuppChoice,
+  WhutsuppMessage,
+  WhutsuppPathEntry,
+  WhutsuppVariant,
 } from "./types";
 
 type EntryView = "intro" | "adminAccess" | "admin";
@@ -340,10 +347,30 @@ const QuestionHeader = ({
   </div>
 );
 
-const SkipTaskButton = ({ onSkip }: { onSkip: () => void }) => (
-  <button className="ghost-button" type="button" onClick={onSkip}>
-    Ik weet het niet / sla over
-  </button>
+const QuestionActionFooter = ({
+  onUnknown,
+  onNext,
+  nextDisabled = false,
+  nextLabel = "Volgende vraag",
+}: {
+  onUnknown: () => void;
+  onNext: () => void;
+  nextDisabled?: boolean;
+  nextLabel?: string;
+}) => (
+  <div className="q-mc-footer">
+    <button className="q-weet-btn" type="button" onClick={onUnknown}>
+      Ik weet het niet
+    </button>
+    <button
+      className="primary-button q-next-btn"
+      type="button"
+      onClick={onNext}
+      disabled={nextDisabled}
+    >
+      {nextLabel} <span className="q-next-arrow" aria-hidden="true">→</span>
+    </button>
+  </div>
 );
 
 // P5 (rose/navy) past bij de zakelijke toon van de docent-/beheeromgeving.
@@ -1631,13 +1658,8 @@ const AssessmentScreen = ({
               );
             })}
           </div>
-          <div className="assessment-section-meta">
-            <span className="q-section-label">{shortSectionTitle(section)}</span>
-            <span className="q-question-num">Onderdeel {sectionIdx + 1}</span>
-          </div>
         </div>
-        {/* Sectiestrook */}
-        <div className="q-section-strip">
+        <div className="q-section-strip q-section-strip-compact">
           <span className="q-section-label">
             ONDERDEEL {sectionIdx + 1} — {shortSectionTitle(section).toUpperCase()}
           </span>
@@ -1653,6 +1675,7 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1663,6 +1686,7 @@ const AssessmentScreen = ({
           state={session.pt1States[item.id]}
           onChange={(nextState) => onUpdateFileTaskState(item, nextState)}
           onFinish={() => onFinishFileTask(section, item)}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1672,6 +1696,7 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1749,6 +1774,17 @@ const AssessmentScreen = ({
         />
       ) : null}
 
+      {item.type === "whutsupp_scenario_task" ? (
+        <WhutsuppScenarioTask
+          session={session}
+          section={section}
+          item={item}
+          questionNumber={questionNumber ?? 1}
+          onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
+        />
+      ) : null}
+
       {item.type === "multiple_choice" ? (
         <ChoiceItemView
           section={section}
@@ -1768,11 +1804,13 @@ const SelfAssessmentView = ({
   item,
   questionNumber,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   const [value, setValue] = useState(50);
 
@@ -1802,22 +1840,17 @@ const SelfAssessmentView = ({
         </div>
         <div className="slider-value">{value}</div>
       </div>
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: value,
-              shownOptionOrder: [],
-            })
-          }
-        >
-          Verder
-        </button>
-      </div>
+      <QuestionActionFooter
+        onUnknown={onSkip}
+        onNext={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: value,
+            shownOptionOrder: [],
+          })
+        }
+      />
     </section>
   );
 };
@@ -1827,11 +1860,13 @@ const MailTaskView = ({
   item,
   questionNumber,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   type AddressField = "to" | "cc" | "bcc";
   type CommandPanel = "attachments" | "link" | null;
@@ -2297,7 +2332,6 @@ const MailTaskView = ({
           </div>
           {draft.attachments.length > 0 ? (
             <div className="mail-attachments mail-attachments-inline">
-              <span className="classic-paperclip" aria-hidden="true" />
               {draft.attachments.map((attachment) => (
                 <span className="attach-chip" key={attachment}>
                   <span className="file-pic">{fileExt(attachment)}</span>
@@ -2341,10 +2375,9 @@ const MailTaskView = ({
         </div>
       </div>
 
-      <TaskNavFooter
-        questionNumber={questionNumber}
-        primaryLabel={draft.sent ? "Taak afronden" : "Volgende"}
-        onPrimary={draft.sent ? submit : () => { sendMessage(); submit(); }}
+      <QuestionActionFooter
+        onUnknown={onSkip}
+        onNext={draft.sent ? submit : () => { sendMessage(); submit(); }}
       />
     </section>
   );
@@ -2378,6 +2411,226 @@ const TaskNavFooter = ({
     </button>
   </div>
 );
+
+const choiceNeedsRecovery = (choice: WhutsuppChoice, variant: WhutsuppVariant, nodeId: string) => {
+  const node = variant.nodes.find((candidate) => candidate.nodeId === nodeId);
+  if (!node?.recovery) {
+    return false;
+  }
+  return choice.flags.some((flag) => node.recovery?.triggerFlags.includes(flag));
+};
+
+const WhutsuppVideoCard = ({ assetPath }: { assetPath: string }) => (
+  <div className="whutsupp-video-card">
+    <img src={assetPath} alt="Fictieve videokaart plein_video.mp4, geen echte leerlingbeelden" />
+  </div>
+);
+
+const WhutsuppBubble = ({
+  message,
+  assetPath,
+}: {
+  message: WhutsuppMessage;
+  assetPath: string;
+}) => (
+  <div className={`whutsupp-row ${message.side === "right" ? "mine" : "theirs"}`}>
+    <div className="whutsupp-bubble">
+      {message.side !== "right" ? <span className="whutsupp-sender">{message.sender}</span> : null}
+      {message.kind === "videoCard" ? (
+        <WhutsuppVideoCard assetPath={assetPath} />
+      ) : (
+        <span>{message.text}</span>
+      )}
+      {message.timestamp ? <time>{message.timestamp}</time> : null}
+    </div>
+  </div>
+);
+
+const WhutsuppScenarioTask = ({
+  session,
+  section,
+  item,
+  questionNumber,
+  onSubmit,
+  onSkip,
+}: {
+  session: AssessmentSession;
+  section: AssessmentSection;
+  item: AssessmentItem;
+  questionNumber: number;
+  onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
+}) => {
+  const task = item.whutsuppTask;
+  const variant = task?.variants.find((candidate) => candidate.assessmentId === session.versionId);
+  const [activeNodeIndex, setActiveNodeIndex] = useState(0);
+  const [path, setPath] = useState<WhutsuppPathEntry[]>([]);
+  const [pendingRecoveryFor, setPendingRecoveryFor] = useState<string | null>(null);
+
+  if (!task || !variant) {
+    return null;
+  }
+
+  const activeNode = variant.nodes[activeNodeIndex];
+  const assetPath = task.ui.assets.videoCardSvg;
+  const orderFor = (nodeId: string, kind: "choices" | "recovery") =>
+    getPresentedWhutsuppOrder(
+      session,
+      section.id,
+      item.id,
+      variant.assessmentId,
+      nodeId,
+      kind,
+    );
+  const orderedChoices = (choices: WhutsuppChoice[], nodeId: string, kind: "choices" | "recovery") =>
+    (orderFor(nodeId, kind).length > 0 ? orderFor(nodeId, kind) : choices.map((choice) => choice.choiceId))
+      .map((choiceId) => choices.find((choice) => choice.choiceId === choiceId))
+      .filter(Boolean) as WhutsuppChoice[];
+  const shownOptionOrder = variant.nodes.flatMap((node) => [
+    ...orderFor(node.nodeId, "choices"),
+    ...orderFor(node.nodeId, "recovery"),
+  ]);
+
+  const submitPath = (nextPath: WhutsuppPathEntry[]) => {
+    onSubmit({
+      section,
+      item,
+      selectedAnswer: {
+        assessmentId: session.versionId,
+        variantId: variant.assessmentId,
+        path: nextPath,
+      },
+      shownOptionOrder,
+    });
+  };
+
+  const advance = (nextPath: WhutsuppPathEntry[]) => {
+    if (activeNodeIndex >= variant.nodes.length - 1) {
+      submitPath(nextPath);
+      return;
+    }
+    setActiveNodeIndex((current) => current + 1);
+  };
+
+  const chooseMain = (choice: WhutsuppChoice) => {
+    const entry: WhutsuppPathEntry = {
+      nodeId: activeNode.nodeId,
+      choiceId: choice.choiceId,
+      shownChoiceOrder: orderedChoices(activeNode.choices, activeNode.nodeId, "choices").map(
+        (orderedChoice) => orderedChoice.choiceId,
+      ),
+    };
+    const nextPath = [...path.filter((candidate) => candidate.nodeId !== activeNode.nodeId), entry];
+    setPath(nextPath);
+    if (choiceNeedsRecovery(choice, variant, activeNode.nodeId)) {
+      setPendingRecoveryFor(activeNode.nodeId);
+      return;
+    }
+    setPendingRecoveryFor(null);
+    advance(nextPath);
+  };
+
+  const chooseRecovery = (choice: WhutsuppChoice) => {
+    const nextPath = path.map((entry) =>
+      entry.nodeId === activeNode.nodeId
+        ? {
+            ...entry,
+            recoveryChoiceId: choice.choiceId,
+            shownRecoveryChoiceOrder: orderedChoices(
+              activeNode.recovery?.choices ?? [],
+              activeNode.nodeId,
+              "recovery",
+            ).map((orderedChoice) => orderedChoice.choiceId),
+          }
+        : entry,
+    );
+    setPath(nextPath);
+    setPendingRecoveryFor(null);
+    advance(nextPath);
+  };
+
+  const visibleNodes = variant.nodes.slice(0, activeNodeIndex + 1);
+  const showRecovery = pendingRecoveryFor === activeNode.nodeId && activeNode.recovery;
+  const activeChoices = showRecovery
+    ? orderedChoices(activeNode.recovery?.choices ?? [], activeNode.nodeId, "recovery")
+    : orderedChoices(activeNode.choices, activeNode.nodeId, "choices");
+
+  return (
+    <section className="panel stack-lg whutsupp-task">
+      <QuestionHeader questionNumber={questionNumber} title={item.title}>
+        <p className="helper-text">{variant.introText}</p>
+      </QuestionHeader>
+
+      <div className="whutsupp-phone" aria-label="Whutsupp groepschat">
+        <div className="whutsupp-topbar">
+          <div className="whutsupp-avatar" aria-hidden="true">W</div>
+          <div>
+            <strong>{task.ui.brandName}</strong>
+            <span>{variant.groupTitle}</span>
+          </div>
+        </div>
+        <div className="whutsupp-chat">
+          {visibleNodes.map((node) => {
+            const chosenEntry = path.find((entry) => entry.nodeId === node.nodeId);
+            const chosenChoice = node.choices.find((choice) => choice.choiceId === chosenEntry?.choiceId);
+            const chosenRecovery = node.recovery?.choices.find(
+              (choice) => choice.choiceId === chosenEntry?.recoveryChoiceId,
+            );
+            const shouldShowChosenMain = node.nodeId !== activeNode.nodeId || Boolean(showRecovery);
+            return (
+              <div className="whutsupp-node" key={node.nodeId}>
+                {node.messages.map((message, index) => (
+                  <WhutsuppBubble
+                    key={`${node.nodeId}-${index}`}
+                    message={message}
+                    assetPath={assetPath}
+                  />
+                ))}
+                {chosenChoice && shouldShowChosenMain ? (
+                  <WhutsuppBubble
+                    message={{ sender: "Jij", text: chosenChoice.label, kind: "text", side: "right" }}
+                    assetPath={assetPath}
+                  />
+                ) : null}
+                {chosenRecovery ? (
+                  <WhutsuppBubble
+                    message={{ sender: "Jij", text: chosenRecovery.label, kind: "text", side: "right" }}
+                    assetPath={assetPath}
+                  />
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="whutsupp-decision">
+        <strong>{showRecovery ? activeNode.recovery?.prompt : activeNode.prompt}</strong>
+        <div className="whutsupp-choice-grid">
+          {activeChoices.map((choice) => (
+            <button
+              className="whutsupp-choice"
+              key={choice.choiceId}
+              type="button"
+              onClick={() => (showRecovery ? chooseRecovery(choice) : chooseMain(choice))}
+            >
+              {choice.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="task-nav">
+        <button className="q-weet-btn" type="button" onClick={onSkip}>
+          Overslaan
+        </button>
+        <span className="task-nav-progress">
+          Stap {activeNodeIndex + 1} van {variant.nodes.length}
+        </span>
+      </div>
+    </section>
+  );
+};
 
 const InteractionTaskView = ({
   session,
@@ -2468,7 +2721,6 @@ const InteractionTaskView = ({
               key={group.id}
               group={orderedGroup(screen.id, group)}
               value={state[group.id]}
-              allowSkip={item.type === "social_action_simulation"}
               onChange={(value) => setGroupValue(group.id, value)}
             />
             ))}
@@ -2476,12 +2728,7 @@ const InteractionTaskView = ({
         ))}
       </div>
 
-      <div className="actions">
-        <button className="primary-button" type="button" onClick={submit}>
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <QuestionActionFooter onUnknown={onSkip} onNext={submit} />
     </section>
   );
 };
@@ -2519,7 +2766,6 @@ const IncomingMailStimulusView = ({ email }: { email: IncomingMailStimulus }) =>
       </div>
       {email.attachments && email.attachments.length > 0 ? (
         <div className="mail-attachments mail-attachments-inline incoming-attachments">
-          <span className="classic-paperclip" aria-hidden="true" />
           {email.attachments.map((attachment) => (
             <span className="attach-chip" key={attachment}>
               <span className="file-pic">{attachment.split(".").pop()?.toUpperCase().slice(0, 4) ?? "FILE"}</span>
@@ -2546,12 +2792,10 @@ const IncomingMailStimulusView = ({ email }: { email: IncomingMailStimulus }) =>
 const InteractionGroupControl = ({
   group,
   value,
-  allowSkip = false,
   onChange,
 }: {
   group: InteractionGroup;
   value: unknown;
-  allowSkip?: boolean;
   onChange: (value: unknown) => void;
 }) => {
   const selectedMulti = Array.isArray(value) ? value.map(String) : [];
@@ -2600,11 +2844,6 @@ const InteractionGroupControl = ({
             </label>
           ))}
         </div>
-        {allowSkip ? (
-          <button className="ghost-button" type="button" onClick={() => onChange({})}>
-            Sla over
-          </button>
-        ) : null}
       </div>
     );
   }
@@ -2641,15 +2880,6 @@ const InteractionGroupControl = ({
           );
         })}
       </div>
-      {allowSkip ? (
-        <button
-          className="ghost-button"
-          type="button"
-          onClick={() => onChange(group.inputType === "multi" ? [] : "")}
-        >
-          Sla over
-        </button>
-      ) : null}
     </div>
   );
 };
@@ -2709,23 +2939,17 @@ const ExcelDownloadTaskView = ({
         ))}
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: { answers },
-              shownOptionOrder: [],
-            })
-          }
-        >
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <QuestionActionFooter
+        onUnknown={onSkip}
+        onNext={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: { answers },
+            shownOptionOrder: [],
+          })
+        }
+      />
     </section>
   );
 };
@@ -2789,23 +3013,17 @@ const OfficeFormatTaskView = ({
         </div>
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: { code, exportAction },
-              shownOptionOrder: [],
-            })
-          }
-        >
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <QuestionActionFooter
+        onUnknown={onSkip}
+        onNext={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: { code, exportAction },
+            shownOptionOrder: [],
+          })
+        }
+      />
     </section>
   );
 };
@@ -2898,23 +3116,17 @@ const PowerPointDesignTaskView = ({
         </div>
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: state,
-              shownOptionOrder: [],
-            })
-          }
-        >
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <QuestionActionFooter
+        onUnknown={onSkip}
+        onNext={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: state,
+            shownOptionOrder: [],
+          })
+        }
+      />
     </section>
   );
 };
@@ -3087,7 +3299,7 @@ const WindowPreviewArt = ({ windowName, large = false }: { windowName: string; l
 
 const SharedWindowStage = ({ windowName }: { windowName: string }) => (
   <div className="fake-shared-stage">
-    <div className="fake-sharing-label">Je deelt nu dit venster</div>
+    <div className="fake-sharing-label">Je deelt nu</div>
     <div className="fake-shared-window">
       <div className="fake-window-titlebar">
         <span>Macrohard Teams</span>
@@ -3275,7 +3487,7 @@ const FakeTeamsTask = ({
 
           <div className="fake-teams-main">
             <div className="fake-teams-stage">
-              {state.selectedWindow === task.correctWindow ? (
+              {state.selectedWindow ? (
                 <SharedWindowStage windowName={state.selectedWindow} />
               ) : (
                 <>
@@ -3333,6 +3545,7 @@ const FakeTeamsTask = ({
                           return;
                         }
                         logAction(actionName(option), {
+                          shareOpened: false,
                           windowPickerOpen: false,
                           selectedWindow: option,
                         });
@@ -3364,8 +3577,8 @@ const FakeTeamsTask = ({
                             : `selected_${actionName(windowName).replace(/^clicked_/, "")}`,
                           {
                             selectedWindow: windowName,
-                            shareOpened: windowName === task.correctWindow ? false : state.shareOpened,
-                            windowPickerOpen: windowName === task.correctWindow ? false : state.windowPickerOpen,
+                            shareOpened: false,
+                            windowPickerOpen: false,
                           },
                         );
                       }}
@@ -3512,29 +3725,12 @@ const FakeTeamsTask = ({
 
         {state.selectedWindow ? (
           <div className="fake-teams-status">
-            {state.selectedWindow === task.correctWindow
-              ? `${task.correctWindow} wordt gedeeld`
-              : `${state.selectedWindow} is geselecteerd`}
+            {`${state.selectedWindow} wordt gedeeld`}
           </div>
         ) : null}
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() => submit(false)}
-        >
-          Taak afronden
-        </button>
-        <button
-          className="ghost-button"
-          type="button"
-          onClick={onSkip}
-        >
-          Ik weet het niet / sla over
-        </button>
-      </div>
+      <QuestionActionFooter onUnknown={onSkip} onNext={() => submit(false)} />
     </section>
   );
 };
@@ -3544,6 +3740,7 @@ type ProgramRunEffects = {
   move: number;
   rotation: number;
   speech: string;
+  thought: string;
   display: string;
   sound: string;
   score: number | null;
@@ -3551,12 +3748,14 @@ type ProgramRunEffects = {
   animationPaused: boolean;
   teller: number;
   log: string[];
+  events: Array<{ type: string; value?: string | number; tick: number }>;
 };
 
 const emptyProgramRunEffects: ProgramRunEffects = {
   move: 0,
   rotation: 0,
   speech: "",
+  thought: "",
   display: "",
   sound: "",
   score: null,
@@ -3564,6 +3763,7 @@ const emptyProgramRunEffects: ProgramRunEffects = {
   animationPaused: false,
   teller: 0,
   log: [],
+  events: [],
 };
 
 const BlockProgrammingTaskView = ({
@@ -3582,6 +3782,7 @@ const BlockProgrammingTaskView = ({
   const [program, setProgram] = useState<ProgramBlock[]>([]);
   const [executed, setExecuted] = useState(false);
   const [speechVisible, setSpeechVisible] = useState(false);
+  const [thoughtVisible, setThoughtVisible] = useState(false);
   const [aPresses, setAPresses] = useState(0);
   const [temperature, setTemperature] = useState(30);
   const [windowOpen, setWindowOpen] = useState(true);
@@ -3614,12 +3815,26 @@ const BlockProgrammingTaskView = ({
     });
   };
   const hasBlock = (label: string) => program.some((block) => block.label === label);
+  const updateProgramIndent = (index: number, delta: number) => {
+    setProgram((current) =>
+      current.map((block, blockIndex) =>
+        blockIndex === index
+          ? { ...block, indent: Math.max(0, Math.min(3, block.indent + delta)) }
+          : block,
+      ),
+    );
+  };
 
   const executeProgram = (): ProgramRunEffects => {
     const effects: ProgramRunEffects = {
       ...emptyProgramRunEffects,
       log: [],
+      events: [],
       teller: 0,
+    };
+    let tick = 0;
+    const pushEvent = (type: string, value?: string | number) => {
+      effects.events.push({ type, value, tick: tick++ });
     };
     let nextMoveMultiplier = 1;
     let stopped = false;
@@ -3646,37 +3861,120 @@ const BlockProgrammingTaskView = ({
       }
       if (label.includes('zegt "Hoi!"')) {
         effects.speech = "Hoi!";
+        pushEvent("zeg", "Hoi!");
         effects.log.push("Bizzy zegt: Hoi!");
+        return;
+      }
+      if (label.startsWith("Bizzy zegt")) {
+        const text = label.match(/"([^"]+)"/)?.[1] ?? "";
+        effects.speech = text;
+        pushEvent("zeg", text);
+        effects.log.push(`Bizzy zegt: ${text}`);
+        return;
+      }
+      if (label.startsWith("Bizzy denkt")) {
+        const text = label.match(/"([^"]+)"/)?.[1] ?? "";
+        effects.thought = text;
+        pushEvent("denk", text);
+        effects.log.push(`Bizzy denkt: ${text}`);
         return;
       }
       if (label.includes("verplaats Bizzy 1 meter vooruit")) {
         effects.move += nextMoveMultiplier;
+        pushEvent("verplaats", nextMoveMultiplier);
         effects.log.push(`Bizzy beweegt ${nextMoveMultiplier} meter vooruit.`);
+        nextMoveMultiplier = 1;
+        return;
+      }
+      if (label.includes("verplaats Bizzy 2 meter vooruit")) {
+        const meters = 2 * nextMoveMultiplier;
+        effects.move += meters;
+        pushEvent("verplaats", meters);
+        effects.log.push(`Bizzy beweegt ${meters} meter vooruit.`);
+        nextMoveMultiplier = 1;
+        return;
+      }
+      if (label.includes("verplaats Bizzy 3 meter vooruit")) {
+        const meters = 3 * nextMoveMultiplier;
+        effects.move += meters;
+        pushEvent("verplaats", meters);
+        effects.log.push(`Bizzy beweegt ${meters} meter vooruit.`);
+        nextMoveMultiplier = 1;
+        return;
+      }
+      if (label.includes("verplaats Bizzy 1 meter achteruit")) {
+        effects.move -= nextMoveMultiplier;
+        pushEvent("verplaats", -nextMoveMultiplier);
+        effects.log.push(`Bizzy beweegt ${nextMoveMultiplier} meter achteruit.`);
+        nextMoveMultiplier = 1;
+        return;
+      }
+      if (label.includes("verplaats Bizzy 2 meter achteruit")) {
+        const meters = 2 * nextMoveMultiplier;
+        effects.move -= meters;
+        pushEvent("verplaats", -meters);
+        effects.log.push(`Bizzy beweegt ${meters} meter achteruit.`);
         nextMoveMultiplier = 1;
         return;
       }
       if (label.includes("verplaats Bizzy 5 meters achteruit")) {
         effects.move -= 5;
+        pushEvent("verplaats", -5);
         effects.log.push("Bizzy beweegt 5 meter achteruit.");
         return;
       }
       if (label.includes("draai Bizzy")) {
-        effects.rotation = 180;
-        effects.log.push("Bizzy draait naar 180 graden.");
+        const degrees = Number(label.match(/naar (\d+)(?:°| graden)/)?.[1] ?? 180);
+        effects.rotation = (effects.rotation + degrees) % 360;
+        pushEvent("draai", degrees);
+        effects.log.push(`Bizzy draait ${degrees} graden.`);
         return;
       }
       if (label.includes("niet animeren")) {
         effects.animationPaused = true;
+        pushEvent("verander_animatie", "niet animeren");
         effects.log.push("De animatie van Bizzy staat op niet animeren.");
+        return;
+      }
+      if (label === "herhaal 1 keer") {
+        nextMoveMultiplier = 1;
+        pushEvent("herhaal_start", 1);
+        pushEvent("herhaal_end", 1);
+        effects.log.push("Herhaling ingesteld op 1 keer.");
+        return;
+      }
+      if (label === "herhaal 2 keer") {
+        nextMoveMultiplier = 2;
+        pushEvent("herhaal_start", 2);
+        pushEvent("herhaal_end", 2);
+        effects.log.push("Herhaling ingesteld op 2 keer.");
         return;
       }
       if (label === "herhaal 3 keer") {
         nextMoveMultiplier = 3;
+        pushEvent("herhaal_start", 3);
+        pushEvent("herhaal_end", 3);
         effects.log.push("Herhaling ingesteld op 3 keer.");
+        return;
+      }
+      if (label === "herhaal 4 keer") {
+        nextMoveMultiplier = 4;
+        pushEvent("herhaal_start", 4);
+        pushEvent("herhaal_end", 4);
+        effects.log.push("Herhaling ingesteld op 4 keer.");
+        return;
+      }
+      if (label === "herhaal 6 keer") {
+        nextMoveMultiplier = 6;
+        pushEvent("herhaal_start", 6);
+        pushEvent("herhaal_end", 6);
+        effects.log.push("Herhaling ingesteld op 6 keer.");
         return;
       }
       if (label === "herhaal 10 keer") {
         nextMoveMultiplier = 10;
+        pushEvent("herhaal_start", 10);
+        pushEvent("herhaal_end", 10);
         effects.log.push("Herhaling ingesteld op 10 keer.");
         return;
       }
@@ -3686,6 +3984,13 @@ const BlockProgrammingTaskView = ({
       }
       if (label === "als 1 < 2") {
         effects.log.push("Voorwaarde 1 < 2 gecontroleerd: waar.");
+        return;
+      }
+      if (label === "herstart scene") {
+        effects.move = 0;
+        effects.rotation = 0;
+        pushEvent("scene_restart");
+        effects.log.push("Scene is opnieuw gestart.");
         return;
       }
       if (label === "als Bizzy rand raakt") {
@@ -3698,6 +4003,7 @@ const BlockProgrammingTaskView = ({
         return;
       }
       if (label.startsWith("wacht")) {
+        pushEvent("wacht", 1);
         effects.log.push(`${label} uitgevoerd.`);
         return;
       }
@@ -3835,6 +4141,10 @@ const BlockProgrammingTaskView = ({
       setSpeechVisible(true);
       window.setTimeout(() => setSpeechVisible(false), 2000);
     }
+    if (effects.thought) {
+      setThoughtVisible(true);
+      window.setTimeout(() => setThoughtVisible(false), 2000);
+    }
     // Walk the program step-by-step for a visual highlight in the canvas.
     if (program.length === 0) return;
     const interval = 600;
@@ -3854,6 +4164,7 @@ const BlockProgrammingTaskView = ({
     stopStepper();
     setExecuted(false);
     setSpeechVisible(false);
+    setThoughtVisible(false);
     setAPresses(0);
     setRunEffects(emptyProgramRunEffects);
   };
@@ -4004,6 +4315,20 @@ const BlockProgrammingTaskView = ({
                   <button
                     className="canvas-row-remove"
                     type="button"
+                    aria-label="Minder inspringen"
+                    onClick={() => updateProgramIndent(index, -1)}
+                    disabled={block.indent === 0}
+                  >‹</button>
+                  <button
+                    className="canvas-row-remove"
+                    type="button"
+                    aria-label="Meer inspringen"
+                    onClick={() => updateProgramIndent(index, 1)}
+                    disabled={block.indent >= 3}
+                  >›</button>
+                  <button
+                    className="canvas-row-remove"
+                    type="button"
                     aria-label="Verwijder blok"
                     onClick={() =>
                       setProgram((current) => current.filter((_, i) => i !== index))
@@ -4064,7 +4389,8 @@ const BlockProgrammingTaskView = ({
                     transform: `translateX(${runEffects.move * 18}px) rotate(${runEffects.rotation}deg)`,
                   }}
                 >
-                  {speechVisible ? <div className="bizzy-speech">Hoi!</div> : null}
+                  {speechVisible ? <div className="bizzy-speech">{runEffects.speech}</div> : null}
+                  {thoughtVisible ? <div className="bizzy-speech bizzy-thought">{runEffects.thought}</div> : null}
                   <svg
                     className={`bizzy-svg ${isRunning ? "is-running" : ""}`}
                     viewBox="0 0 144 168"
@@ -4113,23 +4439,17 @@ const BlockProgrammingTaskView = ({
         </aside>
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: { program, executed, aPresses, temperature, windowOpen, runEffects },
-              shownOptionOrder: paletteBlocks.map((block) => block.label),
-            })
-          }
-        >
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <QuestionActionFooter
+        onUnknown={onSkip}
+        onNext={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: { program, executed, aPresses, temperature, windowOpen, runEffects },
+            shownOptionOrder: paletteBlocks.map((block) => block.label),
+          })
+        }
+      />
     </section>
   );
 };
@@ -4206,11 +4526,19 @@ const ChoiceItemView = ({
 
   return (
     <section className="panel stack-md">
-      <QuestionHeader
-        questionNumber={questionNumber}
-        title={item.title}
-        instruction={item.instruction}
-      />
+      {item.dataStimulus ? (
+        <>
+          <QuestionHeader questionNumber={questionNumber} title={item.title} />
+          <DataStimulusCard stimulus={item.dataStimulus} />
+          <p className="helper-text">{item.instruction}</p>
+        </>
+      ) : (
+        <QuestionHeader
+          questionNumber={questionNumber}
+          title={item.title}
+          instruction={item.instruction}
+        />
+      )}
 
       {item.mockup ? <MockupCardView item={item} /> : null}
       {isMultiple ? (
@@ -4241,7 +4569,7 @@ const ChoiceItemView = ({
 
       <div className="q-mc-footer">
         <button className="q-weet-btn" type="button" onClick={submitUnknown}>
-          Weet ik niet
+          Ik weet het niet
         </button>
         <button
           className="primary-button q-next-btn"
@@ -4252,6 +4580,127 @@ const ChoiceItemView = ({
           Volgende vraag <span className="q-next-arrow" aria-hidden="true">→</span>
         </button>
       </div>
+    </section>
+  );
+};
+
+const formatStimulusValue = (value: string | number) =>
+  typeof value === "number" ? new Intl.NumberFormat("nl-NL").format(value) : value;
+
+const dashboardCellValue = (
+  row: Record<string, string | number>,
+  column: string,
+): string | number => {
+  const keyByColumn: Record<string, string> = {
+    App: "app",
+    Gebruikers: "users",
+    Klachten: "complaints",
+  };
+  const directValue = row[column];
+  if (directValue !== undefined) {
+    return directValue;
+  }
+  return row[keyByColumn[column] ?? column.toLowerCase()] ?? "";
+};
+
+const DataStimulusCard = ({ stimulus }: { stimulus: DataStimulus }) => {
+  const altText = stimulus.visualRequirements?.altText;
+
+  if (stimulus.type === "pollResultCard") {
+    const barMax =
+      stimulus.visualRequirements?.barMax ??
+      Math.max(...stimulus.rows.map((row) => row.value), 1);
+
+    return (
+      <section className="data-stimulus-card" aria-label={altText ?? stimulus.title}>
+        {altText ? <p className="sr-only">{altText}</p> : null}
+        <div className="data-stimulus-heading">
+          <strong>{stimulus.title}</strong>
+          <span>{stimulus.subtitle}</span>
+        </div>
+        <table className="data-stimulus-table">
+          <thead>
+            <tr>
+              <th scope="col">Antwoord</th>
+              <th scope="col">Aantal</th>
+              {stimulus.visualRequirements?.showBars ? (
+                <th scope="col" aria-label="Decoratieve balk">Balk</th>
+              ) : null}
+            </tr>
+          </thead>
+          <tbody>
+            {stimulus.rows.map((row) => (
+              <tr key={row.label}>
+                <th scope="row">{row.label}</th>
+                <td>{row.value}</td>
+                {stimulus.visualRequirements?.showBars ? (
+                  <td>
+                    <span className="data-bar-track" aria-hidden="true">
+                      <span
+                        className="data-bar-fill"
+                        style={{ width: `${Math.max(4, (row.value / barMax) * 100)}%` }}
+                      />
+                    </span>
+                  </td>
+                ) : null}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {stimulus.footer ? <p className="data-stimulus-footer">{stimulus.footer}</p> : null}
+        {stimulus.claimBox ? <p className="data-claim-box">{stimulus.claimBox}</p> : null}
+      </section>
+    );
+  }
+
+  const complaintMax = Math.max(
+    ...stimulus.rows.map((row) => Number(row.complaints ?? row.Klachten ?? 0)),
+    1,
+  );
+
+  return (
+    <section className="data-stimulus-card" aria-label={altText ?? stimulus.title}>
+      {altText ? <p className="sr-only">{altText}</p> : null}
+      <div className="data-stimulus-heading">
+        <strong>{stimulus.title}</strong>
+        <span>{stimulus.subtitle}</span>
+      </div>
+      <table className="data-stimulus-table dashboard-table">
+        <thead>
+          <tr>
+            {stimulus.columns.map((column) => (
+              <th scope="col" key={column}>{column}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {stimulus.rows.map((row, rowIndex) => (
+            <tr key={`${row.app ?? row.App ?? rowIndex}`}>
+              {stimulus.columns.map((column) => {
+                const value = dashboardCellValue(row, column);
+                const showComplaintBar =
+                  column === "Klachten" &&
+                  stimulus.visualRequirements?.showMiniBars &&
+                  stimulus.visualRequirements.showComplaintBarsOnly;
+                return (
+                  <td key={column}>
+                    <span>{formatStimulusValue(value)}</span>
+                    {showComplaintBar ? (
+                      <span className="data-bar-track mini" aria-hidden="true">
+                        <span
+                          className="data-bar-fill"
+                          style={{ width: `${Math.max(8, (Number(value) / complaintMax) * 100)}%` }}
+                        />
+                      </span>
+                    ) : null}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {stimulus.claimBox ? <p className="data-claim-box">{stimulus.claimBox}</p> : null}
     </section>
   );
 };
@@ -4390,12 +4839,14 @@ const FileTaskWorkspace = ({
   state,
   onChange,
   onFinish,
+  onSkip,
 }: {
   item: AssessmentItem;
   questionNumber: number;
   state: Pt1State;
   onChange: (nextState: Pt1State) => void;
   onFinish: () => void;
+  onSkip: () => void;
 }) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [contextFolderId, setContextFolderId] = useState<string>(
@@ -4938,11 +5389,7 @@ const FileTaskWorkspace = ({
         </div>
       </div>
 
-      <TaskNavFooter
-        questionNumber={questionNumber}
-        primaryLabel="Klaar — bekijk resultaat"
-        onPrimary={onFinish}
-      />
+      <QuestionActionFooter onUnknown={onSkip} onNext={onFinish} />
 
       {pendingConflict ? (
         <div className="modal-backdrop">
@@ -5225,6 +5672,36 @@ const resultDisclaimer =
 const subgoalWarning =
   "Dit onderdeel is gebaseerd op een beperkt aantal vragen of taken. Zie dit als een eerste aanwijzing, niet als een volledig oordeel over wat je kunt.";
 
+const whutsuppFeedbackFor = (assessment: AssessmentVersion, session: AssessmentSession) => {
+  const item = assessment.sections
+    .flatMap((section) => section.items)
+    .find((candidate) => candidate.type === "whutsupp_scenario_task");
+  const result = session.results.find((entry) => entry.itemId === item?.id);
+  if (!item?.whutsuppTask || !result) {
+    return [];
+  }
+  const summary = summarizeWhutsuppAnswer(item.whutsuppTask, result.selectedAnswer);
+  const variant = item.whutsuppTask.variants.find(
+    (candidate) => candidate.assessmentId === session.versionId,
+  );
+  return (variant?.resultsFeedbackRules ?? [])
+    .filter((rule) => {
+      if (rule.condition.startsWith("categoryCorrect.")) {
+        const category = rule.condition.replace("categoryCorrect.", "");
+        return summary.categoryScores[category] === 1;
+      }
+      if (rule.condition.startsWith("hasFlag.")) {
+        const flag = rule.condition.replace("hasFlag.", "");
+        return summary.flags.includes(flag);
+      }
+      if (rule.condition === "hasRecoverySafe") {
+        return summary.recoverySafeCount > 0;
+      }
+      return false;
+    })
+    .map((rule) => rule.text);
+};
+
 const coreGoalText = (goal: GoalScore) => {
   if (goal.goalId === "21") {
     return `Bij kerndoel 21 behaalde je ${goal.score} van ${goal.maxScore} punten. Dit geeft een eerste beeld van hoe je digitale technologie en digitale media inzet.`;
@@ -5268,6 +5745,7 @@ const ResultScreen = ({
     ["21", "22", "23"].includes(goal.goalId),
   );
   const subgoalScores = result.goalScores.filter((goal) => goal.level === "subgoal");
+  const whutsuppFeedback = whutsuppFeedbackFor(assessment, session);
 
   const exportPdf = () => {
     const lines = [
@@ -5293,6 +5771,10 @@ const ResultScreen = ({
         (goal) =>
           `${goal.goalId} - ${goal.label}: ${goal.score}/${goal.maxScore} punten (${goal.percentage}%)`,
       ),
+      "",
+      ...(whutsuppFeedback.length > 0
+        ? ["Feedback bij online gedrag", ...whutsuppFeedback]
+        : []),
     ];
 
     downloadFile(
@@ -5373,6 +5855,17 @@ const ResultScreen = ({
                   </small>
                 </div>
               </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {whutsuppFeedback.length > 0 ? (
+        <section className="result-section">
+          <h3>Feedback bij online gedrag</h3>
+          <div className="feedback-list">
+            {whutsuppFeedback.map((line) => (
+              <p key={line}>{line}</p>
             ))}
           </div>
         </section>
