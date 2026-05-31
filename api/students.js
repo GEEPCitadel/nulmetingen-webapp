@@ -205,8 +205,32 @@ export default async function handler(request, response) {
         return;
       }
 
-      if (body.action !== "reopen") {
+      if (body.action !== "reopen" && body.action !== "delete") {
         response.status(400).json({ ok: false, error: "Onbekende actie." });
+        return;
+      }
+
+      if (body.action === "delete") {
+        const accessCodes = Array.isArray(body.accessCodes)
+          ? body.accessCodes.map((code) => String(code ?? "").trim().toUpperCase())
+          : [String(body.accessCode ?? "").trim().toUpperCase()];
+        const uniqueAccessCodes = Array.from(new Set(accessCodes)).filter((code) => /^[A-Z0-9]{6,12}$/.test(code));
+        if (uniqueAccessCodes.length === 0) {
+          response.status(400).json({ ok: false, error: "Kies minimaal een geldige afnamecode." });
+          return;
+        }
+
+        const sessions = await sql`
+          SELECT id FROM assessment_sessions
+          WHERE access_code = ANY(${uniqueAccessCodes})
+        `;
+        const sessionIds = sessions.map((session) => session.id);
+        if (sessionIds.length > 0) {
+          await sql`DELETE FROM assessment_results WHERE session_id = ANY(${sessionIds})`;
+        }
+        await sql`DELETE FROM assessment_sessions WHERE access_code = ANY(${uniqueAccessCodes})`;
+        await sql`DELETE FROM students WHERE access_code = ANY(${uniqueAccessCodes})`;
+        response.status(200).json({ ok: true, students: await listStudents(sql) });
         return;
       }
 

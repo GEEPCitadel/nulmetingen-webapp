@@ -891,7 +891,7 @@ const StudentStartScreen = ({
 
         <div className="instruction-box">
           <ul className="instruction-list">
-            <li>De voortgangsmeting bestaat uit <strong>16</strong> opdrachten en duurt ongeveer 30 minuten.</li>
+            <li>De voortgangsmeting bestaat uit <strong>17</strong> vragen en opdrachten en duurt ongeveer 30 minuten.</li>
             <li>Weet je het antwoord op een vraag echt niet, kies dan: <em>&quot;Ik weet het niet.&quot;</em> Zoek geen antwoorden op op internet.</li>
             <li>Per ongeluk afgesloten? Vul dezelfde afnamecode opnieuw in.</li>
             <li>Aan het einde zie je welke score jij hebt gehaald.</li>
@@ -911,6 +911,11 @@ const StudentStartScreen = ({
             />
             <span>Ik accepteer de privacyvoorwaarden.</span>
           </label>
+          <p className="privacy-links">
+            <a href="/privacy.html" target="_blank" rel="noreferrer">Privacyverklaring</a>
+            <span aria-hidden="true">·</span>
+            <a href="/voorwaarden.html" target="_blank" rel="noreferrer">Voorwaarden</a>
+          </p>
         </div>
 
         {error ? <div className="error-banner-inline">{error}</div> : null}
@@ -1009,6 +1014,10 @@ const AdminScreen = ({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedVersionIds, setSelectedVersionIds] = useState<AssessmentVersion["id"][]>([
+    ...assessmentIds,
+  ]);
+  const [selectedAccessCodes, setSelectedAccessCodes] = useState<string[]>([]);
 
   const adminHeaders = { "x-admin-password": adminPassword };
 
@@ -1104,7 +1113,10 @@ const AdminScreen = ({
     }));
 
   const exportBaseName = () => {
-    const yearSuffix = yearFilter === "all" ? "alle-leerjaren" : yearFilter;
+    const yearSuffix =
+      selectedVersionIds.length === assessmentIds.length
+        ? "alle-leerjaren"
+        : selectedVersionIds.join("-");
     const classSuffix = classFilter.length === 0 ? "alle-klassen" : classFilter.join("-");
     return `afnamecodes-${yearSuffix}-${classSuffix}-${new Date().toISOString().slice(0, 10)}`;
   };
@@ -1162,6 +1174,44 @@ const AdminScreen = ({
     }
   };
 
+  const deleteStudents = async (accessCodes: string[]) => {
+    const uniqueAccessCodes = Array.from(new Set(accessCodes));
+    if (uniqueAccessCodes.length === 0) return;
+
+    const confirmed = window.confirm(
+      uniqueAccessCodes.length === 1
+        ? `Weet je zeker dat je afnamecode ${uniqueAccessCodes[0]} wilt verwijderen?`
+        : `Weet je zeker dat je ${uniqueAccessCodes.length} afnamecodes wilt verwijderen?`,
+    );
+    if (!confirmed) return;
+
+    setIsLoading(true);
+    try {
+      const data = await requestJson<StudentsResponse>("/api/students", {
+        method: "PATCH",
+        headers: adminHeaders,
+        body: JSON.stringify({
+          action: "delete",
+          accessCodes: uniqueAccessCodes,
+        }),
+      });
+      setStudents(data.students);
+      setSelectedAccessCodes((selected) =>
+        selected.filter((accessCode) => !uniqueAccessCodes.includes(accessCode)),
+      );
+      setMessage(
+        uniqueAccessCodes.length === 1
+          ? `${uniqueAccessCodes[0]} is verwijderd.`
+          : `${uniqueAccessCodes.length} afnamecodes zijn verwijderd.`,
+      );
+      setError("");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Verwijderen is niet gelukt.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const statusLabel = (status?: ApiStudent["status"]) => {
     if (status === "completed") return "Afgerond";
     if (status === "in_progress") return "Bezig";
@@ -1175,34 +1225,56 @@ const AdminScreen = ({
     "lj3-hv": "p5",
   };
 
-  const getYearForVersion = (id: AssessmentVersion["id"]) =>
-    id.startsWith("lj1") ? "lj1" : "lj3";
-
-  const [yearFilter, setYearFilter] = useState<"all" | "lj1" | "lj3">("all");
   const [classFilter, setClassFilter] = useState<string[]>([]);
-  const yearFilteredStudents =
-    yearFilter === "all"
+  const versionFilteredStudents =
+    selectedVersionIds.length === assessmentIds.length
       ? students
-      : students.filter((student) => getYearForVersion(student.versionId) === yearFilter);
+      : students.filter((student) => selectedVersionIds.includes(student.versionId));
   const availableClassCodes = Array.from(
-    new Set(yearFilteredStudents.map((student) => student.classCode).filter(Boolean)),
+    new Set(versionFilteredStudents.map((student) => student.classCode).filter(Boolean)),
   ).sort((a, b) => a.localeCompare(b, "nl"));
   const filteredStudents =
     classFilter.length === 0
-      ? yearFilteredStudents
-      : yearFilteredStudents.filter((student) => classFilter.includes(student.classCode));
+      ? versionFilteredStudents
+      : versionFilteredStudents.filter((student) => classFilter.includes(student.classCode));
   const classFilterLabel =
     classFilter.length === 0
       ? "Alle klassen"
       : classFilter.length === 1
         ? classFilter[0]
         : `${classFilter.length} klassen`;
+  const selectedVisibleAccessCodes = filteredStudents
+    .map((student) => student.accessCode)
+    .filter((accessCode) => selectedAccessCodes.includes(accessCode));
+  const allVisibleSelected =
+    filteredStudents.length > 0 && selectedVisibleAccessCodes.length === filteredStudents.length;
+  const toggleVersionFilter = (version: AssessmentVersion["id"], checked: boolean) => {
+    setSelectedVersionIds((selected) => {
+      if (checked) return Array.from(new Set([...selected, version]));
+      const next = selected.filter((id) => id !== version);
+      return next.length === 0 ? selected : next;
+    });
+    setClassFilter([]);
+  };
+  const toggleAllVisibleStudents = (checked: boolean) => {
+    const visibleCodes = filteredStudents.map((student) => student.accessCode);
+    setSelectedAccessCodes((selected) =>
+      checked
+        ? Array.from(new Set([...selected, ...visibleCodes]))
+        : selected.filter((accessCode) => !visibleCodes.includes(accessCode)),
+    );
+  };
 
   useEffect(() => {
     setClassFilter((selected) =>
       selected.filter((classCode) => availableClassCodes.includes(classCode)),
     );
   }, [availableClassCodes.join("|")]);
+
+  useEffect(() => {
+    const knownCodes = new Set(students.map((student) => student.accessCode));
+    setSelectedAccessCodes((selected) => selected.filter((accessCode) => knownCodes.has(accessCode)));
+  }, [students]);
 
   const completedCount = students.filter((s) => s.status === "completed").length;
   const busyCount = students.filter((s) => s.status === "in_progress").length;
@@ -1368,20 +1440,23 @@ const AdminScreen = ({
           </div>
           <div className="rd-section-head" style={{ marginBottom: 0, gap: 12 }}>
             <div className="filters">
-              <label className="admin-filter-select">
-                <span>Leerjaar</span>
-                <select
-                  value={yearFilter}
-                  onChange={(event) => {
-                    setYearFilter(event.target.value as "all" | "lj1" | "lj3");
-                    setClassFilter([]);
-                  }}
-                >
-                  <option value="all">Alle leerjaren</option>
-                  <option value="lj1">Leerjaar 1</option>
-                  <option value="lj3">Leerjaar 3</option>
-                </select>
-              </label>
+              <details className="admin-filter-menu">
+                <summary className="filter-chip">
+                  Leerjaar: {selectedVersionIds.length === assessmentIds.length ? "alle metingen" : `${selectedVersionIds.length} metingen`}
+                </summary>
+                <div className="admin-filter-popover">
+                  {assessmentIds.map((assessmentId) => (
+                    <label className="check-row compact" key={assessmentId}>
+                      <input
+                        type="checkbox"
+                        checked={selectedVersionIds.includes(assessmentId)}
+                        onChange={(event) => toggleVersionFilter(assessmentId, event.target.checked)}
+                      />
+                      <span>{assessmentLabels[assessmentId]}</span>
+                    </label>
+                  ))}
+                </div>
+              </details>
               <details className="admin-filter-menu">
                 <summary className="filter-chip">Klas: {classFilterLabel}</summary>
                 <div className="admin-filter-popover">
@@ -1420,6 +1495,14 @@ const AdminScreen = ({
             >
               ↻ Vernieuwen
             </button>
+            <button
+              className="filter-chip danger"
+              type="button"
+              onClick={() => deleteStudents(selectedAccessCodes)}
+              disabled={isLoading || selectedAccessCodes.length === 0}
+            >
+              Verwijderen{selectedAccessCodes.length > 0 ? ` (${selectedAccessCodes.length})` : ""}
+            </button>
             <details className="admin-export-menu">
               <summary className={`filter-chip ${filteredStudents.length === 0 ? "disabled" : ""}`}>
                 Exporteer
@@ -1441,6 +1524,15 @@ const AdminScreen = ({
 
         <div className="rd-student-table">
           <div className="rd-student-row head">
+            <span>
+              <input
+                aria-label="Selecteer alle zichtbare afnamecodes"
+                type="checkbox"
+                checked={allVisibleSelected}
+                onChange={(event) => toggleAllVisibleStudents(event.target.checked)}
+                disabled={filteredStudents.length === 0}
+              />
+            </span>
             <span>Code</span>
             <span>Leerling</span>
             <span>Klas</span>
@@ -1464,6 +1556,20 @@ const AdminScreen = ({
                   className="rd-student-row"
                   key={`${student.classCode}-${student.accessCode}`}
                 >
+                  <span>
+                    <input
+                      aria-label={`Selecteer afnamecode ${student.accessCode}`}
+                      type="checkbox"
+                      checked={selectedAccessCodes.includes(student.accessCode)}
+                      onChange={(event) => {
+                        setSelectedAccessCodes((selected) =>
+                          event.target.checked
+                            ? Array.from(new Set([...selected, student.accessCode]))
+                            : selected.filter((accessCode) => accessCode !== student.accessCode),
+                        );
+                      }}
+                    />
+                  </span>
                   <span className="code-cell">{student.accessCode}</span>
                   <span>{student.participantLabel || "Geen label"}</span>
                   <span>{student.classCode}</span>
@@ -1499,6 +1605,14 @@ const AdminScreen = ({
                       disabled={isLoading}
                     >
                       Heropenen
+                    </button>
+                    <button
+                      className="danger"
+                      type="button"
+                      onClick={() => deleteStudents([student.accessCode])}
+                      disabled={isLoading}
+                    >
+                      Verwijderen
                     </button>
                   </span>
                 </div>
@@ -1547,10 +1661,7 @@ const AssessmentScreen = ({
   }
 
   const steps = getStepDescriptors(assessment);
-  const questionSteps = steps.filter((candidateStep) => {
-    const candidateItem = getItemByStep(assessment, candidateStep);
-    return candidateItem?.type !== "self_assessment";
-  });
+  const questionSteps = steps;
   const questionIndex = questionSteps.findIndex((candidateStep) => candidateStep.key === step.key);
   const questionNumber = questionIndex >= 0 ? questionIndex + 1 : undefined;
   const questionCount = questionSteps.length;
@@ -1787,6 +1898,7 @@ const AssessmentScreen = ({
 
       {item.type === "multiple_choice" ? (
         <ChoiceItemView
+          key={item.id}
           section={section}
           item={item}
           questionNumber={questionNumber ?? 1}
@@ -1816,7 +1928,7 @@ const SelfAssessmentView = ({
 
   return (
     <section className="panel stack-lg">
-      <QuestionHeader label="Zelfinschatting" title={item.title}>
+      <QuestionHeader questionNumber={questionNumber} title={item.title}>
         <p className="slider-instruction">{item.instruction}</p>
       </QuestionHeader>
       <div className="slider-card">
@@ -4480,6 +4592,10 @@ const ChoiceItemView = ({
     ? selectedUnknown || (selectedIds.length > 0 && selectedIds.length <= selectCount)
     : selectedIds.length === 1;
 
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [item.id]);
+
   const toggleOption = (optionId: string) => {
     if (optionId === unknownOptionId) {
       setSelectedIds([optionId]);
@@ -4508,21 +4624,17 @@ const ChoiceItemView = ({
       section,
       item,
       selectedAnswer: isMultiple ? selectedIds : selectedIds[0] ?? null,
-      shownOptionOrder: orderedOptions.map((option) => option.id),
+      shownOptionOrder: displayOptions.map((option) => option.id),
     });
   };
 
-  const submitUnknown = () => {
-    onSubmit({
-      section,
-      item,
-      selectedAnswer: unknownOptionId ?? null,
-      shownOptionOrder: orderedOptions.map((option) => option.id),
-    });
-  };
-
-  /* Reguliere opties (unknown-optie gaat naar de footer-knop) */
-  const displayOptions = orderedOptions.filter((o) => o.id !== unknownOptionId);
+  const contentOptions = orderedOptions.filter((option) => option.id !== unknownOptionId);
+  const unknownOption = unknownOptionId
+    ? orderedOptions.find((option) => option.id === unknownOptionId)
+    : undefined;
+  const displayOptions = unknownOption
+    ? [...contentOptions.slice(0, 4), unknownOption, ...contentOptions.slice(4)]
+    : contentOptions;
 
   return (
     <section className="panel stack-md">
@@ -4567,10 +4679,7 @@ const ChoiceItemView = ({
         })}
       </div>
 
-      <div className="q-mc-footer">
-        <button className="q-weet-btn" type="button" onClick={submitUnknown}>
-          Ik weet het niet
-        </button>
+      <div className="q-mc-footer q-choice-footer">
         <button
           className="primary-button q-next-btn"
           type="button"
