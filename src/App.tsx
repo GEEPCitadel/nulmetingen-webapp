@@ -4205,7 +4205,7 @@ const BlockProgrammingTaskView = ({
         ) : null}
       </QuestionHeader>
 
-      <div className="blocks-shell">
+      <div className={`blocks-shell ${executed ? "has-preview" : ""}`}>
         {/* ── Palette ─────────────────────────────── */}
         <aside className="blocks-palette">
           {(() => {
