@@ -806,6 +806,12 @@ const StudentStartScreen = ({
   onOpenAdmin: () => void;
 }) => {
   const [step, setStep] = useState<1 | 2>(1);
+  const selectedAssessment = assessmentMap[selectedAssessmentId];
+  const assignmentCount = getStepDescriptors(selectedAssessment).filter((descriptor) => {
+    const section = getSectionById(selectedAssessment, descriptor.sectionId);
+    const item = section?.items.find((candidate) => candidate.id === descriptor.itemId);
+    return item?.type !== "self_assessment";
+  }).length;
 
   if (step === 1) {
     return (
@@ -813,7 +819,8 @@ const StudentStartScreen = ({
         <div className="welcome-card">
           <div className="welcome-logo-img" role="img" aria-label="Citadel College" />
           <h1 className="welcome-title">
-            Welkom bij de voortgangsmeting Digitale Geletterdheid
+            Welkom bij de voortgangsmeting<br />
+            Digitale Geletterdheid
           </h1>
           <label className="field-block welcome-field">
             <span className="field-label">Jouw persoonlijke afnamecode</span>
@@ -864,9 +871,11 @@ const StudentStartScreen = ({
 
         <div className="instruction-box">
           <ul className="instruction-list">
-            <li>De voortgangsmeting bestaat uit <strong>16</strong> opdrachten en duurt ongeveer 30 minuten.</li>
-            <li>Weet je het antwoord op een vraag echt niet, kies dan: <em>&quot;Ik weet het niet.&quot;</em> Zoek geen antwoorden op op internet.</li>
-            <li>Per ongeluk afgesloten? Vul dezelfde afnamecode opnieuw in.</li>
+            <li>De voortgangsmeting bestaat uit <strong>{assignmentCount}</strong> opdrachten.</li>
+            <li>De voortgangsmeting duurt ongeveer 30 minuten.</li>
+            <li>Zoek geen antwoorden op internet.</li>
+            <li>Per ongeluk afgesloten?</li>
+            <li>Vul dezelfde afnamecode opnieuw in.</li>
             <li>Aan het einde zie je welke score jij hebt gehaald.</li>
           </ul>
         </div>
@@ -1775,11 +1784,22 @@ const SelfAssessmentView = ({
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
   const [value, setValue] = useState(50);
+  const instructionLines = item.instruction
+    .split(/\n|(?<=[.!?])\s+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
 
   return (
     <section className="panel stack-lg">
       <QuestionHeader label="Zelfinschatting" title={item.title}>
-        <p className="slider-instruction">{item.instruction}</p>
+        <p className="slider-instruction">
+          {instructionLines.map((line, index) => (
+            <span key={line}>
+              {line}
+              {index < instructionLines.length - 1 ? <br /> : null}
+            </span>
+          ))}
+        </p>
       </QuestionHeader>
       <div className="slider-card">
         <input
@@ -3824,7 +3844,6 @@ const BlockProgrammingTaskView = ({
 
   const playProgram = () => {
     if (runStep >= 0) {
-      // Already running → stop.
       stopStepper();
       return;
     }
@@ -3855,6 +3874,11 @@ const BlockProgrammingTaskView = ({
     setExecuted(false);
     setSpeechVisible(false);
     setAPresses(0);
+    setRunEffects(emptyProgramRunEffects);
+  };
+  const returnToEditor = () => {
+    stopStepper();
+    setSpeechVisible(false);
     setRunEffects(emptyProgramRunEffects);
   };
   const isRunning = runStep >= 0;
@@ -3974,6 +3998,14 @@ const BlockProgrammingTaskView = ({
                   </>
                 )}
               </button>
+              <button
+                className="run-back-arrow"
+                type="button"
+                onClick={returnToEditor}
+                disabled={!isRunning}
+                aria-label="Terug"
+                title="Terug"
+              />
             </div>
           </div>
 

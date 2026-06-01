@@ -555,7 +555,7 @@ const selfAssessmentItem = (): AssessmentItem => ({
   type: "self_assessment",
   title: "Zelfinschatting",
   instruction:
-    "Hoe digitaal geletterd schat je jezelf in?\nSchuif het bolletje naar jouw keuze. 0 betekent: ik schat mezelf helemaal niet digitaal geletterd in. 100 betekent: ik schat mezelf heel digitaal geletterd in.",
+    "Hoe digitaal geletterd schat je jezelf in?\nSchuif het bolletje naar jouw keuze.\n0 betekent: ik schat mezelf helemaal niet digitaal geletterd in.\n100 betekent: ik schat mezelf heel digitaal geletterd in.",
   points: 0,
   skillDomain: "Zelfinschatting",
   kerndoel: "niet-scorend",

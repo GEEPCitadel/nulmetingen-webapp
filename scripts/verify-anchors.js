@@ -25,7 +25,7 @@ for (const versionId of versionIds) {
     failures.push(`${versionId} heeft ${items.length} SR-items in plaats van 10.`);
   }
 
-  if (!items.some((item) => /https|slotje/i.test(`${item.title} ${item.question}`))) {
+  if (!items.some((item) => /https|slotje/i.test(`${item.title} ${item.question} ${item.stimulus?.address ?? ""} ${item.options?.map((option) => option.text).join(" ") ?? ""}`))) {
     failures.push(`${versionId} mist het HTTPS/slotje-anker.`);
   }
 

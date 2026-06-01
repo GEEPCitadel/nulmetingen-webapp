@@ -7,7 +7,7 @@
       "id": "lj1v-sr1-pw-passphrase",
       "targetGroup": "lj1-vmbo",
       "subgoal": "23A",
-      "title": "Wachtwoordzin",
+      "title": "Sterk wachtwoord kiezen",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "question": "Welk wachtwoord is het veiligst?",
@@ -28,7 +28,7 @@
         },
         {
           "id": "C",
-          "text": "Welkom!!2026@@",
+          "text": "!@#$%^&*",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -63,7 +63,7 @@
       "id": "lj1v-sr2-https",
       "targetGroup": "lj1-vmbo",
       "subgoal": "23A",
-      "title": "Slotje en https",
+      "title": "Betrouwbare websites",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
@@ -543,7 +543,7 @@
       "id": "lj1h-sr1-pw-passphrase",
       "targetGroup": "lj1-hv",
       "subgoal": "23A",
-      "title": "Wachtwoordzin",
+      "title": "Sterk wachtwoord kiezen",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "question": "Welk wachtwoord is het veiligst?",
@@ -564,7 +564,7 @@
         },
         {
           "id": "C",
-          "text": "Welkom!!2026@@",
+          "text": "!@#$%^&*",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -599,7 +599,7 @@
       "id": "lj1h-sr2-https-nuance",
       "targetGroup": "lj1-hv",
       "subgoal": "23A",
-      "title": "Slotje en betrouwbaarheid",
+      "title": "Betrouwbare websites",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
@@ -1090,7 +1090,7 @@
       "id": "lj3v-sr1-https-phishing",
       "targetGroup": "lj3-vmbo",
       "subgoal": "23A",
-      "title": "Slotje bij verdachte link",
+      "title": "Betrouwbare websites",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
@@ -1651,7 +1651,7 @@
       "id": "lj3h-sr1-https-limits",
       "targetGroup": "lj3-hv",
       "subgoal": "23A",
-      "title": "Grenzen van https",
+      "title": "Betrouwbare websites",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
