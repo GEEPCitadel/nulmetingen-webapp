@@ -958,7 +958,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1v-pt1-files",
       title: "PT1 - Bestanden en mappen",
       instruction:
-        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op de bestandsnamen.\nKlik daarna op Taak afronden.",
+        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op de bestandsnamen.\nKlik daarna op Volgende.",
       startFolders: [
         "Thuis/OneDrive",
         "Thuis/Downloads",
@@ -1212,7 +1212,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1h-pt1-files",
       title: "PT1 - Bestanden en mappen",
       instruction:
-        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op de bestandsnamen.\nKlik daarna op Taak afronden.",
+        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op de bestandsnamen.\nKlik daarna op Volgende.",
       startFolders: [
         "Thuis/OneDrive",
         "Thuis/Downloads",
@@ -1376,7 +1376,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj1h-pt8-online",
       title: "PT8 - Online gedrag: misleidende appmelding",
       instruction:
-        "Een app probeert Silke steeds naar dezelfde keuze te sturen.\nOpen de instellingen.\nKies een veilige meldingsinstelling.\nKlik daarna op Taak afronden.",
+        "Een app probeert Silke steeds naar dezelfde keuze te sturen.\nOpen de instellingen.\nKies een veilige meldingsinstelling.\nKlik daarna op Volgende.",
       kerndoel: "23B, 21B, 23A",
       config: {
         screens: [
@@ -1451,7 +1451,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3v-pt1-files",
       title: "PT1 - Bestanden en mappen",
       instruction:
-        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op mappen en bestandsnamen.\nKlik daarna op Taak afronden.",
+        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op mappen en bestandsnamen.\nKlik daarna op Volgende.",
       startFolders: ["Thuis/OneDrive", "Thuis/OneDrive/Project_stage"],
       startFiles: [
         "Thuis/OneDrive/Project_stage/Plan_stage_v1.docx",
@@ -1772,7 +1772,7 @@ const versionSpecs: VersionSpec[] = [
       id: "lj3h-pt1-files",
       title: "PT1 - Bestanden en mappen",
       instruction:
-        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op mappen en bestandsnamen.\nKlik daarna op Taak afronden.",
+        "Gebruik de Verkenner hieronder.\nMaak alle opdrachten in de linkerkolom.\nLet goed op mappen en bestandsnamen.\nKlik daarna op Volgende.",
       startFolders: ["Thuis/OneDrive", "Thuis/OneDrive/Onderzoek"],
       startFiles: [
         "Thuis/OneDrive/Onderzoek/Onderzoek_v1.docx",
@@ -2130,7 +2130,7 @@ const versionSpecs: VersionSpec[] = [
 ];
 
 const v3FileInstruction =
-  "Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Taak afronden.";
+  "Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Volgende.";
 
 const v3MailConfig = ({
   to,
@@ -2672,7 +2672,7 @@ const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
       instruction: "Programmeer Bizzy zodat hij eerst 2 stappen vooruit gaat, daarna naar rechts draait, daarna \"Klaar\" zegt.",
       config: {
         device: "bizzy",
-        blocks: [block("bij start", "gebeurtenissen", { isContainer: true }), block("2 stappen vooruit", "beweging"), block("draai naar rechts", "beweging"), block('zeg "Klaar"', "uiterlijk"), block("draai naar links", "beweging", { isCriticalDistractor: true })],
+        blocks: [block("bij start", "gebeurtenissen", { isContainer: true }), block("als Bizzy wordt aangeraakt", "gebeurtenissen", { isCriticalDistractor: true }), block("2 stappen vooruit", "beweging"), block("1 stap vooruit", "beweging"), block("2 stappen achteruit", "beweging", { isCriticalDistractor: true }), block("draai naar rechts", "beweging"), block("draai naar links", "beweging", { isCriticalDistractor: true }), block('zeg "Klaar"', "uiterlijk"), block('zeg "Hoi"', "uiterlijk"), block("wacht 1 seconde", "besturing"), block("herhaal 2 keer", "besturing", { isContainer: true })],
         correctProgram: ["bij start", "2 stappen vooruit", "draai naar rechts", 'zeg "Klaar"'],
         rules: [
           { id: "start", description: "juiste start/gebeurtenisblok.", points: 1, firstBlock: "bij start" },
@@ -2689,7 +2689,7 @@ const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
       instruction: "Programmeer Bizzy zodat hij 4 keer hetzelfde patroon uitvoert: 1 stap vooruit en daarna rechts draaien. Aan het einde zegt Bizzy \"Vierkant\".",
       config: {
         device: "bizzy",
-        blocks: [block("bij start", "gebeurtenissen", { isContainer: true }), block("herhaal 4 keer", "besturing", { isContainer: true }), block("1 stap vooruit", "beweging"), block("rechts draaien", "beweging"), block('zeg "Vierkant"', "uiterlijk"), block("herhaal 3 keer", "besturing", { isContainer: true, isCriticalDistractor: true })],
+        blocks: [block("bij start", "gebeurtenissen", { isContainer: true }), block("als Bizzy wordt aangeraakt", "gebeurtenissen", { isCriticalDistractor: true }), block("herhaal 4 keer", "besturing", { isContainer: true }), block("herhaal 3 keer", "besturing", { isContainer: true, isCriticalDistractor: true }), block("herhaal 5 keer", "besturing", { isContainer: true, isCriticalDistractor: true }), block("1 stap vooruit", "beweging"), block("2 stappen vooruit", "beweging"), block("links draaien", "beweging", { isCriticalDistractor: true }), block("rechts draaien", "beweging"), block('zeg "Vierkant"', "uiterlijk"), block('zeg "Klaar"', "uiterlijk"), block("wacht 1 seconde", "besturing")],
         correctProgram: ["bij start", "herhaal 4 keer", "1 stap vooruit", "rechts draaien", 'zeg "Vierkant"'],
         rules: [
           { id: "repeat", description: "gebruikt herhaalblok of correcte equivalente structuur.", points: 1, requiredBlocks: ["herhaal 4 keer"] },
@@ -2706,7 +2706,7 @@ const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
       instruction: "Elke klik op knop A verhoogt de teller met 1. Als de teller 5 of hoger is, zegt Bizzy \"Vol\". Anders zegt Bizzy \"Nog plek\".",
       config: {
         device: "microbit",
-        blocks: [block("bij start", "gebeurtenissen", { isContainer: true }), block("zet teller op 0", "variabelen"), block("als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }), block("verander teller met 1", "variabelen"), block("als teller >= 5 dan", "besturing", { isContainer: true }), block('zeg "Vol"', "uiterlijk"), block("anders", "besturing", { isContainer: true }), block('zeg "Nog plek"', "uiterlijk")],
+        blocks: [block("bij start", "gebeurtenissen", { isContainer: true }), block("zet teller op 0", "variabelen"), block("zet teller op 5", "variabelen", { isCriticalDistractor: true }), block("als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }), block("als knop B wordt ingedrukt", "gebeurtenissen", { isContainer: true }), block("verander teller met 1", "variabelen"), block("verander teller met -1", "variabelen", { isCriticalDistractor: true }), block("als teller >= 5 dan", "besturing", { isContainer: true }), block("als teller > 10 dan", "besturing", { isContainer: true, isCriticalDistractor: true }), block("als teller < 5 dan", "besturing", { isContainer: true }), block('zeg "Vol"', "uiterlijk"), block('zeg "Nog plek"', "uiterlijk"), block('zeg "Leeg"', "uiterlijk"), block("anders", "besturing", { isContainer: true })],
         correctProgram: ["bij start", "zet teller op 0", "als knop A wordt ingedrukt", "verander teller met 1", "als teller >= 5 dan", 'zeg "Vol"', "anders", 'zeg "Nog plek"'],
         rules: [
           { id: "variable", description: "teller/variabele correct gebruikt.", points: 1, requiredBlocks: ["zet teller op 0"] },
@@ -2723,7 +2723,7 @@ const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
       instruction: "Als temperatuur > 25 én raamOpen = ja, toont Bizzy \"Koelen\". Als dat niet zo is, toont Bizzy \"Oké\".",
       config: {
         device: "sensor",
-        blocks: [block("lees temperatuur", "waarnemen"), block("lees raamOpen", "waarnemen"), block("als temperatuur > 25 EN raamOpen = ja dan", "besturing", { isContainer: true }), block('toon "Koelen"', "uiterlijk"), block("anders", "besturing", { isContainer: true }), block('toon "Oké"', "uiterlijk"), block("als temperatuur > 25 OF raamOpen = ja dan", "besturing", { isContainer: true, isCriticalDistractor: true })],
+        blocks: [block("lees temperatuur", "waarnemen"), block("lees raamOpen", "waarnemen"), block("lees lichtsterkte", "waarnemen"), block("als temperatuur > 25 EN raamOpen = ja dan", "besturing", { isContainer: true }), block("als temperatuur > 25 OF raamOpen = ja dan", "besturing", { isContainer: true, isCriticalDistractor: true }), block("als temperatuur < 25 EN raamOpen = ja dan", "besturing", { isContainer: true, isCriticalDistractor: true }), block('toon "Koelen"', "uiterlijk"), block("anders", "besturing", { isContainer: true }), block('toon "Oké"', "uiterlijk"), block('toon "Verwarmen"', "uiterlijk", { isCriticalDistractor: true }), block("wacht 10 seconden", "besturing"), block("speel alarmgeluid", "geluid")],
         correctProgram: ["lees temperatuur", "lees raamOpen", "als temperatuur > 25 EN raamOpen = ja dan", 'toon "Koelen"', "anders", 'toon "Oké"'],
         rules: [
           { id: "inputs", description: "gebruikt twee invoervariabelen correct.", points: 1, requiredBlocks: ["lees temperatuur", "lees raamOpen"] },

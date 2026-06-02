@@ -1640,10 +1640,6 @@ const AssessmentScreen = ({
               );
             })}
           </div>
-          <div className="assessment-section-meta">
-            <span className="q-section-label">{shortSectionTitle(section)}</span>
-            <span className="q-question-num">Onderdeel {sectionIdx + 1}</span>
-          </div>
         </div>
         {/* Sectiestrook */}
         <div className="q-section-strip">
@@ -1672,6 +1668,7 @@ const AssessmentScreen = ({
           state={session.pt1States[item.id]}
           onChange={(nextState) => onUpdateFileTaskState(item, nextState)}
           onFinish={() => onFinishFileTask(section, item)}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1681,6 +1678,7 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
         />
       ) : null}
 
@@ -1847,11 +1845,13 @@ const MailTaskView = ({
   item,
   questionNumber,
   onSubmit,
+  onSkip,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
 }) => {
   type AddressField = "to" | "cc" | "bcc";
   type CommandPanel = "attachments" | "link" | null;
@@ -2363,8 +2363,9 @@ const MailTaskView = ({
 
       <TaskNavFooter
         questionNumber={questionNumber}
-        primaryLabel={draft.sent ? "Taak afronden" : "Volgende"}
+        primaryLabel="Volgende"
         onPrimary={draft.sent ? submit : () => { sendMessage(); submit(); }}
+        onSkip={onSkip}
       />
     </section>
   );
@@ -2375,18 +2376,25 @@ const TaskNavFooter = ({
   totalCount,
   primaryLabel,
   onPrimary,
+  onSkip,
   primaryDisabled,
 }: {
   questionNumber: number;
   totalCount?: number;
   primaryLabel: string;
   onPrimary: () => void;
+  onSkip?: () => void;
   primaryDisabled?: boolean;
 }) => (
   <div className="task-nav">
     <span className="task-nav-progress">
       {totalCount ? `Opdracht ${questionNumber} van ${totalCount}` : `Opdracht ${questionNumber}`}
     </span>
+    {onSkip ? (
+      <button className="task-nav-skip" type="button" onClick={onSkip}>
+        Ik weet het niet
+      </button>
+    ) : null}
     <button
       className="task-nav-primary"
       type="button"
@@ -2398,6 +2406,59 @@ const TaskNavFooter = ({
     </button>
   </div>
 );
+
+const splitMessageLines = (text?: string) =>
+  (text ?? "")
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+const SocialChatMockup = ({
+  title,
+  screens,
+}: {
+  title: string;
+  screens: NonNullable<AssessmentItem["socialTask"]>["screens"];
+}) => {
+  const messages = screens.flatMap((screen) => {
+    const lines = splitMessageLines(screen.body || screen.instruction);
+    return lines.length > 0 ? lines : [screen.title];
+  });
+  const visibleMessages = messages.length > 0
+    ? messages
+    : ["Bekijk de situatie en kies de veiligste reactie."];
+
+  return (
+    <div className="whutsupp-phone" aria-label="Whutsupp groepschat">
+      <div className="whutsupp-top">
+        <span className="whutsupp-back" aria-hidden="true">‹</span>
+        <span className="whutsupp-avatar" aria-hidden="true">DG</span>
+        <div>
+          <strong>{title.includes("groepschat") ? "Klasgroep" : "Whutsupp"}</strong>
+          <small>online</small>
+        </div>
+      </div>
+      <div className="whutsupp-thread">
+        {visibleMessages.map((message, index) => {
+          const isSam = /sam|noor|haal weg|stop|wil dit niet/i.test(message);
+          const isQuoted = /^["“]/.test(message);
+          return (
+            <div
+              className={`whutsupp-bubble ${isSam ? "incoming urgent" : isQuoted || index % 3 === 1 ? "outgoing" : "incoming"}`}
+              key={`${message}-${index}`}
+            >
+              {message}
+            </div>
+          );
+        })}
+      </div>
+      <div className="whutsupp-compose">
+        <span>Bericht</span>
+        <button type="button" aria-label="Niet beschikbaar">+</button>
+      </div>
+    </div>
+  );
+};
 
 const InteractionTaskView = ({
   session,
@@ -2465,6 +2526,26 @@ const InteractionTaskView = ({
       selectedAnswer: state,
       shownOptionOrder,
     });
+  const isSocialTask = item.type === "social_action_simulation";
+  const renderScreen = (screen: typeof task.screens[number]) => (
+    <div className="interaction-screen" key={screen.id}>
+      <div className="stack-xs">
+        <strong>{screen.title}</strong>
+        <p>{screen.instruction}</p>
+        {!isSocialTask && screen.body ? <div className="notice-banner">{screen.body}</div> : null}
+      </div>
+      {screen.emailStimulus ? <IncomingMailStimulusView email={screen.emailStimulus} /> : null}
+      {screen.groups.map((group) => (
+        <InteractionGroupControl
+          key={group.id}
+          group={orderedGroup(screen.id, group)}
+          value={state[group.id]}
+          allowSkip={item.type === "social_action_simulation"}
+          onChange={(value) => setGroupValue(group.id, value)}
+        />
+      ))}
+    </div>
+  );
 
   return (
     <section className="panel stack-lg">
@@ -2474,34 +2555,25 @@ const InteractionTaskView = ({
         instruction={item.instruction}
       />
 
-      <div className="task-screen-grid">
-        {task.screens.map((screen) => (
-          <div className="interaction-screen" key={screen.id}>
-            <div className="stack-xs">
-              <strong>{screen.title}</strong>
-              <p>{screen.instruction}</p>
-              {screen.body ? <div className="notice-banner">{screen.body}</div> : null}
-            </div>
-            {screen.emailStimulus ? <IncomingMailStimulusView email={screen.emailStimulus} /> : null}
-            {screen.groups.map((group) => (
-            <InteractionGroupControl
-              key={group.id}
-              group={orderedGroup(screen.id, group)}
-              value={state[group.id]}
-              allowSkip={item.type === "social_action_simulation"}
-              onChange={(value) => setGroupValue(group.id, value)}
-            />
-            ))}
+      {isSocialTask ? (
+        <div className="social-chat-task">
+          <SocialChatMockup title={item.title} screens={task.screens} />
+          <div className="social-question-stack">
+            {task.screens.map(renderScreen)}
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="task-screen-grid">
+          {task.screens.map(renderScreen)}
+        </div>
+      )}
 
-      <div className="actions">
-        <button className="primary-button" type="button" onClick={submit}>
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel="Volgende"
+        onPrimary={submit}
+        onSkip={onSkip}
+      />
     </section>
   );
 };
@@ -2729,23 +2801,19 @@ const ExcelDownloadTaskView = ({
         ))}
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: { answers },
-              shownOptionOrder: [],
-            })
-          }
-        >
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel="Volgende"
+        onPrimary={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: { answers },
+            shownOptionOrder: [],
+          })
+        }
+        onSkip={onSkip}
+      />
     </section>
   );
 };
@@ -2809,23 +2877,19 @@ const OfficeFormatTaskView = ({
         </div>
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: { code, exportAction },
-              shownOptionOrder: [],
-            })
-          }
-        >
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel="Volgende"
+        onPrimary={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: { code, exportAction },
+            shownOptionOrder: [],
+          })
+        }
+        onSkip={onSkip}
+      />
     </section>
   );
 };
@@ -2918,23 +2982,19 @@ const PowerPointDesignTaskView = ({
         </div>
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: state,
-              shownOptionOrder: [],
-            })
-          }
-        >
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel="Volgende"
+        onPrimary={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: state,
+            shownOptionOrder: [],
+          })
+        }
+        onSkip={onSkip}
+      />
     </section>
   );
 };
@@ -3539,22 +3599,12 @@ const FakeTeamsTask = ({
         ) : null}
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() => submit(false)}
-        >
-          Taak afronden
-        </button>
-        <button
-          className="ghost-button"
-          type="button"
-          onClick={onSkip}
-        >
-          Ik weet het niet / sla over
-        </button>
-      </div>
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel="Volgende"
+        onPrimary={() => submit(false)}
+        onSkip={onSkip}
+      />
     </section>
   );
 };
@@ -3675,6 +3725,22 @@ const BlockProgrammingTaskView = ({
         nextMoveMultiplier = 1;
         return;
       }
+      if (label === "1 stap vooruit") {
+        effects.move += nextMoveMultiplier;
+        effects.log.push(`Bizzy beweegt ${nextMoveMultiplier} stap vooruit.`);
+        nextMoveMultiplier = 1;
+        return;
+      }
+      if (label === "2 stappen vooruit") {
+        effects.move += 2;
+        effects.log.push("Bizzy beweegt 2 stappen vooruit.");
+        return;
+      }
+      if (label === "2 stappen achteruit") {
+        effects.move -= 2;
+        effects.log.push("Bizzy beweegt 2 stappen achteruit.");
+        return;
+      }
       if (label.includes("verplaats Bizzy 5 meters achteruit")) {
         effects.move -= 5;
         effects.log.push("Bizzy beweegt 5 meter achteruit.");
@@ -3683,6 +3749,16 @@ const BlockProgrammingTaskView = ({
       if (label.includes("draai Bizzy")) {
         effects.rotation = 180;
         effects.log.push("Bizzy draait naar 180 graden.");
+        return;
+      }
+      if (label === "draai naar rechts" || label === "rechts draaien") {
+        effects.rotation += 90;
+        effects.log.push("Bizzy draait naar rechts.");
+        return;
+      }
+      if (label === "draai naar links" || label === "links draaien") {
+        effects.rotation -= 90;
+        effects.log.push("Bizzy draait naar links.");
         return;
       }
       if (label.includes("niet animeren")) {
@@ -3814,6 +3890,21 @@ const BlockProgrammingTaskView = ({
         effects.log.push('Scherm toont "ok" wanneer de tak actief is.');
         return;
       }
+      if (label === 'toon "Oké"') {
+        effects.display = "Oké";
+        effects.log.push('Scherm toont "Oké".');
+        return;
+      }
+      if (label === 'toon "Koelen"') {
+        effects.display = "Koelen";
+        effects.log.push('Scherm toont "Koelen".');
+        return;
+      }
+      if (label.startsWith('zeg "')) {
+        effects.speech = label.slice(5, -1);
+        effects.log.push(`Bizzy zegt: ${effects.speech}.`);
+        return;
+      }
       if (label === 'toon "koud"') {
         effects.display = "koud";
         effects.log.push('Scherm toont "koud".');
@@ -3879,6 +3970,7 @@ const BlockProgrammingTaskView = ({
   const returnToEditor = () => {
     stopStepper();
     setSpeechVisible(false);
+    setExecuted(false);
     setRunEffects(emptyProgramRunEffects);
   };
   const isRunning = runStep >= 0;
@@ -3918,7 +4010,7 @@ const BlockProgrammingTaskView = ({
         ) : null}
       </QuestionHeader>
 
-      <div className="blocks-shell">
+      <div className={`blocks-shell ${executed ? "is-executed" : ""}`}>
         {/* ── Palette ─────────────────────────────── */}
         <aside className="blocks-palette">
           {(() => {
@@ -4002,7 +4094,7 @@ const BlockProgrammingTaskView = ({
                 className="run-back-arrow"
                 type="button"
                 onClick={returnToEditor}
-                disabled={!isRunning}
+                disabled={!executed}
                 aria-label="Terug"
                 title="Terug"
               />
@@ -4096,7 +4188,7 @@ const BlockProgrammingTaskView = ({
                     transform: `translateX(${runEffects.move * 18}px) rotate(${runEffects.rotation}deg)`,
                   }}
                 >
-                  {speechVisible ? <div className="bizzy-speech">Hoi!</div> : null}
+                  {speechVisible ? <div className="bizzy-speech">{runEffects.speech}</div> : null}
                   <svg
                     className={`bizzy-svg ${isRunning ? "is-running" : ""}`}
                     viewBox="0 0 144 168"
@@ -4145,23 +4237,19 @@ const BlockProgrammingTaskView = ({
         </aside>
       </div>
 
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: { program, executed, aPresses, temperature, windowOpen, runEffects },
-              shownOptionOrder: paletteBlocks.map((block) => block.label),
-            })
-          }
-        >
-          Taak afronden
-        </button>
-        <SkipTaskButton onSkip={onSkip} />
-      </div>
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel="Volgende"
+        onPrimary={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: { program, executed, aPresses, temperature, windowOpen, runEffects },
+            shownOptionOrder: paletteBlocks.map((block) => block.label),
+          })
+        }
+        onSkip={onSkip}
+      />
     </section>
   );
 };
@@ -4224,18 +4312,6 @@ const ChoiceItemView = ({
     });
   };
 
-  const submitUnknown = () => {
-    onSubmit({
-      section,
-      item,
-      selectedAnswer: unknownOptionId ?? null,
-      shownOptionOrder: orderedOptions.map((option) => option.id),
-    });
-  };
-
-  /* Reguliere opties (unknown-optie gaat naar de footer-knop) */
-  const displayOptions = orderedOptions.filter((o) => o.id !== unknownOptionId);
-
   return (
     <section className="panel stack-md">
       <QuestionHeader
@@ -4250,7 +4326,7 @@ const ChoiceItemView = ({
       ) : null}
 
       <div className={item.renderOptionsAsSourceCards ? "option-grid source-card-grid" : "option-grid"}>
-        {displayOptions.map((option, idx) => {
+        {orderedOptions.map((option, idx) => {
           const letter = String.fromCharCode(65 + idx);
           const selected = selectedIds.includes(option.id);
           return (
@@ -4272,9 +4348,6 @@ const ChoiceItemView = ({
       </div>
 
       <div className="q-mc-footer">
-        <button className="q-weet-btn" type="button" onClick={submitUnknown}>
-          Weet ik niet
-        </button>
         <button
           className="primary-button q-next-btn"
           type="button"
@@ -4422,12 +4495,14 @@ const FileTaskWorkspace = ({
   state,
   onChange,
   onFinish,
+  onSkip,
 }: {
   item: AssessmentItem;
   questionNumber: number;
   state: Pt1State;
   onChange: (nextState: Pt1State) => void;
   onFinish: () => void;
+  onSkip: () => void;
 }) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [contextFolderId, setContextFolderId] = useState<string>(
@@ -4672,14 +4747,24 @@ const FileTaskWorkspace = ({
     const parts = path.split("/").filter(Boolean);
     return parts.length === 0 ? "Thuis" : parts.join(" > ");
   })();
+  const fileInstructionSteps = item.instruction
+    .split(/\n|(?<=[.!?])\s+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.replace(/Taak afronden/g, "Volgende"));
 
   return (
     <section className="panel stack-lg">
       <QuestionHeader
         questionNumber={questionNumber}
         title={item.title}
-        instruction={item.instruction}
-      />
+      >
+        <ol className="file-instruction-list">
+          {fileInstructionSteps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      </QuestionHeader>
 
       <div className="file-explorer">
         <div className="explorer-commandbar" aria-label="Verkenner acties">
@@ -4972,8 +5057,9 @@ const FileTaskWorkspace = ({
 
       <TaskNavFooter
         questionNumber={questionNumber}
-        primaryLabel="Klaar — bekijk resultaat"
+        primaryLabel="Volgende"
         onPrimary={onFinish}
+        onSkip={onSkip}
       />
 
       {pendingConflict ? (
