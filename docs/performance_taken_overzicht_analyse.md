@@ -4,7 +4,7 @@ Bronbestand: `src/data/assessments.ts`
 
 Doel van dit document: compacte, analytische beschrijving van de performance taken in de huidige nulmetingen Digitale Geletterdheid. De beschrijvingen zijn bedoeld als input voor een analyse van de vraag of de vier vragensets als geheel evenwichtig, valide en passend gespreid zijn. Dit is intern analyse-materiaal en geen leerlingmateriaal.
 
-Let op: het in `AGENTS.md` genoemde brondocument `docs/nulmetingen_dg_v4_herschreven.md` staat niet in deze checkout. Dit overzicht beschrijft daarom de huidige implementatie.
+Let op: de huidige inhoudelijke richting is v3.5. Dit overzicht beschrijft de huidige implementatie en verandert geen assessmentcontent.
 
 ## Leeswijzer voor ChatGPT-analyse
 

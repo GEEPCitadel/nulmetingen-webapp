@@ -220,6 +220,18 @@ type SelectedResponseStimulus =
       message: string;
       address: string;
       label?: string;
+    }
+  | {
+      kind: "email-message";
+      fromName: string;
+      fromEmail: string;
+      toEmail: string;
+      date: string;
+      subject: string;
+      body: string[];
+      linkLabel?: string;
+      linkUrl?: string;
+      attachments?: string[];
     };
 
 type SelectedResponseJsonItem = {
@@ -385,6 +397,25 @@ const mockupForStimulus = (stimulus?: SelectedResponseStimulus): MockupCard | un
       subtitle: stimulus.message,
       content: [stimulus.address],
       mediaHint: "Niet-interactieve linkweergave",
+    };
+  }
+
+  if (stimulus.kind === "email-message") {
+    return {
+      badge: "E-mail",
+      title: stimulus.subject,
+      subtitle: `Van: ${stimulus.fromName} <${stimulus.fromEmail}>`,
+      meta: [`Aan: ${stimulus.toEmail}`, stimulus.date],
+      content: [
+        ...stimulus.body,
+        ...(stimulus.attachments?.length
+          ? [`Bijlage: ${stimulus.attachments.join(", ")}`]
+          : []),
+        ...(stimulus.linkLabel && stimulus.linkUrl
+          ? [`${stimulus.linkLabel}: ${stimulus.linkUrl}`]
+          : []),
+      ],
+      mediaHint: "Niet-interactieve e-mailmock-up",
     };
   }
 

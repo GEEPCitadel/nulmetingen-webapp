@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "verify:anchors": "node scripts/verify-anchors.js",
+    "verify:sr-sync": "node scripts/verify-sr-markdown-sync.js",
     "report:kd-coverage": "node scripts/kd-coverage.js"
   },
   "dependencies": {

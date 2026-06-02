@@ -6,7 +6,13 @@ This repository contains a webapp for administering nulmetingen Digitale Gelette
 
 The authoritative content source for assessment content is:
 
-`docs/nulmetingen_dg_v4_herschreven.md`
+`nulmetingen_dg_herontwerp_v3_5_codex.md`
+
+The active machine-readable selected-response data is currently:
+
+`nulmetingen_selected_response_herontwerp_v3.json`
+
+Note: this is a formative/pilot version. Do not describe it as a validated measurement instrument. The active JSON currently carries newer internal metadata than the v3.5 source direction; do not change assessment content or version status unless the change is based on the source document or explicit user instructions.
 
 Only change assessment content when the change is based on that source document or on explicit user instructions.
 

@@ -193,7 +193,7 @@ Gebruikt bij alle vier versies.
 | ID | Vraagkern | Correct antwoord |
 | --- | --- | --- |
 | `lj1h-sr1-pw` | Veiligste wachtwoord | `BlauweTreinLampSchoolTas` |
-| `lj1h-sr2-https` | Versleutelde verbinding | Slotje of `https://` |
+| `lj1h-sr2-roosterlink-mail` | Mail over accountcontrole | Geen code delen en controleren via de normale schoolroute |
 | `lj1h-sr3-access` | Geen toegang tot bestand | Toegang aanvragen bij eigenaar |
 | `lj1h-sr4-ai-verify` | AI-jaartal zonder bron | Onafhankelijke betrouwbare bron controleren |
 | `lj1h-sr5-sample` | Dataset uit 1 klas | Niet generaliseren naar alle leerlingen |

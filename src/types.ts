@@ -63,6 +63,7 @@ export interface MockupCard {
   content: string[];
   footer?: string;
   mediaHint?: string;
+  meta?: string[];
 }
 
 export interface Pt1Node {

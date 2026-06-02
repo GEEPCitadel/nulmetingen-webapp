@@ -25,8 +25,21 @@ for (const versionId of versionIds) {
     failures.push(`${versionId} heeft ${items.length} SR-items in plaats van 10.`);
   }
 
-  if (!items.some((item) => /https|slotje/i.test(`${item.title} ${item.question} ${item.stimulus?.address ?? ""} ${item.options?.map((option) => option.text).join(" ") ?? ""}`))) {
-    failures.push(`${versionId} mist het HTTPS/slotje-anker.`);
+  if (!items.some((item) => {
+    const stimulusText = item.stimulus
+      ? [
+          item.stimulus.kind,
+          item.stimulus.subject,
+          item.stimulus.fromEmail,
+          item.stimulus.linkUrl,
+          ...(item.stimulus.body ?? []),
+        ].join(" ")
+      : "";
+    return /phishing|mail|inlogcode|rooster|account|cijferlijst/i.test(
+      `${item.title} ${item.question} ${stimulusText} ${item.options?.map((option) => option.text).join(" ") ?? ""}`,
+    );
+  })) {
+    failures.push(`${versionId} mist het phishing-mailanker.`);
   }
 
   if (!items.some((item) => /Youssef|telefoon/i.test(`${item.title} ${item.question}`))) {
@@ -63,4 +76,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`Anchor-verificatie geslaagd voor ${sourcePath}: 4 versies, 10 SR-items, HTTPS/telefoon-ankers, selectiegrenzen en geen live zoekopdrachten.`);
+console.log(`Anchor-verificatie geslaagd voor ${sourcePath}: 4 versies, 10 SR-items, phishing-mail/telefoon-ankers, selectiegrenzen en geen live zoekopdrachten.`);

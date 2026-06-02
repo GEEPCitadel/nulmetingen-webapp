@@ -440,14 +440,16 @@ Klik daarna op Taak afronden.
 - Opties: BlauweTreinLampSchoolTas; Herfst2026; Welkom123!; 11112222
 - Correct: BlauweTreinLampSchoolTas
 
-#### SR2 - Versleutelde verbinding
-- Vraag: Aan welk teken zie je dat een verbinding versleuteld is?
+#### SR2 - Verdachte mail over rooster
+- Vraag: Wat kan Sanne het best doen?
+- Stimulus: niet-interactieve e-mailmock-up over een nieuw rooster met een verdachte afzender en roosterlink.
 - Opties:
-  - Het slotje in de adresbalk of https:// voor het webadres.
-  - De website laadt sneller.
-  - De website heeft .nl in de naam.
-  - De website heeft kleurrijke afbeeldingen.
-- Correct: Het slotje in de adresbalk of https:// voor het webadres.
+  - Niet op de link klikken en haar rooster via de schoolapp of bekende schoolsite controleren.
+  - Op de link klikken, want het bericht gaat over school.
+  - De mail doorsturen naar de klas zodat iedereen zijn rooster kan openen.
+  - Inloggen via de knop omdat de mail zegt dat het vandaag moet.
+  - Ik weet het niet.
+- Correct: Niet op de link klikken en haar rooster via de schoolapp of bekende schoolsite controleren.
 
 #### SR3 - Toegang weigeren
 - Vraag: Je krijgt op je leeromgeving de melding "Je hebt geen toegang tot Werkstuk.docx". Wat kun je het best doen?

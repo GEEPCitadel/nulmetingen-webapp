@@ -4492,6 +4492,7 @@ const MockupCardView = ({ item }: { item: AssessmentItem }) => {
 
   const isAddressBar = item.mockup.mediaHint === "Niet-interactieve adresbalk";
   const isEmailLink = item.mockup.mediaHint === "Niet-interactieve linkweergave";
+  const isEmailMessage = item.mockup.mediaHint === "Niet-interactieve e-mailmock-up";
   const address = item.mockup.content[0];
 
   return (
@@ -4500,10 +4501,22 @@ const MockupCardView = ({ item }: { item: AssessmentItem }) => {
         <strong>{item.mockup.title}</strong>
         {item.mockup.badge ? <span>{item.mockup.badge}</span> : null}
       </div>
-      {item.mockup.subtitle && !isEmailLink ? (
+      {item.mockup.subtitle && !isEmailLink && !isEmailMessage ? (
         <p className="mockup-subtitle">{item.mockup.subtitle}</p>
       ) : null}
-      {isAddressBar || isEmailLink ? (
+      {isEmailMessage ? (
+        <div className="stimulus-email-message" aria-label="E-mailbericht">
+          <div className="stimulus-email-meta">
+            {item.mockup.subtitle ? <span>{item.mockup.subtitle}</span> : null}
+            {item.mockup.meta?.map((line) => <span key={line}>{line}</span>)}
+          </div>
+          <div className="stimulus-email-body">
+            {item.mockup.content.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        </div>
+      ) : isAddressBar || isEmailLink ? (
         <div className={isEmailLink ? "stimulus-mail" : "stimulus-browser"}>
           {isEmailLink ? <p>{item.mockup.subtitle}</p> : null}
           <div className="stimulus-address-bar" aria-label="Webadres">

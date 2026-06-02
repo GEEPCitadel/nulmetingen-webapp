@@ -1,7 +1,7 @@
 {
   "schemaVersion": "dg-nulmetingen-v3.6",
-  "status": "werkversie voor Codex-implementatie, pilotafname en interne review; v3.6 SR21B-vervangingen verwerkt",
-  "source": "nulmetingen_dg_herontwerp_v3_6_codex.md",
+  "status": "werkversie voor Codex-implementatie, pilotafname en interne review; v3.6 phishing-mailstimulusfamilie gesynchroniseerd",
+  "source": "docs/changes/v3.6-phishing-mail-family.md",
   "selectedResponseItems": [
     {
       "id": "lj1v-sr1-pw-passphrase",
@@ -60,43 +60,53 @@
       "validityNote": "A is lang en niet gebaseerd op duidelijke persoonlijke gegevens of toetsenbordpatronen. De afleiders representeren herkenbare misconcepties: naam/jaar/schoolcontext, symbolen zonder echte sterkte en bekend toetsenbordpatroon."
     },
     {
-      "id": "lj1v-sr2-https",
+      "id": "lj1v-sr2-roosterlink-mail",
       "targetGroup": "lj1-vmbo",
       "subgoal": "23A",
-      "title": "Betrouwbare websites",
+      "title": "Verdachte mail over rooster",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
-        "kind": "browser-address-bar",
-        "label": "Rooster login",
-        "address": "https://rooster.citadelcollege.nl/login"
+        "kind": "email-message",
+        "fromName": "Rooster service",
+        "fromEmail": "r0st3r-88xq91@mx7-info-update.net",
+        "toEmail": "sanne@leerling.citadelcollege.nl",
+        "date": "Vandaag 08:14",
+        "subject": "Nieuw rooster staat klaar",
+        "body": [
+          "Hallo leerling,",
+          "Je nieuwe rooster staat klaar. Log vandaag nog in om te voorkomen dat je lessen mist.",
+          "Gebruik de knop hieronder om je rooster direct te openen."
+        ],
+        "linkLabel": "Rooster bekijken",
+        "linkUrl": "https://school-rooster-login-24.example.net/start"
       },
-      "question": "Welke uitspraak over dit webadres klopt het best?",
+      "question": "Wat kan Sanne het best doen?",
       "options": [
         {
           "id": "A",
-          "text": "De verbinding met de website is beter beveiligd.",
+          "text": "Niet op de link klikken en haar rooster via de schoolapp of bekende schoolsite controleren.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "De website is automatisch betrouwbaar.",
+          "text": "Op de link klikken, want het bericht gaat over school.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "De website is zeker van school.",
+          "text": "De mail doorsturen naar de klas zodat iedereen zijn rooster kan openen.",
           "isCorrect": false,
-          "isHarmful": false,
+          "isHarmful": true,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "De website kan geen gegevens verzamelen.",
+          "text": "Inloggen via de knop omdat de mail zegt dat het vandaag moet.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -110,7 +120,9 @@
         }
       ],
       "correctAnswer": "A",
-      "harmfulAnswers": [],
+      "harmfulAnswers": [
+        "C"
+      ],
       "scoring": {
         "maxPoints": 1,
         "rule": "exact-choice",
@@ -118,8 +130,8 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "pilotReviewStatus": "V3.5-review: visuele stimulus toegevoegd naar DigiCheck-achtige itemvorm. Vraagtekst geeft het herkenningskenmerk niet vooraf weg. Taal vereenvoudigd voor vmbo leerjaar 1.",
-      "validityNote": "Meet of leerlingen de betekenis van een slotje/https in een webadresbalk herkennen. De correcte optie vermijdt het moeilijke woord versleuteld, maar behoudt de kern: het slotje zegt iets over de beveiliging van de verbinding, niet over betrouwbaarheid, eigenaarschap of dataverzameling."
+      "pilotReviewStatus": "V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus. Leerling kiest een veilige route zonder op de mailknop te vertrouwen.",
+      "validityNote": "Meet basisherkenning van verdachte e-mailkenmerken en veilige vervolgstap: niet klikken, maar controleren via een bekende schoolroute."
     },
     {
       "id": "lj1v-sr3-phone",
@@ -361,28 +373,34 @@
           "optionId": "A",
           "text": "Je controleert het feit op een betrouwbare website.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Je gebruikt het feit meteen, want de chatbot klinkt zeker.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Je vraagt dezelfde chatbot: “Klopt dit?”",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Je gebruikt alleen de mooiste zin.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -409,28 +427,34 @@
           "optionId": "A",
           "text": "Of je de afbeelding mag gebruiken en of je de maker moet noemen.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Of de afbeelding bovenaan bij Google staat. Dan mag je hem gebruiken.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Of er geen naam op de afbeelding staat. Dan is hij van niemand.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Of je de afbeelding een beetje verandert. Dan is hij van jou.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -457,28 +481,34 @@
           "optionId": "A",
           "text": "Je vraagt of iedereen op de foto het goed vindt.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Je zet de foto alleen in de klassenapp. Dan hoef je niets te vragen.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Je laat de namen weg. Dan mag je de foto altijd delen.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Je plaatst de foto en haalt hem weg als iemand boos wordt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -505,28 +535,34 @@
           "optionId": "A",
           "text": "Veel leerlingen kunnen belangrijke schoolinformatie niet zien.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "De app ziet er tijdelijk minder mooi uit.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Leerlingen moeten misschien wennen aan een nieuw icoon.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Leerlingen krijgen dan automatisch minder huiswerk.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -596,43 +632,53 @@
       "validityNote": "Lange wachtwoordzin zonder voorspelbare persoonlijke gegevens is sterker dan kortere patronen of symbolenreeksen."
     },
     {
-      "id": "lj1h-sr2-https-nuance",
+      "id": "lj1h-sr2-roosterlink-mail",
       "targetGroup": "lj1-hv",
       "subgoal": "23A",
-      "title": "Betrouwbare websites",
+      "title": "Mail over accountcontrole",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
-        "kind": "browser-address-bar",
-        "label": "Leerplein login",
-        "address": "https://leerplein-voorbeeld.nl/login/rooster?groep=1h2"
+        "kind": "email-message",
+        "fromName": "ICT controle",
+        "fromEmail": "ict-472kq9-check@safe-login-mailer.info",
+        "toEmail": "noor@leerling.citadelcollege.nl",
+        "date": "Vandaag 10:02",
+        "subject": "Controleer je schoolaccount",
+        "body": [
+          "Beste leerling,",
+          "Wij controleren alle accounts. Stuur je tijdelijke inlogcode terug zodat je account actief blijft.",
+          "Reageer binnen 30 minuten."
+        ],
+        "linkLabel": "Code bevestigen",
+        "linkUrl": "https://citadel-controle.example.org/code"
       },
-      "question": "Welke uitspraak over dit webadres klopt het best?",
+      "question": "Welke reactie is het veiligst?",
       "options": [
         {
           "id": "A",
-          "text": "De verbinding is beter beveiligd, maar je moet nog controleren of de site echt van school is.",
+          "text": "Geen code delen en de melding controleren via de normale schoolroute.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "Het slotje of https bewijst dat de website automatisch betrouwbaar is.",
+          "text": "De code terugsturen, want anders kan het account verlopen.",
           "isCorrect": false,
-          "isHarmful": false,
+          "isHarmful": true,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "Een .nl-adres is altijd veilig voor schoolzaken.",
+          "text": "De link openen en daar de code invullen.",
           "isCorrect": false,
-          "isHarmful": false,
+          "isHarmful": true,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Een vraagteken in de link betekent altijd dat de verbinding onveilig is.",
+          "text": "De mail bewaren, maar verder niets controleren.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -646,7 +692,10 @@
         }
       ],
       "correctAnswer": "A",
-      "harmfulAnswers": [],
+      "harmfulAnswers": [
+        "B",
+        "C"
+      ],
       "scoring": {
         "maxPoints": 1,
         "rule": "exact-choice",
@@ -654,8 +703,8 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "pilotReviewStatus": "V3.5-review: omgezet naar stimulus-item. Vraagtekst noemt slotje of https:// niet meer vooraf; leerling moet de adresbalk zelf interpreteren.",
-      "validityNote": "Meet de HTTPS-nuance via een visuele adresbalk: wel beveiligde verbinding, geen bewijs dat de site officieel of betrouwbaar is. De querystring in het adres blijft zichtbaar, maar is niet de kern van de vraag."
+      "pilotReviewStatus": "V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus met codevraag en tijdsdruk.",
+      "validityNote": "Meet dat leerlingen een verzoek om inlogcodes via mail herkennen als onveilig en via de normale schoolroute controleren."
     },
     {
       "id": "lj1h-sr3-phone-actions",
@@ -906,28 +955,34 @@
           "optionId": "A",
           "text": "Je controleert het feit bij een betrouwbare bron.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Je gebruikt het feit als het logisch klinkt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Je vraagt dezelfde AI of het zeker weet.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Je laat de bron weg, dan valt het niet op.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -954,28 +1009,34 @@
           "optionId": "A",
           "text": "Of je de foto mag gebruiken en welke maker of bron je moet noemen.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Of de foto op veel websites staat. Dan zal hij wel vrij zijn.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Of je de foto bijsnijdt. Dan hoef je de maker niet te noemen.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Of alleen je klas de presentatie ziet. Dan gelden er geen regels.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -1003,28 +1064,34 @@
           "optionId": "A",
           "text": "Je deelt de foto niet totdat iedereen akkoord is.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Je deelt de foto alleen in een besloten groep.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Je deelt de foto zonder namen erbij.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Je deelt de foto en zet erbij dat het een grap is.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -1052,28 +1119,34 @@
           "optionId": "A",
           "text": "Als de app niet werkt, valt veel schoolinformatie tegelijk weg.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Leerlingen hoeven minder verschillende apps te openen.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Docenten kunnen berichten op één plek zetten.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "De app kan dezelfde kleur gebruiken voor alle klassen.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -1087,46 +1160,58 @@
       "validityNote": "Leerlingen onderscheiden risico van voordeel."
     },
     {
-      "id": "lj3v-sr1-https-phishing",
+      "id": "lj3v-sr1-cijferlink-mail",
       "targetGroup": "lj3-vmbo",
       "subgoal": "23A",
-      "title": "Betrouwbare websites",
+      "title": "Verdachte mail met bijlage",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
-        "kind": "email-link",
-        "label": "Bericht",
-        "message": "Je cijferlijst staat klaar.",
-        "address": "https://school-cijfers-login.example.net/controle"
+        "kind": "email-message",
+        "fromName": "Cijfersysteem",
+        "fromEmail": "c1jf3r-upd8-771@doc-viewer-login.com",
+        "toEmail": "jayden@leerling.citadelcollege.nl",
+        "date": "Gisteren 19:48",
+        "subject": "Cijferlijst controleren",
+        "body": [
+          "Hallo,",
+          "Er is een fout gevonden in je cijferlijst. Open de bijlage en schakel bewerken in om de nieuwe cijfers te bekijken.",
+          "Controleer dit voor morgen."
+        ],
+        "attachments": [
+          "Cijferlijst_update.xlsm"
+        ],
+        "linkLabel": "Online bekijken",
+        "linkUrl": "https://cijfers-school-update.example.net/login"
       },
-      "question": "Wat doe je?",
+      "question": "Wat is de veiligste actie?",
       "options": [
         {
           "id": "A",
-          "text": "Niet via de link inloggen; via de officiële schoolsite of app controleren.",
+          "text": "De bijlage niet openen en cijfers controleren via het normale schoolportaal.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "Wel klikken, want het slotje betekent dat de site echt van school is.",
+          "text": "De bijlage openen en bewerken inschakelen om de cijfers te zien.",
           "isCorrect": false,
-          "isHarmful": false,
+          "isHarmful": true,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "Wel klikken, want de link begint met https.",
+          "text": "Inloggen via de link in de mail om te controleren of de fout klopt.",
           "isCorrect": false,
-          "isHarmful": false,
+          "isHarmful": true,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "De link doorsturen naar de klas zodat iedereen kan kijken.",
+          "text": "De mail melden of aan een docent/ICT laten controleren.",
           "isCorrect": false,
-          "isHarmful": true,
+          "isHarmful": false,
           "isUnknownOption": false
         },
         {
@@ -1139,18 +1224,18 @@
       ],
       "correctAnswer": "A",
       "harmfulAnswers": [
-        "D"
+        "B",
+        "C"
       ],
       "scoring": {
         "maxPoints": 1,
         "rule": "exact-choice",
         "unknownScoresZero": true,
-        "unknownExclusive": true,
-        "harmfulCap": "0.5"
+        "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "pilotReviewStatus": "V3.5-review: link/slotje verplaatst naar visuele stimulus. Vraagtekst geeft het herkenningskenmerk niet vooraf weg en blijft handelingsgericht.",
-      "validityNote": "Meet dat een beveiligde verbinding geen bewijs is dat een link officieel of betrouwbaar is. De verdachte domeinnaam en de context van een cijferlijst vragen om controle via de officiële schoolroute."
+      "pilotReviewStatus": "V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus met macrobijlage, druk en alternatieve veilige controle.",
+      "validityNote": "Meet herkennen van risicovolle mailbijlagen en veilige controle via het normale schoolportaal; melden is veilig maar minder volledig dan niet openen plus controleren."
     },
     {
       "id": "lj3v-sr2-mfa",
@@ -1466,28 +1551,34 @@
           "optionId": "A",
           "text": "Je controleert het cijfer bij een betrouwbare bron met datum.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Je gebruikt het cijfer, want AI geeft meestal actuele informatie.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Je zet “ongeveer” voor het cijfer. Dan hoeft het niet precies te kloppen.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Je herschrijft de zin, zodat het niet meer op AI lijkt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -1515,28 +1606,34 @@
           "optionId": "A",
           "text": "Controleren of je het materiaal mag gebruiken of kiezen voor rechtenvrij materiaal.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Het materiaal kort gebruiken. Korte stukjes mogen altijd online.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "De maker niet noemen. Dan valt het minder op.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Er een filter overheen zetten. Dan is het nieuw werk.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -1564,28 +1661,34 @@
           "optionId": "A",
           "text": "Niet verder delen en hulp inschakelen of vragen om de foto te verwijderen.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "De foto alleen doorsturen naar vrienden die je vertrouwt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "De foto bewaren, want misschien heb je later bewijs nodig.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Een grapje maken, zodat het minder serieus voelt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -1613,28 +1716,34 @@
           "optionId": "A",
           "text": "Leerlingen met minder digitale vaardigheden kunnen moeilijker meedoen.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Iedereen krijgt automatisch dezelfde kans, want het formulier is voor iedereen gelijk.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Het bedrijf hoeft minder op privacy te letten omdat alles digitaal is.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Online solliciteren is altijd sneller en eerlijker.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -1648,43 +1757,53 @@
       "validityNote": "Meet digitale ongelijkheid en toegang."
     },
     {
-      "id": "lj3h-sr1-https-limits",
+      "id": "lj3h-sr1-leeromgeving-mail",
       "targetGroup": "lj3-hv",
       "subgoal": "23A",
-      "title": "Betrouwbare websites",
+      "title": "Mail over accountactiviteit",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
-        "kind": "browser-address-bar",
-        "label": "Nieuwsbericht",
-        "address": "https://leerplein-voorbeeld.nl/nieuws/bericht"
+        "kind": "email-message",
+        "fromName": "Account team",
+        "fromEmail": "acc-veilig-90z1@verify-device-center.co",
+        "toEmail": "mila@leerling.citadelcollege.nl",
+        "date": "Vandaag 21:06",
+        "subject": "Onbekend apparaat gevonden",
+        "body": [
+          "Beste Mila,",
+          "Er is een onbekend apparaat gekoppeld. Voorkom afsluiting van je account door je wachtwoord via onderstaande knop te vernieuwen.",
+          "Gebruik dezelfde gegevens als je schoolaccount."
+        ],
+        "linkLabel": "Wachtwoord vernieuwen",
+        "linkUrl": "https://citadel-device-check.example.com/security"
       },
-      "question": "Welke uitspraak over dit webadres klopt het best?",
+      "question": "Welke beoordeling en vervolgstap passen het best?",
       "options": [
         {
           "id": "A",
-          "text": "De verbinding is beveiligd, maar je weet nog niet zeker of de website betrouwbaar is.",
+          "text": "Dit kan phishing zijn; niet via de link inloggen en accountactiviteit controleren via de bekende schoolroute.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "De website is van school, omdat er een slotje staat.",
+          "text": "Het bericht is betrouwbaar omdat Mila bij naam wordt genoemd.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "De informatie op de website is gecontroleerd, omdat de verbinding veilig is.",
+          "text": "Direct het wachtwoord via de knop vernieuwen om afsluiting te voorkomen.",
           "isCorrect": false,
-          "isHarmful": false,
+          "isHarmful": true,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "De website kan geen gegevens verzamelen, omdat er `https://` staat.",
+          "text": "De mail negeren en nergens controleren of er echt een onbekend apparaat is.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -1698,7 +1817,9 @@
         }
       ],
       "correctAnswer": "A",
-      "harmfulAnswers": [],
+      "harmfulAnswers": [
+        "C"
+      ],
       "scoring": {
         "maxPoints": 1,
         "rule": "exact-choice",
@@ -1706,8 +1827,8 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "pilotReviewStatus": "V3.5-review: omgezet naar stimulus-item. Vraagtekst noemt slotje of https:// niet meer vooraf; de nuance blijft inhoudelijk gelijk.",
-      "validityNote": "Meet de grens van HTTPS: wel beveiliging van de verbinding, geen algemene waarheids-, betrouwbaarheids- of privacyclaim. Leerlingen moeten dit afleiden uit de adresbalkstimulus."
+      "pilotReviewStatus": "V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus met naamgebruik, dreiging en afwijkend domein.",
+      "validityNote": "Meet genuanceerde phishingbeoordeling: personalisatie of beveiligingstaal is geen bewijs van betrouwbaarheid; veilige actie loopt via een bekende schoolroute."
     },
     {
       "id": "lj3h-sr2-datalek",
@@ -2023,28 +2144,34 @@
           "optionId": "A",
           "text": "De bron kan fout of verzonnen zijn; controleer de claim met betrouwbare vindbare bronnen.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "De uitleg is betrouwbaar, omdat de AI meerdere bronnen noemt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "De bron hoeft niet vindbaar te zijn als de uitleg logisch klinkt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Je kunt de bron laten staan, want AI-bronnen tellen als gewone bronnen.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -2071,28 +2198,34 @@
           "optionId": "A",
           "text": "Of bewerken en delen mag, en welke bronvermelding nodig is.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "Of de afbeelding groot genoeg is; dan hoef je de maker niet te noemen.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "Of je de kleuren sterk verandert; dan is het automatisch eigen werk.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Of je de poster alleen in een groepsapp deelt; dan gelden geen regels.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -2119,28 +2252,34 @@
           "optionId": "A",
           "text": "Niet verder delen en via een veilige route hulp inschakelen of rapporteren.",
           "correct": true,
-          "score": 1
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "B",
           "text": "De foto bewaren om later te bewijzen dat je hem gezien hebt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "C",
           "text": "De foto doorsturen naar een kleiner groepje dat je vertrouwt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "D",
           "text": "Reageren met een grap, zodat de spanning daalt.",
-          "score": 0
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "E",
           "text": "Ik weet het niet.",
           "isUnknownOption": true,
-          "score": 0
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": "A",
@@ -2189,7 +2328,9 @@
         {
           "optionId": "F",
           "text": "Ik weet het niet.",
-          "isUnknownOption": true
+          "isUnknownOption": true,
+          "isCorrect": false,
+          "isHarmful": false
         }
       ],
       "correctAnswer": [

@@ -391,6 +391,34 @@ button { cursor: pointer; }
   font-weight: 700;
 }
 
+.stimulus-email-message {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #d7dde6;
+  border-radius: 8px;
+  padding: 14px;
+  background: #fff;
+}
+
+.stimulus-email-meta {
+  display: grid;
+  gap: 3px;
+  color: #4b5563;
+  font-size: 0.88rem;
+}
+
+.stimulus-email-body {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 12px;
+}
+
+.stimulus-email-body p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 .stimulus-address-bar {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr);
