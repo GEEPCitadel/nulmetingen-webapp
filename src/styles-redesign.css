@@ -2774,12 +2774,23 @@ body {
   padding: 8px 14px;
   border-bottom: 1px solid #d7d7d7;
   background: #fbfbfb;
+  gap: 2px;
 }
 
 .file-explorer .explorer-command {
   position: relative;
   min-width: 42px;
   justify-content: center;
+  border-right: 1px solid #e5e7eb;
+  border-radius: 5px;
+}
+
+.file-explorer .explorer-command:not(:disabled):hover {
+  background: #edf5ff;
+}
+
+.file-explorer .explorer-command:disabled {
+  opacity: .48;
 }
 
 .file-explorer .explorer-command-new {
@@ -2834,6 +2845,81 @@ body {
   height: 10px;
   border-left: 2px solid #2f6fb3;
   border-top: 0;
+}
+
+.file-explorer .command-icon-new::before {
+  border-color: #2368b4;
+  box-shadow: inset 0 0 0 2px #fff;
+  background: #eef6ff;
+}
+
+.file-explorer .command-icon-undo::before {
+  left: 4px;
+  top: 5px;
+  width: 11px;
+  height: 9px;
+  border-color: #1f66ad;
+  border-width: 2px;
+  border-radius: 9px 0 0 9px;
+}
+
+.file-explorer .command-icon-undo::after {
+  left: 1px;
+  top: 4px;
+  border-right-color: #1f66ad;
+}
+
+.file-explorer .command-icon-cut::before,
+.file-explorer .command-icon-cut::after {
+  left: 8px;
+  top: 1px;
+  width: 2px;
+  height: 15px;
+  background: #1c6eb8;
+}
+
+.file-explorer .command-icon-cut {
+  filter: drop-shadow(-5px 4px 0 #1c6eb8) drop-shadow(5px 4px 0 #1c6eb8);
+}
+
+.file-explorer .command-icon-copy::before {
+  border-color: #2b7fca;
+  background: #fff;
+  box-shadow: -5px -4px 0 #dceeff;
+}
+
+.file-explorer .command-icon-paste::before {
+  border-color: #2b7fca;
+  background: #fff;
+  box-shadow: 0 -4px 0 #f2c64b;
+}
+
+.file-explorer .command-icon-rename::before {
+  color: #1f66ad;
+  font-family: var(--font-display);
+}
+
+.file-explorer .command-icon-rename::after {
+  right: 0;
+  bottom: 2px;
+  width: 10px;
+  height: 3px;
+  background: #1f66ad;
+}
+
+.file-explorer .command-icon-share::before,
+.file-explorer .command-icon-share::after {
+  border-color: #1f66ad;
+}
+
+.file-explorer .command-icon-delete::before {
+  border-color: #4b5563;
+  background: #fff;
+}
+
+.file-explorer .command-icon-delete::after {
+  background: #4b5563;
+  box-shadow: 3px -2px 0 -1px #4b5563;
 }
 
 /* Bovenbalk: breadcrumb + acties */
@@ -3052,8 +3138,9 @@ body {
   background: var(--c-bg-soft);
 }
 .file-grid .file-tile.selected {
-  background: color-mix(in srgb, var(--t-action) 10%, #fff);
-  border-color: color-mix(in srgb, var(--t-action) 30%, transparent);
+  background: #dceeff;
+  border-color: #99c5f2;
+  box-shadow: inset 3px 0 0 #2b7fca;
 }
 .file-grid .file-tile.drop-target {
   border-color: var(--t-action);
@@ -3072,6 +3159,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left;
 }
 .file-grid .file-tile .label::before {
   content: "";
@@ -3104,9 +3192,10 @@ body {
 }
 .file-grid .file-tile .file-rename-input {
   font-family: var(--font-sans);
-  font-size: .82rem;
-  text-align: center;
-  width: 96%;
+  font-size: .9rem;
+  text-align: left;
+  width: calc(100% - 18px);
+  margin-left: 12px;
   border: 1.5px solid var(--t-action);
   border-radius: 4px;
   padding: 2px 4px;
@@ -3172,16 +3261,16 @@ body {
 .task-nav {
   margin-top: 24px;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 16px;
-  padding: 16px 20px;
-  background: var(--c-bg-soft);
-  border: 1px solid var(--c-line);
-  border-radius: var(--radius-lg);
+  padding: 4px 0 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 .task-nav-progress {
-  text-align: center;
+  text-align: left;
   font-family: var(--font-sans);
   font-weight: 600;
   color: var(--c-ink-soft);
@@ -3192,8 +3281,8 @@ body {
   background: var(--t-action, var(--p4-teal, #009991));
   color: #fff;
   border: none;
-  border-radius: 999px;
-  padding: 10px 18px 10px 22px;
+  border-radius: 10px;
+  padding: 9px 16px 9px 18px;
   font-family: var(--font-display);
   font-weight: 900;
   font-size: .92rem;
@@ -3212,7 +3301,7 @@ body {
 }
 .task-nav-primary:disabled { opacity: .55; cursor: not-allowed; }
 .task-nav-primary .arrow-circle {
-  width: 26px; height: 26px;
+  width: 24px; height: 24px;
   border-radius: 999px;
   background: #fff;
   color: var(--t-action, var(--p4-teal, #009991));

@@ -2742,14 +2742,21 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     "lj1-vmbo": {
       id: "lj1v-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
-      instruction: `${v3FileInstruction}\nWerk in OneDrive. Maak de map Project Dieren. Maak daarin de submappen Tekst, Afbeeldingen en Bronnen. Verplaats de drie projectbestanden naar de juiste submappen en hernoem concept_dieren.docx naar project_dieren_verslag.docx.`,
-      startFolders: ["Thuis/OneDrive"],
+      instruction:
+        "Kun jij je bestanden netjes ordenen? Voer de taken hieronder uit en klik daarna op 'Volgende'.\nWerk in OneDrive. Maak daarin de map Biologie.\nVerplaats de drie projectbestanden naar Biologie.\nHernoem concept_dieren.docx naar project_dieren_verslag.docx.",
+      startFolders: [
+        "Thuis/OneDrive/Engels",
+        "Thuis/OneDrive/Maatschappij",
+        "Thuis/OneDrive/Mentorles",
+        "Thuis/OneDrive/Nederlands",
+        "Thuis/OneDrive/Wiskunde",
+      ],
       startFiles: ["Thuis/OneDrive/concept_dieren.docx", "Thuis/OneDrive/foto_kat.jpg", "Thuis/OneDrive/bron_dieren.pdf"],
       tasks: [
-        { id: "main", description: "hoofdmap Project Dieren correct.", expectedPath: "Thuis/OneDrive/Project Dieren", points: 1 },
-        { id: "subfolders", description: "drie projectmappen correct.", expectedPaths: ["Thuis/OneDrive/Project Dieren/Tekst", "Thuis/OneDrive/Project Dieren/Afbeeldingen", "Thuis/OneDrive/Project Dieren/Bronnen"], points: 1 },
-        { id: "placed", description: "afbeelding en bron correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Project Dieren/Afbeeldingen/foto_kat.jpg", "Thuis/OneDrive/Project Dieren/Bronnen/bron_dieren.pdf"], points: 1 },
-        { id: "rename", description: "verslag correct hernoemd en geplaatst.", expectedPath: "Thuis/OneDrive/Project Dieren/Tekst/project_dieren_verslag.docx", forbiddenPaths: ["Thuis/OneDrive/concept_dieren.docx"], points: 1 },
+        { id: "main", description: "map Biologie correct.", expectedPath: "Thuis/OneDrive/Biologie", points: 1 },
+        { id: "files", description: "projectbestanden correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Biologie/bron_dieren.pdf", "Thuis/OneDrive/Biologie/foto_kat.jpg"], points: 1 },
+        { id: "rename", description: "verslag correct hernoemd en geplaatst.", expectedPath: "Thuis/OneDrive/Biologie/project_dieren_verslag.docx", forbiddenPaths: ["Thuis/OneDrive/concept_dieren.docx", "Thuis/OneDrive/Biologie/concept_dieren.docx"], points: 1 },
+        { id: "subjects", description: "bestaande vakmappen blijven beschikbaar.", expectedPaths: ["Thuis/OneDrive/Engels", "Thuis/OneDrive/Maatschappij", "Thuis/OneDrive/Mentorles", "Thuis/OneDrive/Nederlands", "Thuis/OneDrive/Wiskunde"], points: 1 },
       ],
     },
     "lj1-hv": {

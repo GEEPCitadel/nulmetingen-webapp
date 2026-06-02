@@ -4718,6 +4718,9 @@ const FileTaskWorkspace = ({
   };
 
   const activeItems = [...getChildren(state.nodes, activeFolderId)].sort((left, right) => {
+    if (left.type !== right.type) {
+      return left.type === "folder" ? -1 : 1;
+    }
     if (sortKey === "type") {
       return getExplorerType(left).localeCompare(getExplorerType(right), "nl") || left.name.localeCompare(right.name, "nl");
     }
@@ -4768,6 +4771,10 @@ const FileTaskWorkspace = ({
 
       <div className="file-explorer">
         <div className="explorer-commandbar" aria-label="Verkenner acties">
+          <button className="explorer-command icon-only-command" type="button" title="Ongedaan maken" aria-label="Ongedaan maken" disabled={state.undoStack.length === 0} onClick={() => onChange(undoPt1(state))}>
+            <span className="command-icon command-icon-undo" aria-hidden="true" />
+            <span className="command-label">Ongedaan maken</span>
+          </button>
           <div className="explorer-new-menu">
             <button
               type="button"
@@ -4828,10 +4835,6 @@ const FileTaskWorkspace = ({
             <span className="command-icon command-icon-sort" aria-hidden="true" />
             <span className="command-label">Sorteren</span>
             <span className="command-chevron" aria-hidden="true" />
-          </button>
-          <button className="explorer-command icon-only-command" type="button" title="Ongedaan maken" aria-label="Ongedaan maken" disabled={state.undoStack.length === 0} onClick={() => onChange(undoPt1(state))}>
-            <span className="command-icon command-icon-undo" aria-hidden="true" />
-            <span className="command-label">Ongedaan maken</span>
           </button>
         </div>
         <div className="file-explorer-toolbar">
@@ -4977,6 +4980,7 @@ const FileTaskWorkspace = ({
                         key={node.id}
                         type="button"
                         role="listitem"
+                        aria-selected={selectedNodeId === node.id}
                         className={`file-tile ${selectedNodeId === node.id ? "selected" : ""} ${
                           isDropTarget ? "drop-target" : ""
                         }`}
