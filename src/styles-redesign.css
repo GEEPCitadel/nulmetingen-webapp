@@ -3104,6 +3104,21 @@ body {
   padding: 8px 12px;
   border-right: 1px solid #e0e3e8;
 }
+.file-list-header > span {
+  padding: 8px 12px;
+  border-right: 1px solid #e0e3e8;
+}
+.file-list-header .file-name-header {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding-left: 18px;
+}
+.file-list-header .file-name-header span {
+  padding: 0;
+  border: 0;
+}
 .file-grid-empty {
   grid-column: 1 / -1;
   text-align: center;
@@ -3149,10 +3164,39 @@ body {
 .file-grid .file-tile .icon {
   display: none;
 }
+.file-grid .file-name-cell {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding-left: 18px;
+}
+.file-select-checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #2b7fca;
+  cursor: pointer;
+}
+.file-checkbox-slot {
+  width: 16px;
+  height: 16px;
+}
+.file-grid .file-tile .row-checkbox {
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.file-grid .file-tile:hover .row-checkbox,
+.file-grid .file-tile:focus-visible .row-checkbox,
+.file-grid .file-tile.selected .row-checkbox,
+.file-grid .file-tile .row-checkbox:checked {
+  opacity: 1;
+}
 .file-grid .file-tile .label {
   position: relative;
   min-width: 0;
-  padding: 8px 12px 8px 38px;
+  padding: 8px 12px 8px 30px;
   font-size: .92rem;
   line-height: 1.2;
   color: var(--c-ink);
@@ -3164,7 +3208,7 @@ body {
 .file-grid .file-tile .label::before {
   content: "";
   position: absolute;
-  left: 12px;
+  left: 4px;
   top: 50%;
   width: 17px;
   height: 14px;
@@ -3194,8 +3238,7 @@ body {
   font-family: var(--font-sans);
   font-size: .9rem;
   text-align: left;
-  width: calc(100% - 18px);
-  margin-left: 12px;
+  width: calc(100% - 12px);
   border: 1.5px solid var(--t-action);
   border-radius: 4px;
   padding: 2px 4px;
@@ -3261,20 +3304,30 @@ body {
 .task-nav {
   margin-top: 24px;
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   padding: 4px 0 0;
   background: transparent;
   border: 0;
   border-radius: 0;
 }
-.task-nav-progress {
-  text-align: left;
-  font-family: var(--font-sans);
-  font-weight: 600;
+.task-nav-spacer { min-width: 1px; }
+.task-nav-exit {
+  appearance: none;
+  min-height: 44px;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  padding: 10px 18px;
+  background: #fff;
   color: var(--c-ink-soft);
-  font-size: .92rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  cursor: pointer;
+}
+.task-nav-exit:hover {
+  border-color: var(--c-ink-soft);
+  color: var(--c-ink);
 }
 .task-nav-primary {
   appearance: none;
@@ -3658,15 +3711,11 @@ body {
   }
 
   .task-nav {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "progress"
-      "primary";
+    grid-template-columns: 1fr auto auto auto;
     gap: 10px;
     padding: 12px 14px;
   }
-  .task-nav-progress { grid-area: progress; text-align: left; }
-  .task-nav-primary { grid-area: primary; justify-self: end; padding: 9px 14px 9px 18px; }
+  .task-nav-primary { justify-self: end; padding: 9px 14px 9px 18px; }
 }
 
 /* ─────── Simulatie-vensters (mail/teams/powerpoint/explorer) ───────
@@ -4108,10 +4157,19 @@ body {
 }
 .file-instruction-list {
   margin: 12px 0 0;
+  display: grid;
+  gap: 6px;
+  color: var(--c-ink);
+}
+.file-instruction-list ol {
+  margin: 2px 0 0;
   padding-left: 1.5rem;
   display: grid;
   gap: 8px;
-  color: var(--c-ink);
+}
+.file-instruction-intro {
+  margin: 0;
+  line-height: 1.45;
 }
 .file-instruction-list li {
   line-height: 1.45;
@@ -4571,7 +4629,7 @@ body {
 
 [data-screen="assessment"] .task-nav {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   align-items: center;
   gap: 12px;
 }
@@ -4609,13 +4667,21 @@ body {
 
 [data-screen="assessment"] .task-nav {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto auto;
   align-items: center;
   gap: 16px;
 }
 
-[data-screen="assessment"] .task-nav-progress {
-  color: color-mix(in srgb, var(--c-ink) 58%, transparent);
+[data-screen="assessment"] .task-nav-skip {
+  min-height: 48px;
+  border-radius: 12px;
+  padding: 12px 22px;
+}
+
+[data-screen="assessment"] .task-nav-exit {
+  min-height: 48px;
+  border-radius: 12px;
+  padding: 12px 22px;
 }
 
 @media (max-width: 760px) {
@@ -4780,6 +4846,8 @@ body {
   }
 
   [data-screen="assessment"] .task-nav-primary,
+  [data-screen="assessment"] .task-nav-exit,
+  [data-screen="assessment"] .task-nav-skip,
   [data-screen="assessment"] .q-weet-btn,
   [data-screen="assessment"] .primary-button {
     min-height: 42px;

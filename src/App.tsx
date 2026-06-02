@@ -197,6 +197,12 @@ const createClassStartLink = (assessmentId: AssessmentVersion["id"], classToken:
 const newClassToken = () =>
   `klas-${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
 
+const exitAssessment = () => {
+  if (window.confirm("Weet je het zeker?")) {
+    window.location.reload();
+  }
+};
+
 const requestJson = async <T,>(url: string, options: RequestInit = {}): Promise<T> => {
   const response = await fetch(url, {
     ...options,
@@ -2372,14 +2378,12 @@ const MailTaskView = ({
 };
 
 const TaskNavFooter = ({
-  questionNumber,
-  totalCount,
   primaryLabel,
   onPrimary,
   onSkip,
   primaryDisabled,
 }: {
-  questionNumber: number;
+  questionNumber?: number;
   totalCount?: number;
   primaryLabel: string;
   onPrimary: () => void;
@@ -2387,9 +2391,10 @@ const TaskNavFooter = ({
   primaryDisabled?: boolean;
 }) => (
   <div className="task-nav">
-    <span className="task-nav-progress">
-      {totalCount ? `Opdracht ${questionNumber} van ${totalCount}` : `Opdracht ${questionNumber}`}
-    </span>
+    <span className="task-nav-spacer" aria-hidden="true" />
+    <button className="task-nav-exit" type="button" onClick={exitAssessment}>
+      Afsluiten
+    </button>
     {onSkip ? (
       <button className="task-nav-skip" type="button" onClick={onSkip}>
         Ik weet het niet
@@ -4522,6 +4527,7 @@ const FileTaskWorkspace = ({
   const [renameDraft, setRenameDraft] = useState("");
   const [sortKey, setSortKey] = useState<ExplorerSortKey>("name");
   const [sharedNodeId, setSharedNodeId] = useState<string | null>(null);
+  const [checkedNodeIds, setCheckedNodeIds] = useState<string[]>([]);
 
   if (!item.fileTask || !state) {
     return null;
@@ -4675,6 +4681,7 @@ const FileTaskWorkspace = ({
     }
     onChange(deleteNode(state, selectedNodeId));
     setSelectedNodeId(null);
+    setCheckedNodeIds((current) => current.filter((nodeId) => nodeId !== selectedNodeId));
   };
 
   const getExplorerType = (node: Pt1Node) => {
@@ -4701,8 +4708,26 @@ const FileTaskWorkspace = ({
     return "Bestand";
   };
 
-  const getExplorerDate = (node: Pt1Node) =>
-    node.type === "folder" ? "26-5-2026 09:00" : "25-5-2026 09:03";
+  const getExplorerModifiedTime = (node: Pt1Node) => {
+    const dateSeeds = [
+      { day: 4, hour: 8, minute: 17 },
+      { day: 7, hour: 13, minute: 42 },
+      { day: 11, hour: 10, minute: 6 },
+      { day: 15, hour: 16, minute: 28 },
+      { day: 19, hour: 9, minute: 53 },
+      { day: 22, hour: 14, minute: 11 },
+      { day: 26, hour: 9, minute: 0 },
+      { day: 29, hour: 15, minute: 37 },
+    ];
+    const seed = [...node.name].reduce((total, char) => total + char.charCodeAt(0), node.type === "folder" ? 37 : 0);
+    const picked = dateSeeds[seed % dateSeeds.length];
+    return new Date(2026, 4, picked.day, picked.hour, picked.minute).getTime();
+  };
+
+  const getExplorerDate = (node: Pt1Node) => {
+    const date = new Date(getExplorerModifiedTime(node));
+    return `${date.getDate()}-5-2026 ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  };
 
   const getExplorerSize = (node: Pt1Node) => {
     if (node.type === "folder") {
@@ -4728,10 +4753,30 @@ const FileTaskWorkspace = ({
       return getExplorerSize(left).localeCompare(getExplorerSize(right), "nl") || left.name.localeCompare(right.name, "nl");
     }
     if (sortKey === "modified") {
-      return getExplorerDate(left).localeCompare(getExplorerDate(right), "nl") || left.name.localeCompare(right.name, "nl");
+      return getExplorerModifiedTime(right) - getExplorerModifiedTime(left) || left.name.localeCompare(right.name, "nl");
     }
     return left.name.localeCompare(right.name, "nl");
   });
+  const visibleCheckedNodeIds = activeItems
+    .map((node) => node.id)
+    .filter((nodeId) => checkedNodeIds.includes(nodeId));
+  const allVisibleChecked = activeItems.length > 0 && visibleCheckedNodeIds.length === activeItems.length;
+  const someVisibleChecked = visibleCheckedNodeIds.length > 0 && !allVisibleChecked;
+  const toggleNodeChecked = (node: Pt1Node, checked: boolean) => {
+    setCheckedNodeIds((current) =>
+      checked ? Array.from(new Set([...current, node.id])) : current.filter((nodeId) => nodeId !== node.id),
+    );
+    setSelectedNodeId(checked ? node.id : selectedNodeId === node.id ? null : selectedNodeId);
+  };
+  const toggleAllVisible = (checked: boolean) => {
+    const visibleIds = activeItems.map((node) => node.id);
+    setCheckedNodeIds((current) =>
+      checked
+        ? Array.from(new Set([...current, ...visibleIds]))
+        : current.filter((nodeId) => !visibleIds.includes(nodeId)),
+    );
+    setSelectedNodeId(checked ? visibleIds[0] ?? null : null);
+  };
 
   const rootId = item.fileTask.simulation.rootId;
   const rootFolders = state.nodes.filter(
@@ -4755,6 +4800,8 @@ const FileTaskWorkspace = ({
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => line.replace(/Taak afronden/g, "Volgende"));
+  const introInstructionSteps = fileInstructionSteps.slice(0, 2);
+  const numberedInstructionSteps = fileInstructionSteps.slice(2);
 
   return (
     <section className="panel stack-lg">
@@ -4762,11 +4809,18 @@ const FileTaskWorkspace = ({
         questionNumber={questionNumber}
         title={item.title}
       >
-        <ol className="file-instruction-list">
-          {fileInstructionSteps.map((step) => (
-            <li key={step}>{step}</li>
+        <div className="file-instruction-list">
+          {introInstructionSteps.map((step) => (
+            <p className="file-instruction-intro" key={step}>{step}</p>
           ))}
-        </ol>
+          {numberedInstructionSteps.length > 0 ? (
+            <ol>
+              {numberedInstructionSteps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          ) : null}
+        </div>
       </QuestionHeader>
 
       <div className="file-explorer">
@@ -4958,8 +5012,18 @@ const FileTaskWorkspace = ({
                 role="list"
                 aria-label="Gesimuleerde Windows Verkenner"
               >
-                <div className="file-list-header" aria-hidden="true">
-                  <span>Naam</span>
+                <div className="file-list-header">
+                  <span className="file-name-header">
+                    <input
+                      className="file-select-checkbox header-checkbox"
+                      type="checkbox"
+                      checked={allVisibleChecked}
+                      aria-label="Alle zichtbare mappen en bestanden selecteren"
+                      aria-checked={someVisibleChecked ? "mixed" : allVisibleChecked}
+                      onChange={(event) => toggleAllVisible(event.currentTarget.checked)}
+                    />
+                    <span>Naam</span>
+                  </span>
                   <span>Gewijzigd op</span>
                   <span>Type</span>
                   <span>Grootte</span>
@@ -4975,17 +5039,24 @@ const FileTaskWorkspace = ({
                       ? ""
                       : (node.name.split(".").pop() ?? "FILE").toUpperCase();
                     const isDropTarget = isFolder && contextFolderId === node.id;
+                    const isChecked = checkedNodeIds.includes(node.id);
                     return (
-                      <button
+                      <div
                         key={node.id}
-                        type="button"
                         role="listitem"
+                        tabIndex={0}
                         aria-selected={selectedNodeId === node.id}
-                        className={`file-tile ${selectedNodeId === node.id ? "selected" : ""} ${
+                        className={`file-tile ${selectedNodeId === node.id || isChecked ? "selected" : ""} ${
                           isDropTarget ? "drop-target" : ""
                         }`}
                         title={`${node.name} — ${getExplorerType(node)}`}
                         onClick={(event) => handleNodeClick(node, event.detail)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            handleNodeClick(node, 1);
+                          }
+                        }}
                         onDoubleClick={() => {
                           if (isFolder) {
                             setContextFolderId(node.id);
@@ -5014,33 +5085,47 @@ const FileTaskWorkspace = ({
                           {isFolder ? <FolderIcon /> : <FileIcon ext={ext.slice(0, 4)} />}
                         </div>
                         {renamingNodeId === node.id ? (
-                          <input
-                            className="file-rename-input"
-                            value={renameDraft}
-                            autoFocus
-                            onFocus={(event) => event.currentTarget.select()}
-                            onClick={(event) => event.stopPropagation()}
-                            onDoubleClick={(event) => event.stopPropagation()}
-                            onChange={(event) => setRenameDraft(event.target.value)}
-                            onBlur={commitInlineRename}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter") {
-                                event.preventDefault();
-                                commitInlineRename();
-                              }
-                              if (event.key === "Escape") {
-                                event.preventDefault();
-                                cancelInlineRename();
-                              }
-                            }}
-                          />
+                          <div className="file-name-cell">
+                            <span className="file-checkbox-slot" aria-hidden="true" />
+                            <input
+                              className="file-rename-input"
+                              value={renameDraft}
+                              autoFocus
+                              onFocus={(event) => event.currentTarget.select()}
+                              onClick={(event) => event.stopPropagation()}
+                              onDoubleClick={(event) => event.stopPropagation()}
+                              onChange={(event) => setRenameDraft(event.target.value)}
+                              onBlur={commitInlineRename}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                  event.preventDefault();
+                                  commitInlineRename();
+                                }
+                                if (event.key === "Escape") {
+                                  event.preventDefault();
+                                  cancelInlineRename();
+                                }
+                              }}
+                            />
+                          </div>
                         ) : (
-                          <div className="label">{node.name}</div>
+                          <div className="file-name-cell">
+                            <input
+                              className="file-select-checkbox row-checkbox"
+                              type="checkbox"
+                              checked={isChecked}
+                              aria-label={`${node.name} selecteren`}
+                              onClick={(event) => event.stopPropagation()}
+                              onDoubleClick={(event) => event.stopPropagation()}
+                              onChange={(event) => toggleNodeChecked(node, event.currentTarget.checked)}
+                            />
+                            <div className="label">{node.name}</div>
+                          </div>
                         )}
                         <span className="file-modified">{getExplorerDate(node)}</span>
                         <span className="file-type">{getExplorerType(node)}</span>
                         <span className="file-size">{getExplorerSize(node)}</span>
-                      </button>
+                      </div>
                     );
                   })
                 )}
