@@ -3170,16 +3170,53 @@ const WindowPreviewArt = ({ windowName, large = false }: { windowName: string; l
   );
 };
 
-const SharedWindowStage = ({ windowName }: { windowName: string }) => (
-  <div className="fake-shared-stage">
-    <div className="fake-sharing-label">Je deelt nu dit venster</div>
-    <div className="fake-shared-window">
+const isWholeScreenShare = (windowName: string) => {
+  const normalized = windowName.toLowerCase();
+  return normalized === "hele scherm" || normalized === "scherm";
+};
+
+const SharedDesktopStage = ({ windows }: { windows: string[] }) => (
+  <div className="fake-shared-desktop" aria-label="Gedeeld volledig scherm">
+    <div className="fake-desktop-max-window">
       <div className="fake-window-titlebar">
-        <span>Macrohard Teams</span>
-        <span>{windowName}</span>
+        <span>Videospeler</span>
+        <span>Filmfragment</span>
       </div>
-      <WindowPreviewArt windowName={windowName} large />
+      <WindowPreviewArt windowName="Videospeler - filmfragment" large />
     </div>
+    <div className="fake-desktop-taskbar" aria-label="Geminimaliseerde vensters">
+      {windows.map((windowName) => (
+        <span key={windowName}>{windowName}</span>
+      ))}
+    </div>
+  </div>
+);
+
+const SharedWindowStage = ({
+  windowName,
+  windows,
+  onStopSharing,
+}: {
+  windowName: string;
+  windows: string[];
+  onStopSharing: () => void;
+}) => (
+  <div className="fake-shared-stage">
+    <div className="fake-sharing-label">
+      <span>{isWholeScreenShare(windowName) ? "Je deelt nu je hele scherm" : "Je deelt nu dit venster"}</span>
+      <button type="button" onClick={onStopSharing}>Delen beëindigen</button>
+    </div>
+    {isWholeScreenShare(windowName) ? (
+      <SharedDesktopStage windows={windows} />
+    ) : (
+      <div className="fake-shared-window">
+        <div className="fake-window-titlebar">
+          <span>Macrohard Teams</span>
+          <span>{windowName}</span>
+        </div>
+        <WindowPreviewArt windowName={windowName} large />
+      </div>
+    )}
   </div>
 );
 
@@ -3360,8 +3397,18 @@ const FakeTeamsTask = ({
 
           <div className="fake-teams-main">
             <div className="fake-teams-stage">
-              {state.selectedWindow === task.correctWindow ? (
-                <SharedWindowStage windowName={state.selectedWindow} />
+              {state.selectedWindow ? (
+                <SharedWindowStage
+                  windowName={state.selectedWindow}
+                  windows={task.windows}
+                  onStopSharing={() =>
+                    logAction("stopped_sharing", {
+                      selectedWindow: "",
+                      shareOpened: false,
+                      windowPickerOpen: false,
+                    })
+                  }
+                />
               ) : (
                 <>
                   <TeamsVideoTile
@@ -3420,6 +3467,7 @@ const FakeTeamsTask = ({
                         logAction(actionName(option), {
                           windowPickerOpen: false,
                           selectedWindow: option,
+                          shareOpened: false,
                         });
                       }}
                     >
@@ -3449,8 +3497,8 @@ const FakeTeamsTask = ({
                             : `selected_${actionName(windowName).replace(/^clicked_/, "")}`,
                           {
                             selectedWindow: windowName,
-                            shareOpened: windowName === task.correctWindow ? false : state.shareOpened,
-                            windowPickerOpen: windowName === task.correctWindow ? false : state.windowPickerOpen,
+                            shareOpened: false,
+                            windowPickerOpen: false,
                           },
                         );
                       }}
@@ -3597,9 +3645,7 @@ const FakeTeamsTask = ({
 
         {state.selectedWindow ? (
           <div className="fake-teams-status">
-            {state.selectedWindow === task.correctWindow
-              ? `${task.correctWindow} wordt gedeeld`
-              : `${state.selectedWindow} is geselecteerd`}
+            {state.selectedWindow} wordt gedeeld
           </div>
         ) : null}
       </div>
