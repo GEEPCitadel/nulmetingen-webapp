@@ -14,6 +14,9 @@ import type {
   SelectedAnswer,
   SessionMetadata,
   StepDescriptor,
+  WhutsuppAnswer,
+  WhutsuppChoice,
+  WhutsuppScoringSummary,
 } from "../types";
 
 const randomizeOptions = (ids: string[]) => {
@@ -833,6 +836,153 @@ const scoreInteractionTask = (
   };
 };
 
+const flagCount = (flags: string[], flag: string) =>
+  flags.filter((candidate) => candidate === flag).length;
+
+const whutsuppAnswerFrom = (selectedAnswer: SelectedAnswer): WhutsuppAnswer | null => {
+  const state = answerRecord(selectedAnswer);
+  const path = Array.isArray(state.path) ? state.path : [];
+  if (path.length === 0) {
+    return null;
+  }
+  return {
+    assessmentId: String(state.assessmentId ?? "") as WhutsuppAnswer["assessmentId"],
+    variantId: String(state.variantId ?? state.assessmentId ?? "") as WhutsuppAnswer["variantId"],
+    path: path.map((entry) => {
+      const record = answerRecord(entry as SelectedAnswer);
+      return {
+        nodeId: String(record.nodeId ?? ""),
+        category: String(record.category ?? ""),
+        choiceId: String(record.choiceId ?? ""),
+        recoveryChoiceId:
+          record.recoveryChoiceId == null ? undefined : String(record.recoveryChoiceId),
+      };
+    }),
+    choiceOrderByNode: answerRecord(state.choiceOrderByNode as SelectedAnswer) as Record<string, string[]>,
+  };
+};
+
+const choiceById = (choices: WhutsuppChoice[], choiceId?: string) =>
+  choices.find((choice) => choice.choiceId === choiceId);
+
+const countMap = (values: string[]) =>
+  values.reduce<Record<string, number>>((map, value) => {
+    map[value] = (map[value] ?? 0) + 1;
+    return map;
+  }, {});
+
+const feedbackForWhutsupp = (
+  item: AssessmentItem,
+  summary: Omit<WhutsuppScoringSummary, "feedback">,
+) => {
+  const rules = item.whutsuppTask?.resultsFeedbackRules ?? [];
+  return rules
+    .filter((rule) => {
+      if (rule.condition.startsWith("categoryCorrect.")) {
+        const category = rule.condition.replace("categoryCorrect.", "");
+        return (summary.categoryScores[category] ?? 0) > 0;
+      }
+      if (rule.condition.startsWith("hasFlag.")) {
+        const flag = rule.condition.replace("hasFlag.", "");
+        return (summary.flags[flag] ?? 0) > 0;
+      }
+      if (rule.condition === "hasRecoverySafe") {
+        return summary.recoverySafeCount > 0;
+      }
+      return false;
+    })
+    .map((rule) => rule.text);
+};
+
+const scoreWhutsuppTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => {
+  const variant = item.whutsuppTask;
+  const answer = whutsuppAnswerFrom(selectedAnswer);
+  if (!variant || !answer) {
+    return { isCorrect: false, score: 0, taskResults: [] };
+  }
+
+  const categoryScores: Record<string, number> = {};
+  const selectedChoiceIds: string[] = [];
+  const allFlags: string[] = [];
+  let recoverySafeCount = 0;
+  let unknownCount = 0;
+
+  const taskResults = variant.nodes.map((node) => {
+    const entry = answer.path.find((candidate) => candidate.nodeId === node.nodeId);
+    const mainChoice = choiceById(node.choices, entry?.choiceId);
+    const recoveryChoice = choiceById(node.recovery?.choices ?? [], entry?.recoveryChoiceId);
+    const mainFlags = mainChoice?.flags ?? [];
+    const recoveryFlags = recoveryChoice?.flags ?? [];
+
+    if (mainChoice) {
+      selectedChoiceIds.push(mainChoice.choiceId);
+      allFlags.push(...mainFlags);
+      if (mainChoice.unknown === true || mainChoice.choiceId === "unknown" || mainFlags.includes("unknown")) {
+        unknownCount += 1;
+      }
+    }
+    if (recoveryChoice) {
+      selectedChoiceIds.push(`${node.nodeId}:${recoveryChoice.choiceId}`);
+      allFlags.push(...recoveryFlags);
+      if (recoveryChoice.unknown === true || recoveryChoice.choiceId === "unknown" || recoveryFlags.includes("unknown")) {
+        unknownCount += 1;
+      }
+      if (recoveryFlags.includes("recovery_safe") || recoveryChoice.isCorrect === true) {
+        recoverySafeCount += 1;
+      }
+    }
+
+    const points = mainChoice?.isCorrect === true ? 1 : 0;
+    categoryScores[node.category] = points;
+    return {
+      taskId: node.category,
+      description: node.prompt,
+      correct: points === 1,
+      points,
+    };
+  });
+
+  const pt8ScoreRaw = taskResults.reduce((sum, result) => sum + result.points, 0);
+  const flags = countMap(allFlags);
+  const capValues = [
+    { flag: "harmful_share", maxScore: 2 },
+    { flag: "retaliation", maxScore: 2 },
+    { flag: "unsafe_evidence_share", maxScore: 3 },
+    { flag: "ridicule_reaction", maxScore: 3 },
+  ]
+    .filter((cap) => (flags[cap.flag] ?? 0) > 0)
+    .map((cap) => cap.maxScore);
+  const capScore = capValues.length > 0 ? Math.min(...capValues) : Number.POSITIVE_INFINITY;
+  const pt8ScoreCapped = Math.min(pt8ScoreRaw, capScore);
+  const summaryWithoutFeedback = {
+    assessmentId: answer.assessmentId,
+    variantId: answer.variantId,
+    selectedChoiceIds,
+    categoryScores,
+    pt8ScoreRaw,
+    pt8ScoreCapped,
+    flags,
+    unknownCount,
+    harmfulShareCount: flagCount(allFlags, "harmful_share"),
+    ridiculeCount: flagCount(allFlags, "ridicule_reaction"),
+    unsafeEvidenceCount: flagCount(allFlags, "unsafe_evidence_share"),
+    retaliationCount: flagCount(allFlags, "retaliation"),
+    recoverySafeCount,
+    chosenDistractorTypes: Array.from(new Set(allFlags.filter((flag) => flag !== "recovery_safe"))),
+  };
+  const scoringSummary: WhutsuppScoringSummary = {
+    ...summaryWithoutFeedback,
+    feedback: feedbackForWhutsupp(item, summaryWithoutFeedback),
+  };
+
+  return {
+    isCorrect: variant.nodes.length > 0 && taskResults.every((result) => result.correct) && pt8ScoreCapped === item.points,
+    score: pt8ScoreCapped,
+    taskResults,
+    scoringSummary,
+  };
+};
+
 export const scoreItem = (
   item: AssessmentItem,
   selectedAnswer: SelectedAnswer,
@@ -883,6 +1033,9 @@ export const scoreItem = (
   }
 
   if (item.type === "social_action_simulation") {
+    if (item.whutsuppTask) {
+      return scoreWhutsuppTask(item, selectedAnswer);
+    }
     return scoreInteractionTask(item.socialTask, selectedAnswer);
   }
 
@@ -988,6 +1141,11 @@ export const submitItemAnswer = ({
           ].includes(item.type)
         ? JSON.stringify(selectedAnswer)
       : undefined;
+  const scoringSummary = (
+    "scoringSummary" in scored
+      ? scored.scoringSummary
+      : undefined
+  ) as WhutsuppScoringSummary | undefined;
   const nextResult: Result = {
     sessionId: session.id,
     versionId: session.versionId,
@@ -1000,6 +1158,8 @@ export const submitItemAnswer = ({
     isCorrect: scored.isCorrect,
     score: scored.score,
     maxScore: item.points,
+    taskResults: scored.taskResults,
+    scoringSummary,
     responseType,
     skipped,
     timestamp,
@@ -1021,6 +1181,8 @@ export const submitItemAnswer = ({
     isCorrect: scored.isCorrect,
     score: scored.score,
     maxScore: item.points,
+    taskResults: scored.taskResults,
+    scoringSummary,
     responseType,
     skipped,
     timeSpentMs,

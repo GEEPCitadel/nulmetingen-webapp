@@ -15,8 +15,11 @@ import type {
   Pt1Simulation,
   TeamsTaskConfig,
   ThemeDefinition,
+  WhutsuppFlow,
+  WhutsuppVariant,
 } from "../types";
 import selectedResponseSource from "../../nulmetingen_selected_response_herontwerp_v3.json";
+import whutsuppPt8FlowSource from "./whutsupp_pt8_flow.json";
 
 export const ADMIN_CODE = "beheer";
 
@@ -161,7 +164,8 @@ type SocialTaskSpec = {
   title: string;
   instruction: string;
   kerndoel: string;
-  config: InteractionTaskConfig;
+  config?: InteractionTaskConfig;
+  whutsuppVariant?: WhutsuppVariant;
   aiSnelVeranderendFlag?: boolean;
 };
 
@@ -291,6 +295,17 @@ type SelectedResponseJson = {
 };
 
 const UNKNOWN_OPTION_LABEL = "Ik weet het niet.";
+const whutsuppPt8Flow = whutsuppPt8FlowSource as WhutsuppFlow;
+
+const whutsuppVariantFor = (versionId: AssessmentVersionId): WhutsuppVariant => {
+  const variant = whutsuppPt8Flow.variants.find(
+    (candidate) => candidate.assessmentId === versionId,
+  );
+  if (!variant) {
+    throw new Error(`Geen Whutsupp PT8-variant gevonden voor ${versionId}.`);
+  }
+  return variant;
+};
 
 export const sloLabels: Record<string, string> = {
   "21": "De leerling zet digitale technologie en digitale media in.",
@@ -678,15 +693,17 @@ const blockTaskItem = (spec: BlockTaskSpec): AssessmentItem => ({
 });
 
 const socialTaskItem = (spec: SocialTaskSpec): AssessmentItem => ({
-  id: spec.id,
+  id: spec.whutsuppVariant ? whutsuppPt8Flow.taskId : spec.id,
   type: "social_action_simulation",
-  title: spec.title,
-  instruction: spec.instruction,
+  title: spec.whutsuppVariant ? whutsuppPt8Flow.title : spec.title,
+  instruction: spec.whutsuppVariant?.introText ?? spec.instruction,
   points: 4,
   skillDomain: "23B Digitaal burgerschap",
-  kerndoel: spec.kerndoel,
+  kerndoel: spec.whutsuppVariant ? "23B" : spec.kerndoel,
+  subgoal: spec.whutsuppVariant ? whutsuppPt8Flow.subgoal : undefined,
   aiSnelVeranderendFlag: spec.aiSnelVeranderendFlag,
   socialTask: spec.config,
+  whutsuppTask: spec.whutsuppVariant,
 });
 
 const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
@@ -774,7 +791,7 @@ const makeSections = (spec: VersionSpec): AssessmentSection[] => [
   {
     id: "pt8",
     title: "PT8 - Online gedrag",
-    items: [socialTaskItem(spec.pt8)],
+    items: [socialTaskItem({ ...spec.pt8, whutsuppVariant: whutsuppVariantFor(spec.id) })],
   },
   {
     id: "sr",

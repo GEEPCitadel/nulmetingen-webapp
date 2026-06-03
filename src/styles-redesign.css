@@ -4278,6 +4278,112 @@ body {
   font-weight: 900;
 }
 
+.whutsupp-task .question-title {
+  max-width: 720px;
+}
+
+.whutsupp-scenario-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.whutsupp-task .whutsupp-phone {
+  min-height: 620px;
+}
+
+.whutsupp-task .whutsupp-thread {
+  min-height: 510px;
+  max-height: 510px;
+  overflow-y: auto;
+}
+
+.whutsupp-message-row {
+  display: flex;
+  width: 100%;
+}
+
+.whutsupp-message-row.right {
+  justify-content: flex-end;
+}
+
+.whutsupp-message-row.left {
+  justify-content: flex-start;
+}
+
+.whutsupp-task .whutsupp-bubble {
+  display: grid;
+  gap: 4px;
+}
+
+.whutsupp-sender {
+  color: #047a73;
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+.whutsupp-time {
+  justify-self: end;
+  color: color-mix(in srgb, var(--c-ink) 50%, transparent);
+  font-size: .68rem;
+}
+
+.whutsupp-video-card {
+  width: min(100%, 330px);
+}
+
+.whutsupp-video-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+}
+
+.whutsupp-decision-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding: 2px 0;
+}
+
+.whutsupp-step-meta {
+  color: var(--t-accent-deep);
+  font-family: var(--font-display);
+  font-size: .82rem;
+  font-weight: 900;
+}
+
+.whutsupp-decision-panel h3 {
+  margin: 0;
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  line-height: 1.35;
+}
+
+.whutsupp-choice-list {
+  display: grid;
+  gap: 10px;
+}
+
+.whutsupp-choice {
+  width: 100%;
+  min-height: 54px;
+  justify-content: flex-start;
+  text-align: left;
+  line-height: 1.35;
+}
+
+.whutsupp-feedback-list {
+  display: grid;
+  gap: 8px;
+}
+
+.whutsupp-feedback-list p {
+  margin: 0;
+}
+
 /* ─────────────────────────────────────────────────────────
    Assessment responsief — tablet + mobiel
    ───────────────────────────────────────────────────────── */
@@ -4292,8 +4398,14 @@ body {
   .assess-brand .brand { width: 32px; height: 32px; }
   .q-section-strip { padding: 8px 18px; gap: 10px; }
   .social-chat-task { grid-template-columns: 1fr; }
+  .whutsupp-scenario-grid { grid-template-columns: 1fr; }
   .whutsupp-phone { min-height: 420px; }
   .whutsupp-thread { min-height: 310px; }
+  .whutsupp-task .whutsupp-phone { min-height: 500px; }
+  .whutsupp-task .whutsupp-thread {
+    min-height: 390px;
+    max-height: 390px;
+  }
   .blocks-shell.is-executed .blocks-preview {
     left: 20px;
     top: 96px;

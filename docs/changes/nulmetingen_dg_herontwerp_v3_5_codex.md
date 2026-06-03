@@ -111,12 +111,13 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Youssefs telefoon is traag en geeft vaak de melding dat de opslag bijna vol is. Wat helpt meestal zonder foto’s of accounts te wissen?
+- Titel: Opslag bijna vol
+- Vraag: Youssef krijgt vaak de melding: “Opslag bijna vol.” Apps openen traag. Hij wil geen foto’s, berichten of accounts kwijt. Wat is de beste eerste stap?
 - Antwoordopties:
-  - A. Ongebruikte apps of downloads opruimen en updates via instellingen controleren. *(correct)*
-  - B. De telefoon in vliegtuigstand zetten zodat apps niet meer laden.
-  - C. Alle meldingen aanzetten zodat je waarschuwingen sneller ziet.
-  - D. Een nieuwe achtergrondfoto kiezen zodat het startscherm opnieuw laadt.
+  - A. In de instellingen kijken wat veel ruimte gebruikt en oude downloads of ongebruikte apps verwijderen. *(correct)*
+  - B. Steeds alle apps afsluiten; dan komt er weer genoeg opslag vrij.
+  - C. Een gratis schoonmaak-app uit een advertentie installeren en toegang geven tot alle bestanden.
+  - D. De helderheid lager zetten en meldingen uitzetten.
   - E. Ik weet het niet.
 - Onderbouwing: Maakt het DG-construct scherper: praktisch systeemonderhoud bij opslag/traagheid, niet algemeen telefoonadvies.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.

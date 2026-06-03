@@ -331,6 +331,115 @@ export interface InteractionTaskConfig {
   }>;
 }
 
+export interface WhutsuppMessage {
+  sender?: string;
+  text?: string;
+  kind: "text" | "videoCard";
+  assetKey?: string;
+  side?: "left" | "right";
+  timestamp?: string;
+}
+
+export interface WhutsuppChoice {
+  choiceId: string;
+  label: string;
+  isCorrect?: boolean;
+  score?: number;
+  flags?: string[];
+  unknown?: boolean | string;
+  rationale?: string;
+}
+
+export interface WhutsuppRecovery {
+  triggerFlags: string[];
+  prompt: string;
+  scoreEffect: string;
+  choices: WhutsuppChoice[];
+}
+
+export interface WhutsuppNode {
+  nodeId: string;
+  category: string;
+  prompt: string;
+  messages: WhutsuppMessage[];
+  choices: WhutsuppChoice[];
+  recovery?: WhutsuppRecovery;
+}
+
+export interface WhutsuppFeedbackRule {
+  condition: string;
+  text: string;
+}
+
+export interface WhutsuppVariant {
+  assessmentId: AssessmentVersionId;
+  gradeLabel: string;
+  languageLevel: string;
+  groupTitle: string;
+  introText: string;
+  nodes: WhutsuppNode[];
+  resultsFeedbackRules?: WhutsuppFeedbackRule[];
+}
+
+export interface WhutsuppFlow {
+  taskId: string;
+  title: string;
+  version: string;
+  subgoal: string;
+  maxPoints: number;
+  engine: "WhutsuppScenarioTask";
+  ui: {
+    brandName: string;
+    randomizeChoices: boolean;
+    pinChoiceIdsToBottom: string[];
+    assets: {
+      videoCardSvg: string;
+      videoCardGifFallback?: string;
+    };
+  };
+  scoring: {
+    categories: string[];
+    caps: Array<{
+      flag: string;
+      maxScore: number;
+      reason: string;
+    }>;
+  };
+  variants: WhutsuppVariant[];
+}
+
+export interface WhutsuppPathEntry {
+  nodeId: string;
+  category: string;
+  choiceId: string;
+  recoveryChoiceId?: string;
+}
+
+export interface WhutsuppAnswer {
+  assessmentId: AssessmentVersionId;
+  variantId: AssessmentVersionId;
+  path: WhutsuppPathEntry[];
+  choiceOrderByNode: Record<string, string[]>;
+}
+
+export interface WhutsuppScoringSummary {
+  assessmentId: AssessmentVersionId;
+  variantId: AssessmentVersionId;
+  selectedChoiceIds: string[];
+  categoryScores: Record<string, number>;
+  pt8ScoreRaw: number;
+  pt8ScoreCapped: number;
+  flags: Record<string, number>;
+  unknownCount: number;
+  harmfulShareCount: number;
+  ridiculeCount: number;
+  unsafeEvidenceCount: number;
+  retaliationCount: number;
+  recoverySafeCount: number;
+  feedback: string[];
+  chosenDistractorTypes: string[];
+}
+
 /* ─── Source evaluation task (lj3-hv "betrouwbaarheid van bronnen") ─── */
 
 export interface SourceEvaluationOption {
@@ -418,6 +527,7 @@ export interface AssessmentItem {
   blockTask?: BlockProgrammingTaskConfig;
   sourceEvaluationTask?: SourceEvaluationTaskConfig;
   socialTask?: InteractionTaskConfig;
+  whutsuppTask?: WhutsuppVariant;
 }
 
 export interface AssessmentSection {
@@ -468,6 +578,13 @@ export interface Result {
   isCorrect: boolean | null;
   score: number;
   maxScore: number;
+  taskResults?: Array<{
+    taskId: string;
+    description: string;
+    correct: boolean;
+    points?: number;
+  }>;
+  scoringSummary?: WhutsuppScoringSummary;
   responseType?: ResponseType;
   skipped?: boolean;
   timestamp: string;
@@ -490,6 +607,13 @@ export interface EventLog {
   isCorrect?: boolean | null;
   score?: number;
   maxScore?: number;
+  taskResults?: Array<{
+    taskId: string;
+    description: string;
+    correct: boolean;
+    points?: number;
+  }>;
+  scoringSummary?: WhutsuppScoringSummary;
   responseType?: ResponseType;
   skipped?: boolean;
   timeSpentMs?: number;

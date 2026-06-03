@@ -137,35 +137,35 @@
       "id": "lj1v-sr3-phone",
       "targetGroup": "lj1-vmbo",
       "subgoal": "21A",
-      "title": "Trage telefoon",
+      "title": "Opslag bijna vol",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Youssefs telefoon is traag en geeft vaak de melding dat de opslag bijna vol is. Wat helpt meestal zonder foto’s of accounts te wissen?",
+      "question": "Youssef krijgt vaak de melding: “Opslag bijna vol.” Apps openen traag. Hij wil geen foto’s, berichten of accounts kwijt. Wat is de beste eerste stap?",
       "options": [
         {
           "id": "A",
-          "text": "Ongebruikte apps of downloads opruimen en updates installeren.",
+          "text": "In de instellingen kijken wat veel ruimte gebruikt en oude downloads of ongebruikte apps verwijderen.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "De telefoon in vliegtuigstand zetten zodat apps niet meer laden.",
+          "text": "Steeds alle apps afsluiten; dan komt er weer genoeg opslag vrij.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "Een extra spel installeren om de telefoon opnieuw te laten laden.",
+          "text": "Een gratis schoonmaak-app uit een advertentie installeren en toegang geven tot alle bestanden.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Een nieuwe achtergrondfoto kiezen zodat het startscherm opnieuw laadt.",
+          "text": "De helderheid lager zetten en meldingen uitzetten.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false

@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
-const aggregateOnlyItemIds = new Set(["lj1v-sr4-official-source-v36"]);
+const aggregateOnlyItemIds = new Set(["lj1v-sr4-official-source-v36", "pt8-whutsupp-sam-video"]);
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
@@ -105,17 +105,37 @@ const aggregateOptionSelections = (session) => {
   for (const result of session?.results ?? []) {
     if (!aggregateOnlyItemIds.has(result.itemId)) continue;
     const counter = counters[result.itemId];
-    const selectedIds = Array.isArray(result.selectedAnswer)
-      ? result.selectedAnswer.map(String)
-      : result.selectedAnswer == null
-        ? []
-        : [String(result.selectedAnswer)];
+    const pt8Summary = result.scoringSummary && typeof result.scoringSummary === "object"
+      ? result.scoringSummary
+      : null;
+    const selectedIds = Array.isArray(pt8Summary?.selectedChoiceIds)
+      ? pt8Summary.selectedChoiceIds.map(String)
+      : Array.isArray(result.selectedAnswer)
+        ? result.selectedAnswer.map(String)
+        : result.selectedAnswer == null
+          ? []
+          : [String(result.selectedAnswer)];
     counter.attempts += 1;
     if (result.isCorrect === true) counter.correctCount += 1;
-    if (selectedIds.includes("unknown")) counter.unknownCount += 1;
+    counter.unknownCount += Number(pt8Summary?.unknownCount ?? (selectedIds.includes("unknown") ? 1 : 0));
     for (const optionId of selectedIds) {
       counter.selectedCountsByOptionId[optionId] =
         (counter.selectedCountsByOptionId[optionId] ?? 0) + 1;
+    }
+    if (pt8Summary) {
+      counter.completedCount = (counter.completedCount ?? 0) + 1;
+      counter.pt8ScoreRawSum = (counter.pt8ScoreRawSum ?? 0) + Number(pt8Summary.pt8ScoreRaw ?? 0);
+      counter.pt8ScoreCappedSum = (counter.pt8ScoreCappedSum ?? 0) + Number(pt8Summary.pt8ScoreCapped ?? 0);
+      counter.categoryCorrectCounts = counter.categoryCorrectCounts ?? {};
+      for (const [category, score] of Object.entries(pt8Summary.categoryScores ?? {})) {
+        counter.categoryCorrectCounts[category] =
+          (counter.categoryCorrectCounts[category] ?? 0) + Number(score);
+      }
+      counter.harmfulShareCount = (counter.harmfulShareCount ?? 0) + Number(pt8Summary.harmfulShareCount ?? 0);
+      counter.ridiculeCount = (counter.ridiculeCount ?? 0) + Number(pt8Summary.ridiculeCount ?? 0);
+      counter.unsafeEvidenceCount = (counter.unsafeEvidenceCount ?? 0) + Number(pt8Summary.unsafeEvidenceCount ?? 0);
+      counter.retaliationCount = (counter.retaliationCount ?? 0) + Number(pt8Summary.retaliationCount ?? 0);
+      counter.recoverySafeCount = (counter.recoverySafeCount ?? 0) + Number(pt8Summary.recoverySafeCount ?? 0);
     }
   }
 
@@ -128,6 +148,23 @@ const redactAggregateOnlyAnswer = (entry) =>
         ...entry,
         selectedAnswer: "[aggregate-only]",
         finalState: undefined,
+        scoringSummary: entry?.scoringSummary
+          ? {
+              assessmentId: entry.scoringSummary.assessmentId,
+              variantId: entry.scoringSummary.variantId,
+              categoryScores: entry.scoringSummary.categoryScores,
+              pt8ScoreRaw: entry.scoringSummary.pt8ScoreRaw,
+              pt8ScoreCapped: entry.scoringSummary.pt8ScoreCapped,
+              flags: entry.scoringSummary.flags,
+              unknownCount: entry.scoringSummary.unknownCount,
+              harmfulShareCount: entry.scoringSummary.harmfulShareCount,
+              ridiculeCount: entry.scoringSummary.ridiculeCount,
+              unsafeEvidenceCount: entry.scoringSummary.unsafeEvidenceCount,
+              retaliationCount: entry.scoringSummary.retaliationCount,
+              recoverySafeCount: entry.scoringSummary.recoverySafeCount,
+              chosenDistractorTypes: entry.scoringSummary.chosenDistractorTypes,
+            }
+          : undefined,
       }
     : entry;
 

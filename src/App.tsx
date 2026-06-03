@@ -49,6 +49,9 @@ import type {
   SessionMetadata,
   StepDescriptor,
   ThemeDefinition,
+  WhutsuppChoice,
+  WhutsuppMessage,
+  WhutsuppPathEntry,
 } from "./types";
 
 type EntryView = "intro" | "adminAccess" | "admin";
@@ -1795,16 +1798,28 @@ const AssessmentScreen = ({
       ) : null}
 
       {item.type === "social_action_simulation" ? (
-        <InteractionTaskView
-          session={session}
-          section={section}
-          item={item}
-          questionNumber={questionNumber ?? 1}
-          task={item.socialTask}
-          onSubmit={onSubmitAnswer}
-          onSkip={() => onSkipPerformanceTask(section, item)}
-          onExit={onExit}
-        />
+        item.whutsuppTask ? (
+          <WhutsuppScenarioTask
+            assessment={assessment}
+            section={section}
+            item={item}
+            questionNumber={questionNumber ?? 1}
+            onSubmit={onSubmitAnswer}
+            onSkip={() => onSkipPerformanceTask(section, item)}
+            onExit={onExit}
+          />
+        ) : (
+          <InteractionTaskView
+            session={session}
+            section={section}
+            item={item}
+            questionNumber={questionNumber ?? 1}
+            task={item.socialTask}
+            onSubmit={onSubmitAnswer}
+            onSkip={() => onSkipPerformanceTask(section, item)}
+            onExit={onExit}
+          />
+        )
       ) : null}
 
       {item.type === "multiple_choice" ? (
@@ -2468,6 +2483,231 @@ const splitMessageLines = (text?: string) =>
     .split(/\n+/)
     .map((line) => line.trim())
     .filter(Boolean);
+
+const shuffleChoiceIds = (choices: WhutsuppChoice[]) => {
+  const pinned = choices.filter(
+    (choice) => choice.choiceId === "unknown" || choice.label.trim().toLowerCase() === "ik weet het niet.",
+  );
+  const randomized = choices.filter((choice) => !pinned.includes(choice));
+  for (let index = randomized.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [randomized[index], randomized[randomIndex]] = [randomized[randomIndex], randomized[index]];
+  }
+  return [...randomized, ...pinned].map((choice) => choice.choiceId);
+};
+
+const WhutsuppVideoCard = ({ assetPath }: { assetPath?: string }) => (
+  <div className="whutsupp-video-card" aria-label="Fictieve video plein_video.mp4">
+    <img src={assetPath ?? "/assets/pt8/whutsupp_sam_video_card.svg"} alt="" />
+  </div>
+);
+
+const WhutsuppMessageBubble = ({
+  message,
+  assetPath,
+}: {
+  message: WhutsuppMessage;
+  assetPath?: string;
+}) => {
+  const outgoing = message.side === "right";
+  return (
+    <div className={`whutsupp-message-row ${outgoing ? "right" : "left"}`}>
+      <div className={`whutsupp-bubble ${outgoing ? "outgoing" : "incoming"}`}>
+        {message.sender ? <span className="whutsupp-sender">{message.sender}</span> : null}
+        {message.kind === "videoCard" ? (
+          <WhutsuppVideoCard assetPath={assetPath} />
+        ) : (
+          <span>{message.text}</span>
+        )}
+        {message.timestamp ? <small className="whutsupp-time">{message.timestamp}</small> : null}
+      </div>
+    </div>
+  );
+};
+
+const WhutsuppScenarioTask = ({
+  assessment,
+  section,
+  item,
+  questionNumber,
+  onSubmit,
+  onSkip,
+  onExit,
+}: {
+  assessment: AssessmentVersion;
+  section: AssessmentSection;
+  item: AssessmentItem;
+  questionNumber: number;
+  onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
+  onExit: () => void;
+}) => {
+  const variant = item.whutsuppTask;
+  const [nodeIndex, setNodeIndex] = useState(0);
+  const [path, setPath] = useState<WhutsuppPathEntry[]>([]);
+  const [recoveryEntry, setRecoveryEntry] = useState<WhutsuppPathEntry | null>(null);
+  const [choiceOrderByNode] = useState<Record<string, string[]>>(() =>
+    Object.fromEntries(
+      (variant?.nodes ?? []).flatMap((node) => [
+        [node.nodeId, shuffleChoiceIds(node.choices)],
+        [`${node.nodeId}:recovery`, node.recovery ? shuffleChoiceIds(node.recovery.choices) : []],
+      ]),
+    ),
+  );
+
+  if (!variant) {
+    return null;
+  }
+
+  const node = variant.nodes[nodeIndex];
+  const currentChoices = recoveryEntry && node.recovery ? node.recovery.choices : node.choices;
+  const currentOrder = choiceOrderByNode[recoveryEntry ? `${node.nodeId}:recovery` : node.nodeId] ?? [];
+  const orderedChoices = (currentOrder.length > 0 ? currentOrder : currentChoices.map((choice) => choice.choiceId))
+    .map((choiceId) => currentChoices.find((choice) => choice.choiceId === choiceId))
+    .filter(Boolean) as WhutsuppChoice[];
+
+  const submittedMessages = path.flatMap((entry) => {
+    const previousNode = variant.nodes.find((candidate) => candidate.nodeId === entry.nodeId);
+    const choice = previousNode?.choices.find((candidate) => candidate.choiceId === entry.choiceId);
+    const recoveryChoice = previousNode?.recovery?.choices.find(
+      (candidate) => candidate.choiceId === entry.recoveryChoiceId,
+    );
+    return [
+      ...(previousNode?.messages ?? []),
+      choice ? { kind: "text" as const, sender: "Jij", text: choice.label, side: "right" as const } : null,
+      recoveryChoice
+        ? { kind: "text" as const, sender: "Jij", text: recoveryChoice.label, side: "right" as const }
+        : null,
+    ].filter(Boolean) as WhutsuppMessage[];
+  });
+  const activeMessages = recoveryEntry ? [
+    ...node.messages,
+    {
+      kind: "text" as const,
+      sender: "Jij",
+      text: node.choices.find((choice) => choice.choiceId === recoveryEntry.choiceId)?.label ?? "",
+      side: "right" as const,
+    },
+    { kind: "text" as const, sender: "Elin", text: "Misschien kun je nog bijsturen.", side: "left" as const },
+  ] : node.messages;
+  const visibleMessages = [...submittedMessages, ...activeMessages];
+
+  const finish = (nextPath: WhutsuppPathEntry[]) => {
+    onSubmit({
+      section,
+      item,
+      selectedAnswer: {
+        assessmentId: assessment.id,
+        variantId: variant.assessmentId,
+        path: nextPath,
+        choiceOrderByNode,
+      },
+      shownOptionOrder: Object.values(choiceOrderByNode).flat(),
+    });
+  };
+
+  const choose = (choice: WhutsuppChoice) => {
+    if (recoveryEntry) {
+      const nextPath = [
+        ...path,
+        {
+          ...recoveryEntry,
+          recoveryChoiceId: choice.choiceId,
+        },
+      ];
+      setRecoveryEntry(null);
+      if (nodeIndex >= variant.nodes.length - 1) {
+        finish(nextPath);
+        return;
+      }
+      setPath(nextPath);
+      setNodeIndex((current) => current + 1);
+      return;
+    }
+
+    const entry: WhutsuppPathEntry = {
+      nodeId: node.nodeId,
+      category: node.category,
+      choiceId: choice.choiceId,
+    };
+    const flags = choice.flags ?? [];
+    const needsRecovery = Boolean(
+      node.recovery?.triggerFlags.some((flag) => flags.includes(flag)),
+    );
+    if (needsRecovery) {
+      setRecoveryEntry(entry);
+      return;
+    }
+    const nextPath = [...path, entry];
+    if (nodeIndex >= variant.nodes.length - 1) {
+      finish(nextPath);
+      return;
+    }
+    setPath(nextPath);
+    setNodeIndex((current) => current + 1);
+  };
+
+  return (
+    <section className="panel stack-lg whutsupp-task">
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={variant.introText}
+      />
+      <div className="whutsupp-scenario-grid">
+        <div className="whutsupp-phone" aria-label="Whutsupp groepschat">
+          <div className="whutsupp-top">
+            <span className="whutsupp-back" aria-hidden="true">‹</span>
+            <span className="whutsupp-avatar" aria-hidden="true">W</span>
+            <div>
+              <strong>Whutsupp</strong>
+              <small>{variant.groupTitle}</small>
+            </div>
+          </div>
+          <div className="whutsupp-thread">
+            {visibleMessages.map((message, index) => (
+              <WhutsuppMessageBubble
+                key={`${message.sender ?? "bericht"}-${message.kind}-${message.text ?? message.assetKey ?? index}-${index}`}
+                message={message}
+                assetPath="/assets/pt8/whutsupp_sam_video_card.svg"
+              />
+            ))}
+          </div>
+          <div className="whutsupp-compose" aria-hidden="true">
+            <span>Bericht</span>
+            <button type="button" tabIndex={-1}>+</button>
+          </div>
+        </div>
+        <div className="whutsupp-decision-panel">
+          <div className="whutsupp-step-meta">
+            <span>Moment {nodeIndex + 1} van {variant.nodes.length}</span>
+          </div>
+          <h3>{recoveryEntry && node.recovery ? node.recovery.prompt : node.prompt}</h3>
+          <div className="whutsupp-choice-list">
+            {orderedChoices.map((choice) => (
+              <button
+                key={choice.choiceId}
+                type="button"
+                className="choice-card whutsupp-choice"
+                onClick={() => choose(choice)}
+              >
+                <span>{choice.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel="Kies een antwoord"
+        onPrimary={() => undefined}
+        primaryDisabled
+        onSkip={onSkip}
+        onExit={onExit}
+      />
+    </section>
+  );
+};
 
 const SocialChatMockup = ({
   title,
@@ -5615,6 +5855,9 @@ const ResultScreen = ({
     ["21", "22", "23"].includes(goal.goalId),
   );
   const subgoalScores = result.goalScores.filter((goal) => goal.level === "subgoal");
+  const whutsuppFeedback =
+    session.results.find((entry) => entry.itemId === "pt8-whutsupp-sam-video")
+      ?.scoringSummary?.feedback ?? [];
 
   const exportPdf = () => {
     const lines = [
@@ -5640,6 +5883,9 @@ const ResultScreen = ({
         (goal) =>
           `${goal.goalId} - ${goal.label}: ${goal.score}/${goal.maxScore} punten (${goal.percentage}%)`,
       ),
+      ...(whutsuppFeedback.length > 0
+        ? ["", "Online gedrag", ...whutsuppFeedback]
+        : []),
     ];
 
     downloadFile(
@@ -5720,6 +5966,17 @@ const ResultScreen = ({
                   </small>
                 </div>
               </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {whutsuppFeedback.length > 0 ? (
+        <section className="result-section">
+          <h3>Online gedrag</h3>
+          <div className="whutsupp-feedback-list">
+            {whutsuppFeedback.map((feedback) => (
+              <p key={feedback}>{feedback}</p>
             ))}
           </div>
         </section>
