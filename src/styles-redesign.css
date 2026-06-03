@@ -3136,6 +3136,7 @@ body {
   display: grid;
   grid-template-columns: minmax(260px, 1.5fr) minmax(150px, .7fr) minmax(190px, .9fr) minmax(90px, .4fr);
   align-items: center;
+  justify-items: stretch;
   gap: 0;
   cursor: pointer;
   text-align: left;
@@ -3169,6 +3170,7 @@ body {
   grid-template-columns: 24px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
+  width: 100%;
   min-width: 0;
   padding-left: 18px;
 }
@@ -3195,6 +3197,7 @@ body {
 }
 .file-grid .file-tile .label {
   position: relative;
+  display: block;
   min-width: 0;
   padding: 8px 12px 8px 30px;
   font-size: .92rem;
