@@ -1,10 +1,10 @@
-# Herzien ontwerp nulmetingen Digitale Geletterdheid — versie 3.6
+# Herzien ontwerp nulmetingen Digitale Geletterdheid — versie 3.7
 
 Status: Codex-bruikbare verbeterde pilotversie. Niet presenteren als gevalideerd meetinstrument.
 
-## 1. Wat is verbeterd in v3.6
-- De vier HTTPS-/slotje-items zijn vervangen door phishing-/mailstimulusitems met een niet-interactieve e-mailmock-up.
-- Actuele canonical item-id's: `lj1v-sr2-roosterlink-mail`, `lj1h-sr2-roosterlink-mail`, `lj3v-sr1-cijferlink-mail`, `lj3h-sr1-leeromgeving-mail`.
+## 1. Wat is verbeterd in v3.7
+- De vier phishing-/linkcontrole-items zijn aangescherpt met minder sturende vraagteksten, realistischere e-mailmock-ups en plausibele afleiders.
+- Actuele canonical item-id's: `lj1v-sr2-rooster-mail`, `lj1h-sr2-rooster-mail`, `lj3v-sr1-cijfermail`, `lj3h-sr1-accountmail`.
 - De vraagteksten, stimuli, antwoordopties, correcte antwoorden, scoring en metadata in deze Markdown-specificatie zijn gesynchroniseerd met `nulmetingen_selected_response_herontwerp_v3.json`.
 - De mailstimuli tonen URL-achtige tekst alleen als niet-klikbare linkweergave.
 - De v3.4-verbeteringen blijven gehandhaafd: aangescherpte afleiders, eenduidige scoring, geen omgekeerde PT8-vraagvorm en aangevulde PT-acceptatiecriteria.
@@ -79,33 +79,32 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Meet kern-DG rond accountveiligheid. De correcte optie is een lange wachtwoordzin zonder persoonlijke context of bekend patroon. Afleiders zijn herkenbare maar zwakke strategieën: naam/jaar/school, jaartal met symbolen en toetsenbordpatroon.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj1v-sr2-roosterlink-mail` — 23A
+#### `lj1v-sr2-rooster-mail` — 23A
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
 - Stimulus: niet-interactieve e-mailmock-up (`email-message`)
-  - Van: Rooster service <r0st3r-88xq91@mx7-info-update.net>
+  - Van: Roosterhulp <roosterhulp@schoolrooster-info.nl>
   - Aan: sanne@leerling.citadelcollege.nl
-  - Datum: Vandaag 08:14
-  - Onderwerp: Nieuw rooster staat klaar
+  - Datum: Vandaag 15:42
+  - Onderwerp: Je rooster voor morgen
   - Body:
-    - Hallo leerling,
-    - Je nieuwe rooster staat klaar. Log vandaag nog in om te voorkomen dat je lessen mist.
-    - Gebruik de knop hieronder om je rooster direct te openen.
-  - Linktekst: Rooster bekijken
-  - Linkweergave: `https://school-rooster-login-24.example.net/start`
-- Vraag: Wat kan Sanne het best doen?
+    - Hallo,
+    - Je rooster voor morgen is aangepast. Bekijk je rooster via de knop hieronder.
+  - Linktekst: Bekijk rooster
+  - Linkweergave: `https://schoolrooster-info.nl/citadel`
+- Vraag: Wat kun je nu het best doen?
 - Antwoordopties:
-  - A. Niet op de link klikken en haar rooster via de schoolapp of bekende schoolsite controleren. *(correct)*
-  - B. Op de link klikken, want het bericht gaat over school.
-  - C. De mail doorsturen naar de klas zodat iedereen zijn rooster kan openen.
-  - D. Inloggen via de knop omdat de mail zegt dat het vandaag moet.
+  - A. Mijn rooster openen via de roosterapp van school. *(correct)*
+  - B. De knop gebruiken, want het gaat alleen om mijn rooster.
+  - C. De mail beantwoorden en vragen of het klopt.
+  - D. Eerst kijken of de pagina er netjes uitziet.
   - E. Ik weet het niet. *(score 0, exclusief)*
 - CorrectAnswer: `A`
-- HarmfulAnswers: `["C"]`
+- HarmfulAnswers: `[]`
 - Scoring: maxPoints 1; rule `exact-choice`; unknownScoresZero `true`; unknownExclusive `true`.
-- Onderbouwing: Meet basisherkenning van verdachte e-mailkenmerken en veilige vervolgstap: niet klikken, maar controleren via een bekende schoolroute.
-- V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus. Leerling kiest een veilige route zonder op de mailknop te vertrouwen.
+- Onderbouwing: Meet basiskeuze voor veilige route bij een mail over rooster: zelf via de roosterapp van school controleren in plaats van vertrouwen op knop, afzenderreactie of uiterlijk.
+- V3.7-review: roosterlinkmail aangescherpt naar gewone handelingskeuze met plausibele afleiders.
 
 #### `lj1v-sr3-phone` — 21A
 - Vraagtype: single
@@ -235,33 +234,32 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Lange wachtwoordzin zonder persoonlijke context is sterker dan korte complexe patronen of herleidbare gegevens.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj1h-sr2-roosterlink-mail` — 23A
+#### `lj1h-sr2-rooster-mail` — 23A
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
 - Stimulus: niet-interactieve e-mailmock-up (`email-message`)
-  - Van: ICT controle <ict-472kq9-check@safe-login-mailer.info>
-  - Aan: noor@leerling.citadelcollege.nl
-  - Datum: Vandaag 10:02
-  - Onderwerp: Controleer je schoolaccount
+  - Van: Leerlingportaal <bericht@leerlingportaal-citadel.nl>
+  - Aan: sanne@leerling.citadelcollege.nl
+  - Datum: Vandaag 07:31
+  - Onderwerp: Roosterwijziging deze week
   - Body:
-    - Beste leerling,
-    - Wij controleren alle accounts. Stuur je tijdelijke inlogcode terug zodat je account actief blijft.
-    - Reageer binnen 30 minuten.
-  - Linktekst: Code bevestigen
-  - Linkweergave: `https://citadel-controle.example.org/code`
-- Vraag: Welke reactie is het veiligst?
+    - Hallo Sanne,
+    - Er is een roosterwijziging voor deze week. Log in om te bekijken om welke les het gaat.
+  - Linktekst: Roosterwijziging bekijken
+  - Linkweergave: `https://leerlingportaal-citadel.nl/rooster`
+- Vraag: Welke keuze is het verstandigst?
 - Antwoordopties:
-  - A. Geen code delen en de melding controleren via de normale schoolroute. *(correct)*
-  - B. De code terugsturen, want anders kan het account verlopen.
-  - C. De link openen en daar de code invullen.
-  - D. De mail bewaren, maar verder niets controleren.
+  - A. Zelf naar de bekende schoolomgeving gaan en daar kijken. *(correct)*
+  - B. De knop gebruiken, omdat mijn naam in de mail staat.
+  - C. De knop gebruiken, omdat de link op school lijkt.
+  - D. De mail beantwoorden en vragen welke les is veranderd.
   - E. Ik weet het niet. *(score 0, exclusief)*
 - CorrectAnswer: `A`
-- HarmfulAnswers: `["B","C"]`
+- HarmfulAnswers: `[]`
 - Scoring: maxPoints 1; rule `exact-choice`; unknownScoresZero `true`; unknownExclusive `true`.
-- Onderbouwing: Meet dat leerlingen een verzoek om inlogcodes via mail herkennen als onveilig en via de normale schoolroute controleren.
-- V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus met codevraag en tijdsdruk.
+- Onderbouwing: Meet keuze voor bekende schoolomgeving bij een gepersonaliseerde roosterwijzigingsmail met schoolachtig domein.
+- V3.7-review: roosterwijzigingsmail aangescherpt met personalisatie en schoolachtig domein.
 
 #### `lj1h-sr3-phone-actions` — 21A
 - Vraagtype: multiple
@@ -379,34 +377,32 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 
 ### Leerjaar 3 VMBO (`lj3-vmbo`)
 
-#### `lj3v-sr1-cijferlink-mail` — 23A
+#### `lj3v-sr1-cijfermail` — 23A
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
 - Stimulus: niet-interactieve e-mailmock-up (`email-message`)
-  - Van: Cijfersysteem <c1jf3r-upd8-771@doc-viewer-login.com>
-  - Aan: jayden@leerling.citadelcollege.nl
-  - Datum: Gisteren 19:48
-  - Onderwerp: Cijferlijst controleren
+  - Van: Cijferportaal <noreply@cijferportaal-school.nl>
+  - Aan: sanne@leerling.citadelcollege.nl
+  - Datum: Vandaag 16:18
+  - Onderwerp: Nieuw cijfer beschikbaar
   - Body:
-    - Hallo,
-    - Er is een fout gevonden in je cijferlijst. Open de bijlage en schakel bewerken in om de nieuwe cijfers te bekijken.
-    - Controleer dit voor morgen.
-  - Bijlage: Cijferlijst_update.xlsm
-  - Linktekst: Online bekijken
-  - Linkweergave: `https://cijfers-school-update.example.net/login`
-- Vraag: Wat is de veiligste actie?
+    - Hallo Sanne,
+    - Er staat een nieuw cijfer klaar. Log in om je cijfer te bekijken.
+  - Linktekst: Bekijk cijfer
+  - Linkweergave: `https://cijferportaal-school.nl/login`
+- Vraag: Wat doe je?
 - Antwoordopties:
-  - A. De bijlage niet openen en cijfers controleren via het normale schoolportaal. *(correct)*
-  - B. De bijlage openen en bewerken inschakelen om de cijfers te zien.
-  - C. Inloggen via de link in de mail om te controleren of de fout klopt.
-  - D. De mail melden of aan een docent/ICT laten controleren.
+  - A. Ik open mijn cijfers via de normale schoolomgeving. *(correct)*
+  - B. Ik gebruik de knop, want cijfers bekijken vraagt altijd om inloggen.
+  - C. Ik gebruik de knop, omdat de mail van een cijferportaal lijkt te komen.
+  - D. Ik zoek de naam van de site op en klik dan alsnog op de link.
   - E. Ik weet het niet. *(score 0, exclusief)*
 - CorrectAnswer: `A`
-- HarmfulAnswers: `["B","C"]`
+- HarmfulAnswers: `[]`
 - Scoring: maxPoints 1; rule `exact-choice`; unknownScoresZero `true`; unknownExclusive `true`.
-- Onderbouwing: Meet herkennen van risicovolle mailbijlagen en veilige controle via het normale schoolportaal; melden is veilig maar minder volledig dan niet openen plus controleren.
-- V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus met macrobijlage, druk en alternatieve veilige controle.
+- Onderbouwing: Meet keuze voor normale schoolomgeving bij cijferlogincontext; afleiders richten op verwachte login, afzendernaamvertrouwen en zwakke verificatie.
+- V3.7-review: cijfermail aangescherpt naar logincontext met plausibele verificatiefout.
 
 #### `lj3v-sr2-mfa` — 23A
 - Vraagtype: single
@@ -539,33 +535,32 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 
 ### Leerjaar 3 HAVO/VWO (`lj3-hv`)
 
-#### `lj3h-sr1-leeromgeving-mail` — 23A
+#### `lj3h-sr1-accountmail` — 23A
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
 - Stimulus: niet-interactieve e-mailmock-up (`email-message`)
-  - Van: Account team <acc-veilig-90z1@verify-device-center.co>
-  - Aan: mila@leerling.citadelcollege.nl
-  - Datum: Vandaag 21:06
-  - Onderwerp: Onbekend apparaat gevonden
+  - Van: Schoolaccount beheer <beheer@schoolaccount-citadel.nl>
+  - Aan: sanne@leerling.citadelcollege.nl
+  - Datum: Vandaag 08:06
+  - Onderwerp: Controle van je schoolaccount
   - Body:
-    - Beste Mila,
-    - Er is een onbekend apparaat gekoppeld. Voorkom afsluiting van je account door je wachtwoord via onderstaande knop te vernieuwen.
-    - Gebruik dezelfde gegevens als je schoolaccount.
-  - Linktekst: Wachtwoord vernieuwen
-  - Linkweergave: `https://citadel-device-check.example.com/security`
-- Vraag: Welke beoordeling en vervolgstap passen het best?
+    - Hallo Sanne,
+    - We controleren deze week de toegang tot schoolaccounts. Bevestig je account om zonder onderbreking Teams, OneDrive en Magister te blijven gebruiken.
+  - Linktekst: Account bevestigen
+  - Linkweergave: `https://schoolaccount-citadel.nl/controle`
+- Vraag: Welke reactie past het best?
 - Antwoordopties:
-  - A. Dit kan phishing zijn; niet via de link inloggen en accountactiviteit controleren via de bekende schoolroute. *(correct)*
-  - B. Het bericht is betrouwbaar omdat Mila bij naam wordt genoemd.
-  - C. Direct het wachtwoord via de knop vernieuwen om afsluiting te voorkomen.
-  - D. De mail negeren en nergens controleren of er echt een onbekend apparaat is.
+  - A. Ik ga zelf naar de bekende schoolomgeving en controleer daar mijn account. *(correct)*
+  - B. Ik gebruik de knop, omdat de mail meerdere bekende schooldiensten noemt.
+  - C. Ik gebruik de knop als de inlogpagina er hetzelfde uitziet als normaal.
+  - D. Ik antwoord op de mail en vraag of mijn account echt gecontroleerd moet worden.
   - E. Ik weet het niet. *(score 0, exclusief)*
 - CorrectAnswer: `A`
-- HarmfulAnswers: `["C"]`
+- HarmfulAnswers: `[]`
 - Scoring: maxPoints 1; rule `exact-choice`; unknownScoresZero `true`; unknownExclusive `true`.
-- Onderbouwing: Meet genuanceerde phishingbeoordeling: personalisatie of beveiligingstaal is geen bewijs van betrouwbaarheid; veilige actie loopt via een bekende schoolroute.
-- V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus met naamgebruik, dreiging en afwijkend domein.
+- Onderbouwing: Meet keuze voor bekende schoolomgeving bij accountcontrolecontext; afleiders richten op bekende diensten, uiterlijk van inlogpagina en antwoorden op afzender.
+- V3.7-review: accountcontrolemail aangescherpt met bekende diensten, professioneel klinkende afzender en realistische afleiders.
 
 #### `lj3h-sr2-datalek` — 23A
 - Vraagtype: single
@@ -696,11 +691,11 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Afleiders zijn expliciete beleidsmisvattingen: overschatting van regels, uitbesteden van verantwoordelijkheid en herkomstdenken.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-## 8. Itemreviewmatrix v3.6
+## 8. Itemreviewmatrix v3.7
 | Versie | Item | Subdoel | Actie | Oordeel |
 |---|---|---|---|---|
 | lj1-vmbo | `lj1v-sr1-pw-passphrase` | 23A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
-| lj1-vmbo | `lj1v-sr2-roosterlink-mail` | 23A | HTTPS-/slotje-item vervangen door phishing-mailstimulus in v3.6 | pilotreview nodig op herkenbaarheid van veilige schoolroute |
+| lj1-vmbo | `lj1v-sr2-rooster-mail` | 23A | Phishing-/linkcontrole-item aangescherpt in v3.7 | pilotreview nodig op herkenbaarheid van veilige roosterapp-route |
 | lj1-vmbo | `lj1v-sr3-phone` | 21A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr4-official-source` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr5-algorithm` | 21B | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
@@ -710,7 +705,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | lj1-vmbo | `lj1v-sr9-photo-consent` | 23B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr10-platform-risk` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr1-pw-passphrase` | 23A | behouden na review | sterk genoeg voor pilot na v3.4-review |
-| lj1-hv | `lj1h-sr2-roosterlink-mail` | 23A | HTTPS-/slotje-item vervangen door phishing-mailstimulus in v3.6 | pilotreview nodig op code-deelmisvatting en tijdsdruk |
+| lj1-hv | `lj1h-sr2-rooster-mail` | 23A | Phishing-/linkcontrole-item aangescherpt in v3.7 | pilotreview nodig op personalisatie en schoolachtig domein |
 | lj1-hv | `lj1h-sr3-phone-actions` | 21A | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr4-search-query` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr5-feed-sample` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
@@ -719,7 +714,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | lj1-hv | `lj1h-sr8-image-source` | 22A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr9-threat-message` | 23B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr10-ad-profile` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
-| lj3-vmbo | `lj3v-sr1-cijferlink-mail` | 23A | HTTPS-/slotje-item vervangen door phishing-mailstimulus in v3.6 | pilotreview nodig op macrobijlage en veilige controleactie |
+| lj3-vmbo | `lj3v-sr1-cijfermail` | 23A | Phishing-/linkcontrole-item aangescherpt in v3.7 | pilotreview nodig op cijferlogincontext en zwakke verificatie |
 | lj3-vmbo | `lj3v-sr2-mfa` | 23A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr3-phone-actions` | 21A | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr4-health-source` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
@@ -729,7 +724,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | lj3-vmbo | `lj3v-sr8-music-rights` | 22A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr9-fake-account` | 23B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr10-digital-chances` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
-| lj3-hv | `lj3h-sr1-leeromgeving-mail` | 23A | HTTPS-/slotje-item vervangen door phishing-mailstimulus in v3.6 | pilotreview nodig op personalisatie, domeinherkenning en accountdreiging |
+| lj3-hv | `lj3h-sr1-accountmail` | 23A | Phishing-/linkcontrole-item aangescherpt in v3.7 | pilotreview nodig op bekende diensten, visueel vertrouwen en replyen |
 | lj3-hv | `lj3h-sr2-datalek` | 23A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj3-hv | `lj3h-sr3-phone-actions` | 21A | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-hv | `lj3h-sr4-triangulation` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
@@ -899,7 +894,8 @@ Codex moet aggregaten bijwerken per assessment/class/cohort/grade/track/window. 
 - V3.5: Permanente opslag blijft aggregaatniveau; leerlingresultaat blijft vluchtig/client-side.
 - V3.6: De vier HTTPS-/slotje-items zijn vervangen door een phishing-/mailstimulusfamilie met niet-interactieve e-mailmock-ups.
 - V3.6: De totale SR-score blijft 10 punten per nulmeting; elk nieuw phishing-mailitem is single-choice met precies één correct antwoord.
-- V3.6 sync: Markdown en actieve JSON gebruiken dezelfde canonical item-id's: `lj1v-sr2-roosterlink-mail`, `lj1h-sr2-roosterlink-mail`, `lj3v-sr1-cijferlink-mail`, `lj3h-sr1-leeromgeving-mail`.
+- V3.7: De phishing-/linkcontrole-items zijn opnieuw aangescherpt omdat eerdere versies te veel last hadden van sturende vraagstelling, te duidelijke neplinks en te zwakke afleiders. De nieuwe items gebruiken korte handelingsvragen zonder woorden als phishing, verdacht, slotje of https in de vraagtekst. De afleiders zijn realistischer gemaakt: vertrouwen op de afzendernaam, schoolachtige domeinen, personalisatie, bekende diensten, professioneel uiterlijk of antwoorden op de afzender. De correcte handeling blijft steeds: niet via de mailknop inloggen, maar zelf naar de bekende schoolomgeving, roosterapp of officiële schoolomgeving gaan.
+- V3.7 sync: Markdown en actieve JSON gebruiken dezelfde canonical item-id's: `lj1v-sr2-rooster-mail`, `lj1h-sr2-rooster-mail`, `lj3v-sr1-cijfermail`, `lj3h-sr1-accountmail`.
 
 ## 12. Pilotanalyse en revisieregels
 - Minimum vóór claims: voer minimaal één pilotronde uit per doelgroep voordat items worden frozen.

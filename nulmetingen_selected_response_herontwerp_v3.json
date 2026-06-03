@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "dg-nulmetingen-v3.6",
-  "status": "werkversie voor Codex-implementatie, pilotafname en interne review; v3.6 phishing-mailstimulusfamilie gesynchroniseerd",
-  "source": "docs/changes/v3.6-phishing-mail-family.md",
+  "schemaVersion": "dg-nulmetingen-v3.7",
+  "status": "werkversie voor Codex-implementatie, pilotafname en interne review; v3.7 phishing-/linkcontrole-items aangescherpt",
+  "source": "docs/changes/v3.7_phishing_mail_redesign.md",
   "selectedResponseItems": [
     {
       "id": "lj1v-sr1-pw-passphrase",
@@ -60,56 +60,58 @@
       "validityNote": "A is lang en niet gebaseerd op duidelijke persoonlijke gegevens of toetsenbordpatronen. De afleiders representeren herkenbare misconcepties: naam/jaar/schoolcontext, symbolen zonder echte sterkte en bekend toetsenbordpatroon."
     },
     {
-      "id": "lj1v-sr2-roosterlink-mail",
+      "id": "lj1v-sr2-rooster-mail",
       "targetGroup": "lj1-vmbo",
       "subgoal": "23A",
-      "title": "Verdachte mail over rooster",
+      "title": "Mail over je rooster",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
         "kind": "email-message",
-        "fromName": "Rooster service",
-        "fromEmail": "r0st3r-88xq91@mx7-info-update.net",
+        "fromName": "Roosterhulp",
+        "fromEmail": "roosterhulp@schoolrooster-info.nl",
         "toEmail": "sanne@leerling.citadelcollege.nl",
-        "date": "Vandaag 08:14",
-        "subject": "Nieuw rooster staat klaar",
+        "date": "Vandaag 15:42",
+        "subject": "Je rooster voor morgen",
         "body": [
-          "Hallo leerling,",
-          "Je nieuwe rooster staat klaar. Log vandaag nog in om te voorkomen dat je lessen mist.",
-          "Gebruik de knop hieronder om je rooster direct te openen."
+          "Hallo,",
+          "Je rooster voor morgen is aangepast. Bekijk je rooster via de knop hieronder."
         ],
-        "linkLabel": "Rooster bekijken",
-        "linkUrl": "https://school-rooster-login-24.example.net/start"
+        "linkLabel": "Bekijk rooster",
+        "linkUrl": "https://schoolrooster-info.nl/citadel"
       },
-      "question": "Wat kan Sanne het best doen?",
+      "question": "Wat kun je nu het best doen?",
       "options": [
         {
           "id": "A",
-          "text": "Niet op de link klikken en haar rooster via de schoolapp of bekende schoolsite controleren.",
+          "text": "Mijn rooster openen via de roosterapp van school.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "Op de link klikken, want het bericht gaat over school.",
+          "text": "De knop gebruiken, want het gaat alleen om mijn rooster.",
           "isCorrect": false,
           "isHarmful": false,
-          "isUnknownOption": false
+          "isUnknownOption": false,
+          "distractorType": "low_risk_assumption"
         },
         {
           "id": "C",
-          "text": "De mail doorsturen naar de klas zodat iedereen zijn rooster kan openen.",
+          "text": "De mail beantwoorden en vragen of het klopt.",
           "isCorrect": false,
-          "isHarmful": true,
-          "isUnknownOption": false
+          "isHarmful": false,
+          "isUnknownOption": false,
+          "distractorType": "reply_to_sender"
         },
         {
           "id": "D",
-          "text": "Inloggen via de knop omdat de mail zegt dat het vandaag moet.",
+          "text": "Eerst kijken of de pagina er netjes uitziet.",
           "isCorrect": false,
           "isHarmful": false,
-          "isUnknownOption": false
+          "isUnknownOption": false,
+          "distractorType": "visual_trust"
         },
         {
           "id": "E",
@@ -120,9 +122,7 @@
         }
       ],
       "correctAnswer": "A",
-      "harmfulAnswers": [
-        "C"
-      ],
+      "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
         "rule": "exact-choice",
@@ -130,8 +130,8 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "pilotReviewStatus": "V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus. Leerling kiest een veilige route zonder op de mailknop te vertrouwen.",
-      "validityNote": "Meet basisherkenning van verdachte e-mailkenmerken en veilige vervolgstap: niet klikken, maar controleren via een bekende schoolroute."
+      "pilotReviewStatus": "V3.7-review: roosterlinkmail aangescherpt naar gewone handelingskeuze met plausibele afleiders.",
+      "validityNote": "Meet basiskeuze voor veilige route bij een mail over rooster: zelf via de roosterapp van school controleren in plaats van vertrouwen op knop, afzenderreactie of uiterlijk."
     },
     {
       "id": "lj1v-sr3-phone",
@@ -632,56 +632,58 @@
       "validityNote": "Lange wachtwoordzin zonder voorspelbare persoonlijke gegevens is sterker dan kortere patronen of symbolenreeksen."
     },
     {
-      "id": "lj1h-sr2-roosterlink-mail",
+      "id": "lj1h-sr2-rooster-mail",
       "targetGroup": "lj1-hv",
       "subgoal": "23A",
-      "title": "Mail over accountcontrole",
+      "title": "Mail over roosterwijziging",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
         "kind": "email-message",
-        "fromName": "ICT controle",
-        "fromEmail": "ict-472kq9-check@safe-login-mailer.info",
-        "toEmail": "noor@leerling.citadelcollege.nl",
-        "date": "Vandaag 10:02",
-        "subject": "Controleer je schoolaccount",
+        "fromName": "Leerlingportaal",
+        "fromEmail": "bericht@leerlingportaal-citadel.nl",
+        "toEmail": "sanne@leerling.citadelcollege.nl",
+        "date": "Vandaag 07:31",
+        "subject": "Roosterwijziging deze week",
         "body": [
-          "Beste leerling,",
-          "Wij controleren alle accounts. Stuur je tijdelijke inlogcode terug zodat je account actief blijft.",
-          "Reageer binnen 30 minuten."
+          "Hallo Sanne,",
+          "Er is een roosterwijziging voor deze week. Log in om te bekijken om welke les het gaat."
         ],
-        "linkLabel": "Code bevestigen",
-        "linkUrl": "https://citadel-controle.example.org/code"
+        "linkLabel": "Roosterwijziging bekijken",
+        "linkUrl": "https://leerlingportaal-citadel.nl/rooster"
       },
-      "question": "Welke reactie is het veiligst?",
+      "question": "Welke keuze is het verstandigst?",
       "options": [
         {
           "id": "A",
-          "text": "Geen code delen en de melding controleren via de normale schoolroute.",
+          "text": "Zelf naar de bekende schoolomgeving gaan en daar kijken.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "De code terugsturen, want anders kan het account verlopen.",
+          "text": "De knop gebruiken, omdat mijn naam in de mail staat.",
           "isCorrect": false,
-          "isHarmful": true,
-          "isUnknownOption": false
+          "isHarmful": false,
+          "isUnknownOption": false,
+          "distractorType": "personalization_trust"
         },
         {
           "id": "C",
-          "text": "De link openen en daar de code invullen.",
+          "text": "De knop gebruiken, omdat de link op school lijkt.",
           "isCorrect": false,
-          "isHarmful": true,
-          "isUnknownOption": false
+          "isHarmful": false,
+          "isUnknownOption": false,
+          "distractorType": "lookalike_domain"
         },
         {
           "id": "D",
-          "text": "De mail bewaren, maar verder niets controleren.",
+          "text": "De mail beantwoorden en vragen welke les is veranderd.",
           "isCorrect": false,
           "isHarmful": false,
-          "isUnknownOption": false
+          "isUnknownOption": false,
+          "distractorType": "reply_to_sender"
         },
         {
           "id": "E",
@@ -692,10 +694,7 @@
         }
       ],
       "correctAnswer": "A",
-      "harmfulAnswers": [
-        "B",
-        "C"
-      ],
+      "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
         "rule": "exact-choice",
@@ -703,8 +702,8 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "pilotReviewStatus": "V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus met codevraag en tijdsdruk.",
-      "validityNote": "Meet dat leerlingen een verzoek om inlogcodes via mail herkennen als onveilig en via de normale schoolroute controleren."
+      "pilotReviewStatus": "V3.7-review: roosterwijzigingsmail aangescherpt met personalisatie en schoolachtig domein.",
+      "validityNote": "Meet keuze voor bekende schoolomgeving bij een gepersonaliseerde roosterwijzigingsmail met schoolachtig domein."
     },
     {
       "id": "lj1h-sr3-phone-actions",
@@ -1160,59 +1159,58 @@
       "validityNote": "Leerlingen onderscheiden risico van voordeel."
     },
     {
-      "id": "lj3v-sr1-cijferlink-mail",
+      "id": "lj3v-sr1-cijfermail",
       "targetGroup": "lj3-vmbo",
       "subgoal": "23A",
-      "title": "Verdachte mail met bijlage",
+      "title": "Mail over nieuw cijfer",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
         "kind": "email-message",
-        "fromName": "Cijfersysteem",
-        "fromEmail": "c1jf3r-upd8-771@doc-viewer-login.com",
-        "toEmail": "jayden@leerling.citadelcollege.nl",
-        "date": "Gisteren 19:48",
-        "subject": "Cijferlijst controleren",
+        "fromName": "Cijferportaal",
+        "fromEmail": "noreply@cijferportaal-school.nl",
+        "toEmail": "sanne@leerling.citadelcollege.nl",
+        "date": "Vandaag 16:18",
+        "subject": "Nieuw cijfer beschikbaar",
         "body": [
-          "Hallo,",
-          "Er is een fout gevonden in je cijferlijst. Open de bijlage en schakel bewerken in om de nieuwe cijfers te bekijken.",
-          "Controleer dit voor morgen."
+          "Hallo Sanne,",
+          "Er staat een nieuw cijfer klaar. Log in om je cijfer te bekijken."
         ],
-        "attachments": [
-          "Cijferlijst_update.xlsm"
-        ],
-        "linkLabel": "Online bekijken",
-        "linkUrl": "https://cijfers-school-update.example.net/login"
+        "linkLabel": "Bekijk cijfer",
+        "linkUrl": "https://cijferportaal-school.nl/login"
       },
-      "question": "Wat is de veiligste actie?",
+      "question": "Wat doe je?",
       "options": [
         {
           "id": "A",
-          "text": "De bijlage niet openen en cijfers controleren via het normale schoolportaal.",
+          "text": "Ik open mijn cijfers via de normale schoolomgeving.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "De bijlage openen en bewerken inschakelen om de cijfers te zien.",
+          "text": "Ik gebruik de knop, want cijfers bekijken vraagt altijd om inloggen.",
           "isCorrect": false,
-          "isHarmful": true,
-          "isUnknownOption": false
+          "isHarmful": false,
+          "isUnknownOption": false,
+          "distractorType": "login_expected"
         },
         {
           "id": "C",
-          "text": "Inloggen via de link in de mail om te controleren of de fout klopt.",
+          "text": "Ik gebruik de knop, omdat de mail van een cijferportaal lijkt te komen.",
           "isCorrect": false,
-          "isHarmful": true,
-          "isUnknownOption": false
+          "isHarmful": false,
+          "isUnknownOption": false,
+          "distractorType": "sender_name_trust"
         },
         {
           "id": "D",
-          "text": "De mail melden of aan een docent/ICT laten controleren.",
+          "text": "Ik zoek de naam van de site op en klik dan alsnog op de link.",
           "isCorrect": false,
           "isHarmful": false,
-          "isUnknownOption": false
+          "isUnknownOption": false,
+          "distractorType": "weak_verification"
         },
         {
           "id": "E",
@@ -1223,10 +1221,7 @@
         }
       ],
       "correctAnswer": "A",
-      "harmfulAnswers": [
-        "B",
-        "C"
-      ],
+      "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
         "rule": "exact-choice",
@@ -1234,8 +1229,8 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "pilotReviewStatus": "V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus met macrobijlage, druk en alternatieve veilige controle.",
-      "validityNote": "Meet herkennen van risicovolle mailbijlagen en veilige controle via het normale schoolportaal; melden is veilig maar minder volledig dan niet openen plus controleren."
+      "pilotReviewStatus": "V3.7-review: cijfermail aangescherpt naar logincontext met plausibele verificatiefout.",
+      "validityNote": "Meet keuze voor normale schoolomgeving bij cijferlogincontext; afleiders richten op verwachte login, afzendernaamvertrouwen en zwakke verificatie."
     },
     {
       "id": "lj3v-sr2-mfa",
@@ -1757,56 +1752,58 @@
       "validityNote": "Meet digitale ongelijkheid en toegang."
     },
     {
-      "id": "lj3h-sr1-leeromgeving-mail",
+      "id": "lj3h-sr1-accountmail",
       "targetGroup": "lj3-hv",
       "subgoal": "23A",
-      "title": "Mail over accountactiviteit",
+      "title": "Mail over accountcontrole",
       "itemType": "single-choice",
       "selectionLimit": 1,
       "stimulus": {
         "kind": "email-message",
-        "fromName": "Account team",
-        "fromEmail": "acc-veilig-90z1@verify-device-center.co",
-        "toEmail": "mila@leerling.citadelcollege.nl",
-        "date": "Vandaag 21:06",
-        "subject": "Onbekend apparaat gevonden",
+        "fromName": "Schoolaccount beheer",
+        "fromEmail": "beheer@schoolaccount-citadel.nl",
+        "toEmail": "sanne@leerling.citadelcollege.nl",
+        "date": "Vandaag 08:06",
+        "subject": "Controle van je schoolaccount",
         "body": [
-          "Beste Mila,",
-          "Er is een onbekend apparaat gekoppeld. Voorkom afsluiting van je account door je wachtwoord via onderstaande knop te vernieuwen.",
-          "Gebruik dezelfde gegevens als je schoolaccount."
+          "Hallo Sanne,",
+          "We controleren deze week de toegang tot schoolaccounts. Bevestig je account om zonder onderbreking Teams, OneDrive en Magister te blijven gebruiken."
         ],
-        "linkLabel": "Wachtwoord vernieuwen",
-        "linkUrl": "https://citadel-device-check.example.com/security"
+        "linkLabel": "Account bevestigen",
+        "linkUrl": "https://schoolaccount-citadel.nl/controle"
       },
-      "question": "Welke beoordeling en vervolgstap passen het best?",
+      "question": "Welke reactie past het best?",
       "options": [
         {
           "id": "A",
-          "text": "Dit kan phishing zijn; niet via de link inloggen en accountactiviteit controleren via de bekende schoolroute.",
+          "text": "Ik ga zelf naar de bekende schoolomgeving en controleer daar mijn account.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "Het bericht is betrouwbaar omdat Mila bij naam wordt genoemd.",
+          "text": "Ik gebruik de knop, omdat de mail meerdere bekende schooldiensten noemt.",
           "isCorrect": false,
           "isHarmful": false,
-          "isUnknownOption": false
+          "isUnknownOption": false,
+          "distractorType": "specificity_trust"
         },
         {
           "id": "C",
-          "text": "Direct het wachtwoord via de knop vernieuwen om afsluiting te voorkomen.",
+          "text": "Ik gebruik de knop als de inlogpagina er hetzelfde uitziet als normaal.",
           "isCorrect": false,
-          "isHarmful": true,
-          "isUnknownOption": false
+          "isHarmful": false,
+          "isUnknownOption": false,
+          "distractorType": "visual_similarity_trust"
         },
         {
           "id": "D",
-          "text": "De mail negeren en nergens controleren of er echt een onbekend apparaat is.",
+          "text": "Ik antwoord op de mail en vraag of mijn account echt gecontroleerd moet worden.",
           "isCorrect": false,
           "isHarmful": false,
-          "isUnknownOption": false
+          "isUnknownOption": false,
+          "distractorType": "reply_to_sender"
         },
         {
           "id": "E",
@@ -1817,9 +1814,7 @@
         }
       ],
       "correctAnswer": "A",
-      "harmfulAnswers": [
-        "C"
-      ],
+      "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
         "rule": "exact-choice",
@@ -1827,8 +1822,8 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "pilotReviewStatus": "V3.6-review: HTTPS-/slotje-item vervangen door phishing-mailstimulus met naamgebruik, dreiging en afwijkend domein.",
-      "validityNote": "Meet genuanceerde phishingbeoordeling: personalisatie of beveiligingstaal is geen bewijs van betrouwbaarheid; veilige actie loopt via een bekende schoolroute."
+      "pilotReviewStatus": "V3.7-review: accountcontrolemail aangescherpt met bekende diensten, professioneel klinkende afzender en realistische afleiders.",
+      "validityNote": "Meet keuze voor bekende schoolomgeving bij accountcontrolecontext; afleiders richten op bekende diensten, uiterlijk van inlogpagina en antwoorden op afzender."
     },
     {
       "id": "lj3h-sr2-datalek",
