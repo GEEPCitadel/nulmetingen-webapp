@@ -4680,8 +4680,21 @@ body {
   padding: 12px 22px;
 }
 
+.exit-confirm-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 24px;
+}
+
 .exit-confirm-card {
   max-width: 520px;
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
 }
 
 .exit-confirm-actions {

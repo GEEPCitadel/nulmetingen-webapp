@@ -709,7 +709,7 @@ const App = () => {
       ) : null}
 
       {exitConfirmOpen ? (
-        <div className="modal-backdrop" role="presentation">
+        <div className="modal-backdrop exit-confirm-backdrop" role="presentation">
           <div
             className="modal-card exit-confirm-card"
             role="dialog"
