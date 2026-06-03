@@ -4402,6 +4402,10 @@ const ChoiceItemView = ({
     ? selectedUnknown || (selectedIds.length > 0 && selectedIds.length <= selectCount)
     : selectedIds.length === 1;
 
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [item.id]);
+
   const toggleOption = (optionId: string) => {
     if (optionId === unknownOptionId) {
       setSelectedIds([optionId]);
