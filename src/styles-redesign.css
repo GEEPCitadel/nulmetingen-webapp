@@ -4609,16 +4609,12 @@ body {
 
 [data-screen="assessment"] .q-mc-footer,
 [data-screen="assessment"] .task-nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 8;
+  position: static;
   width: min(720px, calc(100% - 44px));
-  margin: 0 auto;
-  padding: 18px 0;
+  margin: 24px auto 0;
+  padding: 18px 0 0;
   border: 0;
-  background: linear-gradient(180deg, transparent, var(--assessment-bg) 24%);
+  background: transparent;
 }
 
 [data-screen="assessment"] .q-mc-footer {
@@ -4684,6 +4680,17 @@ body {
   padding: 12px 22px;
 }
 
+.exit-confirm-card {
+  max-width: 520px;
+}
+
+.exit-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
 @media (max-width: 760px) {
   [data-screen="assessment"] .q-main-col,
   [data-screen="assessment"] .q-mc-footer,
@@ -4718,6 +4725,10 @@ body {
     width: 100%;
     justify-content: center;
   }
+
+  .exit-confirm-actions {
+    flex-direction: column-reverse;
+  }
 }
 
 /* Desktop/laptop assessment tuning: use the available screen width instead
@@ -4731,7 +4742,7 @@ body {
 
   [data-screen="assessment"] .q-main-col {
     padding-top: 18px;
-    padding-bottom: 88px;
+    padding-bottom: 32px;
   }
 
   .assessment-progress-panel {

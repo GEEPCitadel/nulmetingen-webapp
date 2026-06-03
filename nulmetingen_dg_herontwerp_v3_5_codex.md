@@ -113,9 +113,9 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Max. punten: 1
 - Vraag: Youssefs telefoon is traag en geeft vaak de melding dat de opslag bijna vol is. Wat helpt meestal zonder foto’s of accounts te wissen?
 - Antwoordopties:
-  - A. Ongebruikte apps of downloads opruimen en updates via instellingen controleren. *(correct)*
+  - A. Ongebruikte apps of downloads opruimen en updates installeren. *(correct)*
   - B. De telefoon in vliegtuigstand zetten zodat apps niet meer laden.
-  - C. Alle meldingen aanzetten zodat je waarschuwingen sneller ziet.
+  - C. Een extra spel installeren om de telefoon opnieuw te laten laden.
   - D. Een nieuwe achtergrondfoto kiezen zodat het startscherm opnieuw laadt.
   - E. Ik weet het niet.
 - Onderbouwing: Maakt het DG-construct scherper: praktisch systeemonderhoud bij opslag/traagheid, niet algemeen telefoonadvies.
@@ -125,11 +125,11 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: In de groepsapp staat dat school morgen dicht is door storm. Welke bron controleer je eerst voordat je het doorstuurt?
+- Vraag: In de groepsapp staat een screenshot: “Morgen is school dicht door storm.” Er staat geen afzender bij. Welke bron controleer je eerst?
 - Antwoordopties:
-  - A. Een bericht van school in de officiële app of mail. *(correct)*
-  - B. Een screenshot dat echt lijkt, maar waarvan je de afzender niet ziet.
-  - C. Een bericht van een leerling die zegt dat hij het van iemand gehoord heeft.
+  - A. Een bericht van school in de officiële schoolapp of mail. *(correct)*
+  - B. Het screenshot in de groepsapp, omdat veel leerlingen het doorsturen.
+  - C. Een bericht van iemand die zegt dat hij het van een vriend heeft gehoord.
   - D. Een video met veel reacties over storm in een andere stad.
   - E. Ik weet het niet.
 - Onderbouwing: Aangescherpt naar controle vóór doorsturen. Afleiders zijn plausibele sociale-bronfouten, niet alleen onzinbronnen.
@@ -167,11 +167,11 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Een chatbot geeft een antwoord voor je werkstuk. Je weet niet of het klopt. Wat is de beste aanpak?
+- Vraag: Je gebruikt AI om ideeën voor een werkstuk te krijgen. De AI noemt een opvallend feit, maar geeft geen bron. Wat is de beste werkwijze?
 - Antwoordopties:
-  - A. Gebruik het als startpunt en controleer belangrijke feiten in een betrouwbare andere bron. *(correct)*
-  - B. Gebruik het meteen, want het antwoord klinkt netjes.
-  - C. Vraag dezelfde chatbot alleen of hij zeker is en neem dat over.
+  - A. Je controleert het feit bij een betrouwbare bron voordat je het gebruikt. *(correct)*
+  - B. Je gebruikt het feit meteen, want de chatbot klinkt zeker.
+  - C. Je vraagt dezelfde AI of het zeker weet.
   - D. Kies vooral de langste zinnen uit het antwoord.
   - E. Ik weet het niet.
 - Onderbouwing: Vermijdt blind AI-gebruik en meet AI als hulpmiddel plus factchecking. Niet alleen ‘AI is fout’, maar verantwoord gebruik.
@@ -186,7 +186,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
   - A. Of je de afbeelding mag gebruiken, of je hem mag aanpassen en welke maker of bron je moet noemen. *(correct)*
   - B. Of de afbeelding op veel websites voorkomt; dan zal hij wel vrij te gebruiken zijn.
   - C. Of je de afbeelding kleiner kunt maken; dan valt gebruik minder op.
-  - D. Of je er een filter overheen zet; dan is het automatisch nieuw werk.
+  - D. Of je de afbeelding een beetje verandert; dan hoef je geen bron te noemen.
   - E. Ik weet het niet.
 - Onderbouwing: Maakt 22A sterker door gebruik, bewerken en online delen mee te nemen zonder Creative Commons-jargon.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
@@ -195,12 +195,12 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Je maakt een foto van drie klasgenoten. Je wilt die in een sociale app zetten. Wat doe je eerst?
+- Vraag: In Whutsupp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?
 - Antwoordopties:
   - A. Vragen of iedereen op de foto dat goed vindt. *(correct)*
-  - B. Alleen de namen weglaten; dan mag het altijd.
-  - C. De foto plaatsen en verwijderen als iemand klaagt.
-  - D. De foto alleen in de klassenapp zetten; dan is toestemming niet nodig.
+  - B. De foto alleen in de klassenapp zetten; dan is toestemming niet nodig.
+  - C. De namen weglaten; dan mag je de foto altijd delen.
+  - D. De foto plaatsen en verwijderen als iemand klaagt.
   - E. Ik weet het niet.
 - Onderbouwing: Meet toestemming en verantwoordelijk delen van beeldmateriaal.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
@@ -212,9 +212,9 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraag: De school gebruikt één app voor rooster, huiswerk en berichten. Wat is het grootste risico als die app een storing heeft?
 - Antwoordopties:
   - A. Veel leerlingen kunnen tegelijk hun rooster, huiswerk en berichten niet zien. *(correct)*
-  - B. Leerlingen moeten misschien in een andere app kijken als er een noodbericht is.
-  - C. De school moet uitleg geven over hoe de app werkt.
-  - D. Leerlingen openen de app op verschillende apparaten.
+  - B. De app ziet er tijdelijk minder mooi uit.
+  - C. Leerlingen moeten misschien wennen aan een nieuw icoon.
+  - D. Leerlingen krijgen dan automatisch minder huiswerk.
   - E. Ik weet het niet.
 - Onderbouwing: Afleiders zijn realistische nevenpunten, maar geen grootste risico van afhankelijkheid van één platform bij storing.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
@@ -866,7 +866,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
   - 1 punt: passende hulp-, meld- of verificatieroute kiezen
   - 1 punt: veilige en respectvolle follow-up kiezen
 - PT8-varianten zijn volledig gespecificeerd in de JSON. Samenvatting:
-  - lj1-vmbo: Groepschat: grap die niet meer grappig is — In de klassenchat staat een bewerkte afbeelding van Sam als sticker. Sam schrijft: “Stop, haal dit weg.” Jij ziet dat anderen willen doorsturen.
+  - lj1-vmbo: Whutsupp: foto van klasgenoten — In Whutsupp wil iemand een foto van drie klasgenoten in de klassenapp zetten. Eén klasgenoot wil eerst weten welke foto het is. De leerling kiest toestemming vragen, niet delen zolang niet iedereen akkoord is, en verwijderen als iemand geen toestemming geeft.
   - lj1-hv: Challenge: locatie en rooster delen — In een groepschat gaat een challenge rond: “Laat zien waar je bent: stuur je rooster en zet je live locatie aan.” Een paar leerlingen zetten druk om mee te doen.
   - lj3-vmbo: Nepaccount met naam en foto — Er verschijnt een account met de naam en foto van een leerling. Het account plaatst vervelende reacties. De leerling zegt dat hij dit account niet heeft gemaakt.
   - lj3-hv: Gemanipuleerde clip via anoniem account — Een korte clip over een docent of leerling gaat rond via een anoniem account. De clip lijkt echt, maar context ontbreekt en beeld en geluid lopen net niet gelijk.

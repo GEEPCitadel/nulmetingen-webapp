@@ -197,11 +197,8 @@ const createClassStartLink = (assessmentId: AssessmentVersion["id"], classToken:
 const newClassToken = () =>
   `klas-${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
 
-const exitAssessment = () => {
-  if (window.confirm("Weet je het zeker?")) {
-    window.location.reload();
-  }
-};
+const EXIT_CONFIRMATION_TEXT =
+  "Weet je het zeker? Klik hier om af te sluiten en terug te gaan naar het startscherm.";
 
 const requestJson = async <T,>(url: string, options: RequestInit = {}): Promise<T> => {
   const response = await fetch(url, {
@@ -375,6 +372,7 @@ const App = () => {
   const [isUnlockingAdmin, setIsUnlockingAdmin] = useState(false);
   const [stepStartedAt, setStepStartedAt] = useState(Date.now());
   const [now, setNow] = useState(Date.now());
+  const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
 
   const activeAssessment = session ? getAssessment(session) : null;
   const activeTheme = getThemeForSession(session, entryView);
@@ -596,6 +594,11 @@ const App = () => {
     setLearnerCodeError("");
     setAdminCode("");
     setAdminError("");
+    setExitConfirmOpen(false);
+  };
+
+  const exitAssessment = () => {
+    setExitConfirmOpen(true);
   };
 
   // Levelchip toont alleen tijdens een lopende meting de versie.
@@ -697,11 +700,42 @@ const App = () => {
           onFinishFileTask={finishFileTask}
           onSkipPerformanceTask={skipPerformanceTask}
           onReset={resetSession}
+          onExit={exitAssessment}
         />
       ) : null}
 
       {session && activeAssessment && result && session.completedAt ? (
         <ResultScreen assessment={activeAssessment} session={session} onClose={resetSession} />
+      ) : null}
+
+      {exitConfirmOpen ? (
+        <div className="modal-backdrop" role="presentation">
+          <div
+            className="modal-card exit-confirm-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="exit-confirm-title"
+          >
+            <h3 id="exit-confirm-title">Afsluiten</h3>
+            <p>{EXIT_CONFIRMATION_TEXT}</p>
+            <div className="exit-confirm-actions">
+              <button
+                className="task-nav-skip"
+                type="button"
+                onClick={() => setExitConfirmOpen(false)}
+              >
+                Annuleren
+              </button>
+              <button
+                className="task-nav-primary"
+                type="button"
+                onClick={resetSession}
+              >
+                Afsluiten en naar startscherm
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </AppShell>
   );
@@ -1516,6 +1550,7 @@ const AssessmentScreen = ({
   onFinishFileTask,
   onSkipPerformanceTask,
   onReset,
+  onExit,
 }: {
   session: AssessmentSession;
   assessment: AssessmentVersion;
@@ -1527,6 +1562,7 @@ const AssessmentScreen = ({
   onFinishFileTask: (section: AssessmentSection, item: AssessmentItem) => void;
   onSkipPerformanceTask: (section: AssessmentSection, item: AssessmentItem) => void;
   onReset: () => void;
+  onExit: () => void;
 }) => {
   const section = getSectionById(assessment, step.sectionId);
   const item = getItemByStep(assessment, step);
@@ -1675,6 +1711,7 @@ const AssessmentScreen = ({
           onChange={(nextState) => onUpdateFileTaskState(item, nextState)}
           onFinish={() => onFinishFileTask(section, item)}
           onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -1685,6 +1722,7 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
           onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -1697,6 +1735,7 @@ const AssessmentScreen = ({
           task={item.securityTask}
           onSubmit={onSubmitAnswer}
           onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -1707,6 +1746,7 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
           onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -1717,6 +1757,7 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
           onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -1727,6 +1768,7 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
           onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -1737,6 +1779,7 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
           onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -1747,6 +1790,7 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           onSubmit={onSubmitAnswer}
           onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -1759,6 +1803,7 @@ const AssessmentScreen = ({
           task={item.socialTask}
           onSubmit={onSubmitAnswer}
           onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -1769,6 +1814,7 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           presentedOrder={getPresentedOrder(session, section.id, item.id)}
           onSubmit={onSubmitAnswer}
+          onExit={onExit}
         />
       ) : null}
       </div>
@@ -1852,12 +1898,14 @@ const MailTaskView = ({
   questionNumber,
   onSubmit,
   onSkip,
+  onExit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
   onSkip: () => void;
+  onExit: () => void;
 }) => {
   type AddressField = "to" | "cc" | "bcc";
   type CommandPanel = "attachments" | "link" | null;
@@ -2372,6 +2420,7 @@ const MailTaskView = ({
         primaryLabel="Volgende"
         onPrimary={draft.sent ? submit : () => { sendMessage(); submit(); }}
         onSkip={onSkip}
+        onExit={onExit}
       />
     </section>
   );
@@ -2381,6 +2430,7 @@ const TaskNavFooter = ({
   primaryLabel,
   onPrimary,
   onSkip,
+  onExit,
   primaryDisabled,
 }: {
   questionNumber?: number;
@@ -2388,11 +2438,12 @@ const TaskNavFooter = ({
   primaryLabel: string;
   onPrimary: () => void;
   onSkip?: () => void;
+  onExit: () => void;
   primaryDisabled?: boolean;
 }) => (
   <div className="task-nav">
     <span className="task-nav-spacer" aria-hidden="true" />
-    <button className="task-nav-exit" type="button" onClick={exitAssessment}>
+    <button className="task-nav-exit" type="button" onClick={onExit}>
       Afsluiten
     </button>
     {onSkip ? (
@@ -2473,6 +2524,7 @@ const InteractionTaskView = ({
   task,
   onSubmit,
   onSkip,
+  onExit,
 }: {
   session: AssessmentSession;
   section: AssessmentSection;
@@ -2481,6 +2533,7 @@ const InteractionTaskView = ({
   task: AssessmentItem["securityTask"] | AssessmentItem["socialTask"];
   onSubmit: (payload: SubmitAnswerPayload) => void;
   onSkip: () => void;
+  onExit: () => void;
 }) => {
   const [state, setState] = useState<Record<string, unknown>>({});
   if (!task) {
@@ -2578,6 +2631,7 @@ const InteractionTaskView = ({
         primaryLabel="Volgende"
         onPrimary={submit}
         onSkip={onSkip}
+        onExit={onExit}
       />
     </section>
   );
@@ -2757,12 +2811,14 @@ const ExcelDownloadTaskView = ({
   questionNumber,
   onSubmit,
   onSkip,
+  onExit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
   onSkip: () => void;
+  onExit: () => void;
 }) => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const task = item.excelTask;
@@ -2818,6 +2874,7 @@ const ExcelDownloadTaskView = ({
           })
         }
         onSkip={onSkip}
+        onExit={onExit}
       />
     </section>
   );
@@ -2829,12 +2886,14 @@ const OfficeFormatTaskView = ({
   questionNumber,
   onSubmit,
   onSkip,
+  onExit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
   onSkip: () => void;
+  onExit: () => void;
 }) => {
   const [code, setCode] = useState("");
   const [exportAction, setExportAction] = useState("");
@@ -2894,6 +2953,7 @@ const OfficeFormatTaskView = ({
           })
         }
         onSkip={onSkip}
+        onExit={onExit}
       />
     </section>
   );
@@ -2905,12 +2965,14 @@ const PowerPointDesignTaskView = ({
   questionNumber,
   onSubmit,
   onSkip,
+  onExit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
   onSkip: () => void;
+  onExit: () => void;
 }) => {
   const [state, setState] = useState<Record<string, string>>({});
   const task = item.powerPointTask;
@@ -2999,6 +3061,7 @@ const PowerPointDesignTaskView = ({
           })
         }
         onSkip={onSkip}
+        onExit={onExit}
       />
     </section>
   );
@@ -3253,12 +3316,14 @@ const FakeTeamsTask = ({
   questionNumber,
   onSubmit,
   onSkip,
+  onExit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
   onSkip: () => void;
+  onExit: () => void;
 }) => {
   const [state, setState] = useState({
     shareOpened: false,
@@ -3655,6 +3720,7 @@ const FakeTeamsTask = ({
         primaryLabel="Volgende"
         onPrimary={() => submit(false)}
         onSkip={onSkip}
+        onExit={onExit}
       />
     </section>
   );
@@ -3693,12 +3759,14 @@ const BlockProgrammingTaskView = ({
   questionNumber,
   onSubmit,
   onSkip,
+  onExit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (payload: SubmitAnswerPayload) => void;
   onSkip: () => void;
+  onExit: () => void;
 }) => {
   const [program, setProgram] = useState<ProgramBlock[]>([]);
   const [executed, setExecuted] = useState(false);
@@ -4300,6 +4368,7 @@ const BlockProgrammingTaskView = ({
           })
         }
         onSkip={onSkip}
+        onExit={onExit}
       />
     </section>
   );
@@ -4311,12 +4380,14 @@ const ChoiceItemView = ({
   questionNumber,
   presentedOrder,
   onSubmit,
+  onExit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   presentedOrder: string[];
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onExit: () => void;
 }) => {
   const options = item.options ?? [];
   const orderedOptions = (presentedOrder.length > 0 ? presentedOrder : options.map((option) => option.id))
@@ -4399,6 +4470,9 @@ const ChoiceItemView = ({
       </div>
 
       <div className="q-mc-footer">
+        <button className="task-nav-exit" type="button" onClick={onExit}>
+          Afsluiten
+        </button>
         <button
           className="primary-button q-next-btn"
           type="button"
@@ -4560,6 +4634,7 @@ const FileTaskWorkspace = ({
   onChange,
   onFinish,
   onSkip,
+  onExit,
 }: {
   item: AssessmentItem;
   questionNumber: number;
@@ -4567,6 +4642,7 @@ const FileTaskWorkspace = ({
   onChange: (nextState: Pt1State) => void;
   onFinish: () => void;
   onSkip: () => void;
+  onExit: () => void;
 }) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [contextFolderId, setContextFolderId] = useState<string>(
@@ -5208,6 +5284,7 @@ const FileTaskWorkspace = ({
         primaryLabel="Volgende"
         onPrimary={onFinish}
         onSkip={onSkip}
+        onExit={onExit}
       />
 
       {pendingConflict ? (

@@ -140,7 +140,7 @@
       "title": "Trage telefoon",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "De telefoon van Youssef is traag en loopt soms vast. Wat helpt meestal zonder foto’s of accounts te wissen?",
+      "question": "Youssefs telefoon is traag en geeft vaak de melding dat de opslag bijna vol is. Wat helpt meestal zonder foto’s of accounts te wissen?",
       "options": [
         {
           "id": "A",
@@ -151,21 +151,21 @@
         },
         {
           "id": "B",
-          "text": "De telefoon in vliegtuigstand zetten.",
+          "text": "De telefoon in vliegtuigstand zetten zodat apps niet meer laden.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "Alle meldingen aanzetten.",
+          "text": "Een extra spel installeren om de telefoon opnieuw te laten laden.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Alleen een nieuwe achtergrondfoto kiezen.",
+          "text": "Een nieuwe achtergrondfoto kiezen zodat het startscherm opnieuw laadt.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -187,7 +187,7 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "validityNote": "De afleiders zijn niet absurd, maar onvoldoende passend bij traagheid en vastlopen."
+      "validityNote": "Maakt het DG-construct scherper: praktisch systeemonderhoud bij opslag/traagheid, niet algemeen telefoonadvies."
     },
     {
       "id": "lj1v-sr4-official-source",
@@ -196,25 +196,25 @@
       "title": "Officiële bron controleren",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "In de groepsapp staat dat school morgen dicht is door storm. Welke bron controleer je eerst?",
+      "question": "In de groepsapp staat een screenshot: “Morgen is school dicht door storm.” Er staat geen afzender bij. Welke bron controleer je eerst?",
       "options": [
         {
           "id": "A",
-          "text": "Een bericht van school in de officiële app of mail.",
+          "text": "Een bericht van school in de officiële schoolapp of mail.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "Een screenshot in de groepsapp zonder afzender.",
+          "text": "Het screenshot in de groepsapp, omdat veel leerlingen het doorsturen.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "Een bericht van iemand die zegt dat hij het gehoord heeft.",
+          "text": "Een bericht van iemand die zegt dat hij het van een vriend heeft gehoord.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -309,11 +309,11 @@
       "title": "Kleine poll",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "In een poll stemmen 8 van de 25 leerlingen uit jouw klas op voetbal. Kun je dan zeggen dat voetbal de populairste sport van de hele school is?",
+      "question": "In een poll stemmen 8 van de 25 leerlingen uit jouw klas op voetbal. Iemand zegt: “Voetbal is dus de populairste sport van de hele school.” Wat is de beste reactie?",
       "options": [
         {
           "id": "A",
-          "text": "Nee, de groep is te klein en komt maar uit één klas.",
+          "text": "Dat kun je niet zomaar zeggen, want de poll komt maar uit één klas.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
@@ -327,14 +327,14 @@
         },
         {
           "id": "C",
-          "text": "Ja, als de poll online stond.",
+          "text": "Dat klopt alleen als de poll digitaal is ingevuld.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Nee, want je kunt met een poll nooit iets onderzoeken.",
+          "text": "Dat kun je nooit met een poll onderzoeken.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -356,7 +356,7 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "validityNote": "Meet beperkte generaliseerbaarheid van data."
+      "validityNote": "Meet beperkte generaliseerbaarheid van data en voorkomt dat de leerling een klasresultaat automatisch naar de hele school uitbreidt."
     },
     {
       "id": "lj1v-sr7-ai-check",
@@ -367,11 +367,11 @@
       "title": "AI gebruiken",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je vraagt een chatbot om ideeën voor een werkstuk. De chatbot noemt een feit. Je weet niet of het klopt. Wat doe je?",
+      "question": "Je gebruikt AI om ideeën voor een werkstuk te krijgen. De AI noemt een opvallend feit, maar geeft geen bron. Wat is de beste werkwijze?",
       "options": [
         {
           "optionId": "A",
-          "text": "Je controleert het feit op een betrouwbare website.",
+          "text": "Je controleert het feit bij een betrouwbare bron voordat je het gebruikt.",
           "correct": true,
           "score": 1,
           "isCorrect": true
@@ -384,7 +384,7 @@
         },
         {
           "optionId": "C",
-          "text": "Je vraagt dezelfde chatbot: “Klopt dit?”",
+          "text": "Je vraagt dezelfde AI of het zeker weet.",
           "score": 0,
           "isCorrect": false
         },
@@ -421,30 +421,30 @@
       "title": "Afbeelding gebruiken",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je maakt een poster voor school. De poster komt ook online. Je vindt een afbeelding via Google. Wat controleer je eerst?",
+      "question": "Je vindt een afbeelding voor een schoolposter die ook online komt. Wat controleer je eerst?",
       "options": [
         {
           "optionId": "A",
-          "text": "Of je de afbeelding mag gebruiken en of je de maker moet noemen.",
+          "text": "Of je de afbeelding mag gebruiken, of je hem mag aanpassen en welke maker of bron je moet noemen.",
           "correct": true,
           "score": 1,
           "isCorrect": true
         },
         {
           "optionId": "B",
-          "text": "Of de afbeelding bovenaan bij Google staat. Dan mag je hem gebruiken.",
+          "text": "Of de afbeelding op veel websites voorkomt; dan zal hij wel vrij te gebruiken zijn.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "C",
-          "text": "Of er geen naam op de afbeelding staat. Dan is hij van niemand.",
+          "text": "Of je de afbeelding kleiner kunt maken; dan valt gebruik minder op.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "D",
-          "text": "Of je de afbeelding een beetje verandert. Dan is hij van jou.",
+          "text": "Of je de afbeelding een beetje verandert; dan hoef je geen bron te noemen.",
           "score": 0,
           "isCorrect": false
         },
@@ -475,30 +475,30 @@
       "title": "Foto delen",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je hebt een foto gemaakt van drie klasgenoten. Je wilt de foto in een sociale app zetten. Wat doe je eerst?",
+      "question": "In Whutsupp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?",
       "options": [
         {
           "optionId": "A",
-          "text": "Je vraagt of iedereen op de foto het goed vindt.",
+          "text": "Vragen of iedereen op de foto dat goed vindt.",
           "correct": true,
           "score": 1,
           "isCorrect": true
         },
         {
           "optionId": "B",
-          "text": "Je zet de foto alleen in de klassenapp. Dan hoef je niets te vragen.",
+          "text": "De foto alleen in de klassenapp zetten; dan is toestemming niet nodig.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "C",
-          "text": "Je laat de namen weg. Dan mag je de foto altijd delen.",
+          "text": "De namen weglaten; dan mag je de foto altijd delen.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "D",
-          "text": "Je plaatst de foto en haalt hem weg als iemand boos wordt.",
+          "text": "De foto plaatsen en verwijderen als iemand klaagt.",
           "score": 0,
           "isCorrect": false
         },
@@ -529,11 +529,11 @@
       "title": "Eén schoolapp",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "School gebruikt één app voor rooster, huiswerk en berichten. De app heeft een storing. Wat is dan het grootste probleem?",
+      "question": "De school gebruikt één app voor rooster, huiswerk en berichten. Wat is het grootste risico als die app een storing heeft?",
       "options": [
         {
           "optionId": "A",
-          "text": "Veel leerlingen kunnen belangrijke schoolinformatie niet zien.",
+          "text": "Veel leerlingen kunnen tegelijk hun rooster, huiswerk en berichten niet zien.",
           "correct": true,
           "score": 1,
           "isCorrect": true
