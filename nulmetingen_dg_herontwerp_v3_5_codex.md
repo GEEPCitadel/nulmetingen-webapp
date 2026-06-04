@@ -125,12 +125,13 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: In de groepsapp staat een screenshot: “Morgen is school dicht door storm.” Er staat geen afzender bij. Welke bron controleer je eerst?
+- Titel: School morgen dicht?
+- Vraag: In Whutsupp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?
 - Antwoordopties:
-  - A. Een bericht van school in de officiële schoolapp of mail. *(correct)*
-  - B. Het screenshot in de groepsapp, omdat veel leerlingen het doorsturen.
-  - C. Een bericht van iemand die zegt dat hij het van een vriend heeft gehoord.
-  - D. Een video met veel reacties over storm in een andere stad.
+  - A. Checken of hetzelfde bericht in de schoolapp, schoolmail of op de schoolsite staat. *(correct)*
+  - B. Aan de klasgenoot vragen waar hij het vandaan heeft; als hij “van iemand van school” zegt, stuur je het door.
+  - C. Kijken of het screenshot een logo en datum heeft; als dat klopt, is het betrouwbaar genoeg.
+  - D. Wachten tot veel leerlingen het bericht delen; dan zal het waarschijnlijk waar zijn.
   - E. Ik weet het niet.
 - Onderbouwing: Aangescherpt naar controle vóór doorsturen. Afleiders zijn plausibele sociale-bronfouten, niet alleen onzinbronnen.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
@@ -163,20 +164,19 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Sterkere vraagvorm: leerlingen beoordelen een conclusie op basis van beperkte data.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj1v-sr7-ai-check` — 21D
+#### `lj1v-sr7-ai-check` — 23B
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Je gebruikt AI om ideeën voor een werkstuk te krijgen. De AI noemt een opvallend feit, maar geeft geen bron. Wat is de beste werkwijze?
+- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
 - Antwoordopties:
-  - A. Je controleert het feit bij een betrouwbare bron voordat je het gebruikt. *(correct)*
-  - B. Je gebruikt het feit meteen, want de chatbot klinkt zeker.
-  - C. Je vraagt dezelfde AI of het zeker weet.
-  - D. Kies vooral de langste zinnen uit het antwoord.
+  - A. Je geeft alleen je voornaam en leeftijd, maar niet je adres.
+  - B. Je vraagt waarom die persoon dat wil weten en beslist daarna.
+  - C. Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. *(correct)*
+  - D. Je geeft de gegevens als jullie al een tijdje samen spelen.
   - E. Ik weet het niet.
-- Onderbouwing: Vermijdt blind AI-gebruik en meet AI als hulpmiddel plus factchecking. Niet alleen ‘AI is fout’, maar verantwoord gebruik.
+- Onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
-
 #### `lj1v-sr8-image-rights` — 22A
 - Vraagtype: single
 - Anchorstatus: replaceable
@@ -319,20 +319,19 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Meet beperkte generaliseerbaarheid van data.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj1h-sr7-ai-startpunt` — 21D
+#### `lj1h-sr7-ai-startpunt` — 23B
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Je gebruikt AI om ideeën voor een spreekbeurt te krijgen. Wat is de beste werkwijze?
+- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
 - Antwoordopties:
-  - A. Ideeën gebruiken als startpunt en feiten daarna zelf controleren. *(correct)*
-  - B. De hele tekst inleveren zonder te lezen.
-  - C. Alle bronnen overslaan, want AI heeft al gezocht.
-  - D. Alleen vragen om langere zinnen zodat het slimmer lijkt.
+  - A. Je geeft alleen je voornaam en leeftijd, maar niet je adres.
+  - B. Je vraagt waarom die persoon dat wil weten en beslist daarna.
+  - C. Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. *(correct)*
+  - D. Je geeft de gegevens als jullie al een tijdje samen spelen.
   - E. Ik weet het niet.
-- Onderbouwing: Meet verantwoord gebruik van AI als hulpmiddel, zonder blind overnemen.
+- Onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
-
 #### `lj1h-sr8-image-source` — 22A
 - Vraagtype: single
 - Anchorstatus: concept-anchor
@@ -477,20 +476,19 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Meet verhouding tussen data en toegestane conclusie.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj3v-sr7-ai-factcheck` — 21D
+#### `lj3v-sr7-ai-factcheck` — 23B
 - Vraagtype: single
 - Anchorstatus: replaceable
 - Max. punten: 1
-- Vraag: Een AI laat vooral mannen zien als je vraagt om een afbeelding van ‘een directeur’. Wat is de meest waarschijnlijke oorzaak?
+- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
 - Antwoordopties:
-  - A. De AI heeft in de voorbeelden waarop hij is getraind vaak mannen in die rol gezien. *(correct)*
-  - B. De AI kiest altijd de afbeeldingen die het vaakst zijn aangeklikt door de gebruiker.
-  - C. De AI gebruikt alleen de woorden uit jouw vraag en geen eerdere voorbeelden.
-  - D. De AI maakt altijd een neutrale keuze als je geen extra uitleg geeft.
+  - A. Je geeft alleen je voornaam en leeftijd, maar niet je adres.
+  - B. Je vraagt waarom die persoon dat wil weten en beslist daarna.
+  - C. Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. *(correct)*
+  - D. Je geeft de gegevens als jullie al een tijdje samen spelen.
   - E. Ik weet het niet.
-- Onderbouwing: Meet bias en trainingsdata zonder karikaturale afleiders.
+- Onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
-
 #### `lj3v-sr8-media-rights` — 22A
 - Vraagtype: single
 - Anchorstatus: replaceable
@@ -635,21 +633,19 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Afleider D is verbeterd; het item meet nu scherper verhouding-denken in plaats van een zwakke “minder dan 100”-redenering.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj3h-sr7-ai-source-check` — 21D
-- Vraagtype: multiple
+#### `lj3h-sr7-ai-source-check` — 23B
+- Vraagtype: single
 - Anchorstatus: replaceable
 - Max. punten: 1
-- Vraag: Je wilt een AI-tool feedback laten geven op een verslag over een klasgenoot. Kies twee dingen die je beter eerst verwijdert of vervangt.
+- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
 - Antwoordopties:
-  - A. De volledige naam van de klasgenoot. *(correct)*
-  - B. Medische of andere persoonlijke details over de klasgenoot. *(correct)*
-  - C. De vraag: ‘Maak de tekst duidelijker.’
-  - D. Een algemene omschrijving zoals ‘een leerling’.
-  - E. Een neutrale alinea over de opbouw van het verslag.
-  - F. Ik weet het niet.
-- Onderbouwing: Meet AI-gebruik met privacygrenzen.
+  - A. Je geeft alleen je voornaam en leeftijd, maar niet je adres.
+  - B. Je vraagt waarom die persoon dat wil weten en beslist daarna.
+  - C. Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. *(correct)*
+  - D. Je geeft de gegevens als jullie al een tijdje samen spelen.
+  - E. Ik weet het niet.
+- Onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
-
 #### `lj3h-sr8-remix-rights` — 22A
 - Vraagtype: single
 - Anchorstatus: replaceable

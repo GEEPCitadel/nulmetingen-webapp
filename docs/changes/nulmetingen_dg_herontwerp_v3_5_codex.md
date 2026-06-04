@@ -126,12 +126,13 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: In de groepsapp staat dat school morgen dicht is door storm. Welke bron controleer je eerst voordat je het doorstuurt?
+- Titel: School morgen dicht?
+- Vraag: In Whutsupp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?
 - Antwoordopties:
-  - A. Een bericht van school in de officiële app of mail. *(correct)*
-  - B. Een screenshot dat echt lijkt, maar waarvan je de afzender niet ziet.
-  - C. Een bericht van een leerling die zegt dat hij het van iemand gehoord heeft.
-  - D. Een video met veel reacties over storm in een andere stad.
+  - A. Checken of hetzelfde bericht in de schoolapp, schoolmail of op de schoolsite staat. *(correct)*
+  - B. Aan de klasgenoot vragen waar hij het vandaan heeft; als hij “van iemand van school” zegt, stuur je het door.
+  - C. Kijken of het screenshot een logo en datum heeft; als dat klopt, is het betrouwbaar genoeg.
+  - D. Wachten tot veel leerlingen het bericht delen; dan zal het waarschijnlijk waar zijn.
   - E. Ik weet het niet.
 - Onderbouwing: Aangescherpt naar controle vóór doorsturen. Afleiders zijn plausibele sociale-bronfouten, niet alleen onzinbronnen.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.

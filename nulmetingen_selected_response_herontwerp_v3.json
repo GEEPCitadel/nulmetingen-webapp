@@ -193,35 +193,35 @@
       "id": "lj1v-sr4-official-source",
       "targetGroup": "lj1-vmbo",
       "subgoal": "21B",
-      "title": "Officiële bron controleren",
+      "title": "School morgen dicht?",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "In de groepsapp staat een screenshot: “Morgen is school dicht door storm.” Er staat geen afzender bij. Welke bron controleer je eerst?",
+      "question": "In Whutsupp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?",
       "options": [
         {
           "id": "A",
-          "text": "Een bericht van school in de officiële schoolapp of mail.",
+          "text": "Checken of hetzelfde bericht in de schoolapp, schoolmail of op de schoolsite staat.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "Het screenshot in de groepsapp, omdat veel leerlingen het doorsturen.",
+          "text": "Aan de klasgenoot vragen waar hij het vandaan heeft; als hij “van iemand van school” zegt, stuur je het door.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "Een bericht van iemand die zegt dat hij het van een vriend heeft gehoord.",
+          "text": "Kijken of het screenshot een logo en datum heeft; als dat klopt, is het betrouwbaar genoeg.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Een populair account dat vaak schoolgrappen plaatst.",
+          "text": "Wachten tot veel leerlingen het bericht delen; dan zal het waarschijnlijk waar zijn.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -362,35 +362,35 @@
       "id": "lj1v-sr7-ai-check",
       "replaces": "lj1v-sr7-ai-startpunt",
       "targetGroup": "lj1-vmbo",
-      "kerndoel": "21",
-      "subgoal": "21D",
-      "title": "AI gebruiken",
+      "kerndoel": "23",
+      "subgoal": "23B",
+      "title": "Online game en persoonsgegevens",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je gebruikt AI om ideeën voor een werkstuk te krijgen. De AI noemt een opvallend feit, maar geeft geen bron. Wat is de beste werkwijze?",
+      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
       "options": [
         {
           "optionId": "A",
-          "text": "Je controleert het feit bij een betrouwbare bron voordat je het gebruikt.",
-          "correct": true,
-          "score": 1,
-          "isCorrect": true
+          "text": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "B",
-          "text": "Je gebruikt het feit meteen, want de chatbot klinkt zeker.",
+          "text": "Je vraagt waarom die persoon dat wil weten en beslist daarna.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "C",
-          "text": "Je vraagt dezelfde AI of het zeker weet.",
-          "score": 0,
-          "isCorrect": false
+          "text": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "D",
-          "text": "Je gebruikt alleen de mooiste zin.",
+          "text": "Je geeft de gegevens als jullie al een tijdje samen spelen.",
           "score": 0,
           "isCorrect": false
         },
@@ -403,7 +403,7 @@
           "isHarmful": false
         }
       ],
-      "correctAnswer": "A",
+      "correctAnswer": "C",
       "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
@@ -411,7 +411,7 @@
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Eenvoudig scenario voor vmbo 1: AI mag helpen, maar feiten moeten worden gecontroleerd."
+      "validityNote": "Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent."
     },
     {
       "id": "lj1v-sr8-image-rights",
@@ -943,35 +943,35 @@
     {
       "id": "lj1h-sr7-ai-startpunt",
       "targetGroup": "lj1-hv",
-      "kerndoel": "21",
-      "subgoal": "21D",
-      "title": "AI als startpunt",
+      "kerndoel": "23",
+      "subgoal": "23B",
+      "title": "Online game en persoonsgegevens",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je gebruikt AI voor ideeën voor een spreekbeurt. De AI noemt een opvallend feit, maar geen bron. Wat doe je?",
+      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
       "options": [
         {
           "optionId": "A",
-          "text": "Je controleert het feit bij een betrouwbare bron.",
-          "correct": true,
-          "score": 1,
-          "isCorrect": true
+          "text": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "B",
-          "text": "Je gebruikt het feit als het logisch klinkt.",
+          "text": "Je vraagt waarom die persoon dat wil weten en beslist daarna.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "C",
-          "text": "Je vraagt dezelfde AI of het zeker weet.",
-          "score": 0,
-          "isCorrect": false
+          "text": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "D",
-          "text": "Je laat de bron weg, dan valt het niet op.",
+          "text": "Je geeft de gegevens als jullie al een tijdje samen spelen.",
           "score": 0,
           "isCorrect": false
         },
@@ -984,7 +984,7 @@
           "isHarmful": false
         }
       ],
-      "correctAnswer": "A",
+      "correctAnswer": "C",
       "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
@@ -992,7 +992,7 @@
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Concreet bronprobleem bij AI-output."
+      "validityNote": "Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent."
     },
     {
       "id": "lj1h-sr8-image-source",
@@ -1535,35 +1535,35 @@
       "id": "lj3v-sr7-ai-factcheck",
       "replaces": "lj3v-sr7-ai-bias",
       "targetGroup": "lj3-vmbo",
-      "kerndoel": "21",
-      "subgoal": "21D",
-      "title": "AI en cijfers controleren",
+      "kerndoel": "23",
+      "subgoal": "23B",
+      "title": "Online game en persoonsgegevens",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Een AI schrijft: “Jongeren slapen gemiddeld 4 uur per nacht.” Je wilt dit gebruiken in een verslag. Wat doe je?",
+      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
       "options": [
         {
           "optionId": "A",
-          "text": "Je controleert het cijfer bij een betrouwbare bron met datum.",
-          "correct": true,
-          "score": 1,
-          "isCorrect": true
+          "text": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "B",
-          "text": "Je gebruikt het cijfer, want AI geeft meestal actuele informatie.",
+          "text": "Je vraagt waarom die persoon dat wil weten en beslist daarna.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "C",
-          "text": "Je zet “ongeveer” voor het cijfer. Dan hoeft het niet precies te kloppen.",
-          "score": 0,
-          "isCorrect": false
+          "text": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "D",
-          "text": "Je herschrijft de zin, zodat het niet meer op AI lijkt.",
+          "text": "Je geeft de gegevens als jullie al een tijdje samen spelen.",
           "score": 0,
           "isCorrect": false
         },
@@ -1576,7 +1576,7 @@
           "isHarmful": false
         }
       ],
-      "correctAnswer": "A",
+      "correctAnswer": "C",
       "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
@@ -1584,7 +1584,7 @@
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Meet een concrete AI-valkuil: overtuigend klinkende maar mogelijk foutieve informatie."
+      "validityNote": "Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent."
     },
     {
       "id": "lj3v-sr8-media-rights",
@@ -2128,35 +2128,35 @@
       "id": "lj3h-sr7-ai-source-check",
       "replaces": "lj3h-sr7-ai-privacy",
       "targetGroup": "lj3-hv",
-      "kerndoel": "21",
-      "subgoal": "21D",
-      "title": "AI-bronnen controleren",
+      "kerndoel": "23",
+      "subgoal": "23B",
+      "title": "Online game en persoonsgegevens",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Een AI-tool geeft een overtuigende uitleg met drie bronverwijzingen. Eén bron kun je online niet terugvinden. Wat is de sterkste conclusie?",
+      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
       "options": [
         {
           "optionId": "A",
-          "text": "De bron kan fout of verzonnen zijn; controleer de claim met betrouwbare vindbare bronnen.",
-          "correct": true,
-          "score": 1,
-          "isCorrect": true
+          "text": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+          "score": 0,
+          "isCorrect": false
         },
         {
           "optionId": "B",
-          "text": "De uitleg is betrouwbaar, omdat de AI meerdere bronnen noemt.",
+          "text": "Je vraagt waarom die persoon dat wil weten en beslist daarna.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "C",
-          "text": "De bron hoeft niet vindbaar te zijn als de uitleg logisch klinkt.",
-          "score": 0,
-          "isCorrect": false
+          "text": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "D",
-          "text": "Je kunt de bron laten staan, want AI-bronnen tellen als gewone bronnen.",
+          "text": "Je geeft de gegevens als jullie al een tijdje samen spelen.",
           "score": 0,
           "isCorrect": false
         },
@@ -2169,7 +2169,7 @@
           "isHarmful": false
         }
       ],
-      "correctAnswer": "A",
+      "correctAnswer": "C",
       "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
@@ -2177,7 +2177,7 @@
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Meet AI-hallucinatie en controleerbare bronverwijzingen."
+      "validityNote": "Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent."
     },
     {
       "id": "lj3h-sr8-remix-rights",
