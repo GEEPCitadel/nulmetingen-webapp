@@ -1,7 +1,7 @@
 {
   "schemaVersion": "dg-nulmetingen-v3.7",
-  "status": "werkversie voor Codex-implementatie, pilotafname en interne review; v3.7 phishing-/linkcontrole-items aangescherpt",
-  "source": "docs/changes/v3.7_phishing_mail_redesign.md",
+  "status": "werkversie voor Codex-implementatie, pilotafname en interne review; v3.7 phishing-/linkcontrole-items aangescherpt; vraag 9 vervangen door 21D/AI-vraag v3",
+  "source": "docs/changes/vraag_9_ai_21d_v3.md",
   "selectedResponseItems": [
     {
       "id": "lj1v-sr1-pw-passphrase",
@@ -468,58 +468,175 @@
       "validityNote": "Maakt online publicatie expliciet en gebruikt eenvoudige maar realistische misvattingen."
     },
     {
-      "id": "lj1v-sr9-photo-consent",
+      "id": "lj1v-vraag9-ai-workstuk-v3",
+      "replaces": "lj1v-sr9-photo-consent",
+      "archivedFrom": "archived-vraag9-23b-photo-consent",
       "targetGroup": "lj1-vmbo",
-      "kerndoel": "23",
-      "subgoal": "23B",
-      "title": "Foto delen",
-      "itemType": "single-choice",
-      "selectionLimit": 1,
-      "question": "In Whutsupp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?",
-      "options": [
+      "kerndoel": "21",
+      "subgoal": "21D",
+      "primarySubgoal": "21D",
+      "itemVersion": "vraag9-ai-21d-v3",
+      "title": "AI gebruiken voor je werkstuk",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Sanne gebruikt AI-hulp voor haar werkstuk. Bekijk de chat.",
+      "context": {
+        "chatMockup": {
+          "toolName": "AI-hulp",
+          "messages": [
+            {
+              "sender": "student",
+              "label": "Leerling",
+              "text": "Maak mijn tekst beter.\n\nIk ben Sanne de Jong en ik zit in klas 1B op het Citadel College.\n\nMijn tekst:\nVeel brugklassers slapen slecht door hun telefoon."
+            },
+            {
+              "sender": "ai",
+              "label": "AI-hulp",
+              "text": "Je kunt schrijven:\n\nVolgens het rapport `Brugklassers en slaap 2024` slaapt 62% van de brugklassers te weinig door telefoongebruik. Daarom is het slim om je telefoon een uur voor het slapen weg te leggen."
+            }
+          ]
+        }
+      },
+      "subQuestions": [
         {
-          "optionId": "A",
-          "text": "Vragen of iedereen op de foto dat goed vindt.",
-          "correct": true,
-          "score": 1,
-          "isCorrect": true
+          "id": "prompt_safety",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat kan Sanne beter aanpassen voordat ze dit aan AI geeft?",
+          "options": [
+            {
+              "id": "make_less_personal",
+              "text": "Haar volledige naam, klas en school algemener maken.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 0.5,
+              "isUnknownOption": false
+            },
+            {
+              "id": "remove_topic",
+              "text": "Het onderwerp van haar werkstuk weghalen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "removes_needed_context"
+            },
+            {
+              "id": "remove_instruction",
+              "text": "De vraag om haar tekst beter te maken weghalen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "removes_task_instruction"
+            },
+            {
+              "id": "add_more_details",
+              "text": "Meer persoonlijke informatie toevoegen, zodat AI beter kan helpen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "personal_data_unnecessary"
+            },
+            {
+              "id": "unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "make_less_personal",
+          "scoring": {
+            "maxPoints": 0.5,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         },
         {
-          "optionId": "B",
-          "text": "De foto alleen in de klassenapp zetten; dan is toestemming niet nodig.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "C",
-          "text": "De namen weglaten; dan mag je de foto altijd delen.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "D",
-          "text": "De foto plaatsen en verwijderen als iemand klaagt.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "E",
-          "text": "Ik weet het niet.",
-          "isUnknownOption": true,
-          "score": 0,
-          "isCorrect": false,
-          "isHarmful": false
+          "id": "output_check",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat moet Sanne controleren voordat ze het AI-antwoord gebruikt?",
+          "options": [
+            {
+              "id": "check_report_and_number",
+              "text": "Of het rapport en het percentage echt kloppen.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 0.5,
+              "isUnknownOption": false
+            },
+            {
+              "id": "ask_ai_sure",
+              "text": "Of dezelfde AI zegt dat het antwoord zeker klopt.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "same_ai_as_verification"
+            },
+            {
+              "id": "check_neat_sentences",
+              "text": "Of de zinnen netjes genoeg klinken.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "style_confused_with_accuracy"
+            },
+            {
+              "id": "use_without_number",
+              "text": "Het percentage weghalen en de rest meteen gebruiken.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "unverified_claim_still_used"
+            },
+            {
+              "id": "unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "check_report_and_number",
+          "scoring": {
+            "maxPoints": 0.5,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         }
       ],
-      "correctAnswer": "A",
-      "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
-        "rule": "exact-choice",
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Basisitem voor toestemming bij herkenbare personen, met korte taal."
+      "anchorStatus": "concept-anchor",
+      "sourceStatus": "docs/changes/vraag_9_ai_21d_v3.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Vervangt de oude foto-/toestemmingsvraag 9 door een automatisch scorebare 21D/AI-vraag met twee single-choice deelvragen van 0,5 punt."
     },
     {
       "id": "lj1v-sr10-platform-risk",
@@ -1049,59 +1166,175 @@
       "validityNote": "Heldere publicatiecontext en realistische afleiders."
     },
     {
-      "id": "lj1h-sr9-photo-share",
-      "replaces": "lj1h-sr9-threat-message",
+      "id": "lj1h-vraag9-ai-presentatie-v3",
+      "replaces": "lj1h-sr9-photo-share",
+      "archivedFrom": "archived-vraag9-23b-photo-consent",
       "targetGroup": "lj1-hv",
-      "kerndoel": "23",
-      "subgoal": "23B",
-      "title": "Foto delen bij twijfel",
-      "itemType": "single-choice",
-      "selectionLimit": 1,
-      "question": "Je hebt een grappige foto van twee klasgenoten. Eén van hen twijfelt of de foto gedeeld mag worden. Wat doe je?",
-      "options": [
+      "kerndoel": "21",
+      "subgoal": "21D",
+      "primarySubgoal": "21D",
+      "itemVersion": "vraag9-ai-21d-v3",
+      "title": "AI gebruiken voor een presentatie",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Milan gebruikt AI-hulp voor een presentatie. Bekijk de chat.",
+      "context": {
+        "chatMockup": {
+          "toolName": "AI-hulp",
+          "messages": [
+            {
+              "sender": "student",
+              "label": "Leerling",
+              "text": "Help mijn tekst voor een presentatie verbeteren.\n\nIk ben Milan Verbeek uit 1H2. Onze klas doet een project over energiedrank.\n\nMijn tekst:\nEnergiedrank is populair onder jongeren."
+            },
+            {
+              "sender": "ai",
+              "label": "AI-hulp",
+              "text": "Je kunt schrijven:\n\nVolgens het onderzoek `Jongeren en Energiedrank 2025` drinkt 41% van de brugklassers elke week energiedrank. Daardoor kunnen leerlingen zich soms minder goed concentreren."
+            }
+          ]
+        }
+      },
+      "subQuestions": [
         {
-          "optionId": "A",
-          "text": "Je deelt de foto niet totdat iedereen akkoord is.",
-          "correct": true,
-          "score": 1,
-          "isCorrect": true
+          "id": "prompt_safety",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat kan Milan beter aanpassen voordat hij dit aan AI geeft?",
+          "options": [
+            {
+              "id": "make_prompt_less_identifying",
+              "text": "Zijn volledige naam en klas algemener maken.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 0.5,
+              "isUnknownOption": false
+            },
+            {
+              "id": "remove_topic_energy_drink",
+              "text": "Het onderwerp energiedrank weghalen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "removes_needed_context"
+            },
+            {
+              "id": "add_personal_examples",
+              "text": "Namen van klasgenoten toevoegen om het voorbeeld duidelijker te maken.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "personal_data_unnecessary"
+            },
+            {
+              "id": "remove_request_to_improve",
+              "text": "De vraag om zijn tekst te verbeteren weghalen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "removes_task_instruction"
+            },
+            {
+              "id": "unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "make_prompt_less_identifying",
+          "scoring": {
+            "maxPoints": 0.5,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         },
         {
-          "optionId": "B",
-          "text": "Je deelt de foto alleen in een besloten groep.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "C",
-          "text": "Je deelt de foto zonder namen erbij.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "D",
-          "text": "Je deelt de foto en zet erbij dat het een grap is.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "E",
-          "text": "Ik weet het niet.",
-          "isUnknownOption": true,
-          "score": 0,
-          "isCorrect": false,
-          "isHarmful": false
+          "id": "output_check",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat is de beste controle voordat Milan het AI-antwoord in zijn presentatie zet?",
+          "options": [
+            {
+              "id": "find_source_and_compare",
+              "text": "De bron zoeken en controleren of die dit percentage echt ondersteunt.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 0.5,
+              "isUnknownOption": false
+            },
+            {
+              "id": "ask_ai_for_same_source",
+              "text": "Dezelfde AI vragen om de bron nog een keer te noemen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "same_ai_as_verification"
+            },
+            {
+              "id": "trust_specific_number",
+              "text": "Het percentage gebruiken omdat een precies getal betrouwbaar klinkt.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "specific_number_confused_with_accuracy"
+            },
+            {
+              "id": "cite_ai_only",
+              "text": "Alleen `AI-hulp` als bron noemen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "ai_tool_confused_with_source"
+            },
+            {
+              "id": "unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "find_source_and_compare",
+          "scoring": {
+            "maxPoints": 0.5,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         }
       ],
-      "correctAnswer": "A",
-      "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
-        "rule": "exact-choice",
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Twijfel maakt het scenario realistischer."
+      "anchorStatus": "concept-anchor",
+      "sourceStatus": "docs/changes/vraag_9_ai_21d_v3.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Vervangt de oude foto-/toestemmingsvraag 9 door een automatisch scorebare 21D/AI-vraag met twee single-choice deelvragen van 0,5 punt."
     },
     {
       "id": "lj1h-sr10-platform-risk",
@@ -1642,59 +1875,175 @@
       "validityNote": "Sluit aan bij leerlingproducten: video, muziek, afbeeldingen en online publicatie."
     },
     {
-      "id": "lj3v-sr9-photo-shared",
-      "replaces": "lj3v-sr9-fake-account",
+      "id": "lj3v-vraag9-ai-stagebrief-v3",
+      "replaces": "lj3v-sr9-photo-shared",
+      "archivedFrom": "archived-vraag9-23b-photo-consent",
       "targetGroup": "lj3-vmbo",
-      "kerndoel": "23",
-      "subgoal": "23B",
-      "title": "Ongewenst gedeelde foto",
-      "itemType": "single-choice",
-      "selectionLimit": 1,
-      "question": "In een groepsapp deelt iemand zonder toestemming een foto van een klasgenoot. De klasgenoot staat er ongemakkelijk op. Wat is de beste reactie?",
-      "options": [
+      "kerndoel": "21",
+      "subgoal": "21D",
+      "primarySubgoal": "21D",
+      "itemVersion": "vraag9-ai-21d-v3",
+      "title": "AI gebruiken voor een stagebrief",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Noor gebruikt AI-hulp om een stagebrief te verbeteren. Bekijk de chat.",
+      "context": {
+        "chatMockup": {
+          "toolName": "AI-hulp",
+          "messages": [
+            {
+              "sender": "student",
+              "label": "Leerling",
+              "text": "Verbeter mijn stagebrief.\n\nNoor Peters\nLijsterstraat 14\n6511 AB Nijmegen\n06-18473291\n\nIk wil stage lopen bij een dierenwinkel, omdat ik goed met dieren kan omgaan."
+            },
+            {
+              "sender": "ai",
+              "label": "AI-hulp",
+              "text": "Je kunt schrijven:\n\nVolgens `StageMonitor Jongeren 2025` vindt 78% van de stagebedrijven motivatie belangrijker dan ervaring. Daarom kun je het best duidelijk uitleggen waarom je deze stageplek kiest."
+            }
+          ]
+        }
+      },
+      "subQuestions": [
         {
-          "optionId": "A",
-          "text": "Niet verder delen en hulp inschakelen of vragen om de foto te verwijderen.",
-          "correct": true,
-          "score": 1,
-          "isCorrect": true
+          "id": "prompt_safety",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat kan Noor beter eerst uit haar tekst halen?",
+          "options": [
+            {
+              "id": "remove_contact_details",
+              "text": "Adres en telefoonnummer.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 0.5,
+              "isUnknownOption": false
+            },
+            {
+              "id": "remove_stage_goal",
+              "text": "Dat ze stage wil lopen bij een dierenwinkel.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "removes_needed_context"
+            },
+            {
+              "id": "remove_motivation",
+              "text": "Waarom ze met dieren wil werken.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "removes_useful_context"
+            },
+            {
+              "id": "add_more_private_info",
+              "text": "Extra persoonlijke gegevens, zodat de brief persoonlijker wordt.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "personal_data_unnecessary"
+            },
+            {
+              "id": "unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "remove_contact_details",
+          "scoring": {
+            "maxPoints": 0.5,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         },
         {
-          "optionId": "B",
-          "text": "De foto alleen doorsturen naar vrienden die je vertrouwt.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "C",
-          "text": "De foto bewaren, want misschien heb je later bewijs nodig.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "D",
-          "text": "Een grapje maken, zodat het minder serieus voelt.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "E",
-          "text": "Ik weet het niet.",
-          "isUnknownOption": true,
-          "score": 0,
-          "isCorrect": false,
-          "isHarmful": false
+          "id": "output_check",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat moet Noor doen met de zin over `StageMonitor Jongeren 2025`?",
+          "options": [
+            {
+              "id": "check_source_before_using",
+              "text": "Controleren of de bron bestaat en de uitspraak echt ondersteunt.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 0.5,
+              "isUnknownOption": false
+            },
+            {
+              "id": "use_because_practical",
+              "text": "Gebruiken, want het advies klinkt praktisch.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "usefulness_confused_with_accuracy"
+            },
+            {
+              "id": "ask_ai_to_make_confident",
+              "text": "AI vragen om de zin zekerder te formuleren.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "style_confused_with_accuracy"
+            },
+            {
+              "id": "remove_source_keep_number",
+              "text": "De bron weghalen maar het percentage laten staan.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "unverified_number_used"
+            },
+            {
+              "id": "unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "check_source_before_using",
+          "scoring": {
+            "maxPoints": 0.5,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         }
       ],
-      "correctAnswer": "A",
-      "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
-        "rule": "exact-choice",
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Meet handelen wanneer ongewenst delen al heeft plaatsgevonden. Let op schoolafspraak rond bewijs veiligstellen."
+      "anchorStatus": "concept-anchor",
+      "sourceStatus": "docs/changes/vraag_9_ai_21d_v3.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Vervangt de oude foto-/toestemmingsvraag 9 door een automatisch scorebare 21D/AI-vraag met twee single-choice deelvragen van 0,5 punt."
     },
     {
       "id": "lj3v-sr10-digital-access",
@@ -2234,58 +2583,175 @@
       "validityNote": "Meet gebruik, remix, delen en bronvermelding."
     },
     {
-      "id": "lj3h-sr9-private-photo",
+      "id": "lj3h-vraag9-ai-betoog-v3",
+      "replaces": "lj3h-sr9-private-photo",
+      "archivedFrom": "archived-vraag9-23b-photo-consent",
       "targetGroup": "lj3-hv",
-      "kerndoel": "23",
-      "subgoal": "23B",
-      "title": "Privéfoto in besloten groep",
-      "itemType": "single-choice",
-      "selectionLimit": 1,
-      "question": "Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Wat is de beste eerste reactie?",
-      "options": [
+      "kerndoel": "21",
+      "subgoal": "21D",
+      "primarySubgoal": "21D",
+      "itemVersion": "vraag9-ai-21d-v3",
+      "title": "AI gebruiken voor een betoog",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Sara gebruikt AI-hulp voor een betoog over telefoons in de klas. Bekijk de chat.",
+      "context": {
+        "chatMockup": {
+          "toolName": "AI-hulp",
+          "messages": [
+            {
+              "sender": "student",
+              "label": "Leerling",
+              "text": "Maak van deze informatie een sterke alinea voor mijn betoog.\n\nIk zit in 3H2. In onze mentorklasapp schreef Sam: \"Mijn cijfers zijn echt gezakt door mijn telefoon.\"\nGebruik dit als voorbeeld, maar noem zijn naam niet."
+            },
+            {
+              "sender": "ai",
+              "label": "AI-hulp",
+              "text": "Je kunt schrijven:\n\nOnderzoek van De Vries en Khan uit 2025 in het `European Journal of School Focus` laat zien dat leerlingen gemiddeld 18% hogere cijfers halen als telefoons uit de klas blijven. Ook uit berichten van leerlingen blijkt dat telefoons hun resultaten kunnen verslechteren."
+            }
+          ]
+        }
+      },
+      "subQuestions": [
         {
-          "optionId": "A",
-          "text": "Niet verder delen en via een veilige route hulp inschakelen of rapporteren.",
-          "correct": true,
-          "score": 1,
-          "isCorrect": true
+          "id": "prompt_safety",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat is het belangrijkste probleem in Sara's bericht aan AI?",
+          "options": [
+            {
+              "id": "private_chat_as_input",
+              "text": "Ze gebruikt een priv?bericht van een klasgenoot als invoer.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 0.5,
+              "isUnknownOption": false
+            },
+            {
+              "id": "topic_too_clear",
+              "text": "Het onderwerp telefoons in de klas is te duidelijk.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "confuses_topic_with_privacy_risk"
+            },
+            {
+              "id": "asks_for_argument",
+              "text": "Ze vraagt AI om een alinea voor een betoog te maken.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "confuses_task_with_privacy_risk"
+            },
+            {
+              "id": "removed_name_enough",
+              "text": "Ze zegt dat AI Sams naam niet moet noemen; daarmee is het probleem opgelost.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "anonymization_overestimated"
+            },
+            {
+              "id": "unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "private_chat_as_input",
+          "scoring": {
+            "maxPoints": 0.5,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         },
         {
-          "optionId": "B",
-          "text": "De foto bewaren om later te bewijzen dat je hem gezien hebt.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "C",
-          "text": "De foto doorsturen naar een kleiner groepje dat je vertrouwt.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "D",
-          "text": "Reageren met een grap, zodat de spanning daalt.",
-          "score": 0,
-          "isCorrect": false
-        },
-        {
-          "optionId": "E",
-          "text": "Ik weet het niet.",
-          "isUnknownOption": true,
-          "score": 0,
-          "isCorrect": false,
-          "isHarmful": false
+          "id": "output_check",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat is de sterkste controle op het AI-antwoord?",
+          "options": [
+            {
+              "id": "verify_article_supports_claim",
+              "text": "Het artikel zelf terugvinden en controleren of het de 18%-claim echt ondersteunt.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 0.5,
+              "isUnknownOption": false
+            },
+            {
+              "id": "trust_journal_name",
+              "text": "De bron gebruiken omdat de tijdschriftnaam wetenschappelijk klinkt.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "source_label_confused_with_reliability"
+            },
+            {
+              "id": "ask_ai_more_sources",
+              "text": "AI vragen om meer bronnen en de langste bronvermelding kiezen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "source_quantity_confused_with_quality"
+            },
+            {
+              "id": "remove_percentage_keep_claim",
+              "text": "Het percentage weghalen en de algemene conclusie zonder controle gebruiken.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "unverified_claim_still_used"
+            },
+            {
+              "id": "unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "verify_article_supports_claim",
+          "scoring": {
+            "maxPoints": 0.5,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         }
       ],
-      "correctAnswer": "A",
-      "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
-        "rule": "exact-choice",
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Meet verantwoord handelen bij schade, groepsdruk en privacy."
+      "anchorStatus": "concept-anchor",
+      "sourceStatus": "docs/changes/vraag_9_ai_21d_v3.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Vervangt de oude foto-/toestemmingsvraag 9 door een automatisch scorebare 21D/AI-vraag met twee single-choice deelvragen van 0,5 punt."
     },
     {
       "id": "lj3h-sr10-platform-dependence",
@@ -2351,6 +2817,238 @@
       },
       "validityNote": "Leerlingen onderscheiden voordelen van risico’s bij platformafhankelijkheid.",
       "instruction": "Kies twee antwoorden."
+    }
+  ],
+  "archivedSelectedResponseItems": [
+    {
+      "id": "lj1v-sr9-photo-consent__archived-vraag9-23b-photo-consent",
+      "targetGroup": "lj1-vmbo",
+      "kerndoel": "23",
+      "subgoal": "23B",
+      "title": "Foto delen",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "In Whutsupp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Vragen of iedereen op de foto dat goed vindt.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
+        },
+        {
+          "optionId": "B",
+          "text": "De foto alleen in de klassenapp zetten; dan is toestemming niet nodig.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "C",
+          "text": "De namen weglaten; dan mag je de foto altijd delen.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "D",
+          "text": "De foto plaatsen en verwijderen als iemand klaagt.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "E",
+          "text": "Ik weet het niet.",
+          "isUnknownOption": true,
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "validityNote": "Basisitem voor toestemming bij herkenbare personen, met korte taal.",
+      "archivedAs": "archived-vraag9-23b-photo-consent",
+      "archivedReason": "Replaced by vraag9-ai-21d-v3.",
+      "active": false
+    },
+    {
+      "id": "lj1h-sr9-photo-share__archived-vraag9-23b-photo-consent",
+      "replaces": "lj1h-sr9-threat-message",
+      "targetGroup": "lj1-hv",
+      "kerndoel": "23",
+      "subgoal": "23B",
+      "title": "Foto delen bij twijfel",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Je hebt een grappige foto van twee klasgenoten. Eén van hen twijfelt of de foto gedeeld mag worden. Wat doe je?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Je deelt de foto niet totdat iedereen akkoord is.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
+        },
+        {
+          "optionId": "B",
+          "text": "Je deelt de foto alleen in een besloten groep.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "C",
+          "text": "Je deelt de foto zonder namen erbij.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "D",
+          "text": "Je deelt de foto en zet erbij dat het een grap is.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "E",
+          "text": "Ik weet het niet.",
+          "isUnknownOption": true,
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "validityNote": "Twijfel maakt het scenario realistischer.",
+      "archivedAs": "archived-vraag9-23b-photo-consent",
+      "archivedReason": "Replaced by vraag9-ai-21d-v3.",
+      "active": false
+    },
+    {
+      "id": "lj3v-sr9-photo-shared__archived-vraag9-23b-photo-consent",
+      "replaces": "lj3v-sr9-fake-account",
+      "targetGroup": "lj3-vmbo",
+      "kerndoel": "23",
+      "subgoal": "23B",
+      "title": "Ongewenst gedeelde foto",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "In een groepsapp deelt iemand zonder toestemming een foto van een klasgenoot. De klasgenoot staat er ongemakkelijk op. Wat is de beste reactie?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Niet verder delen en hulp inschakelen of vragen om de foto te verwijderen.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
+        },
+        {
+          "optionId": "B",
+          "text": "De foto alleen doorsturen naar vrienden die je vertrouwt.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "C",
+          "text": "De foto bewaren, want misschien heb je later bewijs nodig.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "D",
+          "text": "Een grapje maken, zodat het minder serieus voelt.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "E",
+          "text": "Ik weet het niet.",
+          "isUnknownOption": true,
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "validityNote": "Meet handelen wanneer ongewenst delen al heeft plaatsgevonden. Let op schoolafspraak rond bewijs veiligstellen.",
+      "archivedAs": "archived-vraag9-23b-photo-consent",
+      "archivedReason": "Replaced by vraag9-ai-21d-v3.",
+      "active": false
+    },
+    {
+      "id": "lj3h-sr9-private-photo__archived-vraag9-23b-photo-consent",
+      "targetGroup": "lj3-hv",
+      "kerndoel": "23",
+      "subgoal": "23B",
+      "title": "Privéfoto in besloten groep",
+      "itemType": "single-choice",
+      "selectionLimit": 1,
+      "question": "Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Wat is de beste eerste reactie?",
+      "options": [
+        {
+          "optionId": "A",
+          "text": "Niet verder delen en via een veilige route hulp inschakelen of rapporteren.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
+        },
+        {
+          "optionId": "B",
+          "text": "De foto bewaren om later te bewijzen dat je hem gezien hebt.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "C",
+          "text": "De foto doorsturen naar een kleiner groepje dat je vertrouwt.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "D",
+          "text": "Reageren met een grap, zodat de spanning daalt.",
+          "score": 0,
+          "isCorrect": false
+        },
+        {
+          "optionId": "E",
+          "text": "Ik weet het niet.",
+          "isUnknownOption": true,
+          "score": 0,
+          "isCorrect": false,
+          "isHarmful": false
+        }
+      ],
+      "correctAnswer": "A",
+      "harmfulAnswers": [],
+      "scoring": {
+        "maxPoints": 1,
+        "rule": "exact-choice",
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "validityNote": "Meet verantwoord handelen bij schade, groepsdruk en privacy.",
+      "archivedAs": "archived-vraag9-23b-photo-consent",
+      "archivedReason": "Replaced by vraag9-ai-21d-v3.",
+      "active": false
     }
   ]
 }

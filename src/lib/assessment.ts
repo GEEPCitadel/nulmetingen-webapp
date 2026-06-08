@@ -1081,7 +1081,7 @@ const appendOrReplaceResult = (results: Result[], nextResult: Result): Result[] 
 };
 
 const assessmentGoalIds = (item: AssessmentItem) => {
-  const source = `${item.subgoal ?? ""},${item.kerndoel}`;
+  const source = `${item.primarySubgoal ?? ""},${item.subgoal ?? ""},${item.kerndoel}`;
   const matches = Array.from(source.matchAll(/\b(21[A-D]?|22[A-B]?|23[A-C]?)\b/g)).map(
     (match) => match[1],
   );
@@ -1158,6 +1158,7 @@ export const submitItemAnswer = ({
     isCorrect: scored.isCorrect,
     score: scored.score,
     maxScore: item.points,
+    primarySubgoal: item.primarySubgoal ?? item.subgoal,
     taskResults: scored.taskResults,
     scoringSummary,
     responseType,
@@ -1181,6 +1182,7 @@ export const submitItemAnswer = ({
     isCorrect: scored.isCorrect,
     score: scored.score,
     maxScore: item.points,
+    primarySubgoal: item.primarySubgoal ?? item.subgoal,
     taskResults: scored.taskResults,
     scoringSummary,
     responseType,

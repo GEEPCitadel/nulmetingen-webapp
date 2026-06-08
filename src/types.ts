@@ -501,6 +501,7 @@ export interface AssessmentItem {
   skillDomain: string;
   kerndoel: string;
   subgoal?: string;
+  primarySubgoal?: string;
   allowUnknown?: boolean;
   unknownOptionId?: string;
   randomizeOptions?: boolean;
@@ -583,6 +584,7 @@ export interface Result {
   isCorrect: boolean | null;
   score: number;
   maxScore: number;
+  primarySubgoal?: string;
   taskResults?: Array<{
     taskId: string;
     description: string;
@@ -612,6 +614,7 @@ export interface EventLog {
   isCorrect?: boolean | null;
   score?: number;
   maxScore?: number;
+  primarySubgoal?: string;
   taskResults?: Array<{
     taskId: string;
     description: string;

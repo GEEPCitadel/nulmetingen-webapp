@@ -174,14 +174,26 @@ type SelectedResponseSpec = {
   title: string;
   kerndoel: string;
   subgoal?: string;
+  primarySubgoal?: string;
   type?: "single" | "multiple";
   selectCount?: number | null;
   question: string;
-  options: SelectedResponseOptionSpec[];
-  correct: string | string[];
+  options?: SelectedResponseOptionSpec[];
+  correct?: string | string[];
   harmful?: string[];
   harmfulSelectionMaxScore?: number;
   mockup?: MockupCard;
+  compoundTask?: {
+    itemVersion?: string;
+    groups: Array<{
+      id: string;
+      title: string;
+      question: string;
+      options: SelectedResponseOptionSpec[];
+      correctOptionId: string;
+      points: number;
+    }>;
+  };
   renderOptionsAsSourceCards?: boolean;
   ankerItemFlag?: boolean;
   aiSnelVeranderendFlag?: boolean;
@@ -211,6 +223,23 @@ type SelectedResponseJsonOption = {
   unknown?: boolean;
   isHarmful?: boolean;
   score?: number;
+};
+
+type SelectedResponseJsonSubQuestion = {
+  id: string;
+  title?: string;
+  question: string;
+  itemType?: "single-choice";
+  selectionLimit?: number;
+  options: SelectedResponseJsonOption[];
+  correctAnswer?: string;
+  scoring?: {
+    maxPoints?: number;
+    rule?: string;
+    unknownScoresZero?: boolean;
+    unknownExclusive?: boolean;
+    scoreBy?: string;
+  };
 };
 
 type SelectedResponseStimulus =
@@ -249,7 +278,7 @@ type SelectedResponseJsonItem = {
   subgoal: string;
   type?: "single" | "multiple" | "single_choice" | "multiple_choice";
   maxScore?: number;
-  itemType?: "single-choice" | "multiple-select";
+  itemType?: "single-choice" | "multiple-select" | "compound-single-choice";
   selectCount?: number | null;
   selectionLimit?: number | null;
   question: string;
@@ -259,12 +288,24 @@ type SelectedResponseJsonItem = {
       sender: string;
       text: string;
     };
+    chatMockup?: {
+      toolName: string;
+      messages: Array<{
+        sender: string;
+        label: string;
+        text: string;
+      }>;
+    };
   };
+  primarySubgoal?: string;
+  itemVersion?: string;
+  archivedFrom?: string;
+  subQuestions?: SelectedResponseJsonSubQuestion[];
   ui?: {
     renderAsSourceCards?: boolean;
     pinUnknownOptionLast?: boolean;
   };
-  options: SelectedResponseJsonOption[];
+  options?: SelectedResponseJsonOption[];
   correctAnswer?: string | string[];
   harmfulAnswers?: string[];
   scoring?: {
@@ -292,6 +333,7 @@ type SelectedResponseJsonAssessment = {
 type SelectedResponseJson = {
   assessments?: SelectedResponseJsonAssessment[];
   selectedResponseItems?: SelectedResponseJsonItem[];
+  archivedSelectedResponseItems?: SelectedResponseJsonItem[];
 };
 
 const UNKNOWN_OPTION_LABEL = "Ik weet het niet.";
@@ -443,6 +485,17 @@ const mockupForStimulus = (stimulus?: SelectedResponseStimulus): MockupCard | un
 };
 
 const mockupForContext = (context?: SelectedResponseJsonItem["context"]): MockupCard | undefined => {
+  if (context?.chatMockup) {
+    return {
+      badge: "AI-chat",
+      title: context.chatMockup.toolName,
+      content: context.chatMockup.messages.map(
+        (message) => `${message.label}: ${message.text}`,
+      ),
+      mediaHint: "Niet-interactieve AI-chatmock-up",
+    };
+  }
+
   if (!context?.chatMessage) {
     return undefined;
   }
@@ -463,10 +516,66 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
   }
 
   return sourceItems.map((item) => {
+    if (item.itemType === "compound-single-choice" && item.subQuestions?.length) {
+      const compoundGroups = item.subQuestions.map((subQuestion) => {
+        const correctAnswerId = String(
+          subQuestion.correctAnswer ??
+            subQuestion.options.find((option) => option.correct === true || option.isCorrect === true)?.id ??
+            "",
+        );
+        const options = subQuestion.options.map((option) => ({
+          id: String(option.optionId ?? option.id ?? option.text),
+          label: normalizeUnknownLabel(option.label ?? option.text),
+          description:
+            option.label && normalizeUnknownLabel(option.label) !== normalizeUnknownLabel(option.text)
+              ? option.text
+              : undefined,
+          sourceType: option.sourceType,
+          isUnknown:
+            option.isUnknownOption === true ||
+            option.unknown === true ||
+            normalizeUnknownLabel(option.label ?? option.text) === UNKNOWN_OPTION_LABEL,
+        }));
+
+        if (!correctAnswerId) {
+          throw new Error(`Geen correct antwoord gevonden voor ${item.id}:${subQuestion.id}.`);
+        }
+
+        return {
+          id: subQuestion.id,
+          title: subQuestion.title ?? subQuestion.id,
+          question: subQuestion.question,
+          options,
+          correctOptionId: correctAnswerId,
+          points: Number(subQuestion.scoring?.maxPoints ?? 0.5),
+        };
+      });
+
+      return {
+        id: item.id,
+        title: item.title,
+        kerndoel: rootGoalFrom(item.kerndoel ?? item.primarySubgoal ?? item.subgoal),
+        subgoal: subgoalCodeFrom(item.primarySubgoal ?? item.subgoal),
+        primarySubgoal: item.primarySubgoal ?? subgoalCodeFrom(item.subgoal),
+        question: item.question,
+        mockup: mockupForContext(item.context),
+        compoundTask: {
+          itemVersion: item.itemVersion,
+          groups: compoundGroups,
+        },
+        aiSnelVeranderendFlag: item.aiSnelVeranderendFlag,
+        anchorStatus: item.anchorStatus,
+        sourceStatus: item.sourceStatus,
+        pilotReviewStatus: item.pilotReviewStatus,
+        validityNote: item.validityNote,
+      };
+    }
+
     const correctAnswerIds = correctAnswerIdsFor(item);
     const harmfulAnswerIds = harmfulAnswerIdsFor(item);
     const responseType = selectedResponseTypeFor(item);
-    const contentOptions = item.options
+    const sourceOptions = item.options ?? [];
+    const contentOptions = sourceOptions
       .filter((option) => {
         const label = normalizeUnknownLabel(option.label ?? option.text);
         return option.isUnknownOption !== true && option.unknown !== true && label !== UNKNOWN_OPTION_LABEL;
@@ -490,7 +599,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
           harmful: option.isHarmful === true || harmfulAnswerIds.has(id),
         };
       });
-    const unknownSource = item.options.find((option) => {
+    const unknownSource = sourceOptions.find((option) => {
       const label = normalizeUnknownLabel(option.label ?? option.text);
       return option.isUnknownOption === true || option.unknown === true || label === UNKNOWN_OPTION_LABEL;
     });
@@ -529,6 +638,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
       title: item.title,
       kerndoel: rootGoalFrom(item.kerndoel ?? item.subgoal),
       subgoal: subgoalCodeFrom(item.subgoal),
+      primarySubgoal: item.primarySubgoal,
       type: responseType,
       selectCount:
         responseType === "multiple"
@@ -710,12 +820,69 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
   const subgoal = spec.subgoal ?? subgoalCodeFrom(spec.kerndoel);
   const responseType = spec.type ?? "single";
 
+  if (spec.compoundTask) {
+    return {
+      id: spec.id,
+      type: "social_action_simulation",
+      title: spec.title,
+      instruction: spec.question,
+      points: spec.compoundTask.groups.reduce((sum, group) => sum + group.points, 0),
+      skillDomain: `${subgoal} ${sloLabels[subgoal] ?? ""}`.trim(),
+      kerndoel: spec.kerndoel,
+      subgoal,
+      primarySubgoal: spec.primarySubgoal ?? subgoal,
+      mockup: spec.mockup,
+      socialTask: {
+        screens: [
+          {
+            id: spec.id,
+            title: "AI-chat",
+            instruction: spec.question,
+            body: spec.mockup?.content.join("\n\n"),
+            groups: spec.compoundTask.groups.map((group) => ({
+              id: group.id,
+              title: group.title,
+              instruction: group.question,
+              inputType: "single",
+              options: group.options.map((option) => ({
+                ...option,
+                unknown: option.isUnknown,
+                exclusive: option.isUnknown,
+              })),
+            })),
+          },
+        ],
+        rules: spec.compoundTask.groups.map((group) => ({
+          id: group.id,
+          description: group.question,
+          points: group.points,
+          groupId: group.id,
+          kind: "singleCorrect",
+          correctOptionIds: [group.correctOptionId],
+        })),
+      },
+      aiSnelVeranderendFlag: spec.aiSnelVeranderendFlag,
+      anchorStatus: spec.anchorStatus,
+      sourceStatus: spec.sourceStatus,
+      pilotReviewStatus: spec.pilotReviewStatus,
+      validityNote: spec.validityNote,
+      developerNotes: [
+        spec.compoundTask.itemVersion ? `itemVersion: ${spec.compoundTask.itemVersion}` : "",
+        spec.primarySubgoal ? `primarySubgoal: ${spec.primarySubgoal}` : "",
+        spec.anchorStatus ? `anchorStatus: ${spec.anchorStatus}` : "",
+        spec.sourceStatus ? `sourceStatus: ${spec.sourceStatus}` : "",
+        spec.pilotReviewStatus ? `pilotReviewStatus: ${spec.pilotReviewStatus}` : "",
+        spec.validityNote ? `validityNote: ${spec.validityNote}` : "",
+      ].filter(Boolean),
+    };
+  }
+
   return {
     id: spec.id,
     type: "multiple_choice",
     title: spec.title,
     instruction: spec.question,
-    options: makeSelectedResponseOptions(spec.options),
+    options: makeSelectedResponseOptions(spec.options ?? []),
     correctAnswer: Array.isArray(spec.correct)
       ? spec.correct
       : spec.correct,
@@ -723,8 +890,9 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
     skillDomain: `${subgoal} ${sloLabels[subgoal] ?? ""}`.trim(),
     kerndoel: spec.kerndoel,
     subgoal,
+    primarySubgoal: spec.primarySubgoal,
     allowUnknown: false,
-    unknownOptionId: spec.options.find((option) => option.isUnknown)?.id,
+    unknownOptionId: spec.options?.find((option) => option.isUnknown)?.id,
     randomizeOptions: true,
     renderOptionsAsSourceCards: spec.renderOptionsAsSourceCards,
     selectionMode: responseType === "multiple" ? "multiple" : "single",

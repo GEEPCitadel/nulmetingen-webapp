@@ -4281,6 +4281,45 @@ body {
   font-weight: 900;
 }
 
+.ai-chat-phone {
+  background: #f7f9fc;
+  border-radius: 18px;
+}
+.ai-chat-phone .whutsupp-top {
+  background: #0D4580;
+}
+.ai-chat-phone .whutsupp-avatar {
+  color: #0D4580;
+}
+.ai-chat-phone .whutsupp-back {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .2);
+  font-size: .72rem;
+  font-weight: 900;
+}
+.ai-chat-phone .whutsupp-thread {
+  background:
+    linear-gradient(rgba(255,255,255,.9), rgba(255,255,255,.9)),
+    radial-gradient(circle, rgba(13,69,128,.14) 1px, transparent 1.4px) 0 0 / 18px 18px;
+}
+.ai-chat-phone .whutsupp-bubble {
+  max-width: 90%;
+  white-space: pre-line;
+}
+.ai-chat-phone .ai-response {
+  border: 1px solid rgba(13, 69, 128, .18);
+}
+.ai-chat-phone .ai-prompt {
+  background: #D9F0F9;
+}
+.ai-chat-phone .whutsupp-compose button {
+  background: #0D4580;
+}
+
 .whutsupp-task .question-title {
   max-width: 720px;
 }

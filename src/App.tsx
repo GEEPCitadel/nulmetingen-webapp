@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   assessmentMap,
   defaultCodeMappings,
@@ -2526,6 +2526,22 @@ const WhutsuppMessageBubble = ({
   );
 };
 
+const whutsuppChoiceChatText = (label: string) => {
+  const quotedMessage = label.match(/[\u2018\u201C"']([^"'\u2018\u2019\u201C\u201D]+)[\u2019\u201D"']/);
+  if (quotedMessage?.[1]) {
+    return quotedMessage[1].trim();
+  }
+
+  const reaction = label.match(/^Ik (?:zet|reageer met)\s+(.+?)(?:,| maar|$)/i);
+  if (reaction?.[1]) {
+    return reaction[1].trim();
+  }
+
+  return label
+    .replace(/^Ik\s+(?:stuur|zeg|adviseer|vraag|deel|zet|reageer)\s*(?:Sam)?\s*:?\s*/i, "")
+    .trim();
+};
+
 const WhutsuppScenarioTask = ({
   assessment,
   section,
@@ -2547,6 +2563,7 @@ const WhutsuppScenarioTask = ({
   const [nodeIndex, setNodeIndex] = useState(0);
   const [path, setPath] = useState<WhutsuppPathEntry[]>([]);
   const [recoveryEntry, setRecoveryEntry] = useState<WhutsuppPathEntry | null>(null);
+  const threadRef = useRef<HTMLDivElement | null>(null);
   const [choiceOrderByNode] = useState<Record<string, string[]>>(() =>
     Object.fromEntries(
       (variant?.nodes ?? []).flatMap((node) => [
@@ -2575,9 +2592,9 @@ const WhutsuppScenarioTask = ({
     );
     return [
       ...(previousNode?.messages ?? []),
-      choice ? { kind: "text" as const, sender: "Jij", text: choice.label, side: "right" as const } : null,
+      choice ? { kind: "text" as const, sender: "Jij", text: whutsuppChoiceChatText(choice.label), side: "right" as const } : null,
       recoveryChoice
-        ? { kind: "text" as const, sender: "Jij", text: recoveryChoice.label, side: "right" as const }
+        ? { kind: "text" as const, sender: "Jij", text: whutsuppChoiceChatText(recoveryChoice.label), side: "right" as const }
         : null,
     ].filter(Boolean) as WhutsuppMessage[];
   });
@@ -2586,12 +2603,24 @@ const WhutsuppScenarioTask = ({
     {
       kind: "text" as const,
       sender: "Jij",
-      text: node.choices.find((choice) => choice.choiceId === recoveryEntry.choiceId)?.label ?? "",
+      text: whutsuppChoiceChatText(node.choices.find((choice) => choice.choiceId === recoveryEntry.choiceId)?.label ?? ""),
       side: "right" as const,
     },
     { kind: "text" as const, sender: "Elin", text: "Misschien kun je nog bijsturen.", side: "left" as const },
   ] : node.messages;
   const visibleMessages = [...submittedMessages, ...activeMessages];
+
+  useEffect(() => {
+    const thread = threadRef.current;
+    if (!thread) {
+      return undefined;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      thread.scrollTop = thread.scrollHeight;
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [nodeIndex, path.length, recoveryEntry?.choiceId, visibleMessages.length]);
 
   const finish = (nextPath: WhutsuppPathEntry[]) => {
     onSubmit({
@@ -2665,7 +2694,7 @@ const WhutsuppScenarioTask = ({
               <small>{variant.groupTitle}</small>
             </div>
           </div>
-          <div className="whutsupp-thread">
+          <div className="whutsupp-thread" ref={threadRef}>
             {visibleMessages.map((message, index) => (
               <WhutsuppMessageBubble
                 key={`${message.sender ?? "bericht"}-${message.kind}-${message.text ?? message.assetKey ?? index}-${index}`}
@@ -2717,6 +2746,7 @@ const SocialChatMockup = ({
   title: string;
   screens: NonNullable<AssessmentItem["socialTask"]>["screens"];
 }) => {
+  const isAiChat = screens.some((screen) => /AI-hulp|Leerling:|AI-chat/i.test(screen.body ?? screen.title));
   const messages = screens.flatMap((screen) => {
     const lines = splitMessageLines(screen.body || screen.instruction);
     return lines.length > 0 ? lines : [screen.title];
@@ -2726,22 +2756,24 @@ const SocialChatMockup = ({
     : ["Bekijk de situatie en kies de veiligste reactie."];
 
   return (
-    <div className="whutsupp-phone" aria-label="Whutsupp groepschat">
+    <div className={`whutsupp-phone ${isAiChat ? "ai-chat-phone" : ""}`} aria-label={isAiChat ? "AI-chatmock-up" : "Whutsupp groepschat"}>
       <div className="whutsupp-top">
-        <span className="whutsupp-back" aria-hidden="true">‹</span>
-        <span className="whutsupp-avatar" aria-hidden="true">DG</span>
+        <span className="whutsupp-back" aria-hidden="true">{isAiChat ? "AI" : "<"}</span>
+        <span className="whutsupp-avatar" aria-hidden="true">{isAiChat ? "AI" : "DG"}</span>
         <div>
-          <strong>{title.includes("groepschat") ? "Klasgroep" : "Whutsupp"}</strong>
-          <small>online</small>
+          <strong>{isAiChat ? "AI-hulp" : title.includes("groepschat") ? "Klasgroep" : "Whutsupp"}</strong>
+          <small>{isAiChat ? "chatvoorbeeld" : "online"}</small>
         </div>
       </div>
       <div className="whutsupp-thread">
         {visibleMessages.map((message, index) => {
-          const isSam = /sam|noor|haal weg|stop|wil dit niet/i.test(message);
-          const isQuoted = /^["“]/.test(message);
+          const isAiResponse = isAiChat && /^AI-hulp:/i.test(message);
+          const isStudentPrompt = isAiChat && /^Leerling:/i.test(message);
+          const isSam = !isAiChat && /sam|noor|haal weg|stop|wil dit niet/i.test(message);
+          const isQuoted = /^["]/.test(message);
           return (
             <div
-              className={`whutsupp-bubble ${isSam ? "incoming urgent" : isQuoted || index % 3 === 1 ? "outgoing" : "incoming"}`}
+              className={`whutsupp-bubble ${isAiResponse ? "incoming ai-response" : isStudentPrompt ? "outgoing ai-prompt" : isSam ? "incoming urgent" : isQuoted || index % 3 === 1 ? "outgoing" : "incoming"}`}
               key={`${message}-${index}`}
             >
               {message}
@@ -2750,13 +2782,12 @@ const SocialChatMockup = ({
         })}
       </div>
       <div className="whutsupp-compose">
-        <span>Bericht</span>
+        <span>{isAiChat ? "Typ een vraag" : "Bericht"}</span>
         <button type="button" aria-label="Niet beschikbaar">+</button>
       </div>
     </div>
   );
 };
-
 const InteractionTaskView = ({
   session,
   section,
