@@ -42,6 +42,7 @@ import type {
   GoalScore,
   IncomingMailStimulus,
   InteractionGroup,
+  Option,
   Pt1Node,
   Pt1State,
   ProgrammingBlockDefinition,
@@ -2947,6 +2948,12 @@ const InteractionGroupControl = ({
 }) => {
   const selectedMulti = Array.isArray(value) ? value.map(String) : [];
   const selectedSingle = typeof value === "string" ? value : "";
+  const isExclusiveOption = (option: Option) =>
+    option.exclusive === true ||
+    option.unknown === true ||
+    option.id.endsWith("-unknown") ||
+    option.label.trim().replace(/\.$/, "").toLowerCase() ===
+      UNKNOWN_OPTION_LABEL.replace(/\.$/, "").toLowerCase();
   const matches =
     value && typeof value === "object" && !Array.isArray(value)
       ? (value as Record<string, string>)
@@ -3017,11 +3024,22 @@ const InteractionGroupControl = ({
               type="button"
               onClick={() => {
                 if (group.inputType === "multi") {
-                  onChange(
-                    selected
-                      ? selectedMulti.filter((id) => id !== option.id)
-                      : [...selectedMulti, option.id],
-                  );
+                  const contentSelected = selectedMulti.filter((id) => {
+                    const selectedOption = group.options?.find((entry) => entry.id === id);
+                    return selectedOption ? !isExclusiveOption(selectedOption) : true;
+                  });
+                  if (isExclusiveOption(option)) {
+                    onChange(selected ? [] : [option.id]);
+                    return;
+                  }
+                  if (selected) {
+                    onChange(contentSelected.filter((id) => id !== option.id));
+                    return;
+                  }
+                  if (group.maxSelections && contentSelected.length >= group.maxSelections) {
+                    return;
+                  }
+                  onChange([...contentSelected, option.id]);
                   return;
                 }
                 onChange(option.id);

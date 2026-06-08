@@ -40,6 +40,10 @@ export interface Option {
   label: string;
   description?: string;
   sourceType?: string;
+  errorCategory?: string;
+  riskFlag?: string;
+  unknown?: boolean;
+  exclusive?: boolean;
 }
 
 export interface ThemeDefinition {
@@ -275,6 +279,7 @@ export interface InteractionGroup {
   inputType: InteractionInputType;
   options?: Option[];
   cards?: Option[];
+  maxSelections?: number;
 }
 
 export interface IncomingMailStimulus {
