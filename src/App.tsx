@@ -1988,7 +1988,6 @@ const AdminScreen = ({
         <p className="help">
           Plak meerdere namen tegelijk. De naam wordt alleen gebruikt om de toegangscode uit te delen;
           resultaten worden in de analyse alleen als aggregaat getoond.
-          De preview controleert de invoer en maakt nog geen leerlingen of codes aan.
         </p>
         <div className="grid">
           <label>
@@ -2044,53 +2043,10 @@ const AdminScreen = ({
               placeholder={"Plak hier leerlingnamen.\nEen leerling per regel.\n\nVoorbeeld:\nSanne Jansen\nMilan Verbeek\nNoor Peters"}
             />
           </label>
-          <button className="btn-import" type="button" onClick={prepareBulkPreview} disabled={isLoading}>
-            Preview maken
+          <button className="btn-import" type="button" onClick={() => void importStudents([])} disabled={isLoading}>
+            Toevoegen
           </button>
         </div>
-        {previewRows.length > 0 ? (
-          <div className="admin-preview-block">
-            <h4>Preview</h4>
-            {(() => {
-              const duplicates = duplicateNamesForPreview(previewRows);
-              return (
-                <>
-                  {duplicates.size > 0 ? (
-                    <div className="warning-banner-inline">
-                      Let op: er staan dubbele namen in deze klas. Controleer de uitgifte van codes extra zorgvuldig.
-                    </div>
-                  ) : null}
-                  <div className="analysis-table compact">
-                    <div className="analysis-row head">
-                      <span>Naam</span>
-                      <span>Leerjaar</span>
-                      <span>Klas</span>
-                      <span>Niveau / meting</span>
-                      <span>Status</span>
-                    </div>
-                    {previewRows.map((row, index) => (
-                      <div className="analysis-row" key={`${row.participantLabel}-${index}`}>
-                        <span>{row.participantLabel}</span>
-                        <span>{row.gradeLevel === "lj3" ? "Leerjaar 3" : "Leerjaar 1"}</span>
-                        <span>{row.classCode}</span>
-                        <span>{row.track === "hv" ? "HAVO/VWO" : "VMBO"}</span>
-                        <span>{duplicates.has(row.participantLabel.toLowerCase()) ? "Dubbele naam" : "Klaar"}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              );
-            })()}
-            <div className="rd-result-actions">
-              <button className="btn btn-ghost" type="button" onClick={() => setPreviewRows([])}>
-                Annuleren
-              </button>
-              <button className="btn btn-primary" type="button" onClick={() => void importStudents()} disabled={isLoading}>
-                Leerlingen toevoegen en toegangscodes maken
-              </button>
-            </div>
-          </div>
-        ) : null}
         {createdCodeRows.length > 0 ? (
           <div className="admin-preview-block printable-code-overview">
             <h4>Code-overzicht</h4>
