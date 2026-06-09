@@ -65,6 +65,11 @@ export interface MockupCard {
   title: string;
   subtitle?: string;
   content: string[];
+  chatMessages?: Array<{
+    sender: "student" | "ai";
+    label: string;
+    text: string;
+  }>;
   footer?: string;
   mediaHint?: string;
   meta?: string[];
@@ -502,6 +507,9 @@ export interface AssessmentItem {
   kerndoel: string;
   subgoal?: string;
   primarySubgoal?: string;
+  itemVersion?: string;
+  learnerQuestionNumber?: number;
+  internalSlot?: string;
   allowUnknown?: boolean;
   unknownOptionId?: string;
   randomizeOptions?: boolean;
@@ -585,11 +593,17 @@ export interface Result {
   score: number;
   maxScore: number;
   primarySubgoal?: string;
+  itemVersion?: string;
+  learnerQuestionNumber?: number;
+  internalSlot?: string;
   taskResults?: Array<{
     taskId: string;
     description: string;
     correct: boolean;
     points?: number;
+    selectedOptionId?: string;
+    unknown?: boolean;
+    errorCategory?: string;
   }>;
   scoringSummary?: WhutsuppScoringSummary;
   responseType?: ResponseType;
@@ -615,11 +629,17 @@ export interface EventLog {
   score?: number;
   maxScore?: number;
   primarySubgoal?: string;
+  itemVersion?: string;
+  learnerQuestionNumber?: number;
+  internalSlot?: string;
   taskResults?: Array<{
     taskId: string;
     description: string;
     correct: boolean;
     points?: number;
+    selectedOptionId?: string;
+    unknown?: boolean;
+    errorCategory?: string;
   }>;
   scoringSummary?: WhutsuppScoringSummary;
   responseType?: ResponseType;

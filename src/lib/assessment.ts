@@ -763,6 +763,11 @@ const scoreInteractionTask = (
   const rules = config?.rules ?? [];
   const taskResults = rules.map((rule) => {
     const selectedIds = selectedIdsForGroup(state, rule.groupId);
+    const selectedOptionId = selectedIds[0] ?? "";
+    const group = config?.screens
+      .flatMap((screen) => screen.groups)
+      .find((candidate) => candidate.id === rule.groupId);
+    const selectedOption = group?.options?.find((option) => option.id === selectedOptionId);
     const correctIds = rule.correctOptionIds ?? [];
     const forbiddenIds = rule.forbiddenOptionIds ?? [];
     const forbiddenByGroupOk = Object.entries(rule.forbiddenByGroup ?? {}).every(
@@ -816,6 +821,9 @@ const scoreInteractionTask = (
       description: rule.description,
       correct: awardedPoints === rule.points,
       points: awardedPoints,
+      selectedOptionId: selectedOptionId || undefined,
+      unknown: selectedOption?.unknown === true || selectedOption?.exclusive === true || selectedOptionId === "unknown",
+      errorCategory: selectedOption?.errorCategory,
     };
   });
   const uncappedScore = taskResults.reduce((sum, result) => sum + result.points, 0);
@@ -1159,6 +1167,9 @@ export const submitItemAnswer = ({
     score: scored.score,
     maxScore: item.points,
     primarySubgoal: item.primarySubgoal ?? item.subgoal,
+    itemVersion: item.itemVersion,
+    learnerQuestionNumber: item.learnerQuestionNumber,
+    internalSlot: item.internalSlot,
     taskResults: scored.taskResults,
     scoringSummary,
     responseType,
@@ -1183,6 +1194,9 @@ export const submitItemAnswer = ({
     score: scored.score,
     maxScore: item.points,
     primarySubgoal: item.primarySubgoal ?? item.subgoal,
+    itemVersion: item.itemVersion,
+    learnerQuestionNumber: item.learnerQuestionNumber,
+    internalSlot: item.internalSlot,
     taskResults: scored.taskResults,
     scoringSummary,
     responseType,

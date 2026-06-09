@@ -4310,11 +4310,26 @@ body {
   max-width: 90%;
   white-space: pre-line;
 }
+.ai-chat-phone .whutsupp-bubble > span {
+  display: block;
+}
 .ai-chat-phone .ai-response {
+  align-self: flex-start;
+  background: #fff;
   border: 1px solid rgba(13, 69, 128, .18);
 }
 .ai-chat-phone .ai-prompt {
-  background: #D9F0F9;
+  align-self: flex-end;
+  background: #0D75BC;
+  color: #fff;
+}
+.ai-bubble-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #0D4580;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .02em;
 }
 .ai-chat-phone .whutsupp-compose button {
   background: #0D4580;

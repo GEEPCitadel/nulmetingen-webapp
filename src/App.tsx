@@ -2742,41 +2742,50 @@ const WhutsuppScenarioTask = ({
 const SocialChatMockup = ({
   title,
   screens,
+  mockup,
 }: {
   title: string;
   screens: NonNullable<AssessmentItem["socialTask"]>["screens"];
+  mockup?: AssessmentItem["mockup"];
 }) => {
-  const isAiChat = screens.some((screen) => /AI-hulp|Leerling:|AI-chat/i.test(screen.body ?? screen.title));
-  const messages = screens.flatMap((screen) => {
+  const isAiChat = mockup?.mediaHint === "Niet-interactieve AI-chatmock-up" || screens.some((screen) => /KletsGPT|AI-chat/i.test(screen.body ?? screen.title));
+  const messages = mockup?.chatMessages?.length
+    ? mockup.chatMessages
+    : screens.flatMap((screen) => {
     const lines = splitMessageLines(screen.body || screen.instruction);
-    return lines.length > 0 ? lines : [screen.title];
+    return (lines.length > 0 ? lines : [screen.title]).map((line) => ({
+      sender: "student" as const,
+      label: "Leerling",
+      text: line,
+    }));
   });
   const visibleMessages = messages.length > 0
     ? messages
-    : ["Bekijk de situatie en kies de veiligste reactie."];
+    : [{ sender: "student" as const, label: "Leerling", text: "Bekijk de situatie en kies de veiligste reactie." }];
 
   return (
-    <div className={`whutsupp-phone ${isAiChat ? "ai-chat-phone" : ""}`} aria-label={isAiChat ? "AI-chatmock-up" : "Whutsupp groepschat"}>
+    <div className={`whutsupp-phone ${isAiChat ? "ai-chat-phone" : ""}`} aria-label={isAiChat ? "KletsGPT-chatmock-up" : "Whutsupp groepschat"}>
       <div className="whutsupp-top">
         <span className="whutsupp-back" aria-hidden="true">{isAiChat ? "AI" : "<"}</span>
         <span className="whutsupp-avatar" aria-hidden="true">{isAiChat ? "AI" : "DG"}</span>
         <div>
-          <strong>{isAiChat ? "AI-hulp" : title.includes("groepschat") ? "Klasgroep" : "Whutsupp"}</strong>
+          <strong>{isAiChat ? "KletsGPT" : title.includes("groepschat") ? "Klasgroep" : "Whutsupp"}</strong>
           <small>{isAiChat ? "chatvoorbeeld" : "online"}</small>
         </div>
       </div>
       <div className="whutsupp-thread">
         {visibleMessages.map((message, index) => {
-          const isAiResponse = isAiChat && /^AI-hulp:/i.test(message);
-          const isStudentPrompt = isAiChat && /^Leerling:/i.test(message);
-          const isSam = !isAiChat && /sam|noor|haal weg|stop|wil dit niet/i.test(message);
-          const isQuoted = /^["]/.test(message);
+          const isAiResponse = isAiChat && message.sender === "ai";
+          const isStudentPrompt = isAiChat && message.sender === "student";
+          const isSam = !isAiChat && /sam|noor|haal weg|stop|wil dit niet/i.test(message.text);
+          const isQuoted = /^["]/.test(message.text);
           return (
             <div
               className={`whutsupp-bubble ${isAiResponse ? "incoming ai-response" : isStudentPrompt ? "outgoing ai-prompt" : isSam ? "incoming urgent" : isQuoted || index % 3 === 1 ? "outgoing" : "incoming"}`}
-              key={`${message}-${index}`}
+              key={`${message.sender}-${message.text}-${index}`}
             >
-              {message}
+              {isAiResponse ? <small className="ai-bubble-label">{message.label}</small> : null}
+              <span>{message.text}</span>
             </div>
           );
         })}
@@ -2857,13 +2866,16 @@ const InteractionTaskView = ({
       shownOptionOrder,
     });
   const isSocialTask = item.type === "social_action_simulation";
+  const isAiChatTask = item.mockup?.mediaHint === "Niet-interactieve AI-chatmock-up";
   const renderScreen = (screen: typeof task.screens[number]) => (
     <div className="interaction-screen" key={screen.id}>
-      <div className="stack-xs">
-        <strong>{screen.title}</strong>
-        <p>{screen.instruction}</p>
-        {!isSocialTask && screen.body ? <div className="notice-banner">{screen.body}</div> : null}
-      </div>
+      {!isAiChatTask ? (
+        <div className="stack-xs">
+          <strong>{screen.title}</strong>
+          <p>{screen.instruction}</p>
+          {!isSocialTask && screen.body ? <div className="notice-banner">{screen.body}</div> : null}
+        </div>
+      ) : null}
       {screen.emailStimulus ? <IncomingMailStimulusView email={screen.emailStimulus} /> : null}
       {screen.groups.map((group) => (
         <InteractionGroupControl
@@ -2887,7 +2899,7 @@ const InteractionTaskView = ({
 
       {isSocialTask ? (
         <div className="social-chat-task">
-          <SocialChatMockup title={item.title} screens={task.screens} />
+          <SocialChatMockup title={item.title} screens={task.screens} mockup={item.mockup} />
           <div className="social-question-stack">
             {task.screens.map(renderScreen)}
           </div>

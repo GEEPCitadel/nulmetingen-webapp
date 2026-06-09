@@ -175,6 +175,9 @@ type SelectedResponseSpec = {
   kerndoel: string;
   subgoal?: string;
   primarySubgoal?: string;
+  itemVersion?: string;
+  learnerQuestionNumber?: number;
+  internalSlot?: string;
   type?: "single" | "multiple";
   selectCount?: number | null;
   question: string;
@@ -208,6 +211,7 @@ type SelectedResponseOptionSpec = {
   label: string;
   description?: string;
   sourceType?: string;
+  errorCategory?: string;
   isUnknown?: boolean;
 };
 
@@ -223,6 +227,7 @@ type SelectedResponseJsonOption = {
   unknown?: boolean;
   isHarmful?: boolean;
   score?: number;
+  errorCategory?: string;
 };
 
 type SelectedResponseJsonSubQuestion = {
@@ -291,7 +296,7 @@ type SelectedResponseJsonItem = {
     chatMockup?: {
       toolName: string;
       messages: Array<{
-        sender: string;
+        sender: "student" | "ai";
         label: string;
         text: string;
       }>;
@@ -299,6 +304,8 @@ type SelectedResponseJsonItem = {
   };
   primarySubgoal?: string;
   itemVersion?: string;
+  learnerQuestionNumber?: number;
+  internalSlot?: string;
   archivedFrom?: string;
   subQuestions?: SelectedResponseJsonSubQuestion[];
   ui?: {
@@ -383,6 +390,7 @@ const makeSelectedResponseOptions = (options: SelectedResponseOptionSpec[]): Opt
     label: option.label,
     description: option.description,
     sourceType: option.sourceType,
+    errorCategory: option.errorCategory,
   }));
 
 const fixedOptions = (labels: string[]): Option[] =>
@@ -489,9 +497,8 @@ const mockupForContext = (context?: SelectedResponseJsonItem["context"]): Mockup
     return {
       badge: "AI-chat",
       title: context.chatMockup.toolName,
-      content: context.chatMockup.messages.map(
-        (message) => `${message.label}: ${message.text}`,
-      ),
+      content: context.chatMockup.messages.map((message) => message.text),
+      chatMessages: context.chatMockup.messages,
       mediaHint: "Niet-interactieve AI-chatmock-up",
     };
   }
@@ -526,6 +533,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
         const options = subQuestion.options.map((option) => ({
           id: String(option.optionId ?? option.id ?? option.text),
           label: normalizeUnknownLabel(option.label ?? option.text),
+          errorCategory: option.errorCategory,
           description:
             option.label && normalizeUnknownLabel(option.label) !== normalizeUnknownLabel(option.text)
               ? option.text
@@ -557,6 +565,9 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
         kerndoel: rootGoalFrom(item.kerndoel ?? item.primarySubgoal ?? item.subgoal),
         subgoal: subgoalCodeFrom(item.primarySubgoal ?? item.subgoal),
         primarySubgoal: item.primarySubgoal ?? subgoalCodeFrom(item.subgoal),
+        itemVersion: item.itemVersion,
+        learnerQuestionNumber: item.learnerQuestionNumber,
+        internalSlot: item.internalSlot,
         question: item.question,
         mockup: mockupForContext(item.context),
         compoundTask: {
@@ -590,6 +601,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
               ? option.text
               : undefined,
           sourceType: option.sourceType,
+          errorCategory: option.errorCategory,
           correct:
             option.correct === true ||
             option.isCorrect === true ||
@@ -619,6 +631,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
         label: option.label,
         description: option.description,
         sourceType: option.sourceType,
+        errorCategory: option.errorCategory,
       })),
       unknownOption,
     ];
@@ -639,6 +652,9 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
       kerndoel: rootGoalFrom(item.kerndoel ?? item.subgoal),
       subgoal: subgoalCodeFrom(item.subgoal),
       primarySubgoal: item.primarySubgoal,
+      itemVersion: item.itemVersion,
+      learnerQuestionNumber: item.learnerQuestionNumber,
+      internalSlot: item.internalSlot,
       type: responseType,
       selectCount:
         responseType === "multiple"
@@ -831,6 +847,9 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
       kerndoel: spec.kerndoel,
       subgoal,
       primarySubgoal: spec.primarySubgoal ?? subgoal,
+      itemVersion: spec.itemVersion,
+      learnerQuestionNumber: spec.learnerQuestionNumber,
+      internalSlot: spec.internalSlot,
       mockup: spec.mockup,
       socialTask: {
         screens: [
@@ -848,6 +867,7 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
                 ...option,
                 unknown: option.isUnknown,
                 exclusive: option.isUnknown,
+                errorCategory: option.errorCategory,
               })),
             })),
           },
@@ -868,6 +888,8 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
       validityNote: spec.validityNote,
       developerNotes: [
         spec.compoundTask.itemVersion ? `itemVersion: ${spec.compoundTask.itemVersion}` : "",
+        spec.learnerQuestionNumber ? `learnerQuestionNumber: ${spec.learnerQuestionNumber}` : "",
+        spec.internalSlot ? `internalSlot: ${spec.internalSlot}` : "",
         spec.primarySubgoal ? `primarySubgoal: ${spec.primarySubgoal}` : "",
         spec.anchorStatus ? `anchorStatus: ${spec.anchorStatus}` : "",
         spec.sourceStatus ? `sourceStatus: ${spec.sourceStatus}` : "",
@@ -891,6 +913,9 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
     kerndoel: spec.kerndoel,
     subgoal,
     primarySubgoal: spec.primarySubgoal,
+    itemVersion: spec.itemVersion,
+    learnerQuestionNumber: spec.learnerQuestionNumber,
+    internalSlot: spec.internalSlot,
     allowUnknown: false,
     unknownOptionId: spec.options?.find((option) => option.isUnknown)?.id,
     randomizeOptions: true,
