@@ -4314,9 +4314,13 @@ const BlockProgrammingTaskView = ({
   const [executed, setExecuted] = useState(false);
   const [selectedWrongBlockIds, setSelectedWrongBlockIds] = useState<string[]>([]);
   const [selectedProgramIndex, setSelectedProgramIndex] = useState<number | null>(null);
+  const [paletteMode, setPaletteMode] = useState<"replace" | "insert">("replace");
   const [replacementActions, setReplacementActions] = useState<
     Array<{ replacedBlockId: string; replacementBlockId: string; timestamp: string }>
   >([]);
+  const [blockAddedEvents, setBlockAddedEvents] = useState<Array<Record<string, unknown>>>([]);
+  const [blockRemovedEvents, setBlockRemovedEvents] = useState<Array<Record<string, unknown>>>([]);
+  const [blockMovedEvents, setBlockMovedEvents] = useState<Array<Record<string, unknown>>>([]);
   const [lastChangedAt, setLastChangedAt] = useState<string | null>(null);
   const [lastPlayedAt, setLastPlayedAt] = useState<string | null>(null);
   const [playedAfterLastChange, setPlayedAfterLastChange] = useState(false);
@@ -4331,6 +4335,7 @@ const BlockProgrammingTaskView = ({
   );
   const [runStep, setRunStep] = useState(-1); // -1 idle; otherwise index of currently-active block
   const [runTimer, setRunTimer] = useState<number | null>(null);
+  const runCancelledRef = useRef(false);
   const task = item.blockTask;
   const [paletteBlocks] = useState(() => shuffleItems(item.blockTask?.blocks ?? []));
   if (!task) {
@@ -4341,11 +4346,21 @@ const BlockProgrammingTaskView = ({
   const blockStyle = (block: Pick<ProgrammingBlockDefinition, "color">) =>
     ({ "--block-color": block.color } as CSSProperties);
 
+  const markProgramChanged = (changedAt: string) => {
+    setLastChangedAt(changedAt);
+    setPlayedAfterLastChange(false);
+    setGoalMatched(false);
+  };
+
   const addBlockToProgram = (block: ProgrammingBlockDefinition) => {
-    if (isDebugTask && selectedProgramIndex !== null) {
+    if (isDebugTask && paletteMode === "replace" && selectedProgramIndex !== null) {
       const changedAt = new Date().toISOString();
-      setProgram((current) =>
-        current.map((entry, index) =>
+      const replaced = program[selectedProgramIndex];
+      if (!replaced) {
+        return;
+      }
+      setProgram((current) => {
+        return current.map((entry, index) =>
           index === selectedProgramIndex
             ? {
                 ...block,
@@ -4354,22 +4369,43 @@ const BlockProgrammingTaskView = ({
                 indent: entry.indent,
               }
             : entry,
-        ),
-      );
-      setReplacementActions((current) => [
-        ...current,
+        );
+      });
+      setReplacementActions((events) => [
+        ...events,
         {
-          replacedBlockId: program[selectedProgramIndex]?.id ?? "",
+          replacedBlockId: replaced.id ?? "",
           replacementBlockId: block.id ?? block.label,
           timestamp: changedAt,
         },
       ]);
-      setLastChangedAt(changedAt);
-      setPlayedAfterLastChange(false);
-      setGoalMatched(false);
+      markProgramChanged(changedAt);
       return;
     }
     if (isDebugTask) {
+      const changedAt = new Date().toISOString();
+      const insertIndex = selectedProgramIndex === null ? program.length : selectedProgramIndex + 1;
+      const newBlock: ProgramBlock = {
+        ...block,
+        id: `${block.id ?? block.label}-added-${Date.now()}`,
+        indent: 0,
+      };
+      setProgram((current) => [
+        ...current.slice(0, insertIndex),
+        newBlock,
+        ...current.slice(insertIndex),
+      ]);
+      setBlockAddedEvents((events) => [
+        ...events,
+        {
+          blockId: newBlock.id,
+          blockLabel: newBlock.label,
+          insertIndex,
+          timestamp: changedAt,
+        },
+      ]);
+      setSelectedProgramIndex(insertIndex);
+      markProgramChanged(changedAt);
       return;
     }
     setProgram((current) => {
@@ -4384,6 +4420,53 @@ const BlockProgrammingTaskView = ({
         },
       ];
     });
+  };
+
+  const removeProgramBlock = (index: number) => {
+    const block = program[index];
+    if (!block || (index === 0 && block.label === "bij start")) {
+      return;
+    }
+    const changedAt = new Date().toISOString();
+    setProgram((current) => current.filter((_, i) => i !== index));
+    setSelectedWrongBlockIds((current) => current.filter((id) => id !== (block.id ?? "")));
+    setBlockRemovedEvents((events) => [
+      ...events,
+      {
+        blockId: block.id ?? "",
+        blockLabel: block.label,
+        index,
+        timestamp: changedAt,
+      },
+    ]);
+    setSelectedProgramIndex(null);
+    markProgramChanged(changedAt);
+  };
+
+  const moveProgramBlock = (index: number, direction: -1 | 1) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= program.length || index === 0 || targetIndex === 0) {
+      return;
+    }
+    const changedAt = new Date().toISOString();
+    setProgram((current) => {
+      const next = [...current];
+      const [moved] = next.splice(index, 1);
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+    setBlockMovedEvents((events) => [
+      ...events,
+      {
+        blockId: program[index]?.id ?? "",
+        blockLabel: program[index]?.label ?? "",
+        fromIndex: index,
+        toIndex: targetIndex,
+        timestamp: changedAt,
+      },
+    ]);
+    setSelectedProgramIndex(targetIndex);
+    markProgramChanged(changedAt);
   };
   const hasBlock = (label: string) => program.some((block) => block.label === label);
 
@@ -4643,10 +4726,24 @@ const BlockProgrammingTaskView = ({
       let output = "";
       let log: string[] = [];
       if (item.id.startsWith("lj1v")) {
-        output = has("2 stappen vooruit") && has("draai naar rechts") && has('zeg "Klaar"')
-          ? "2 stappen vooruit | draai naar rechts | Klaar"
+        const correctLabels = task.correctProgram ?? [];
+        const exactProgram =
+          labels.length === correctLabels.length &&
+          correctLabels.every((label, index) => labels[index] === label);
+        output = exactProgram
+          ? 'START | vooruit | vooruit | rechts | vooruit | wacht | links | Klaar'
           : "niet hetzelfde";
-        log = ['Start', has("2 stappen vooruit") ? "-> 2 stappen vooruit" : "-> 1 stap vooruit", has("draai naar rechts") ? "draai rechts" : "draai links", has('zeg "Klaar"') ? '"Klaar"' : "geen tekst"];
+        log = labels.map((label) =>
+          label === "bij start"
+            ? "Start"
+            : label === "draai naar rechts"
+              ? "Draai rechts"
+              : label === "draai naar links"
+                ? "Draai links"
+                : label.startsWith('zeg "')
+                  ? `Zeg: ${label.slice(5, -1)}`
+                  : label,
+        );
       } else if (item.id.startsWith("lj1h")) {
         output = has("herhaal 4 keer") && has("1 stap vooruit") && has("rechts draaien") && has('zeg "Vierkant"')
           ? "4x vooruit en rechts | Vierkant"
@@ -4697,17 +4794,124 @@ const BlockProgrammingTaskView = ({
     };
   };
 
-  const playProgram = () => {
+  const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+  const stepDuration = (label: string) => {
+    if (label === "bij start" || label.includes("afspelen")) return 500;
+    if (label.startsWith("wacht")) return 1000;
+    if (label.startsWith('zeg "') || label.startsWith('toon "')) return 1200;
+    if (label.includes("draai") || label.includes("rechts") || label.includes("links")) return 800;
+    if (label.includes("stap") || label.includes("meter")) return task.playback?.stepMs ?? 900;
+    return task.playback?.stepMs ?? 800;
+  };
+
+  const runBlockVisually = (
+    block: ProgramBlock,
+    current: ProgramRunEffects,
+  ): { effects: ProgramRunEffects; visibleOutput: string; actionType: string } => {
+    const effects: ProgramRunEffects = { ...current, log: [...current.log] };
+    const label = block.label;
+    let visibleOutput = label === "bij start" ? "Start" : label;
+    let actionType = "execute";
+    if (label === "bij start" || label.includes("afspelen")) {
+      visibleOutput = "Start";
+      actionType = "start";
+    } else if (label === "1 stap vooruit") {
+      effects.move += 1;
+      visibleOutput = "1 stap vooruit";
+      actionType = "move";
+    } else if (label === "2 stappen vooruit") {
+      effects.move += 2;
+      visibleOutput = "2 stappen vooruit";
+      actionType = "move";
+    } else if (label === "3 stappen vooruit") {
+      effects.move += 3;
+      visibleOutput = "3 stappen vooruit";
+      actionType = "move";
+    } else if (label === "1 stap achteruit") {
+      effects.move -= 1;
+      visibleOutput = "1 stap achteruit";
+      actionType = "move";
+    } else if (label === "2 stappen achteruit") {
+      effects.move -= 2;
+      visibleOutput = "2 stappen achteruit";
+      actionType = "move";
+    } else if (label === "draai naar rechts" || label === "rechts draaien") {
+      effects.rotation += 90;
+      visibleOutput = "Draai rechts";
+      actionType = "turn";
+    } else if (label === "draai naar links" || label === "links draaien") {
+      effects.rotation -= 90;
+      visibleOutput = "Draai links";
+      actionType = "turn";
+    } else if (label.startsWith("wacht")) {
+      visibleOutput = label === "wacht 1 seconde" ? "Wacht 1 seconde" : label;
+      actionType = "wait";
+    } else if (label.startsWith('zeg "')) {
+      effects.speech = label.slice(5, -1);
+      visibleOutput = `Zeg: ${effects.speech}`;
+      actionType = "say";
+    } else if (label.startsWith('toon "')) {
+      effects.display = label.slice(6, -1);
+      visibleOutput = `Toon: ${effects.display}`;
+      actionType = "show";
+    }
+    effects.log.push(visibleOutput);
+    return { effects, visibleOutput, actionType };
+  };
+
+  const playProgram = async () => {
     if (runStep >= 0) {
+      runCancelledRef.current = true;
       stopStepper();
       return;
     }
+    runCancelledRef.current = false;
     setExecuted(true);
+    setRunEffects({ ...emptyProgramRunEffects, log: [] });
+    setSpeechVisible(false);
+    setGoalMatched(false);
+    const programAtPlay = program.map((block) => ({ ...block }));
+    let effects: ProgramRunEffects = { ...emptyProgramRunEffects, log: [] };
+    const executionTrace: Array<Record<string, unknown>> = [];
+    for (let index = 0; index < programAtPlay.length; index += 1) {
+      if (runCancelledRef.current) {
+        return;
+      }
+      const block = programAtPlay[index];
+      setRunStep(index);
+      const beforeState = { ...effects, log: effects.log };
+      const step = runBlockVisually(block, effects);
+      effects = step.effects;
+      setRunEffects(effects);
+      if (step.actionType === "say") {
+        setSpeechVisible(true);
+      }
+      executionTrace.push({
+        blockId: block.id ?? `step-${index + 1}`,
+        blockLabel: block.label,
+        blockType: block.category,
+        actionType: step.actionType,
+        beforeState,
+        afterState: { ...effects, log: effects.log },
+        visibleOutput: step.visibleOutput,
+        matchedExpectedStep: (task.correctProgram ?? [])[index] === block.label,
+      });
+      await sleep(stepDuration(block.label));
+      if (step.actionType === "say") {
+        setSpeechVisible(false);
+      }
+      await sleep(300);
+    }
+    setRunStep(-1);
+    setRunTimer(null);
+    if (programAtPlay.length === 0 || runCancelledRef.current) {
+      return;
+    }
     const debugResult = isDebugTask ? evaluateDebugProgram() : null;
-    const effects = debugResult
-      ? { ...emptyProgramRunEffects, log: debugResult.log }
-      : executeProgram();
-    setRunEffects(effects);
+    if (!debugResult) {
+      setRunEffects(executeProgram());
+    }
     if (debugResult) {
       const timestamp = new Date().toISOString();
       setGoalMatched(debugResult.goalMatched);
@@ -4719,35 +4923,19 @@ const BlockProgrammingTaskView = ({
           runId: `run-${String(current.length + 1).padStart(3, "0")}`,
           timestamp,
           playCount: current.length + 1,
-          programStateAtPlay: { program },
+          programStateAtPlay: { program: programAtPlay },
           playedAfterLastChange: true,
-          executionTrace: debugResult.testResults.flatMap((test) => test.executionTrace),
+          executionTrace,
+          executionTraceComplete: executionTrace.length === programAtPlay.length,
           goalMatched: debugResult.goalMatched,
           failedStepId: debugResult.testResults.find((test) => !test.correct)?.testCaseId ?? null,
           finalOutput: debugResult.testResults.map((test) => test.finalOutput).join(" | "),
           itemVersion: "pt7-debug-v1",
           testCaseResults: debugResult.testResults,
+          finalProgramState: { program: programAtPlay },
         },
       ]);
     }
-    if (effects.speech) {
-      setSpeechVisible(true);
-      window.setTimeout(() => setSpeechVisible(false), 2000);
-    }
-    // Walk the program step-by-step for a visual highlight in the canvas.
-    if (program.length === 0) return;
-    const interval = 600;
-    const advance = (index: number) => {
-      if (index >= program.length) {
-        setRunStep(-1);
-        setRunTimer(null);
-        return;
-      }
-      setRunStep(index);
-      const id = window.setTimeout(() => advance(index + 1), interval);
-      setRunTimer(id);
-    };
-    advance(0);
   };
   const resetProgramRun = () => {
     stopStepper();
@@ -4791,15 +4979,28 @@ const BlockProgrammingTaskView = ({
       >
         <p className="helper-text">{item.instruction}</p>
         {isDebugTask ? (
-          <div className="notice-banner">
-            <strong>{task.visualGoal?.title ?? "DOEL"}</strong>
-            {(task.visualGoal?.lines ?? []).map((line) => (
-              <span key={line}>{line}</span>
-            ))}
-            <small>
-              Gekozen foutblokken: {selectedWrongBlockIds.length}/2. Klik een codeblok en kies daarna een vervangblok uit de blokkenbak.
-            </small>
-          </div>
+          <>
+            <div className="pt7-goal-card" aria-label="Doel">
+              <strong>{task.visualGoal?.title ?? "DOEL"}</strong>
+              {task.visualGoal?.steps ? (
+                <div className="pt7-goal-steps">
+                  {task.visualGoal.steps.map((step) => (
+                    <span className={`pt7-goal-step goal-step-${step.tone ?? "arrow"}`} key={step.id}>
+                      {step.icon ? <span className="pt7-goal-icon" aria-hidden="true">{step.icon}</span> : null}
+                      <span>{step.label}</span>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                (task.visualGoal?.lines ?? []).map((line) => (
+                  <span key={line}>{line}</span>
+                ))
+              )}
+            </div>
+            <p className="pt7-debug-instruction">
+              Gekozen foutblokken: {selectedWrongBlockIds.length}/2. Tik een fout blok aan. Kies daarna het goede blok.
+            </p>
+          </>
         ) : null}
         {task.codingSteps ? (
           <ol className="coding-steps">
@@ -4842,7 +5043,8 @@ const BlockProgrammingTaskView = ({
                         key={b.label}
                         type="button"
                         onClick={() => addBlockToProgram(b)}
-                        title="Klik om toe te voegen"
+                        title={isDebugTask && paletteMode === "replace" && selectedProgramIndex !== null ? "Vervang geselecteerd blok" : "Voeg blok toe"}
+                        disabled={isRunning}
                       >
                         <span
                           className={`block block-${shape}`}
@@ -4901,6 +5103,30 @@ const BlockProgrammingTaskView = ({
             </div>
           </div>
 
+          {isDebugTask ? (
+            <div className="pt7-editbar" role="group" aria-label="Bewerkmodus">
+              <button
+                className={paletteMode === "replace" ? "active" : ""}
+                type="button"
+                onClick={() => setPaletteMode("replace")}
+              >
+                Vervang
+              </button>
+              <button
+                className={paletteMode === "insert" ? "active" : ""}
+                type="button"
+                onClick={() => setPaletteMode("insert")}
+              >
+                Voeg toe
+              </button>
+              <span>
+                {paletteMode === "replace"
+                  ? "Selecteer een blok op het werkblad en kies een vervangblok."
+                  : "Kies een blok uit de blokkenbak; het komt na de selectie of onderaan."}
+              </span>
+            </div>
+          ) : null}
+
           <div className={`blocks-canvas-area ${program.length === 0 ? "empty" : ""}`}>
             {program.length === 0 ? (
               <div className="canvas-empty">
@@ -4921,7 +5147,7 @@ const BlockProgrammingTaskView = ({
                   key={`${block.label}-${index}`}
                   style={{ "--depth": block.indent } as CSSProperties}
                   onClick={() => {
-                    if (!isDebugTask) {
+                    if (!isDebugTask || isRunning) {
                       return;
                     }
                     setSelectedProgramIndex(index);
@@ -4929,7 +5155,7 @@ const BlockProgrammingTaskView = ({
                       if (current.includes(blockId)) {
                         return current.filter((id) => id !== blockId);
                       }
-                      if (current.length >= 2) {
+                      if (current.length >= 3) {
                         return current;
                       }
                       return [...current, blockId];
@@ -4942,14 +5168,35 @@ const BlockProgrammingTaskView = ({
                   >
                     <span className="block-label">{block.label}</span>
                   </span>
+                  <div className="canvas-row-tools">
+                    <button
+                      type="button"
+                      aria-label="Verplaats omhoog"
+                      disabled={isRunning || index <= 1}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        moveProgramBlock(index, -1);
+                      }}
+                    >↑</button>
+                    <button
+                      type="button"
+                      aria-label="Verplaats omlaag"
+                      disabled={isRunning || index === 0 || index >= program.length - 1}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        moveProgramBlock(index, 1);
+                      }}
+                    >↓</button>
+                  </div>
                   <button
                     className="canvas-row-remove"
                     type="button"
                     aria-label="Verwijder blok"
-                    disabled={isDebugTask}
-                    onClick={() =>
-                      setProgram((current) => current.filter((_, i) => i !== index))
-                    }
+                    disabled={isRunning || (index === 0 && block.label === "bij start")}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      removeProgramBlock(index);
+                    }}
                   >×</button>
                 </div>
               );
@@ -5040,12 +5287,12 @@ const BlockProgrammingTaskView = ({
 
           {runEffects.log.length > 0 ? (
             <div className="execution-log">
-              <strong>Uitvoering</strong>
-              <ul>
+              <strong>Uitgevoerd:</strong>
+              <ol>
                 {runEffects.log.map((entry, index) => (
                   <li key={`${entry}-${index}`}>{entry}</li>
                 ))}
-              </ul>
+              </ol>
               {runEffects.sound ? <span>Geluid: {runEffects.sound}</span> : null}
               {runEffects.score !== null ? <span>Score: {runEffects.score}</span> : null}
               {runEffects.speed !== null ? <span>Snelheid: {runEffects.speed}</span> : null}
@@ -5069,6 +5316,10 @@ const BlockProgrammingTaskView = ({
                 selectedWrongBlockIds,
                 selectedNonWrongBlockIds: selectedWrongBlockIds,
                 replacementActions,
+                blockAddedEvents,
+                blockRemovedEvents,
+                blockMovedEvents,
+                blockReplacedEvents: replacementActions,
                 finalProgramState: { program },
                 playCount: playRuns.length,
                 playedAfterLastChange,
@@ -5106,6 +5357,10 @@ const BlockProgrammingTaskView = ({
                     (id) => !(task.wrongBlockIds ?? []).includes(id),
                   ),
                   replacementActions,
+                  blockAddedEvents,
+                  blockRemovedEvents,
+                  blockMovedEvents,
+                  blockReplacedEvents: replacementActions,
                   finalProgramState: { program },
                   playCount: playRuns.length,
                   playedAfterLastChange,

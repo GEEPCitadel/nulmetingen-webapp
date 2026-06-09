@@ -273,6 +273,12 @@ export interface BlockProgrammingTaskConfig {
   visualGoal?: {
     title: string;
     lines: string[];
+    steps?: Array<{
+      id: string;
+      label: string;
+      icon?: string;
+      tone?: "start" | "arrow" | "turn" | "wait" | "say";
+    }>;
   };
   initialProgram?: Array<ProgrammingBlockDefinition & { correctReplacementId?: string }>;
   correctProgram: string[];

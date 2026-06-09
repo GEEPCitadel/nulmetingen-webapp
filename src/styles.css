@@ -2443,7 +2443,8 @@ button { cursor: pointer; }
   font-size: 0.9rem;
 }
 
-.execution-log ul {
+.execution-log ul,
+.execution-log ol {
   display: grid;
   gap: 5px;
   margin: 0;

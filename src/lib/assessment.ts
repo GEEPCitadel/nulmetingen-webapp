@@ -695,26 +695,43 @@ const scoreDebugBlockTask = (item: AssessmentItem, selectedAnswer: SelectedAnswe
   const exactWrongSelection =
     selectedWrongBlockIds.length === wrongBlockIds.length &&
     wrongBlockIds.every((id) => selectedWrongBlockIds.includes(id));
+  const selectedCorrectWrongCount = selectedWrongBlockIds.filter((id) => wrongBlockIds.includes(id)).length;
+  const selectedIncorrectWrongCount = selectedWrongBlockIds.length - selectedCorrectWrongCount;
+  const wrongSelectionPoints =
+    selectedWrongBlockIds.length > 3 || selectedCorrectWrongCount === 0
+      ? 0
+      : exactWrongSelection
+        ? 1
+        : selectedIncorrectWrongCount <= 1
+          ? 0.5
+          : 0;
   const repairChecks = task?.debugRepairChecks ?? [];
-  const repairResults = repairChecks.map((check) => {
-    const block = program.find((entry) => entry.id === check.blockId);
+  const repairResults = repairChecks.map((check, checkIndex) => {
+    const blockIndex = program.findIndex((entry) => entry.id === check.blockId);
+    const block = program[blockIndex];
+    const positionOk = item.id.startsWith("lj1v")
+      ? blockIndex === (checkIndex === 0 ? 3 : 7)
+      : true;
+    const correct = block?.label === check.expectedLabel && positionOk;
     return {
       taskId: check.id,
       description: check.description,
-      correct: block?.label === check.expectedLabel,
-      points: block?.label === check.expectedLabel ? check.points : 0,
+      correct,
+      points: correct ? check.points : 0,
     };
   });
+  const simulationResult = answerRecord(state.simulationResult as SelectedAnswer);
   const testCorrect =
     state.playedAfterLastChange === true &&
     state.goalMatched === true &&
+    simulationResult.executionTraceComplete === true &&
     state.unknown !== true;
   const taskResults = [
     {
       taskId: "wrong-blocks",
       description: "de twee foute blokken zijn aangewezen.",
       correct: exactWrongSelection,
-      points: exactWrongSelection ? 1 : 0,
+      points: wrongSelectionPoints,
     },
     ...repairResults,
     {

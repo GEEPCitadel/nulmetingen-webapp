@@ -1354,6 +1354,10 @@ body {
   cursor: pointer;
   text-align: left;
 }
+.palette-block-btn:disabled {
+  cursor: not-allowed;
+  opacity: .58;
+}
 .palette-block-btn:focus-visible {
   outline: 2px solid var(--t-accent);
   outline-offset: 3px;
@@ -1446,6 +1450,89 @@ body {
   font-family: var(--font-display); font-weight: 700;
 }
 .canvas-toolbar-right { display: flex; align-items: center; gap: 8px; }
+.pt7-goal-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border: 1.5px solid color-mix(in srgb, #2eb8a6 30%, #fff);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, #2eb8a6 13%, #fff);
+  color: var(--c-ink);
+}
+.pt7-goal-card > strong {
+  font-family: var(--font-display);
+  font-weight: 900;
+  color: var(--t-accent-deep);
+}
+.pt7-goal-steps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pt7-goal-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, #2eb8a6 24%, #fff);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: .86rem;
+  color: var(--c-ink);
+}
+.pt7-goal-icon {
+  color: var(--p1-magenta, #E51C73);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.goal-step-start {
+  background: color-mix(in srgb, var(--t-action) 12%, #fff);
+}
+.goal-step-arrow .pt7-goal-icon,
+.goal-step-turn .pt7-goal-icon {
+  font-size: 1.55rem;
+}
+.pt7-debug-instruction {
+  margin: 10px 0 0;
+  color: var(--c-ink-soft);
+  font-weight: 700;
+}
+.pt7-editbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--c-bg-soft);
+}
+.pt7-editbar button {
+  border: 1.5px solid var(--c-line);
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #fff;
+  color: var(--c-ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  cursor: pointer;
+}
+.pt7-editbar button.active {
+  border-color: var(--t-accent);
+  background: var(--t-accent);
+  color: #fff;
+}
+.pt7-editbar span {
+  color: var(--c-ink-soft);
+  font-size: .86rem;
+  font-weight: 700;
+}
 .blocks-canvas .ghost-btn {
   appearance: none;
   background: transparent;
@@ -1887,6 +1974,31 @@ body {
 }
 .canvas-row:hover .canvas-row-remove { opacity: 1; }
 .canvas-row-remove:hover { background: rgba(0,0,0,.4); }
+.canvas-row-tools {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.canvas-row:hover .canvas-row-tools,
+.canvas-row.selected .canvas-row-tools {
+  opacity: 1;
+}
+.canvas-row-tools button {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--c-ink);
+  font-weight: 900;
+  cursor: pointer;
+}
+.canvas-row-tools button:disabled {
+  cursor: not-allowed;
+  opacity: .35;
+}
 
 /* Preview ─────────────────── */
 .preview-head {
@@ -1987,6 +2099,12 @@ body {
   margin-top: 12px;
   font-size: .82rem;
   color: var(--c-ink-soft);
+}
+.blocks-preview .execution-log ol {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 20px;
 }
 
 @media (max-width: 1100px) {
