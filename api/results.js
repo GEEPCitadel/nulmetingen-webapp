@@ -357,11 +357,13 @@ const buildItemAnalysis = (results) => {
   for (const row of results) {
     const sessionResults = row.result_json?.session?.results ?? [];
     for (const entry of sessionResults) {
-      if (!entry?.itemId || Number(entry.maxScore ?? 0) <= 0) continue;
+      const isSelfAssessment = entry?.itemId === "self-assessment";
+      if (!entry?.itemId || (!isSelfAssessment && Number(entry.maxScore ?? 0) <= 0)) continue;
       const item = items.get(entry.itemId) ?? {
         itemId: entry.itemId,
-        questionNumber: entry.learnerQuestionNumber ?? "",
-        goalId: entry.primarySubgoal ?? "",
+        questionNumber: isSelfAssessment ? "zelfinschatting" : entry.learnerQuestionNumber ?? "",
+        goalId: isSelfAssessment ? "" : entry.primarySubgoal ?? "",
+        isSelfAssessment,
         answerCount: 0,
         correctCount: 0,
         unknownCount: 0,
@@ -390,16 +392,16 @@ const buildItemAnalysis = (results) => {
   }
 
   return Array.from(items.values()).map((item) => {
-    const correctRate = item.answerCount > 0 ? Math.round((item.correctCount / item.answerCount) * 1000) / 1000 : 0;
-    const unknownRate = item.answerCount > 0 ? Math.round((item.unknownCount / item.answerCount) * 1000) / 1000 : 0;
-    const harmfulOptionRate = item.answerCount > 0 ? Math.round((item.harmfulCount / item.answerCount) * 1000) / 1000 : 0;
+    const correctRate = item.isSelfAssessment ? null : item.answerCount > 0 ? Math.round((item.correctCount / item.answerCount) * 1000) / 1000 : 0;
+    const unknownRate = item.isSelfAssessment ? null : item.answerCount > 0 ? Math.round((item.unknownCount / item.answerCount) * 1000) / 1000 : 0;
+    const harmfulOptionRate = item.isSelfAssessment ? null : item.answerCount > 0 ? Math.round((item.harmfulCount / item.answerCount) * 1000) / 1000 : 0;
     const distractors = Object.entries(item.distribution).filter(([id]) => !id.includes("unknown"));
     const topDistractor = distractors.sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
     const signals = [];
-    if (correctRate > 0.9) signals.push("mogelijk plafonditem");
-    if (correctRate < 0.25) signals.push("mogelijk te moeilijk of onduidelijk");
-    if (unknownRate > 0.3) signals.push("veel onzekerheid");
-    if (harmfulOptionRate > 0.1) signals.push("risicovolle keuze vaak gekozen");
+    if (correctRate !== null && correctRate > 0.9) signals.push("mogelijk plafonditem");
+    if (correctRate !== null && correctRate < 0.25) signals.push("mogelijk te moeilijk of onduidelijk");
+    if (unknownRate !== null && unknownRate > 0.3) signals.push("veel onzekerheid");
+    if (harmfulOptionRate !== null && harmfulOptionRate > 0.1) signals.push("risicovolle keuze vaak gekozen");
     return {
       ...item,
       correctRate,
@@ -408,6 +410,13 @@ const buildItemAnalysis = (results) => {
       topDistractor,
       signals,
     };
+  }).sort((a, b) => {
+    if (a.itemId === "self-assessment") return -1;
+    if (b.itemId === "self-assessment") return 1;
+    const left = Number(a.questionNumber);
+    const right = Number(b.questionNumber);
+    if (Number.isFinite(left) && Number.isFinite(right)) return left - right;
+    return String(a.itemId).localeCompare(String(b.itemId), "nl");
   });
 };
 

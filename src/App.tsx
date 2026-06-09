@@ -186,11 +186,11 @@ type ItemAnalysisRow = {
   questionNumber: number | string;
   goalId: string;
   answerCount: number;
-  correctRate: number;
-  unknownRate: number;
+  correctRate: number | null;
+  unknownRate: number | null;
   topDistractor: string;
   distribution: Record<string, number>;
-  harmfulOptionRate: number;
+  harmfulOptionRate: number | null;
   ptErrorCategories: Record<string, number>;
   signals: string[];
 };
@@ -335,27 +335,38 @@ const wrapPdfLine = (line: string, maxLength = 88): string[] => {
 };
 
 const createPdfDocument = (lines: string[]) => {
-  const contentLines = [
-    "BT",
-    "/F1 12 Tf",
-    "50 790 Td",
-    ...lines.flatMap((line) =>
-      line === ""
-        ? ["0 -16 Td"]
-        : wrapPdfLine(line).flatMap((wrappedLine) => [
-            `(${escapePdfText(wrappedLine)}) Tj`,
-            "0 -16 Td",
-          ]),
-    ),
-    "ET",
-  ];
-  const stream = contentLines.join("\n");
+  const renderedLines = lines.flatMap((line) =>
+    line === "" ? [""] : wrapPdfLine(line),
+  );
+  const linesPerPage = 46;
+  const pages = Array.from(
+    { length: Math.max(1, Math.ceil(renderedLines.length / linesPerPage)) },
+    (_, index) => renderedLines.slice(index * linesPerPage, (index + 1) * linesPerPage),
+  );
+  const fontObjectNumber = 3;
+  const pageObjectNumbers = pages.map((_, index) => 4 + index * 2);
+  const contentObjectNumbers = pages.map((_, index) => 5 + index * 2);
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    `<< /Type /Pages /Kids [${pageObjectNumbers.map((number) => `${number} 0 R`).join(" ")}] /Count ${pages.length} >>`,
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
+    ...pages.flatMap((pageLines, index) => {
+      const stream = [
+        "BT",
+        "/F1 12 Tf",
+        "50 790 Td",
+        ...pageLines.flatMap((line) =>
+          line === ""
+            ? ["0 -16 Td"]
+            : [`(${escapePdfText(line)}) Tj`, "0 -16 Td"],
+        ),
+        "ET",
+      ].join("\n");
+      return [
+        `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontObjectNumber} 0 R >> >> /Contents ${contentObjectNumbers[index]} 0 R >>`,
+        `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
+      ];
+    }),
   ];
 
   let pdf = "%PDF-1.4\n";
@@ -1116,6 +1127,7 @@ const AdminScreen = ({
   const [createdCodeRows, setCreatedCodeRows] = useState<ApiStudent[]>([]);
   const [analysis, setAnalysis] = useState<ResultsAnalysis | null>(null);
   const [analysisTab, setAnalysisTab] = useState<"groups" | "items">("groups");
+  const [adminTab, setAdminTab] = useState<"codes" | "results">("codes");
   const [analysisFilters, setAnalysisFilters] = useState({
     assessmentWindow: "",
     gradeLevel: "",
@@ -1133,6 +1145,33 @@ const AdminScreen = ({
   const goalColumns = ["21A", "21B", "21C", "21D", "22A", "22B", "23A", "23B", "23C"];
   const formatMetric = (value: number | null | undefined, suffix = "%") =>
     value === null || value === undefined ? "n.v.t." : `${value}${suffix}`;
+  const formatRate = (value: number | null | undefined) =>
+    value === null || value === undefined ? "n.v.t." : `${Math.round(value * 1000) / 10}%`;
+  const versionFilterOptions = [
+    ["lj1-vmbo", "VMBO 1"],
+    ["lj1-hv", "HV 1"],
+    ["lj3-vmbo", "VMBO 3"],
+    ["lj3-hv", "HV 3"],
+  ] as const;
+  const readableFilterOption = (key: string, option: string) => {
+    if (key === "assessmentId") {
+      return versionFilterOptions.find(([value]) => value === option)?.[1] ?? assessmentLabels[option as AssessmentVersion["id"]] ?? option;
+    }
+    if (key === "gradeLevel") return option === "lj3" ? "Leerjaar 3" : "Leerjaar 1";
+    if (key === "track") return option === "hv" ? "HAVO/VWO" : "VMBO";
+    return option;
+  };
+  const readableQuestionLabel = (item: ItemAnalysisRow) => {
+    if (item.itemId === "self-assessment") return "Zelfinschatting";
+    if (item.questionNumber !== "" && item.questionNumber !== null && item.questionNumber !== undefined) {
+      return `Vraag ${item.questionNumber}`;
+    }
+    return "Onbekende vraag";
+  };
+  const formatDistribution = (distribution: Record<string, number>) =>
+    Object.entries(distribution).map(([key, value]) => `${key}: ${value}`).join(", ") || "n.v.t.";
+  const formatErrorCategories = (categories: Record<string, number>) =>
+    Object.entries(categories).map(([key, value]) => `${key}: ${value}`).join(", ") || "n.v.t.";
   const metadataForVersion = (id: AssessmentVersion["id"]) => ({
     gradeLevel: id.startsWith("lj3") ? "lj3" : "lj1",
     track: id.endsWith("-hv") ? "hv" : "vmbo",
@@ -1457,6 +1496,101 @@ const AdminScreen = ({
     downloadFile(`${exportBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
   };
 
+  const getGroupAnalysisExportRows = (rows: AnalysisGroup[]) =>
+    rows.map((row) => ({
+      Klas: row.classCode || "Alle klassen",
+      Leerjaar: readableFilterOption("gradeLevel", row.gradeLevel),
+      Niveau: readableFilterOption("track", row.track),
+      "Afnamevenster": row.assessmentWindow || "",
+      Cohort: row.cohort || "",
+      Assessment: readableFilterOption("assessmentId", row.assessmentId),
+      "Aangemaakte codes": row.createdCodes,
+      "Gestarte afnames": row.startedCount,
+      "Afgeronde afnames": row.completedCount,
+      "Afronding": formatMetric(row.completionPercentage),
+      "Gemiddelde totaalscore": formatMetric(row.averageTotalScore),
+      "Gemiddelde meerkeuzescore": formatMetric(row.averageSrScore),
+      "Gemiddelde taakscore": formatMetric(row.averagePtScore),
+      "Gemiddelde zelfinschatting": formatMetric(row.averageSelfAssessment),
+      "Verschil zelfinschatting-score": formatMetric(row.averageSelfAssessmentDifference, " pt"),
+      ...Object.fromEntries(goalColumns.map((goalId) => [`Kerndoel ${goalId}`, formatMetric(row.goalScores[goalId])])),
+    }));
+
+  const getItemAnalysisExportRows = () =>
+    (analysis?.itemAnalysis ?? []).map((item) => ({
+      Vraag: readableQuestionLabel(item),
+      "Gekoppelde item-id": item.itemId,
+      Subdoel: item.goalId || "n.v.t.",
+      "Aantal antwoorden": item.answerCount,
+      "Percentage goed": formatRate(item.correctRate),
+      "Percentage ik weet het niet": formatRate(item.unknownRate),
+      "Meest gekozen onjuist antwoord": item.topDistractor || "n.v.t.",
+      "Alle gekozen antwoorden": formatDistribution(item.distribution),
+      "Percentage risicovolle keuze": formatRate(item.harmfulOptionRate),
+      "Foutcategorieen bij taken": formatErrorCategories(item.ptErrorCategories),
+      Signalen: item.signals.join(", ") || "Geen signaal",
+    }));
+
+  const analysisBaseName = () => `resultatenanalyse-${new Date().toISOString().slice(0, 10)}`;
+
+  const exportAnalysisExcel = async () => {
+    const XLSX = await import("xlsx");
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([{
+      "Aangemaakte codes": analysis?.overview.createdCodes ?? 0,
+      "Gestarte afnames": analysis?.overview.startedCount ?? 0,
+      "Afgeronde afnames": analysis?.overview.completedCount ?? 0,
+      "Afronding": formatMetric(analysis?.overview.completionPercentage ?? 0),
+      "Gemiddelde totaalscore": formatMetric(analysis?.overview.averageTotalScore),
+      "Gemiddelde zelfinschatting": formatMetric(analysis?.overview.averageSelfAssessment),
+    }]), "Samenvatting");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byClass ?? [])), "Per klas");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byGrade ?? [])), "Per leerjaar");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getItemAnalysisExportRows()), "Itemanalyse");
+    XLSX.writeFile(workbook, `${analysisBaseName()}.xlsx`);
+  };
+
+  const exportAnalysisWord = () => {
+    const renderRows = (rows: Array<Record<string, string | number>>) => {
+      const headers = Object.keys(rows[0] ?? {});
+      return `<table><thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((header) => `<td>${escapeHtml(String(row[header] ?? ""))}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    };
+    const classRows = getGroupAnalysisExportRows(analysis?.byClass ?? []);
+    const itemRows = getItemAnalysisExportRows();
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Resultatenanalyse</title><style>body{font-family:Arial,sans-serif;color:#1b1d22}h1,h2{margin-bottom:8px}table{border-collapse:collapse;width:100%;margin:12px 0 24px}td,th{border:1px solid #999;padding:6px;text-align:left;vertical-align:top}th{background:#eee}</style></head><body><h1>Resultatenanalyse nulmeting Digitale Geletterdheid</h1><p>Exportdatum: ${new Date().toLocaleDateString("nl-NL")}</p><h2>Samenvatting</h2>${renderRows([{
+      "Aangemaakte codes": analysis?.overview.createdCodes ?? 0,
+      "Gestarte afnames": analysis?.overview.startedCount ?? 0,
+      "Afgeronde afnames": analysis?.overview.completedCount ?? 0,
+      "Afronding": formatMetric(analysis?.overview.completionPercentage ?? 0),
+      "Gemiddelde totaalscore": formatMetric(analysis?.overview.averageTotalScore),
+    }])}<h2>Analyse per klas</h2>${renderRows(classRows)}<h2>Itemanalyse</h2>${renderRows(itemRows)}</body></html>`;
+    downloadFile(`${analysisBaseName()}.doc`, html, "application/msword");
+  };
+
+  const exportAnalysisPdf = () => {
+    const lines = [
+      "Resultatenanalyse nulmeting Digitale Geletterdheid",
+      "",
+      `Exportdatum: ${new Date().toLocaleDateString("nl-NL")}`,
+      `Aangemaakte codes: ${analysis?.overview.createdCodes ?? 0}`,
+      `Gestarte afnames: ${analysis?.overview.startedCount ?? 0}`,
+      `Afgeronde afnames: ${analysis?.overview.completedCount ?? 0}`,
+      `Afronding: ${formatMetric(analysis?.overview.completionPercentage ?? 0)}`,
+      `Gemiddelde totaalscore: ${formatMetric(analysis?.overview.averageTotalScore)}`,
+      "",
+      "Analyse per klas",
+      ...getGroupAnalysisExportRows(analysis?.byClass ?? []).map((row) =>
+        `${row.Klas} | ${row.Leerjaar} | ${row.Niveau} | afgerond: ${row["Afgeronde afnames"]} | score: ${row["Gemiddelde totaalscore"]}`,
+      ),
+      "",
+      "Itemanalyse",
+      ...getItemAnalysisExportRows().map((row) =>
+        `${row.Vraag} | ${row["Gekoppelde item-id"]} | antwoorden: ${row["Aantal antwoorden"]} | goed: ${row["Percentage goed"]}`,
+      ),
+    ];
+    downloadFile(`${analysisBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
+  };
+
   const reopenStudent = async (student: ApiStudent) => {
     setIsLoading(true);
     try {
@@ -1547,6 +1681,9 @@ const AdminScreen = ({
       setIsLoading(false);
     }
   };
+
+  const deleteSingleStudent = (student: ApiStudent) =>
+    deleteStudents("deleteStudents", { accessCodes: [student.accessCode] }, student.accessCode);
 
   useEffect(() => {
     setClassFilter((selected) =>
@@ -1660,15 +1797,43 @@ const AdminScreen = ({
         ))}
       </div>
 
+      <nav className="admin-main-tabs" aria-label="Beheeromgeving">
+        <button className={adminTab === "codes" ? "active" : ""} type="button" onClick={() => setAdminTab("codes")}>
+          Inlogcodes
+        </button>
+        <button className={adminTab === "results" ? "active" : ""} type="button" onClick={() => setAdminTab("results")}>
+          Resultatenanalyse
+        </button>
+      </nav>
+
+      {adminTab === "results" ? (
       <section className="analysis-panel">
         <div className="rd-section-head">
           <div>
             <span className="overline">Beheer &gt; Resultatenanalyse</span>
             <h3 style={{ marginTop: 6 }}>Resultatenanalyse</h3>
           </div>
-          <button className="filter-chip" type="button" onClick={() => void loadAnalysis()}>
-            Vernieuwen
-          </button>
+          <div className="rd-result-actions">
+            <button className="filter-chip" type="button" onClick={() => void loadAnalysis()}>
+              Vernieuwen
+            </button>
+            <details className="admin-export-menu">
+              <summary className={`filter-chip ${!analysis ? "disabled" : ""}`}>
+                Exporteer resultaten
+              </summary>
+              <div className="admin-export-options">
+                <button className="filter-chip" type="button" onClick={exportAnalysisWord} disabled={!analysis}>
+                  Word
+                </button>
+                <button className="filter-chip" type="button" onClick={exportAnalysisExcel} disabled={!analysis}>
+                  Excel
+                </button>
+                <button className="filter-chip" type="button" onClick={exportAnalysisPdf} disabled={!analysis}>
+                  PDF
+                </button>
+              </div>
+            </details>
+          </div>
         </div>
         <div className="analysis-filters">
           {[
@@ -1677,7 +1842,7 @@ const AdminScreen = ({
             ["track", "Niveau / meting", analysis?.filters.tracks ?? []],
             ["classCode", "Klas", analysis?.filters.classCodes ?? []],
             ["cohort", "Cohort", analysis?.filters.cohorts ?? []],
-            ["assessmentId", "Assessment", analysis?.filters.assessmentIds ?? []],
+            ["assessmentId", "Leerjaar/niveau", versionFilterOptions.map(([value]) => value)],
           ].map(([key, label, options]) => (
             <label className="admin-filter-select" key={String(key)}>
               <span>{String(label)}</span>
@@ -1690,7 +1855,7 @@ const AdminScreen = ({
                 <option value="">Alles</option>
                 {(options as string[]).map((option) => (
                   <option key={option} value={option}>
-                    {option}
+                    {readableFilterOption(String(key), option)}
                   </option>
                 ))}
               </select>
@@ -1738,17 +1903,17 @@ const AdminScreen = ({
                     <span>Leerjaar</span>
                     <span>Niveau</span>
                     <span>Aantal afgerond</span>
-                    <span>Totaal</span>
-                    <span>SR</span>
-                    <span>PT</span>
+                    <span>Gemiddelde totaalscore</span>
+                    <span>Gemiddelde meerkeuzescore</span>
+                    <span>Gemiddelde taakscore</span>
                     <span>Zelfinschatting</span>
                     {goalColumns.map((goalId) => <span key={goalId}>{goalId}</span>)}
                   </div>
                   {(rows as AnalysisGroup[]).map((row) => (
                     <div className="analysis-row" key={`${String(title)}-${row.classCode}-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}`}>
                       <span>{row.classCode || "Alle klassen"}</span>
-                      <span>{row.gradeLevel}</span>
-                      <span>{row.track}</span>
+                      <span>{readableFilterOption("gradeLevel", row.gradeLevel)}</span>
+                      <span>{readableFilterOption("track", row.track)}</span>
                       <span>{row.completedCount}</span>
                       <span>{formatMetric(row.averageTotalScore)}</span>
                       <span>{formatMetric(row.averageSrScore)}</span>
@@ -1782,30 +1947,30 @@ const AdminScreen = ({
             <h4>Itemanalyse</h4>
             <div className="analysis-table item-analysis">
               <div className="analysis-row head">
-                <span>itemId</span>
                 <span>Vraag</span>
+                <span>Gekoppelde item-id</span>
                 <span>Subdoel</span>
                 <span>Antwoorden</span>
-                <span>correctRate</span>
-                <span>unknownRate</span>
-                <span>Meest gekozen afleider</span>
-                <span>Distractor distribution</span>
-                <span>harmfulOptionRate</span>
-                <span>PT-errorcategorieen</span>
+                <span>Percentage goed</span>
+                <span>Percentage ik weet het niet</span>
+                <span>Meest gekozen onjuist antwoord</span>
+                <span>Alle gekozen antwoorden</span>
+                <span>Percentage risicovolle keuze</span>
+                <span>Foutcategorieen bij taken</span>
                 <span>Signalen</span>
               </div>
               {(analysis?.itemAnalysis ?? []).map((item) => (
                 <div className="analysis-row" key={item.itemId}>
+                  <span>{readableQuestionLabel(item)}</span>
                   <span>{item.itemId}</span>
-                  <span>{item.questionNumber}</span>
                   <span>{item.goalId}</span>
                   <span>{item.answerCount}</span>
-                  <span>{item.correctRate}</span>
-                  <span>{item.unknownRate}</span>
+                  <span>{formatRate(item.correctRate)}</span>
+                  <span>{formatRate(item.unknownRate)}</span>
                   <span>{item.topDistractor || "n.v.t."}</span>
-                  <span>{Object.entries(item.distribution).map(([key, value]) => `${key}: ${value}`).join(", ") || "n.v.t."}</span>
-                  <span>{item.harmfulOptionRate}</span>
-                  <span>{Object.entries(item.ptErrorCategories).map(([key, value]) => `${key}: ${value}`).join(", ") || "n.v.t."}</span>
+                  <span>{formatDistribution(item.distribution)}</span>
+                  <span>{formatRate(item.harmfulOptionRate)}</span>
+                  <span>{formatErrorCategories(item.ptErrorCategories)}</span>
                   <span>{item.signals.join(", ") || "Geen signaal"}</span>
                 </div>
               ))}
@@ -1813,13 +1978,17 @@ const AdminScreen = ({
           </div>
         )}
       </section>
+      ) : null}
 
+      {adminTab === "codes" ? (
+      <>
       <section className="import-panel">
         <span className="overline">Beheer &gt; Toegangscodes &gt; Leerlingen toevoegen</span>
         <h3>Leerlingen toevoegen</h3>
         <p className="help">
           Plak meerdere namen tegelijk. De naam wordt alleen gebruikt om de toegangscode uit te delen;
           resultaten worden in de analyse alleen als aggregaat getoond.
+          De preview controleert de invoer en maakt nog geen leerlingen of codes aan.
         </p>
         <div className="grid">
           <label>
@@ -2169,6 +2338,7 @@ const AdminScreen = ({
             <span>Klas</span>
             <span>Meting</span>
             <span>Status</span>
+            <span>Score</span>
             <span>Actie</span>
           </div>
           {filteredStudents.length === 0 ? (
@@ -2237,6 +2407,14 @@ const AdminScreen = ({
                     >
                       Heropenen
                     </button>
+                    <button
+                      type="button"
+                      className="danger-text"
+                      onClick={() => void deleteSingleStudent(student)}
+                      disabled={isLoading}
+                    >
+                      Verwijderen
+                    </button>
                   </span>
                 </div>
               );
@@ -2244,6 +2422,8 @@ const AdminScreen = ({
           )}
         </div>
       </section>
+      </>
+      ) : null}
 
       <div style={{ marginTop: 32 }}>
         <button className="btn btn-ghost" type="button" onClick={onBack}>
