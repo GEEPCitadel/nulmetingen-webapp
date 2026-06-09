@@ -1040,6 +1040,9 @@ const blockColors = {
   beweging: "#55a9dc",
   besturing: "#f47b32",
   variabelen: "#f2a23a",
+  voorwaarden: "#e36f3f",
+  logica: "#3d8fdb",
+  invoer: "#2eb8a6",
   waarnemen: "#2eb8a6",
   geluid: "#cf63c7",
   data: "#3f8edb",
@@ -1050,6 +1053,21 @@ const block = (
   category: keyof typeof blockColors,
   options: Pick<ProgrammingBlockDefinition, "isContainer" | "isCriticalDistractor"> = {},
 ): ProgrammingBlockDefinition => ({
+  label,
+  category,
+  color: blockColors[category],
+  ...options,
+});
+
+const debugBlock = (
+  id: string,
+  label: string,
+  category: keyof typeof blockColors,
+  options: Pick<ProgrammingBlockDefinition, "isContainer" | "isCriticalDistractor"> & {
+    correctReplacementId?: string;
+  } = {},
+): ProgrammingBlockDefinition & { correctReplacementId?: string } => ({
+  id,
   label,
   category,
   color: blockColors[category],
@@ -3052,6 +3070,92 @@ const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
   return specs[versionId];
 };
 
+const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
+  const specs: Record<AssessmentVersionId, BlockTaskSpec> = {
+    "lj1-vmbo": {
+      id: "lj1v-pt7-programming-debug-v1",
+      title: "PT7 - Blokprogrammeren",
+      intro: "Kijk naar DOEL. Er zijn 2 fouten. Tik ze aan. Maak de code goed. Klik Afspelen.",
+      instruction: "Blokprogrammeren",
+      config: {
+        itemVersion: "pt7-debug-v1",
+        device: "bizzy",
+        visualGoal: { title: "DOEL", lines: ['START  ->  ->  rechts  "Klaar"'] },
+        initialProgram: [debugBlock("lj1v_start_initial", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj1v_move_1_forward_initial", "1 stap vooruit", "beweging", { correctReplacementId: "lj1v_move_2_forward_fix" }), debugBlock("lj1v_turn_left_initial", "draai naar links", "beweging", { correctReplacementId: "lj1v_turn_right_fix" }), debugBlock("lj1v_say_klaar_initial", 'zeg "Klaar"', "uiterlijk")],
+        wrongBlockIds: ["lj1v_move_1_forward_initial", "lj1v_turn_left_initial"],
+        blocks: [debugBlock("lj1v_event_start", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj1v_event_touch", "als Bizzy wordt aangeraakt", "gebeurtenissen"), debugBlock("lj1v_event_space", "als spatie wordt ingedrukt", "gebeurtenissen"), debugBlock("lj1v_move_1_forward", "1 stap vooruit", "beweging"), debugBlock("lj1v_move_2_forward_fix", "2 stappen vooruit", "beweging"), debugBlock("lj1v_move_3_forward", "3 stappen vooruit", "beweging"), debugBlock("lj1v_move_1_back", "1 stap achteruit", "beweging"), debugBlock("lj1v_move_2_back", "2 stappen achteruit", "beweging"), debugBlock("lj1v_turn_right_fix", "draai naar rechts", "beweging"), debugBlock("lj1v_turn_left", "draai naar links", "beweging"), debugBlock("lj1v_wait_1", "wacht 1 seconde", "besturing"), debugBlock("lj1v_repeat_2", "herhaal 2 keer", "besturing", { isContainer: true }), debugBlock("lj1v_repeat_3", "herhaal 3 keer", "besturing", { isContainer: true }), debugBlock("lj1v_say_hoi", 'zeg "Hoi"', "uiterlijk"), debugBlock("lj1v_say_klaar", 'zeg "Klaar"', "uiterlijk"), debugBlock("lj1v_say_stop", 'zeg "Stop"', "uiterlijk")],
+        correctProgram: ["bij start", "2 stappen vooruit", "draai naar rechts", 'zeg "Klaar"'],
+        debugRepairChecks: [{ id: "move", description: "afstand hersteld.", points: 1, blockId: "lj1v_move_1_forward_initial", expectedLabel: "2 stappen vooruit" }, { id: "turn", description: "richting hersteld.", points: 1, blockId: "lj1v_turn_left_initial", expectedLabel: "draai naar rechts" }],
+        tests: [{ id: "goal", label: "DOEL", expectedOutput: "2 stappen vooruit | draai naar rechts | Klaar" }],
+        playback: { speed: "normal", stepMs: 800 },
+        logging: { itemVersion: "pt7-debug-v1" },
+        rules: [],
+      },
+    },
+    "lj1-hv": {
+      id: "lj1h-pt7-programming-debug-v1",
+      title: "PT7 - Blokprogrammeren",
+      intro: "Bizzy moet een vierkant lopen. Er zijn 2 fouten in de code. Wijs ze aan, verbeter ze en test.",
+      instruction: "Blokprogrammeren",
+      config: {
+        itemVersion: "pt7-debug-v1",
+        device: "bizzy",
+        visualGoal: { title: "DOEL", lines: ['herhaal 4 keer: 1 stap vooruit + rechts draaien', 'daarna: zeg "Vierkant"'] },
+        initialProgram: [debugBlock("lj1h_start_initial", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj1h_repeat_3_initial", "herhaal 3 keer", "besturing", { isContainer: true, correctReplacementId: "lj1h_repeat_4_fix" }), debugBlock("lj1h_move_1_initial", "1 stap vooruit", "beweging"), debugBlock("lj1h_turn_right_initial", "rechts draaien", "beweging"), debugBlock("lj1h_say_klaar_initial", 'zeg "Klaar"', "uiterlijk", { correctReplacementId: "lj1h_say_vierkant_fix" })],
+        wrongBlockIds: ["lj1h_repeat_3_initial", "lj1h_say_klaar_initial"],
+        blocks: [debugBlock("lj1h_event_start", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj1h_event_touch", "als Bizzy wordt aangeraakt", "gebeurtenissen"), debugBlock("lj1h_event_space", "als spatie wordt ingedrukt", "gebeurtenissen"), debugBlock("lj1h_repeat_2", "herhaal 2 keer", "besturing", { isContainer: true }), debugBlock("lj1h_repeat_3", "herhaal 3 keer", "besturing", { isContainer: true }), debugBlock("lj1h_repeat_4_fix", "herhaal 4 keer", "besturing", { isContainer: true }), debugBlock("lj1h_repeat_5", "herhaal 5 keer", "besturing", { isContainer: true }), debugBlock("lj1h_wait_1", "wacht 1 seconde", "besturing"), debugBlock("lj1h_move_1", "1 stap vooruit", "beweging"), debugBlock("lj1h_move_2", "2 stappen vooruit", "beweging"), debugBlock("lj1h_move_back", "1 stap achteruit", "beweging"), debugBlock("lj1h_turn_right", "rechts draaien", "beweging"), debugBlock("lj1h_turn_left", "links draaien", "beweging"), debugBlock("lj1h_say_klaar", 'zeg "Klaar"', "uiterlijk"), debugBlock("lj1h_say_vierkant_fix", 'zeg "Vierkant"', "uiterlijk"), debugBlock("lj1h_say_fout", 'zeg "Fout"', "uiterlijk"), debugBlock("lj1h_say_hoi", 'zeg "Hoi"', "uiterlijk")],
+        correctProgram: ["bij start", "herhaal 4 keer", "1 stap vooruit", "rechts draaien", 'zeg "Vierkant"'],
+        debugRepairChecks: [{ id: "repeat", description: "herhaling hersteld.", points: 1, blockId: "lj1h_repeat_3_initial", expectedLabel: "herhaal 4 keer" }, { id: "message", description: "output hersteld.", points: 1, blockId: "lj1h_say_klaar_initial", expectedLabel: 'zeg "Vierkant"' }],
+        tests: [{ id: "goal", label: "Vierkant", expectedOutput: "4x vooruit en rechts | Vierkant" }],
+        playback: { speed: "normal", stepMs: 800 },
+        logging: { itemVersion: "pt7-debug-v1" },
+        rules: [],
+      },
+    },
+    "lj3-vmbo": {
+      id: "lj3v-pt7-programming-debug-v1",
+      title: "PT7 - Blokprogrammeren",
+      intro: "Bij elke klik op A komt er 1 bij. Bij 1 t/m 4: Nog plek. Bij 5 of meer: Vol. Er zijn 2 fouten. Wijs ze aan, verbeter ze en test.",
+      instruction: "Blokprogrammeren",
+      config: {
+        itemVersion: "pt7-debug-v1",
+        device: "microbit",
+        visualGoal: { title: "DOEL", lines: ["A x4 -> Nog plek", "A x5 -> Vol"] },
+        initialProgram: [debugBlock("lj3v_start_initial", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_set_counter_0_initial", "zet teller op 0", "variabelen"), debugBlock("lj3v_button_a_initial", "als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_change_counter_by_2_initial", "verander teller met 2", "variabelen", { correctReplacementId: "lj3v_change_counter_by_1_fix" }), debugBlock("lj3v_condition_greater_than_5_initial", "als teller groter dan 5 dan", "voorwaarden", { isContainer: true, correctReplacementId: "lj3v_condition_at_least_5_fix" }), debugBlock("lj3v_say_vol_initial", 'zeg "Vol"', "uiterlijk"), debugBlock("lj3v_else_initial", "anders", "voorwaarden", { isContainer: true }), debugBlock("lj3v_say_nog_plek_initial", 'zeg "Nog plek"', "uiterlijk")],
+        wrongBlockIds: ["lj3v_change_counter_by_2_initial", "lj3v_condition_greater_than_5_initial"],
+        blocks: [debugBlock("lj3v_event_start", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_event_a", "als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_event_b", "als knop B wordt ingedrukt", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_event_touch", "als Bizzy wordt aangeraakt", "gebeurtenissen"), debugBlock("lj3v_set_counter_0", "zet teller op 0", "variabelen"), debugBlock("lj3v_set_counter_5", "zet teller op 5", "variabelen"), debugBlock("lj3v_change_counter_by_1_fix", "verander teller met 1", "variabelen"), debugBlock("lj3v_change_counter_by_2", "verander teller met 2", "variabelen"), debugBlock("lj3v_change_counter_minus_1", "verander teller met -1", "variabelen"), debugBlock("lj3v_show_counter", "toon teller", "variabelen"), debugBlock("lj3v_condition_gt_5", "als teller groter dan 5 dan", "voorwaarden", { isContainer: true }), debugBlock("lj3v_condition_at_least_5_fix", "als teller 5 of meer is dan", "voorwaarden", { isContainer: true }), debugBlock("lj3v_condition_lt_5", "als teller kleiner dan 5 dan", "voorwaarden", { isContainer: true }), debugBlock("lj3v_condition_eq_5", "als teller gelijk is aan 5 dan", "voorwaarden", { isContainer: true }), debugBlock("lj3v_else", "anders", "voorwaarden", { isContainer: true }), debugBlock("lj3v_say_vol", 'zeg "Vol"', "uiterlijk"), debugBlock("lj3v_say_nog_plek", 'zeg "Nog plek"', "uiterlijk"), debugBlock("lj3v_say_klaar", 'zeg "Klaar"', "uiterlijk"), debugBlock("lj3v_say_leeg", 'zeg "Leeg"', "uiterlijk"), debugBlock("lj3v_say_fout", 'zeg "Fout"', "uiterlijk"), debugBlock("lj3v_wait", "wacht 1 seconde", "besturing"), debugBlock("lj3v_repeat_5", "herhaal 5 keer", "besturing", { isContainer: true }), debugBlock("lj3v_stop", "stop programma", "besturing")],
+        correctProgram: ["bij start", "zet teller op 0", "als knop A wordt ingedrukt", "verander teller met 1", "als teller 5 of meer is dan", 'zeg "Vol"', "anders", 'zeg "Nog plek"'],
+        debugRepairChecks: [{ id: "counter", description: "tellerwijziging hersteld.", points: 1, blockId: "lj3v_change_counter_by_2_initial", expectedLabel: "verander teller met 1" }, { id: "condition", description: "voorwaarde hersteld.", points: 1, blockId: "lj3v_condition_greater_than_5_initial", expectedLabel: "als teller 5 of meer is dan" }],
+        tests: [{ id: "a4", label: "Test A x4", expectedOutput: "Nog plek", inputs: { presses: 4 } }, { id: "a5", label: "Test A x5", expectedOutput: "Vol", inputs: { presses: 5 } }],
+        playback: { speed: "normal", stepMs: 800 },
+        logging: { itemVersion: "pt7-debug-v1" },
+        rules: [],
+      },
+    },
+    "lj3-hv": {
+      id: "lj3h-pt7-programming-debug-v1",
+      title: "PT7 - Blokprogrammeren",
+      intro: "Toon alleen \"Koelen\" als het warm is en het raam open staat. Er zijn 2 fouten in de code. Wijs ze aan, verbeter ze en test.",
+      instruction: "Blokprogrammeren",
+      config: {
+        itemVersion: "pt7-debug-v1",
+        device: "sensor",
+        visualGoal: { title: "DOEL", lines: ["27 graden + open -> Koelen", "27 graden + dicht -> Oke", "20 graden + open -> Oke", "20 graden + dicht -> Oke"] },
+        initialProgram: [debugBlock("lj3h_read_temp_initial", "lees temperatuur", "invoer"), debugBlock("lj3h_read_window_initial", "lees raamOpen", "invoer"), debugBlock("lj3h_condition_or_initial", "als temperatuur > 25 OF raamOpen = ja dan", "voorwaarden", { isContainer: true, correctReplacementId: "lj3h_condition_and_fix" }), debugBlock("lj3h_show_koelen_initial", 'toon "Koelen"', "uiterlijk"), debugBlock("lj3h_else_initial", "anders", "voorwaarden", { isContainer: true }), debugBlock("lj3h_else_show_verwarmen_initial", 'toon "Verwarmen"', "uiterlijk", { correctReplacementId: "lj3h_show_oke_fix" })],
+        wrongBlockIds: ["lj3h_condition_or_initial", "lj3h_else_show_verwarmen_initial"],
+        blocks: [debugBlock("lj3h_read_temp", "lees temperatuur", "invoer"), debugBlock("lj3h_read_window", "lees raamOpen", "invoer"), debugBlock("lj3h_read_humidity", "lees luchtvochtigheid", "invoer"), debugBlock("lj3h_read_time", "lees tijdstip", "invoer"), debugBlock("lj3h_condition_and_fix", "als temperatuur > 25 EN raamOpen = ja dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_condition_or", "als temperatuur > 25 OF raamOpen = ja dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_condition_low_and_open", "als temperatuur < 25 EN raamOpen = ja dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_condition_warm_closed", "als temperatuur > 25 EN raamOpen = nee dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_condition_eq_25", "als temperatuur = 25 dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_else", "anders", "voorwaarden", { isContainer: true }), debugBlock("lj3h_logic_and", "EN", "logica"), debugBlock("lj3h_logic_or", "OF", "logica"), debugBlock("lj3h_logic_not", "NIET", "logica"), debugBlock("lj3h_show_koelen", 'toon "Koelen"', "uiterlijk"), debugBlock("lj3h_show_oke_fix", 'toon "Oké"', "uiterlijk"), debugBlock("lj3h_show_verwarmen", 'toon "Verwarmen"', "uiterlijk"), debugBlock("lj3h_show_alarm", 'toon "Alarm"', "uiterlijk"), debugBlock("lj3h_show_wait", 'toon "Wachten"', "uiterlijk"), debugBlock("lj3h_wait_10", "wacht 10 seconden", "besturing"), debugBlock("lj3h_repeat_while", "herhaal zolang", "besturing", { isContainer: true }), debugBlock("lj3h_stop", "stop programma", "besturing")],
+        correctProgram: ["lees temperatuur", "lees raamOpen", "als temperatuur > 25 EN raamOpen = ja dan", 'toon "Koelen"', "anders", 'toon "Oké"'],
+        debugRepairChecks: [{ id: "logic", description: "EN/OF-logica hersteld.", points: 1, blockId: "lj3h_condition_or_initial", expectedLabel: "als temperatuur > 25 EN raamOpen = ja dan" }, { id: "else", description: "anders-uitkomst hersteld.", points: 1, blockId: "lj3h_else_show_verwarmen_initial", expectedLabel: 'toon "Oké"' }],
+        tests: [{ id: "warm-open", label: "Test 1: 27 graden + raam open", expectedOutput: "Koelen", inputs: { temperature: 27, windowOpen: true } }, { id: "warm-closed", label: "Test 2: 27 graden + raam dicht", expectedOutput: "Oké", inputs: { temperature: 27, windowOpen: false } }, { id: "cold-open", label: "Test 3: 20 graden + raam open", expectedOutput: "Oké", inputs: { temperature: 20, windowOpen: true } }, { id: "cold-closed", label: "Test 4: 20 graden + raam dicht", expectedOutput: "Oké", inputs: { temperature: 20, windowOpen: false } }],
+        playback: { speed: "normal", stepMs: 800 },
+        logging: { itemVersion: "pt7-debug-v1" },
+        rules: [],
+      },
+    },
+  };
+  return specs[versionId];
+};
+
 const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
   const files: Record<AssessmentVersionId, FileTaskSpec> = {
     "lj1-vmbo": {
@@ -3180,7 +3284,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     pt2: mail[spec.id],
     pt3: v3Pt3(spec.id),
     pt6: v3Pt6(`${spec.id.replace("-", "").replace("lj", "lj")}-pt6-screen-share`),
-    pt7: v3Pt7(spec.id),
+    pt7: v3Pt7Debug(spec.id),
     pt8: v3Pt8(spec.id),
   };
 };

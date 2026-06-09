@@ -4027,7 +4027,10 @@ const FakeTeamsTask = ({
   );
 };
 
-type ProgramBlock = ProgrammingBlockDefinition & { indent: number };
+type ProgramBlock = ProgrammingBlockDefinition & {
+  indent: number;
+  correctReplacementId?: string;
+};
 type ProgramRunEffects = {
   move: number;
   rotation: number;
@@ -4069,8 +4072,23 @@ const BlockProgrammingTaskView = ({
   onSkip: () => void;
   onExit: () => void;
 }) => {
-  const [program, setProgram] = useState<ProgramBlock[]>([]);
+  const [program, setProgram] = useState<ProgramBlock[]>(() =>
+    (item.blockTask?.initialProgram ?? []).map((block, index) => ({
+      ...block,
+      indent: block.isContainer && index > 0 ? 0 : 0,
+    })),
+  );
   const [executed, setExecuted] = useState(false);
+  const [selectedWrongBlockIds, setSelectedWrongBlockIds] = useState<string[]>([]);
+  const [selectedProgramIndex, setSelectedProgramIndex] = useState<number | null>(null);
+  const [replacementActions, setReplacementActions] = useState<
+    Array<{ replacedBlockId: string; replacementBlockId: string; timestamp: string }>
+  >([]);
+  const [lastChangedAt, setLastChangedAt] = useState<string | null>(null);
+  const [lastPlayedAt, setLastPlayedAt] = useState<string | null>(null);
+  const [playedAfterLastChange, setPlayedAfterLastChange] = useState(false);
+  const [playRuns, setPlayRuns] = useState<Array<Record<string, unknown>>>([]);
+  const [goalMatched, setGoalMatched] = useState(false);
   const [speechVisible, setSpeechVisible] = useState(false);
   const [aPresses, setAPresses] = useState(0);
   const [temperature, setTemperature] = useState(30);
@@ -4085,11 +4103,42 @@ const BlockProgrammingTaskView = ({
   if (!task) {
     return null;
   }
+  const isDebugTask = task.itemVersion === "pt7-debug-v1";
   const blockByLabel = new Map(task.blocks.map((block) => [block.label, block]));
   const blockStyle = (block: Pick<ProgrammingBlockDefinition, "color">) =>
     ({ "--block-color": block.color } as CSSProperties);
 
   const addBlockToProgram = (block: ProgrammingBlockDefinition) => {
+    if (isDebugTask && selectedProgramIndex !== null) {
+      const changedAt = new Date().toISOString();
+      setProgram((current) =>
+        current.map((entry, index) =>
+          index === selectedProgramIndex
+            ? {
+                ...block,
+                id: entry.id,
+                correctReplacementId: entry.correctReplacementId,
+                indent: entry.indent,
+              }
+            : entry,
+        ),
+      );
+      setReplacementActions((current) => [
+        ...current,
+        {
+          replacedBlockId: program[selectedProgramIndex]?.id ?? "",
+          replacementBlockId: block.id ?? block.label,
+          timestamp: changedAt,
+        },
+      ]);
+      setLastChangedAt(changedAt);
+      setPlayedAfterLastChange(false);
+      setGoalMatched(false);
+      return;
+    }
+    if (isDebugTask) {
+      return;
+    }
     setProgram((current) => {
       const previous = current[current.length - 1];
       return [
@@ -4353,14 +4402,101 @@ const BlockProgrammingTaskView = ({
     setRunStep(-1);
   };
 
+  const evaluateDebugProgram = () => {
+    const labels = program.map((block) => block.label);
+    const has = (label: string) => labels.includes(label);
+    const includes = (part: string) => labels.some((label) => label.includes(part));
+    const testResults = (task.tests ?? []).map((test) => {
+      let output = "";
+      let log: string[] = [];
+      if (item.id.startsWith("lj1v")) {
+        output = has("2 stappen vooruit") && has("draai naar rechts") && has('zeg "Klaar"')
+          ? "2 stappen vooruit | draai naar rechts | Klaar"
+          : "niet hetzelfde";
+        log = ['Start', has("2 stappen vooruit") ? "-> 2 stappen vooruit" : "-> 1 stap vooruit", has("draai naar rechts") ? "draai rechts" : "draai links", has('zeg "Klaar"') ? '"Klaar"' : "geen tekst"];
+      } else if (item.id.startsWith("lj1h")) {
+        output = has("herhaal 4 keer") && has("1 stap vooruit") && has("rechts draaien") && has('zeg "Vierkant"')
+          ? "4x vooruit en rechts | Vierkant"
+          : "niet hetzelfde";
+        log = ["Start", has("herhaal 4 keer") ? "herhaal 4 keer" : "herhaal 3 keer", "1 stap vooruit, rechts draaien", has('zeg "Vierkant"') ? '"Vierkant"' : '"Klaar"'];
+      } else if (item.id.startsWith("lj3v")) {
+        const presses = Number(test.inputs?.presses ?? 0);
+        const step = has("verander teller met 1") ? 1 : 2;
+        const total = presses * step;
+        const atLeast = has("als teller 5 of meer is dan");
+        const greater = has("als teller groter dan 5 dan");
+        const isFull = atLeast ? total >= 5 : greater ? total > 5 : false;
+        output = isFull ? "Vol" : "Nog plek";
+        log = [`teller = 0`, ...Array.from({ length: presses }, (_, index) => `A ingedrukt -> teller = ${(index + 1) * step}`), output];
+      } else {
+        const temp = Number(test.inputs?.temperature ?? 0);
+        const open = test.inputs?.windowOpen === true;
+        const useAnd = includes(" EN raamOpen = ja");
+        const useOr = includes(" OF raamOpen = ja");
+        const condition = useAnd ? temp > 25 && open : useOr ? temp > 25 || open : false;
+        const elseOk = has('toon "Oké"') || has('toon "OkÃ©"');
+        output = condition ? "Koelen" : elseOk ? "Oké" : "Verwarmen";
+        log = [`temperatuur = ${temp}`, `raamOpen = ${open ? "ja" : "nee"}`, `${useAnd ? "EN" : "OF"} -> ${condition ? "waar" : "niet waar"}`, `toon "${output}"`];
+      }
+      return {
+        testCaseId: test.id,
+        label: test.label,
+        expectedOutput: test.expectedOutput,
+        finalOutput: output,
+        correct: output === test.expectedOutput,
+        executionTrace: log.map((entry, index) => ({
+          blockId: program[Math.min(index, program.length - 1)]?.id ?? `step-${index + 1}`,
+          blockLabel: entry,
+          blockType: "debug",
+          actionType: "execute",
+          beforeState: {},
+          afterState: {},
+          visibleOutput: entry,
+          matchedExpectedStep: output === test.expectedOutput,
+        })),
+        log,
+      };
+    });
+    return {
+      goalMatched: testResults.length > 0 && testResults.every((test) => test.correct),
+      testResults,
+      log: testResults.flatMap((test) => [test.label, ...test.log, `Resultaat: ${test.correct ? "goed" : "nog niet"}`]),
+    };
+  };
+
   const playProgram = () => {
     if (runStep >= 0) {
       stopStepper();
       return;
     }
     setExecuted(true);
-    const effects = executeProgram();
+    const debugResult = isDebugTask ? evaluateDebugProgram() : null;
+    const effects = debugResult
+      ? { ...emptyProgramRunEffects, log: debugResult.log }
+      : executeProgram();
     setRunEffects(effects);
+    if (debugResult) {
+      const timestamp = new Date().toISOString();
+      setGoalMatched(debugResult.goalMatched);
+      setPlayedAfterLastChange(true);
+      setLastPlayedAt(timestamp);
+      setPlayRuns((current) => [
+        ...current,
+        {
+          runId: `run-${String(current.length + 1).padStart(3, "0")}`,
+          timestamp,
+          playCount: current.length + 1,
+          programStateAtPlay: { program },
+          playedAfterLastChange: true,
+          executionTrace: debugResult.testResults.flatMap((test) => test.executionTrace),
+          goalMatched: debugResult.goalMatched,
+          failedStepId: debugResult.testResults.find((test) => !test.correct)?.testCaseId ?? null,
+          finalOutput: debugResult.testResults.map((test) => test.finalOutput).join(" | "),
+          itemVersion: "pt7-debug-v1",
+          testCaseResults: debugResult.testResults,
+        },
+      ]);
+    }
     if (effects.speech) {
       setSpeechVisible(true);
       window.setTimeout(() => setSpeechVisible(false), 2000);
@@ -4421,6 +4557,17 @@ const BlockProgrammingTaskView = ({
         instruction={task.intro}
       >
         <p className="helper-text">{item.instruction}</p>
+        {isDebugTask ? (
+          <div className="notice-banner">
+            <strong>{task.visualGoal?.title ?? "DOEL"}</strong>
+            {(task.visualGoal?.lines ?? []).map((line) => (
+              <span key={line}>{line}</span>
+            ))}
+            <small>
+              Gekozen foutblokken: {selectedWrongBlockIds.length}/2. Klik een codeblok en kies daarna een vervangblok uit de blokkenbak.
+            </small>
+          </div>
+        ) : null}
         {task.codingSteps ? (
           <ol className="coding-steps">
             {task.codingSteps.map((stepText) => (
@@ -4491,7 +4638,7 @@ const BlockProgrammingTaskView = ({
                 className="ghost-btn"
                 type="button"
                 onClick={() => { setProgram([]); resetProgramRun(); }}
-                disabled={program.length === 0}
+                disabled={program.length === 0 || isDebugTask}
               >
                 Leegmaken
               </button>
@@ -4533,11 +4680,28 @@ const BlockProgrammingTaskView = ({
               const shape = def.category === "gebeurtenissen"
                 ? "hat"
                 : def.isContainer ? "container" : "stack";
+              const blockId = block.id ?? `${block.label}-${index}`;
+              const selectedAsWrong = selectedWrongBlockIds.includes(blockId);
               return (
                 <div
-                  className={`canvas-row ${runStep === index ? "is-active" : ""}`}
+                  className={`canvas-row ${runStep === index ? "is-active" : ""}${selectedProgramIndex === index ? " selected" : ""}${selectedAsWrong ? " debug-selected" : ""}`}
                   key={`${block.label}-${index}`}
                   style={{ "--depth": block.indent } as CSSProperties}
+                  onClick={() => {
+                    if (!isDebugTask) {
+                      return;
+                    }
+                    setSelectedProgramIndex(index);
+                    setSelectedWrongBlockIds((current) => {
+                      if (current.includes(blockId)) {
+                        return current.filter((id) => id !== blockId);
+                      }
+                      if (current.length >= 2) {
+                        return current;
+                      }
+                      return [...current, blockId];
+                    });
+                  }}
                 >
                   <span
                     className={`block block-${shape} ${runStep === index ? "is-active" : ""}`}
@@ -4549,6 +4713,7 @@ const BlockProgrammingTaskView = ({
                     className="canvas-row-remove"
                     type="button"
                     aria-label="Verwijder blok"
+                    disabled={isDebugTask}
                     onClick={() =>
                       setProgram((current) => current.filter((_, i) => i !== index))
                     }
@@ -4657,6 +4822,41 @@ const BlockProgrammingTaskView = ({
         </aside>
       </div>
 
+      {isDebugTask ? (
+        <button
+          className="ghost-button"
+          type="button"
+          onClick={() =>
+            onSubmit({
+              section,
+              item,
+              selectedAnswer: {
+                itemId: item.id,
+                itemVersion: "pt7-debug-v1",
+                selectedWrongBlockIds,
+                selectedNonWrongBlockIds: selectedWrongBlockIds,
+                replacementActions,
+                finalProgramState: { program },
+                playCount: playRuns.length,
+                playedAfterLastChange,
+                simulationResult: playRuns[playRuns.length - 1] ?? {},
+                goalMatched: false,
+                unknown: true,
+                errorCategories: ["unknown"],
+                lastChangedAt,
+                lastPlayedAt,
+                testCaseResults: [],
+                misconceptionFlags: [],
+                playRuns,
+              },
+              shownOptionOrder: paletteBlocks.map((block) => block.label),
+            })
+          }
+        >
+          Ik weet het niet
+        </button>
+      ) : null}
+
       <TaskNavFooter
         questionNumber={questionNumber}
         primaryLabel="Volgende"
@@ -4664,7 +4864,32 @@ const BlockProgrammingTaskView = ({
           onSubmit({
             section,
             item,
-            selectedAnswer: { program, executed, aPresses, temperature, windowOpen, runEffects },
+            selectedAnswer: isDebugTask
+              ? {
+                  itemId: item.id,
+                  itemVersion: "pt7-debug-v1",
+                  selectedWrongBlockIds,
+                  selectedNonWrongBlockIds: selectedWrongBlockIds.filter(
+                    (id) => !(task.wrongBlockIds ?? []).includes(id),
+                  ),
+                  replacementActions,
+                  finalProgramState: { program },
+                  playCount: playRuns.length,
+                  playedAfterLastChange,
+                  simulationResult: playRuns[playRuns.length - 1] ?? {},
+                  goalMatched,
+                  unknown: false,
+                  errorCategories: [],
+                  firstRunBeforeEdit: playRuns.length > 0 && replacementActions.length === 0,
+                  runBeforeEditCount: replacementActions.length === 0 ? playRuns.length : 0,
+                  runAfterEditCount: replacementActions.length > 0 ? playRuns.length : 0,
+                  lastChangedAt,
+                  lastPlayedAt,
+                  testCaseResults: playRuns[playRuns.length - 1]?.testCaseResults ?? [],
+                  misconceptionFlags: [],
+                  playRuns,
+                }
+              : { program, executed, aPresses, temperature, windowOpen, runEffects },
             shownOptionOrder: paletteBlocks.map((block) => block.label),
           })
         }

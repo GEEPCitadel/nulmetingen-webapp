@@ -1838,6 +1838,16 @@ body {
   border-radius: 999px;
   background: #FFDE00;
 }
+.canvas-row.selected::after,
+.canvas-row.debug-selected::after {
+  content: "";
+  position: absolute;
+  inset: 2px 28px 2px calc(var(--depth, 0) * 22px - 4px);
+  border: 2px solid #111827;
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, .28);
+  pointer-events: none;
+}
 .canvas-row-remove {
   position: absolute;
   top: 4px;

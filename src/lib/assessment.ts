@@ -663,7 +663,79 @@ const scoreV6BlockTask = (
   };
 };
 
+const scoreDebugBlockTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => {
+  const state = answerRecord(selectedAnswer);
+  const task = item.blockTask;
+  if (state.unknown === true) {
+    return {
+      isCorrect: false,
+      score: 0,
+      taskResults: [
+        {
+          taskId: "unknown",
+          description: "leerling koos Ik weet het niet.",
+          correct: false,
+          points: 0,
+          unknown: true,
+        },
+      ],
+    };
+  }
+  const selectedWrongBlockIds = stringArray(state.selectedWrongBlockIds);
+  const wrongBlockIds = task?.wrongBlockIds ?? [];
+  const finalProgramState = answerRecord(state.finalProgramState as SelectedAnswer);
+  const program = Array.isArray(finalProgramState.program)
+    ? finalProgramState.program
+        .map((entry) => answerRecord(entry as SelectedAnswer))
+        .map((entry) => ({
+          id: String(entry.id ?? ""),
+          label: String(entry.label ?? ""),
+        }))
+    : [];
+  const exactWrongSelection =
+    selectedWrongBlockIds.length === wrongBlockIds.length &&
+    wrongBlockIds.every((id) => selectedWrongBlockIds.includes(id));
+  const repairChecks = task?.debugRepairChecks ?? [];
+  const repairResults = repairChecks.map((check) => {
+    const block = program.find((entry) => entry.id === check.blockId);
+    return {
+      taskId: check.id,
+      description: check.description,
+      correct: block?.label === check.expectedLabel,
+      points: block?.label === check.expectedLabel ? check.points : 0,
+    };
+  });
+  const testCorrect =
+    state.playedAfterLastChange === true &&
+    state.goalMatched === true &&
+    state.unknown !== true;
+  const taskResults = [
+    {
+      taskId: "wrong-blocks",
+      description: "de twee foute blokken zijn aangewezen.",
+      correct: exactWrongSelection,
+      points: exactWrongSelection ? 1 : 0,
+    },
+    ...repairResults,
+    {
+      taskId: "test-proof",
+      description: "na de laatste wijziging is correct getest met Afspelen.",
+      correct: testCorrect,
+      points: testCorrect ? 1 : 0,
+    },
+  ];
+  const score = taskResults.reduce((sum, result) => sum + (result.points ?? 0), 0);
+  return {
+    isCorrect: taskResults.every((result) => result.correct),
+    score,
+    taskResults,
+  };
+};
+
 const scoreBlockTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => {
+  if (item.blockTask?.itemVersion === "pt7-debug-v1") {
+    return scoreDebugBlockTask(item, selectedAnswer);
+  }
   if (item.blockTask?.criteriaSpec) {
     return scoreV6BlockTask(item, selectedAnswer, item.blockTask.criteriaSpec);
   }

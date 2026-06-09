@@ -254,6 +254,7 @@ export interface BlockScoringRule {
 }
 
 export interface ProgrammingBlockDefinition {
+  id?: string;
   label: string;
   category: string;
   color: string;
@@ -264,12 +265,39 @@ export interface ProgrammingBlockDefinition {
 export type BlockCriteriaSpec = "pt7-lj1v" | "pt7-lj1h" | "pt7-lj3v" | "pt7-lj3h";
 
 export interface BlockProgrammingTaskConfig {
+  itemVersion?: "pt7-debug-v1";
   intro?: string;
   device?: "bizzy" | "microbit" | "sensor";
   codingSteps?: string[];
   blocks: ProgrammingBlockDefinition[];
+  visualGoal?: {
+    title: string;
+    lines: string[];
+  };
+  initialProgram?: Array<ProgrammingBlockDefinition & { correctReplacementId?: string }>;
   correctProgram: string[];
+  wrongBlockIds?: string[];
+  debugRepairChecks?: Array<{
+    id: string;
+    description: string;
+    points: number;
+    blockId: string;
+    expectedLabel: string;
+  }>;
+  tests?: Array<{
+    id: string;
+    label: string;
+    expectedOutput: string;
+    inputs?: Record<string, unknown>;
+  }>;
   rules: BlockScoringRule[];
+  playback?: {
+    speed: "normal" | "slow";
+    stepMs: number;
+  };
+  logging?: {
+    itemVersion: "pt7-debug-v1";
+  };
   /** When set, scoring follows the V6 criteria table for the given spec
    *  instead of the generic `rules` array. */
   criteriaSpec?: BlockCriteriaSpec;
