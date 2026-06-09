@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
+const removedLegacyCodes = ["1001", "1002", "1003", "1004"];
 const testStudents = {
   TESTVMBO1: {
     participant_label: "Testleerling VMBO leerjaar 1",
@@ -79,6 +80,11 @@ const ensureTables = async (sql) => {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+
+  for (const code of removedLegacyCodes) {
+    await sql`DELETE FROM assessment_sessions WHERE access_code = ${code}`;
+    await sql`DELETE FROM students WHERE access_code = ${code} OR student_number = ${code}`;
+  }
 };
 
 const sanitizeSessionForStudent = (sessionJson) => {

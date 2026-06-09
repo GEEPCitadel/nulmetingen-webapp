@@ -139,6 +139,12 @@ type StudentsResponse = {
   ok: boolean;
   students: ApiStudent[];
   importedCount?: number;
+  deletedCount?: number;
+};
+
+type ImportStudentRow = {
+  classCode: string;
+  participantLabel: string;
 };
 
 // P1 (rainbow on cream) is used for the entry / admin / fallback screens.
@@ -1035,6 +1041,7 @@ const AdminScreen = ({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedAccessCodes, setSelectedAccessCodes] = useState<string[]>([]);
 
   const adminHeaders = { "x-admin-password": adminPassword };
 
@@ -1058,8 +1065,8 @@ const AdminScreen = ({
     void loadStudents();
   }, []);
 
-  const parseClassPlanRows = () =>
-    classPlanText
+  const parseClassPlanRowsFromText = (text: string): ImportStudentRow[] =>
+    text
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean)
@@ -1083,6 +1090,113 @@ const AdminScreen = ({
           participantLabel: names[index] || `Leerling ${String(index + 1).padStart(2, "0")}`,
         }));
       });
+
+  const parseClassPlanRows = () => parseClassPlanRowsFromText(classPlanText);
+
+  const rowsToClassPlanText = (rows: ImportStudentRow[]) => {
+    const grouped = rows.reduce<Record<string, string[]>>((acc, row) => {
+      const classCode = row.classCode.trim().toLowerCase();
+      if (!classCode) return acc;
+      acc[classCode] = acc[classCode] ?? [];
+      acc[classCode].push(row.participantLabel.trim());
+      return acc;
+    }, {});
+
+    return Object.entries(grouped)
+      .map(([classCode, names]) => {
+        const cleanNames = names.filter(Boolean);
+        return `${classCode}; ${names.length}; ${cleanNames.join(", ")}`;
+      })
+      .join("\n");
+  };
+
+  const valueFromRecord = (record: Record<string, unknown>, names: string[]) => {
+    const normalized = new Map(
+      Object.entries(record).map(([key, value]) => [key.trim().toLowerCase(), value]),
+    );
+    for (const name of names) {
+      const value = normalized.get(name.toLowerCase());
+      if (value !== undefined && value !== null) return String(value).trim();
+    }
+    return "";
+  };
+
+  const parseTableRecords = (records: Array<Record<string, unknown>>): ImportStudentRow[] =>
+    records.flatMap((record, index) => {
+      const classCode = valueFromRecord(record, ["klas", "class", "classcode", "class_code"]);
+      const yearRaw = valueFromRecord(record, ["leerjaar", "jaar", "year"]);
+      const name = valueFromRecord(record, ["leerling", "naam", "student", "participantlabel", "participant_label"]);
+      const countRaw = valueFromRecord(record, ["aantal", "count"]);
+      const count = countRaw ? Number.parseInt(countRaw, 10) : 1;
+
+      if (!classCode) throw new Error(`Rij ${index + 1}: klas ontbreekt.`);
+      if (!name && (!Number.isFinite(count) || count < 1)) {
+        throw new Error(`Rij ${index + 1}: vul een leerlingnaam of geldig aantal in.`);
+      }
+
+      const normalizedClass = classCode.trim().toLowerCase();
+      const labelPrefix = yearRaw ? `Leerjaar ${yearRaw} ` : "";
+      return Array.from({ length: Math.max(count, 1) }, (_, rowIndex) => ({
+        classCode: normalizedClass,
+        participantLabel: name || `${labelPrefix}Leerling ${String(rowIndex + 1).padStart(2, "0")}`,
+      }));
+    });
+
+  const parseDelimitedFile = (text: string) => {
+    const delimiter = text.includes(";") ? ";" : ",";
+    const [headerLine = "", ...lines] = text.split(/\r?\n/).filter((line) => line.trim());
+    const headers = headerLine.split(delimiter).map((header) => header.trim());
+    return parseTableRecords(
+      lines.map((line) => {
+        const values = line.split(delimiter).map((value) => value.trim());
+        return headers.reduce<Record<string, string>>((record, header, index) => {
+          record[header] = values[index] ?? "";
+          return record;
+        }, {});
+      }),
+    );
+  };
+
+  const readImportFile = async (file: File): Promise<ImportStudentRow[]> => {
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    if (extension === "xlsx" || extension === "xls") {
+      const XLSX = await import("xlsx");
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const records = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[sheetName], {
+        defval: "",
+      });
+      return parseTableRecords(records);
+    }
+
+    if (extension === "docx") {
+      const mammoth = await import("mammoth/mammoth.browser");
+      const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+      return parseClassPlanRowsFromText(result.value);
+    }
+
+    if (extension === "csv" || extension === "txt") {
+      return parseDelimitedFile(await file.text());
+    }
+
+    throw new Error("Gebruik een Excelbestand (.xlsx/.xls), Wordbestand (.docx), csv of tekstbestand.");
+  };
+
+  const handleImportFile = async (file: File | null) => {
+    if (!file) return;
+    setIsLoading(true);
+    try {
+      const rows = await readImportFile(file);
+      if (rows.length === 0) throw new Error("Geen leerlingen gevonden in het bestand.");
+      setClassPlanText(rowsToClassPlanText(rows));
+      setMessage(`${rows.length} leerlingen uit ${file.name} klaargezet. Klik op Codes genereren om te importeren.`);
+      setError("");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Het bestand kon niet worden gelezen.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const importStudents = async () => {
     let rows: Array<{ classCode: string; participantLabel: string }>;
@@ -1217,6 +1331,12 @@ const AdminScreen = ({
     classFilter.length === 0
       ? yearFilteredStudents
       : yearFilteredStudents.filter((student) => classFilter.includes(student.classCode));
+  const filteredAccessCodes = filteredStudents.map((student) => student.accessCode);
+  const selectedVisibleAccessCodes = selectedAccessCodes.filter((code) =>
+    filteredAccessCodes.includes(code),
+  );
+  const allVisibleSelected =
+    filteredAccessCodes.length > 0 && selectedVisibleAccessCodes.length === filteredAccessCodes.length;
   const classFilterLabel =
     classFilter.length === 0
       ? "Alle klassen"
@@ -1224,11 +1344,44 @@ const AdminScreen = ({
         ? classFilter[0]
         : `${classFilter.length} klassen`;
 
+  const deleteStudents = async (
+    action: "deleteStudents" | "deleteClasses" | "deleteYears",
+    payload: Record<string, unknown>,
+    label: string,
+  ) => {
+    if (!window.confirm("Weet je zeker dat je wilt wissen?")) return;
+
+    setIsLoading(true);
+    try {
+      const data = await requestJson<StudentsResponse>("/api/students", {
+        method: "DELETE",
+        headers: adminHeaders,
+        body: JSON.stringify({
+          action,
+          ...payload,
+        }),
+      });
+      setStudents(data.students);
+      setSelectedAccessCodes([]);
+      setMessage(`${data.deletedCount ?? 0} leerlingen gewist (${label}).`);
+      setError("");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Wissen is niet gelukt.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     setClassFilter((selected) =>
       selected.filter((classCode) => availableClassCodes.includes(classCode)),
     );
   }, [availableClassCodes.join("|")]);
+
+  useEffect(() => {
+    const availableCodes = new Set(students.map((student) => student.accessCode));
+    setSelectedAccessCodes((selected) => selected.filter((code) => availableCodes.has(code)));
+  }, [students]);
 
   const completedCount = students.filter((s) => s.status === "completed").length;
   const busyCount = students.filter((s) => s.status === "in_progress").length;
@@ -1334,8 +1487,10 @@ const AdminScreen = ({
       <section className="import-panel">
         <h3>Afnamecodes genereren</h3>
         <p className="help">
-          Maak per klas in een keer genoeg codes aan. Gebruik per regel:
-          <code> klas; aantal; namen gescheiden door komma&apos;s</code>. Meerdere klassen tegelijk kan.
+          Maak per klas of leerjaar in een keer genoeg codes aan. Gebruik tekstregels
+          <code> klas; aantal; namen gescheiden door komma&apos;s</code>, of lever Excel aan met kolommen
+          <code>klas</code>, <code>leerling</code> en optioneel <code>aantal</code>/<code>leerjaar</code>.
+          Een Wordbestand (.docx) mag dezelfde tekstregels bevatten.
         </p>
         <div className="grid">
           <label>
@@ -1365,6 +1520,17 @@ const AdminScreen = ({
               value={classPlanText}
               onChange={(event) => setClassPlanText(event.target.value)}
               placeholder={"vmbo1a; 28; Noor Jansen, Samira B., Ali K.\nhavo1b; 30; Mila S., Adam V."}
+            />
+          </label>
+          <label className="file-import-control">
+            <span>Excel/Word import</span>
+            <input
+              type="file"
+              accept=".xlsx,.xls,.csv,.txt,.docx"
+              onChange={(event) => {
+                void handleImportFile(event.target.files?.[0] ?? null);
+                event.currentTarget.value = "";
+              }}
             />
           </label>
           <button
@@ -1446,6 +1612,44 @@ const AdminScreen = ({
             >
               ↻ Vernieuwen
             </button>
+            <button
+              className="filter-chip danger"
+              type="button"
+              onClick={() =>
+                deleteStudents(
+                  "deleteStudents",
+                  { accessCodes: selectedVisibleAccessCodes },
+                  `${selectedVisibleAccessCodes.length} geselecteerd`,
+                )
+              }
+              disabled={isLoading || selectedVisibleAccessCodes.length === 0}
+            >
+              Wis selectie
+            </button>
+            <button
+              className="filter-chip danger"
+              type="button"
+              onClick={() =>
+                deleteStudents("deleteClasses", { classCodes: classFilter }, classFilter.join(", "))
+              }
+              disabled={isLoading || classFilter.length === 0}
+            >
+              Wis klas(sen)
+            </button>
+            <button
+              className="filter-chip danger"
+              type="button"
+              onClick={() =>
+                deleteStudents(
+                  "deleteYears",
+                  { yearIds: [yearFilter] },
+                  yearFilter === "lj1" ? "leerjaar 1" : "leerjaar 3",
+                )
+              }
+              disabled={isLoading || yearFilter === "all"}
+            >
+              Wis leerjaar
+            </button>
             <details className="admin-export-menu">
               <summary className={`filter-chip ${filteredStudents.length === 0 ? "disabled" : ""}`}>
                 Exporteer
@@ -1467,6 +1671,21 @@ const AdminScreen = ({
 
         <div className="rd-student-table">
           <div className="rd-student-row head">
+            <span>
+              <input
+                aria-label="Selecteer alle zichtbare leerlingen"
+                type="checkbox"
+                checked={allVisibleSelected}
+                disabled={filteredAccessCodes.length === 0}
+                onChange={(event) => {
+                  setSelectedAccessCodes((selected) =>
+                    event.target.checked
+                      ? Array.from(new Set([...selected, ...filteredAccessCodes]))
+                      : selected.filter((code) => !filteredAccessCodes.includes(code)),
+                  );
+                }}
+              />
+            </span>
             <span>Code</span>
             <span>Leerling</span>
             <span>Klas</span>
@@ -1490,6 +1709,20 @@ const AdminScreen = ({
                   className="rd-student-row"
                   key={`${student.classCode}-${student.accessCode}`}
                 >
+                  <span>
+                    <input
+                      aria-label={`${student.accessCode} selecteren`}
+                      type="checkbox"
+                      checked={selectedAccessCodes.includes(student.accessCode)}
+                      onChange={(event) => {
+                        setSelectedAccessCodes((selected) =>
+                          event.target.checked
+                            ? Array.from(new Set([...selected, student.accessCode]))
+                            : selected.filter((code) => code !== student.accessCode),
+                        );
+                      }}
+                    />
+                  </span>
                   <span className="code-cell">{student.accessCode}</span>
                   <span>{student.participantLabel || "Geen label"}</span>
                   <span>{student.classCode}</span>

@@ -3,48 +3,7 @@ import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
 const codeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const testStudents = [
-  {
-    participantLabel: "Testleerling VMBO leerjaar 1",
-    accessCode: "TESTVMBO1",
-    classCode: "test-vmbo1",
-    versionId: "lj1-vmbo",
-    importBatch: "Standaard test",
-    status: "not_started",
-    completedAt: null,
-    updatedAt: null,
-  },
-  {
-    participantLabel: "Testleerling HAVO/VWO leerjaar 1",
-    accessCode: "TESTHV1",
-    classCode: "test-hv1",
-    versionId: "lj1-hv",
-    importBatch: "Standaard test",
-    status: "not_started",
-    completedAt: null,
-    updatedAt: null,
-  },
-  {
-    participantLabel: "Testleerling VMBO leerjaar 3",
-    accessCode: "TESTVMBO3",
-    classCode: "test-vmbo3",
-    versionId: "lj3-vmbo",
-    importBatch: "Standaard test",
-    status: "not_started",
-    completedAt: null,
-    updatedAt: null,
-  },
-  {
-    participantLabel: "Testleerling HAVO/VWO leerjaar 3",
-    accessCode: "TESTHV3",
-    classCode: "test-hv3",
-    versionId: "lj3-hv",
-    importBatch: "Standaard test",
-    status: "not_started",
-    completedAt: null,
-    updatedAt: null,
-  },
-];
+const removedLegacyCodes = ["1001", "1002", "1003", "1004"];
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
@@ -129,6 +88,11 @@ const ensureTables = async (sql) => {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+
+  for (const code of removedLegacyCodes) {
+    await sql`DELETE FROM assessment_sessions WHERE access_code = ${code}`;
+    await sql`DELETE FROM students WHERE access_code = ${code} OR student_number = ${code}`;
+  }
 };
 
 const normalizeStudentRows = (students, versionId, importBatch) => {
@@ -170,11 +134,51 @@ const listStudents = async (sql) => {
     completedAt: row.completed_at,
     updatedAt: row.updated_at,
   }));
-  const storedCodes = new Set(storedStudents.map((student) => student.accessCode));
-  return [
-    ...testStudents.filter((student) => !storedCodes.has(student.accessCode)),
-    ...storedStudents,
-  ];
+  return storedStudents;
+};
+
+const normalizeCodeList = (value) =>
+  Array.isArray(value)
+    ? value
+        .map((item) => String(item ?? "").trim().toUpperCase())
+        .filter((item) => /^[A-Z0-9]{4,12}$/.test(item))
+    : [];
+
+const normalizeTextList = (value) =>
+  Array.isArray(value)
+    ? value
+        .map((item) => String(item ?? "").trim().toLowerCase())
+        .filter(Boolean)
+    : [];
+
+const deleteStudentsByCodes = async (sql, accessCodes) => {
+  const uniqueCodes = Array.from(new Set(accessCodes));
+  let deletedCount = 0;
+  for (const accessCode of uniqueCodes) {
+    const deletedRows = await sql`DELETE FROM students WHERE access_code = ${accessCode} RETURNING access_code`;
+    deletedCount += deletedRows.length;
+    await sql`DELETE FROM assessment_sessions WHERE access_code = ${accessCode}`;
+  }
+  return deletedCount;
+};
+
+const accessCodesForClasses = async (sql, classCodes) => {
+  const codes = [];
+  for (const classCode of Array.from(new Set(classCodes))) {
+    const rows = await sql`SELECT access_code FROM students WHERE lower(class_code) = ${classCode}`;
+    codes.push(...rows.map((row) => row.access_code));
+  }
+  return codes;
+};
+
+const accessCodesForYears = async (sql, yearIds) => {
+  const codes = [];
+  for (const yearId of Array.from(new Set(yearIds))) {
+    if (yearId !== "lj1" && yearId !== "lj3") continue;
+    const rows = await sql`SELECT access_code FROM students WHERE version_id LIKE ${`${yearId}-%`}`;
+    codes.push(...rows.map((row) => row.access_code));
+  }
+  return codes;
 };
 
 export default async function handler(request, response) {
@@ -226,8 +230,38 @@ export default async function handler(request, response) {
       return;
     }
 
+    if (request.method === "DELETE") {
+      const body = await readJsonBody(request);
+      if (!requireAdmin(request, body)) {
+        response.status(401).json({ ok: false });
+        return;
+      }
+
+      const action = String(body.action ?? "");
+      let accessCodes = [];
+      if (action === "deleteStudents") {
+        accessCodes = normalizeCodeList(body.accessCodes);
+      } else if (action === "deleteClasses") {
+        accessCodes = await accessCodesForClasses(sql, normalizeTextList(body.classCodes));
+      } else if (action === "deleteYears") {
+        accessCodes = await accessCodesForYears(sql, normalizeTextList(body.yearIds));
+      } else {
+        response.status(400).json({ ok: false, error: "Onbekende wisactie." });
+        return;
+      }
+
+      if (accessCodes.length === 0) {
+        response.status(400).json({ ok: false, error: "Geen leerlingen gevonden om te wissen." });
+        return;
+      }
+
+      const deletedCount = await deleteStudentsByCodes(sql, accessCodes);
+      response.status(200).json({ ok: true, deletedCount, students: await listStudents(sql) });
+      return;
+    }
+
     if (request.method !== "POST") {
-      response.setHeader("Allow", "GET, POST, PATCH");
+      response.setHeader("Allow", "GET, POST, PATCH, DELETE");
       response.status(405).json({ ok: false });
       return;
     }

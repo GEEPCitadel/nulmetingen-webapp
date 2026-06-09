@@ -899,7 +899,7 @@ body {
 .import-panel .help { color: var(--c-ink-soft); font-size: .95rem; margin: 0 0 24px; }
 .import-panel .grid {
   display: grid;
-  grid-template-columns: 240px 240px 1fr auto;
+  grid-template-columns: 220px 220px minmax(260px, 1fr) 190px auto;
   gap: 16px;
   align-items: end;
 }
@@ -922,6 +922,21 @@ body {
 }
 .import-panel select:focus, .import-panel input:focus, .import-panel textarea:focus {
   border-color: var(--t-action); background: #fff;
+}
+.import-panel .file-import-control input {
+  padding: 10px;
+  min-height: 48px;
+}
+.import-panel .file-import-control input::file-selector-button {
+  margin-right: 10px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--t-accent-deep);
+  font: inherit;
+  font-weight: 800;
+  padding: 8px 12px;
+  cursor: pointer;
 }
 .import-panel textarea {
   resize: vertical; min-height: 96px;
@@ -975,6 +990,14 @@ body {
 }
 .filter-chip:hover { color: var(--c-ink); }
 .filter-chip.active { background: var(--t-accent-deep); color: #fff; border-color: var(--t-accent-deep); }
+.filter-chip.danger {
+  color: #9f2d2d;
+  border-color: color-mix(in srgb, #d75656 36%, var(--c-line));
+}
+.filter-chip.danger:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
 .filter-chip.disabled {
   opacity: .5;
   pointer-events: none;
@@ -1055,7 +1078,7 @@ body {
 }
 .rd-student-row {
   display: grid;
-  grid-template-columns: 110px minmax(160px, 1fr) 110px 130px 140px 160px;
+  grid-template-columns: 34px 110px minmax(160px, 1fr) 110px 130px 140px 160px;
   gap: 16px;
   align-items: center;
   padding: 16px 28px;
@@ -3509,7 +3532,8 @@ body {
   .rd-student-row {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
-      "code    klas"
+      "select  klas"
+      "code    code"
       "label   label"
       "meting  status"
       "actie   actie";
@@ -3517,12 +3541,13 @@ body {
     padding: 16px 18px;
     align-items: center;
   }
-  .rd-student-row > :nth-child(1) { grid-area: code; font-size: 1.05rem; }
-  .rd-student-row > :nth-child(2) { grid-area: label; color: var(--c-ink-soft); }
-  .rd-student-row > :nth-child(3) { grid-area: klas; text-align: right; color: var(--c-ink-soft); }
-  .rd-student-row > :nth-child(4) { grid-area: meting; display: inline-flex; }
-  .rd-student-row > :nth-child(5) { grid-area: status; }
-  .rd-student-row > :nth-child(7) { grid-area: actie; }
+  .rd-student-row > :nth-child(1) { grid-area: select; }
+  .rd-student-row > :nth-child(2) { grid-area: code; font-size: 1.05rem; }
+  .rd-student-row > :nth-child(3) { grid-area: label; color: var(--c-ink-soft); }
+  .rd-student-row > :nth-child(4) { grid-area: klas; text-align: right; color: var(--c-ink-soft); }
+  .rd-student-row > :nth-child(5) { grid-area: meting; display: inline-flex; }
+  .rd-student-row > :nth-child(6) { grid-area: status; }
+  .rd-student-row > :nth-child(8) { grid-area: actie; }
   .rd-student-row .action-btns { justify-content: flex-start; }
   .rd-student-row .action-btns button { padding: 8px 14px; }
 
