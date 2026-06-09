@@ -5,7 +5,7 @@ import ts from "typescript";
 
 const sourcePath = "nulmetingen_selected_response_herontwerp_v3.json";
 const assessmentSourcePath = "src/data/assessments.ts";
-const outputPath = "docs/analysis/nulmetingen_vragen_antwoorden_pt_overzicht.md";
+const outputPath = "docs/analysis/nulmetingen_alle_vragen_antwoordmogelijkheden.md";
 const versionIds = ["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"];
 const versionLabels = {
   "lj1-vmbo": "Leerjaar 1 VMBO",
@@ -199,6 +199,14 @@ const lines = [
   }),
   "",
   `Totaal aantal selected-response-items: ${allItems.length}`,
+  `Totaal aantal zelfinschattingen: ${assessments.reduce(
+    (sum, assessment) =>
+      sum +
+      assessment.sections
+        .flatMap((section) => section.items)
+        .filter((item) => item.type === "self_assessment").length,
+    0,
+  )}`,
   `Totaal aantal performance tasks: ${assessments.reduce(
     (sum, assessment) =>
       sum +
@@ -370,6 +378,29 @@ const taskDetails = (item) => {
   return output;
 };
 
+const selfAssessmentDetails = (item) => {
+  const output = [
+    `- Item-id: ${escapeMarkdown(item.id)}`,
+    `- Type: ${escapeMarkdown(item.type)}`,
+    `- Kerndoel/subdoel: ${escapeMarkdown(item.kerndoel)}`,
+    `- Punten: ${item.points}`,
+    `- Vaardigheidsdomein: ${escapeMarkdown(item.skillDomain)}`,
+    `- Vraag/instructie: ${escapeMarkdown(item.instruction)}`,
+    "",
+    "Antwoordmogelijkheden:",
+  ];
+
+  if (item.selfAssessmentScale?.length) {
+    item.selfAssessmentScale.forEach((scalePoint) => {
+      output.push(`- ${scalePoint.value}: ${escapeMarkdown(scalePoint.label)}`);
+    });
+  } else {
+    output.push("- Schuifschaal zonder expliciete labels in de bron.");
+  }
+
+  return output;
+};
+
 for (const versionId of versionIds) {
   const items = selectedResponseItemsFor(versionId);
   const assessment = assessments.find((entry) => entry.id === versionId);
@@ -381,6 +412,17 @@ for (const versionId of versionIds) {
   }
 
   lines.push(`## ${versionLabels[versionId]} (${versionId})`, "");
+
+  lines.push("### Zelfinschatting", "");
+  const selfAssessmentItems = assessment.sections
+    .flatMap((section) => section.items.map((item) => ({ section, item })))
+    .filter(({ item }) => item.type === "self_assessment");
+
+  selfAssessmentItems.forEach(({ section, item }) => {
+    lines.push(`#### ${escapeMarkdown(item.title)} (${item.id})`, "");
+    lines.push(`- Sectie: ${escapeMarkdown(section.title)} (${escapeMarkdown(section.id)})`);
+    lines.push(...selfAssessmentDetails(item), "");
+  });
 
   lines.push("### Performance tasks", "");
   const performanceItems = assessment.sections
@@ -400,11 +442,12 @@ for (const versionId of versionIds) {
   lines.push("### Selected-response vragen", "");
 
   items.forEach((item, index) => {
-    const correctIds = item.options.filter((option) => isCorrectOption(item, option)).map(optionId);
-    const unknownIds = item.options
+    const itemOptions = item.options ?? [];
+    const correctIds = itemOptions.filter((option) => isCorrectOption(item, option)).map(optionId);
+    const unknownIds = itemOptions
       .filter((option) => option.isUnknownOption === true || option.unknown === true)
       .map(optionId);
-    const harmfulIds = item.options.filter((option) => isHarmfulOption(item, option)).map(optionId);
+    const harmfulIds = itemOptions.filter((option) => isHarmfulOption(item, option)).map(optionId);
 
     lines.push(
       `### Vraag ${index + 1}: ${escapeMarkdown(item.title)} (${item.id})`,
@@ -416,21 +459,56 @@ for (const versionId of versionIds) {
       harmfulIds.length ? `- Schadelijke afleider(s): ${harmfulIds.join(", ")}` : "- Schadelijke afleider(s): geen",
       ...stimulusLines(item),
       `- Vraag: ${escapeMarkdown(item.question)}`,
-      "",
-      "| Optie | Antwoord | Correct | Opmerking |",
-      "| --- | --- | --- | --- |",
     );
 
-    for (const option of item.options) {
-      const notes = [
-        option.isUnknownOption || option.unknown ? "weet ik niet" : "",
-        isHarmfulOption(item, option) ? "schadelijke afleider" : "",
-      ].filter(Boolean);
-      lines.push(
-        `| ${escapeMarkdown(optionId(option))} | ${escapeMarkdown(optionText(option))} | ${
-          isCorrectOption(item, option) ? "ja" : "nee"
-        } | ${notes.join("; ")} |`,
-      );
+    if (item.subQuestions?.length) {
+      lines.push("");
+      item.subQuestions.forEach((subQuestion, subIndex) => {
+        const subCorrectIds = normalizeList(subQuestion.correctAnswer);
+        lines.push(
+          `#### Deelvraag ${subIndex + 1}: ${escapeMarkdown(subQuestion.title ?? subQuestion.id)}`,
+          "",
+          `- Vraag: ${escapeMarkdown(subQuestion.question)}`,
+          subCorrectIds.length ? `- Correct antwoord: ${subCorrectIds.join(", ")}` : "- Correct antwoord: zie optie met correct=true",
+          "",
+          "| Optie | Antwoord | Correct | Opmerking |",
+          "| --- | --- | --- | --- |",
+        );
+
+        for (const option of subQuestion.options) {
+          const subOptionId = optionId(option);
+          const notes = [
+            option.isUnknownOption || option.unknown ? "weet ik niet" : "",
+            option.errorCategory ? `foutcategorie: ${escapeMarkdown(option.errorCategory)}` : "",
+            option.sourceType ? `brontype: ${escapeMarkdown(option.sourceType)}` : "",
+          ].filter(Boolean);
+          const isCorrect =
+            option.correct === true ||
+            option.isCorrect === true ||
+            option.score === 1 ||
+            subCorrectIds.includes(subOptionId);
+          lines.push(
+            `| ${escapeMarkdown(subOptionId)} | ${escapeMarkdown(optionText(option))} | ${
+              isCorrect ? "ja" : "nee"
+            } | ${notes.join("; ")} |`,
+          );
+        }
+        lines.push("");
+      });
+    } else {
+      lines.push("", "| Optie | Antwoord | Correct | Opmerking |", "| --- | --- | --- | --- |");
+
+      for (const option of itemOptions) {
+        const notes = [
+          option.isUnknownOption || option.unknown ? "weet ik niet" : "",
+          isHarmfulOption(item, option) ? "schadelijke afleider" : "",
+        ].filter(Boolean);
+        lines.push(
+          `| ${escapeMarkdown(optionId(option))} | ${escapeMarkdown(optionText(option))} | ${
+            isCorrectOption(item, option) ? "ja" : "nee"
+          } | ${notes.join("; ")} |`,
+        );
+      }
     }
 
     if (item.validityNote) {

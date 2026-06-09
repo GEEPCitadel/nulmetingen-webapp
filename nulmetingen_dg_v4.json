@@ -1,0 +1,5168 @@
+{
+  "schemaVersion": "dg-nulmetingen-v4",
+  "generatedFrom": "actieve repo/data",
+  "generatedAt": "2026-06-09T15:22:06.158Z",
+  "status": {
+    "version": "werkversie v4",
+    "use": "interne pilot en formatieve/diagnostische afname",
+    "validation": "niet presenteren als gevalideerd meetinstrument"
+  },
+  "assessments": [
+    {
+      "assessmentId": "lj1-vmbo",
+      "title": "Leerjaar 1 VMBO",
+      "targetGroup": "LJ1 VMBO",
+      "maxScore": 36,
+      "sections": [
+        {
+          "sectionId": "zelfinschatting",
+          "title": "Zelfinschatting",
+          "maxScore": 0,
+          "items": [
+            {
+              "itemId": "self-assessment",
+              "uiQuestionNumber": "Zelfinschatting",
+              "type": "self_assessment",
+              "sectionId": "zelfinschatting",
+              "title": "Zelfinschatting",
+              "subgoals": [
+                "niet-scorend"
+              ],
+              "points": 0,
+              "prompt": "Hoe digitaal geletterd schat je jezelf in?\nSchuif het bolletje naar jouw keuze.\n0 betekent: ik schat mezelf helemaal niet digitaal geletterd in.\n100 betekent: ik schat mezelf heel digitaal geletterd in.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": false,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "0 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt1",
+          "title": "PT1 - Bestanden en mappen",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj1v-pt1-files",
+              "uiQuestionNumber": 1,
+              "type": "file_task_simulation",
+              "sectionId": "pt1",
+              "title": "PT1 - Bestanden en mappen beheren",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 4,
+              "prompt": "Kun jij je bestanden netjes ordenen? Voer de taken hieronder uit en klik daarna op 'Volgende'.\nWerk in OneDrive. Maak daarin de map Biologie.\nVerplaats de drie projectbestanden naar Biologie.\nHernoem concept_dieren.docx naar project_dieren_verslag.docx.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "4 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt2",
+          "title": "PT2 - Mail opstellen",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj1v-pt2-mail",
+              "uiQuestionNumber": 2,
+              "type": "outlook_mail_simulation",
+              "sectionId": "pt2",
+              "title": "E-mail opstellen",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 4,
+              "prompt": "Stuur een verslag van Nederlands via e-mail naar je mentor.\n1. Kies de juiste ontvanger in het juiste veld.\n2. Gebruik het juiste onderwerp: Verslag Nederlands.\n3. Voeg de juiste bijlage toe.\n4. Verzend de e-mail.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "4 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt3",
+          "title": "PT3 - Account, apparaat en verbinding beveiligen",
+          "maxScore": 3,
+          "items": [
+            {
+              "itemId": "lj1v-pt3-security",
+              "uiQuestionNumber": 3,
+              "type": "account_security_simulation",
+              "sectionId": "pt3",
+              "title": "PT3 - Bericht beoordelen",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 3,
+              "prompt": "Bekijk de e-mail en kies je antwoorden.",
+              "randomization": {
+                "optionOrderRandomized": true,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "3 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt4",
+          "title": "PT4 - Excel/data sorteren en filteren",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj1v-pt4-excel",
+              "uiQuestionNumber": 4,
+              "type": "excel_download_task",
+              "sectionId": "pt4",
+              "title": "PT4 - Excel/data sorteren en filteren",
+              "subgoals": [
+                "21C, 21A"
+              ],
+              "points": 4,
+              "prompt": "Download LJ1_VMBO_Liedjes.xlsx. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "2 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt6",
+          "title": "PT6 - Videovergadering en schermdelen",
+          "maxScore": 3,
+          "items": [
+            {
+              "itemId": "lj1vmbo-pt6-screen-share",
+              "uiQuestionNumber": 5,
+              "type": "teams_share_simulation",
+              "sectionId": "pt6",
+              "title": "Schermdelen in een online les",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 3,
+              "prompt": "Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "3 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt7",
+          "title": "PT7 - Blokprogrammeren",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj1v-pt7-programming-debug-v1",
+              "uiQuestionNumber": 6,
+              "type": "block_programming_task",
+              "sectionId": "pt7",
+              "title": "PT7 - Blokprogrammeren",
+              "subgoals": [
+                "22B"
+              ],
+              "points": 4,
+              "prompt": "Blokprogrammeren",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "2 debug-reparaties; 1 tests"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt8",
+          "title": "PT8 - Online gedrag",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "pt8-whutsupp-sam-video",
+              "uiQuestionNumber": 7,
+              "type": "social_action_simulation",
+              "sectionId": "pt8",
+              "title": "Whutsupp: video in de groepschat",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 4,
+              "prompt": "Je zit in de Whutsupp-groep van je klas. Er komt een video van Sam in de chat. Kies wat jij doet.",
+              "randomization": {
+                "optionOrderRandomized": true,
+                "unknownPinnedLast": true
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "taskMetadata": {
+                "engine": "WhutsuppScenarioTask",
+                "flowVersion": "1.0-codex-ready-pilot",
+                "variantId": "lj1-vmbo",
+                "nodes": [
+                  {
+                    "nodeId": "n1",
+                    "category": "risk_boundary",
+                    "prompt": "Wat doe jij eerst?",
+                    "choiceIds": [
+                      "n1_safe_boundary",
+                      "n1_ridicule",
+                      "n1_forward_friend",
+                      "n1_wait",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n1_safe_boundary"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "ridicule_reaction",
+                      "harmful_share",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_remove",
+                      "recovery_wait",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n2",
+                    "category": "no_spread",
+                    "prompt": "Wat stuur je nu?",
+                    "choiceIds": [
+                      "n2_safe_no_spread",
+                      "n2_sticker",
+                      "n2_only_known",
+                      "n2_teacher_later",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n2_safe_no_spread"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "harmful_share",
+                      "ridicule_reaction",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_remove",
+                      "recovery_wait",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n3",
+                    "category": "support_target",
+                    "prompt": "Wat stuur je naar Sam?",
+                    "choiceIds": [
+                      "n3_safe_support",
+                      "n3_minimize",
+                      "n3_leave_chat",
+                      "n3_ask_more",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n3_safe_support"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "victim_blaming_or_minimizing",
+                      "ridicule_reaction"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_remove",
+                      "recovery_wait",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n4",
+                    "category": "help_report",
+                    "prompt": "Wat doe je nu?",
+                    "choiceIds": [
+                      "n4_safe_help_report",
+                      "n4_unsafe_evidence",
+                      "n4_retaliate",
+                      "n4_wait",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n4_safe_help_report"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "unsafe_evidence_share",
+                      "retaliation",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_remove",
+                      "recovery_wait",
+                      "unknown"
+                    ]
+                  }
+                ],
+                "caps": [
+                  {
+                    "flag": "harmful_share",
+                    "maxScore": 2,
+                    "reason": "Video of schadelijke inhoud verder verspreid."
+                  },
+                  {
+                    "flag": "retaliation",
+                    "maxScore": 2,
+                    "reason": "Wraakactie of terugpesten gekozen."
+                  },
+                  {
+                    "flag": "unsafe_evidence_share",
+                    "maxScore": 3,
+                    "reason": "Bewijs onveilig gedeeld, waardoor verspreiding groter kan worden."
+                  },
+                  {
+                    "flag": "ridicule_reaction",
+                    "maxScore": 3,
+                    "reason": "Mee lachen of versterken gekozen."
+                  }
+                ]
+              },
+              "scoring": {
+                "scoreBy": "choice-id-and-flags",
+                "maxPoints": 4,
+                "recoveryRestoresPoints": false
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "sr",
+          "title": "Meerkeuze",
+          "maxScore": 10,
+          "items": [
+            {
+              "itemId": "lj1v-sr1-pw-passphrase",
+              "uiQuestionNumber": 8,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Sterk wachtwoord kiezen",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 1,
+              "prompt": "Welk wachtwoord is het veiligst?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "MijnKleineKatSlaaptOnderDeBank",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Nora2012SchoolLent",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "!@#$%^&*",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Qwerty12345!",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1v-vraag9-ai-workstuk-v4",
+              "uiQuestionNumber": 9,
+              "type": "compound-single-choice",
+              "sectionId": "sr",
+              "title": "AI gebruiken voor je werkstuk",
+              "subgoals": [
+                "21D"
+              ],
+              "points": 1,
+              "prompt": "Sanne gebruikt KletsGPT voor haar werkstuk. Bekijk de chat.",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "learnerQuestionNumber": 9,
+              "internalSlot": "SR2",
+              "stimulus": {
+                "chatMockup": {
+                  "toolName": "KletsGPT",
+                  "messages": [
+                    {
+                      "sender": "student",
+                      "label": "Leerling",
+                      "text": "Maak mijn tekst beter.\n\nIk ben Sanne de Jong en ik zit in klas 1B op het Citadel College.\n\nMijn tekst:\nVeel brugklassers slapen slecht door hun telefoon."
+                    },
+                    {
+                      "sender": "ai",
+                      "label": "KletsGPT",
+                      "text": "Je kunt schrijven:\n\nVolgens het rapport `Brugklassers en slaap 2024` slaapt 62% van de brugklassers te weinig door telefoongebruik. Daarom is het slim om je telefoon een uur voor het slapen weg te leggen."
+                    }
+                  ]
+                }
+              },
+              "options": [],
+              "subQuestions": [
+                {
+                  "subQuestionId": "prompt_safety",
+                  "title": "Deelvraag A",
+                  "prompt": "Welke invoer kan Sanne het best aan KletsGPT geven?",
+                  "points": 0.5,
+                  "options": [
+                    {
+                      "optionId": "best_less_identifying_prompt",
+                      "label": "Maak mijn tekst duidelijker voor een werkstuk: Veel brugklassers slapen slecht door hun telefoon.",
+                      "isUnknown": false
+                    },
+                    {
+                      "optionId": "class_context_unneeded",
+                      "label": "Ik zit in klas 1B en maak een werkstuk. Maak deze tekst duidelijker: Veel brugklassers slapen slecht door hun telefoon.",
+                      "isUnknown": false,
+                      "errorCategory": "unnecessary_identifying_context"
+                    },
+                    {
+                      "optionId": "ai_writes_new_text",
+                      "label": "Schrijf een betere tekst over brugklassers en slapen.",
+                      "isUnknown": false,
+                      "errorCategory": "ai_generates_content_instead_of_improving_given_text"
+                    },
+                    {
+                      "optionId": "classmate_example",
+                      "label": "Maak mijn tekst beter en gebruik een voorbeeld van iemand uit mijn klas die vaak moe is door haar telefoon.",
+                      "isUnknown": false,
+                      "errorCategory": "adds_unnecessary_personal_context_about_other"
+                    },
+                    {
+                      "optionId": "unknown",
+                      "label": "Ik weet het niet.",
+                      "isUnknown": true
+                    }
+                  ],
+                  "scoring": {
+                    "scoreBy": "option-id",
+                    "correctOptionIds": [
+                      "best_less_identifying_prompt"
+                    ],
+                    "unknownScoresZero": true,
+                    "unknownExclusive": true
+                  }
+                },
+                {
+                  "subQuestionId": "output_check",
+                  "title": "Deelvraag B",
+                  "prompt": "Wat doet Sanne het best met het antwoord van KletsGPT?",
+                  "points": 0.5,
+                  "options": [
+                    {
+                      "optionId": "check_source_and_number",
+                      "label": "Ze zoekt of het rapport bestaat en of het percentage daar echt in staat.",
+                      "isUnknown": false
+                    },
+                    {
+                      "optionId": "ask_kletsgpt_for_link",
+                      "label": "Ze vraagt KletsGPT om een link naar het rapport en gebruikt het als er een link verschijnt.",
+                      "isUnknown": false,
+                      "errorCategory": "same_ai_as_verification"
+                    },
+                    {
+                      "optionId": "remove_source_keep_percentage",
+                      "label": "Ze haalt alleen de naam van het rapport weg, maar laat het percentage staan.",
+                      "isUnknown": false,
+                      "errorCategory": "unverified_number_used"
+                    },
+                    {
+                      "optionId": "check_if_logical",
+                      "label": "Ze controleert of de tekst logisch klinkt en past bij haar werkstuk.",
+                      "isUnknown": false,
+                      "errorCategory": "style_or_logic_confused_with_accuracy"
+                    },
+                    {
+                      "optionId": "unknown",
+                      "label": "Ik weet het niet.",
+                      "isUnknown": true
+                    }
+                  ],
+                  "scoring": {
+                    "scoreBy": "option-id",
+                    "correctOptionIds": [
+                      "check_source_and_number"
+                    ],
+                    "unknownScoresZero": true,
+                    "unknownExclusive": true
+                  }
+                }
+              ],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": null
+            },
+            {
+              "itemId": "lj1v-sr3-phone",
+              "uiQuestionNumber": 10,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Opslag bijna vol",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 1,
+              "prompt": "Youssef krijgt vaak de melding: “Opslag bijna vol.” Apps openen traag. Hij wil geen foto’s, berichten of accounts kwijt. Wat is de beste eerste stap?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "In de instellingen kijken wat veel ruimte gebruikt en oude downloads of ongebruikte apps verwijderen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Steeds alle apps afsluiten; dan komt er weer genoeg opslag vrij.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Een gratis schoonmaak-app uit een advertentie installeren en toegang geven tot alle bestanden.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "De helderheid lager zetten en meldingen uitzetten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1v-sr4-official-source",
+              "uiQuestionNumber": 11,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "School morgen dicht?",
+              "subgoals": [
+                "21B"
+              ],
+              "points": 1,
+              "prompt": "In Whutsupp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Checken of hetzelfde bericht in de schoolapp, schoolmail of op de schoolsite staat.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Aan de klasgenoot vragen waar hij het vandaan heeft; als hij “van iemand van school” zegt, stuur je het door.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Kijken of het screenshot een logo en datum heeft; als dat klopt, is het betrouwbaar genoeg.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Wachten tot veel leerlingen het bericht delen; dan zal het waarschijnlijk waar zijn.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1v-sr5-algorithm",
+              "uiQuestionNumber": 12,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Aanbevelingen",
+              "subgoals": [
+                "21B"
+              ],
+              "points": 1,
+              "prompt": "Luna kijkt drie voetbalvideo’s helemaal af. Eén video vindt ze leuk. Daarna ziet ze meer voetbalvideo’s. Wat is de beste uitleg?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "opt_watch_like",
+                  "label": "De app gebruikt wat Luna kijkt en leuk vindt om nieuwe video’s te kiezen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_same_school",
+                  "label": "De app laat alle leerlingen na schooltijd dezelfde voetbalvideo’s zien.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_creator_controls",
+                  "label": "De maker van één video bepaalt precies wat Luna daarna ziet.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_battery",
+                  "label": "De batterij van Luna’s telefoon bepaalt welke video’s ze ziet.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "unknown",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "opt_watch_like"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "unknown",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1v-sr6-data-poll",
+              "uiQuestionNumber": 13,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Kleine poll",
+              "subgoals": [
+                "21C"
+              ],
+              "points": 1,
+              "prompt": "In een poll stemmen 8 van de 25 leerlingen uit jouw klas op voetbal. Iemand zegt: “Voetbal is dus de populairste sport van de hele school.” Wat is de beste reactie?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Dat kun je niet zomaar zeggen, want de poll komt maar uit één klas.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Ja, want 8 stemmen is altijd genoeg.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Dat klopt alleen als de poll digitaal is ingevuld.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Dat kun je nooit met een poll onderzoeken.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1v-sr7-ai-check",
+              "uiQuestionNumber": 14,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Online game en persoonsgegevens",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 1,
+              "prompt": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Je vraagt waarom die persoon dat wil weten en beslist daarna.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Je geeft de gegevens als jullie al een tijdje samen spelen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "C"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1v-sr8-image-rights",
+              "uiQuestionNumber": 15,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Afbeelding gebruiken",
+              "subgoals": [
+                "22A"
+              ],
+              "points": 1,
+              "prompt": "Je vindt een afbeelding voor een schoolposter die ook online komt. Wat controleer je eerst?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Of je de afbeelding mag gebruiken, of je hem mag aanpassen en welke maker of bron je moet noemen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Of de afbeelding op veel websites voorkomt; dan zal hij wel vrij te gebruiken zijn.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Of je de afbeelding kleiner kunt maken; dan valt gebruik minder op.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Of je de afbeelding een beetje verandert; dan hoef je geen bron te noemen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1v-sr9-photo-consent",
+              "uiQuestionNumber": 16,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Foto delen",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 1,
+              "prompt": "In Whutsupp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Vragen of iedereen op de foto dat goed vindt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "De foto alleen in de klassenapp zetten; dan is toestemming niet nodig.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "De namen weglaten; dan mag je de foto altijd delen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "De foto plaatsen en verwijderen als iemand klaagt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1v-sr10-platform-risk",
+              "uiQuestionNumber": 17,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Eén schoolapp",
+              "subgoals": [
+                "23C"
+              ],
+              "points": 1,
+              "prompt": "De school gebruikt één app voor rooster, huiswerk en berichten. Wat is het grootste risico als die app een storing heeft?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Veel leerlingen kunnen tegelijk hun rooster, huiswerk en berichten niet zien.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "De app ziet er tijdelijk minder mooi uit.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Leerlingen moeten misschien wennen aan een nieuw icoon.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Leerlingen krijgen dan automatisch minder huiswerk.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "assessmentId": "lj1-hv",
+      "title": "Leerjaar 1 HAVO/VWO",
+      "targetGroup": "LJ1 HAVO/VWO",
+      "maxScore": 36,
+      "sections": [
+        {
+          "sectionId": "zelfinschatting",
+          "title": "Zelfinschatting",
+          "maxScore": 0,
+          "items": [
+            {
+              "itemId": "self-assessment",
+              "uiQuestionNumber": "Zelfinschatting",
+              "type": "self_assessment",
+              "sectionId": "zelfinschatting",
+              "title": "Zelfinschatting",
+              "subgoals": [
+                "niet-scorend"
+              ],
+              "points": 0,
+              "prompt": "Hoe digitaal geletterd schat je jezelf in?\nSchuif het bolletje naar jouw keuze.\n0 betekent: ik schat mezelf helemaal niet digitaal geletterd in.\n100 betekent: ik schat mezelf heel digitaal geletterd in.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": false,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "0 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt1",
+          "title": "PT1 - Bestanden en mappen",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj1h-pt1-files",
+              "uiQuestionNumber": 1,
+              "type": "file_task_simulation",
+              "sectionId": "pt1",
+              "title": "PT1 - Bestanden en mappen beheren",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 4,
+              "prompt": "Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Volgende.\nWerk in OneDrive. Maak de hoofdmap Project Water. Maak daarin Bronnen, Afbeeldingen en Verslag. Verplaats de vier bestanden naar de juiste map. Hernoem concept_verslag.docx naar project_water_verslag.docx en presentatie_water.pptx naar project_water_presentatie.pptx.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "4 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt2",
+          "title": "PT2 - Mail opstellen",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj1h-pt2-mail",
+              "uiQuestionNumber": 2,
+              "type": "outlook_mail_simulation",
+              "sectionId": "pt2",
+              "title": "E-mail opstellen",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 4,
+              "prompt": "Stuur een verslag van Nederlands via e-mail naar je mentor.\n1. Kies de juiste ontvanger in het juiste veld.\n2. Gebruik het juiste onderwerp: Project Water verslag.\n3. Voeg de juiste bijlage toe.\n4. Verzend de e-mail.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "4 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt3",
+          "title": "PT3 - Account, apparaat en verbinding beveiligen",
+          "maxScore": 3,
+          "items": [
+            {
+              "itemId": "lj1h-pt3-security",
+              "uiQuestionNumber": 3,
+              "type": "account_security_simulation",
+              "sectionId": "pt3",
+              "title": "PT3 - Bericht beoordelen",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 3,
+              "prompt": "Bekijk de e-mail en kies je antwoorden.",
+              "randomization": {
+                "optionOrderRandomized": true,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "3 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt4",
+          "title": "PT4 - Excel/data sorteren en filteren",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj1h-pt4-excel",
+              "uiQuestionNumber": 4,
+              "type": "excel_download_task",
+              "sectionId": "pt4",
+              "title": "PT4 - Excel/data sorteren en filteren",
+              "subgoals": [
+                "21C, 21A"
+              ],
+              "points": 4,
+              "prompt": "Download LJ1_HV_Bibliotheek.xlsx. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "2 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt6",
+          "title": "PT6 - Videovergadering en schermdelen",
+          "maxScore": 3,
+          "items": [
+            {
+              "itemId": "lj1hv-pt6-screen-share",
+              "uiQuestionNumber": 5,
+              "type": "teams_share_simulation",
+              "sectionId": "pt6",
+              "title": "Schermdelen in een online les",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 3,
+              "prompt": "Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "3 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt7",
+          "title": "PT7 - Blokprogrammeren",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj1h-pt7-programming-debug-v1",
+              "uiQuestionNumber": 6,
+              "type": "block_programming_task",
+              "sectionId": "pt7",
+              "title": "PT7 - Blokprogrammeren",
+              "subgoals": [
+                "22B"
+              ],
+              "points": 4,
+              "prompt": "Blokprogrammeren",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "2 debug-reparaties; 1 tests"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt8",
+          "title": "PT8 - Online gedrag",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "pt8-whutsupp-sam-video",
+              "uiQuestionNumber": 7,
+              "type": "social_action_simulation",
+              "sectionId": "pt8",
+              "title": "Whutsupp: video in de groepschat",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 4,
+              "prompt": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+              "randomization": {
+                "optionOrderRandomized": true,
+                "unknownPinnedLast": true
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "taskMetadata": {
+                "engine": "WhutsuppScenarioTask",
+                "flowVersion": "1.0-codex-ready-pilot",
+                "variantId": "lj1-hv",
+                "nodes": [
+                  {
+                    "nodeId": "n1",
+                    "category": "risk_boundary",
+                    "prompt": "Wat doe jij eerst?",
+                    "choiceIds": [
+                      "n1_safe_boundary",
+                      "n1_ridicule",
+                      "n1_forward_friend",
+                      "n1_wait",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n1_safe_boundary"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "ridicule_reaction",
+                      "harmful_share",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_support",
+                      "recovery_private_only",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n2",
+                    "category": "no_spread",
+                    "prompt": "Wat stuur je nu?",
+                    "choiceIds": [
+                      "n2_safe_no_spread",
+                      "n2_sticker",
+                      "n2_only_known",
+                      "n2_teacher_later",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n2_safe_no_spread"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "harmful_share",
+                      "ridicule_reaction",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_support",
+                      "recovery_private_only",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n3",
+                    "category": "support_target",
+                    "prompt": "Wat stuur je naar Sam?",
+                    "choiceIds": [
+                      "n3_safe_support",
+                      "n3_minimize",
+                      "n3_leave_chat",
+                      "n3_ask_more",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n3_safe_support"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "victim_blaming_or_minimizing",
+                      "ridicule_reaction"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_support",
+                      "recovery_private_only",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n4",
+                    "category": "help_report",
+                    "prompt": "Wat doe je nu?",
+                    "choiceIds": [
+                      "n4_safe_help_report",
+                      "n4_unsafe_evidence",
+                      "n4_retaliate",
+                      "n4_wait",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n4_safe_help_report"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "unsafe_evidence_share",
+                      "retaliation",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_support",
+                      "recovery_private_only",
+                      "unknown"
+                    ]
+                  }
+                ],
+                "caps": [
+                  {
+                    "flag": "harmful_share",
+                    "maxScore": 2,
+                    "reason": "Video of schadelijke inhoud verder verspreid."
+                  },
+                  {
+                    "flag": "retaliation",
+                    "maxScore": 2,
+                    "reason": "Wraakactie of terugpesten gekozen."
+                  },
+                  {
+                    "flag": "unsafe_evidence_share",
+                    "maxScore": 3,
+                    "reason": "Bewijs onveilig gedeeld, waardoor verspreiding groter kan worden."
+                  },
+                  {
+                    "flag": "ridicule_reaction",
+                    "maxScore": 3,
+                    "reason": "Mee lachen of versterken gekozen."
+                  }
+                ]
+              },
+              "scoring": {
+                "scoreBy": "choice-id-and-flags",
+                "maxPoints": 4,
+                "recoveryRestoresPoints": false
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "sr",
+          "title": "Meerkeuze",
+          "maxScore": 10,
+          "items": [
+            {
+              "itemId": "lj1h-sr1-pw-passphrase",
+              "uiQuestionNumber": 8,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Sterk wachtwoord kiezen",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 1,
+              "prompt": "Welk wachtwoord is het veiligst?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "DeBlauweTreinStaatNaastDeSporthal",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Daan2012SchoolLent",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "!@#$%^&*",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "!Qw@#Er$%",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1h-vraag9-ai-presentatie-v4",
+              "uiQuestionNumber": 9,
+              "type": "compound-single-choice",
+              "sectionId": "sr",
+              "title": "AI gebruiken voor een presentatie",
+              "subgoals": [
+                "21D"
+              ],
+              "points": 1,
+              "prompt": "Milan gebruikt KletsGPT voor een presentatie. Bekijk de chat.",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "learnerQuestionNumber": 9,
+              "internalSlot": "SR2",
+              "stimulus": {
+                "chatMockup": {
+                  "toolName": "KletsGPT",
+                  "messages": [
+                    {
+                      "sender": "student",
+                      "label": "Leerling",
+                      "text": "Help mijn tekst voor een presentatie verbeteren.\n\nIk ben Milan Verbeek uit 1H2. Onze klas doet een project over energiedrank.\n\nMijn tekst:\nEnergiedrank is populair onder jongeren."
+                    },
+                    {
+                      "sender": "ai",
+                      "label": "KletsGPT",
+                      "text": "Je kunt schrijven:\n\nVolgens het onderzoek `Jongeren en Energiedrank 2025` drinkt 41% van de brugklassers elke week energiedrank. Daardoor kunnen leerlingen zich soms minder goed concentreren."
+                    }
+                  ]
+                }
+              },
+              "options": [],
+              "subQuestions": [
+                {
+                  "subQuestionId": "prompt_safety",
+                  "title": "Deelvraag A",
+                  "prompt": "Welke invoer kan Milan het best aan KletsGPT geven?",
+                  "points": 0.5,
+                  "options": [
+                    {
+                      "optionId": "best_presentation_prompt",
+                      "label": "Verbeter deze tekst voor een presentatie: Energiedrank is populair onder jongeren.",
+                      "isUnknown": false
+                    },
+                    {
+                      "optionId": "class_project_context",
+                      "label": "Ik zit in 1H2 en onze klas doet een project over energiedrank. Verbeter deze tekst: Energiedrank is populair onder jongeren.",
+                      "isUnknown": false,
+                      "errorCategory": "unnecessary_identifying_context"
+                    },
+                    {
+                      "optionId": "one_sided_prompt",
+                      "label": "Maak een sterke tekst over waarom energiedrank slecht is voor jongeren.",
+                      "isUnknown": false,
+                      "errorCategory": "prompt_steers_to_one_sided_claim"
+                    },
+                    {
+                      "optionId": "classmate_examples",
+                      "label": "Verbeter mijn tekst en voeg een voorbeeld toe van leerlingen uit mijn klas die energiedrank drinken.",
+                      "isUnknown": false,
+                      "errorCategory": "adds_unnecessary_personal_context_about_others"
+                    },
+                    {
+                      "optionId": "unknown",
+                      "label": "Ik weet het niet.",
+                      "isUnknown": true
+                    }
+                  ],
+                  "scoring": {
+                    "scoreBy": "option-id",
+                    "correctOptionIds": [
+                      "best_presentation_prompt"
+                    ],
+                    "unknownScoresZero": true,
+                    "unknownExclusive": true
+                  }
+                },
+                {
+                  "subQuestionId": "output_check",
+                  "title": "Deelvraag B",
+                  "prompt": "Wat doet Milan het best met het antwoord van KletsGPT?",
+                  "points": 0.5,
+                  "options": [
+                    {
+                      "optionId": "find_source_and_check_claim",
+                      "label": "Hij zoekt de bron en controleert of die dit percentage echt ondersteunt.",
+                      "isUnknown": false
+                    },
+                    {
+                      "optionId": "source_name_only",
+                      "label": "Hij gebruikt het percentage als hij dezelfde bronnaam ook op internet vindt.",
+                      "isUnknown": false,
+                      "errorCategory": "source_name_confused_with_claim_support"
+                    },
+                    {
+                      "optionId": "more_sources_official_name",
+                      "label": "Hij vraagt KletsGPT om nog twee bronnen en kiest de bron die het meest officieel klinkt.",
+                      "isUnknown": false,
+                      "errorCategory": "source_appearance_confused_with_quality"
+                    },
+                    {
+                      "optionId": "precise_number_trust",
+                      "label": "Hij gebruikt het percentage omdat een precies getal meestal uit onderzoek komt.",
+                      "isUnknown": false,
+                      "errorCategory": "specific_number_confused_with_accuracy"
+                    },
+                    {
+                      "optionId": "unknown",
+                      "label": "Ik weet het niet.",
+                      "isUnknown": true
+                    }
+                  ],
+                  "scoring": {
+                    "scoreBy": "option-id",
+                    "correctOptionIds": [
+                      "find_source_and_check_claim"
+                    ],
+                    "unknownScoresZero": true,
+                    "unknownExclusive": true
+                  }
+                }
+              ],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": null
+            },
+            {
+              "itemId": "lj1h-sr3-phone-actions",
+              "uiQuestionNumber": 10,
+              "type": "multiple-select",
+              "sectionId": "sr",
+              "title": "Trage telefoon",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 1,
+              "prompt": "Youssefs telefoon is traag en loopt soms vast. Welke twee acties kunnen meestal helpen?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Ongebruikte apps en grote bestanden opruimen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Beschikbare updates via de instellingen installeren.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "De helderheid van het scherm lager zetten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Het toetsenbordgeluid uitzetten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Het wachtwoord van de telefoon veranderen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "F",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A",
+                  "B"
+                ],
+                "harmfulOptionIds": [],
+                "method": "partial_select",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "F",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1h-sr4-search-query",
+              "uiQuestionNumber": 11,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Gerichte zoekopdracht",
+              "subgoals": [
+                "21B"
+              ],
+              "points": 1,
+              "prompt": "Je zoekt betrouwbare informatie over hoeveel jongeren in Nederland e-bikes gebruiken. Welke zoekopdracht helpt het best?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "onderzoek jongeren e-bike gebruik Nederland",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "e-bike jongeren kopen Nederland",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "jongeren fietsen school Nederland",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "elektrische fiets ervaring jongeren",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1h-sr5-feed-sample",
+              "uiQuestionNumber": 12,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Feed is geen steekproef",
+              "subgoals": [
+                "21B"
+              ],
+              "points": 1,
+              "prompt": "Noah kijkt een paar video’s waarin mensen zeggen dat huiswerk afgeschaft moet worden. Daarna ziet hij vooral video’s met dezelfde mening. Wat kan hij het best concluderen?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "opt_not_everyone_feed",
+                  "label": "Niet meteen dat bijna iedereen dit vindt; zijn feed kan door eerder kijkgedrag zijn beïnvloed.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_most_students",
+                  "label": "Dat de meeste leerlingen in Nederland tegen huiswerk zijn.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_no_other_opinions",
+                  "label": "Dat video’s met een andere mening waarschijnlijk niet bestaan.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_neutral_platform",
+                  "label": "Dat het platform altijd neutraal laat zien wat mensen denken.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "unknown",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "opt_not_everyone_feed"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "unknown",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1h-sr6-sample",
+              "uiQuestionNumber": 13,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Steekproef",
+              "subgoals": [
+                "21C"
+              ],
+              "points": 1,
+              "prompt": "Een dataset bevat alleen antwoorden van leerlingen uit één klas. Waar moet je voor oppassen?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Je kunt niet zomaar zeggen dat dit voor alle leerlingen geldt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Eén klas is altijd genoeg om iets over heel Nederland te zeggen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "De dataset is automatisch fout.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Meer data maakt nooit verschil.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1h-sr7-ai-startpunt",
+              "uiQuestionNumber": 14,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Online game en persoonsgegevens",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 1,
+              "prompt": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Je vraagt waarom die persoon dat wil weten en beslist daarna.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Je geeft de gegevens als jullie al een tijdje samen spelen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "C"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1h-sr8-image-source",
+              "uiQuestionNumber": 15,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Foto in online leeromgeving",
+              "subgoals": [
+                "22A"
+              ],
+              "points": 1,
+              "prompt": "Je gebruikt een foto in een presentatie. De presentatie komt in de online leeromgeving. Wat controleer je eerst?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Of je de foto mag gebruiken en welke maker of bron je moet noemen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Of de foto op veel websites staat. Dan zal hij wel vrij zijn.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Of je de foto bijsnijdt. Dan hoef je de maker niet te noemen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Of alleen je klas de presentatie ziet. Dan gelden er geen regels.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1h-sr9-photo-share",
+              "uiQuestionNumber": 16,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Foto delen bij twijfel",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 1,
+              "prompt": "Je hebt een grappige foto van twee klasgenoten. Eén van hen twijfelt of de foto gedeeld mag worden. Wat doe je?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Je deelt de foto niet totdat iedereen akkoord is.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Je deelt de foto alleen in een besloten groep.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Je deelt de foto zonder namen erbij.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Je deelt de foto en zet erbij dat het een grap is.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj1h-sr10-platform-risk",
+              "uiQuestionNumber": 17,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Eén app voor schoolzaken",
+              "subgoals": [
+                "23C"
+              ],
+              "points": 1,
+              "prompt": "Een school gebruikt één app voor rooster, huiswerk en berichten. Wat is een belangrijk risico?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Als de app niet werkt, valt veel schoolinformatie tegelijk weg.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Leerlingen hoeven minder verschillende apps te openen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Docenten kunnen berichten op één plek zetten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "De app kan dezelfde kleur gebruiken voor alle klassen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "assessmentId": "lj3-vmbo",
+      "title": "Leerjaar 3 VMBO",
+      "targetGroup": "LJ3 VMBO",
+      "maxScore": 36,
+      "sections": [
+        {
+          "sectionId": "zelfinschatting",
+          "title": "Zelfinschatting",
+          "maxScore": 0,
+          "items": [
+            {
+              "itemId": "self-assessment",
+              "uiQuestionNumber": "Zelfinschatting",
+              "type": "self_assessment",
+              "sectionId": "zelfinschatting",
+              "title": "Zelfinschatting",
+              "subgoals": [
+                "niet-scorend"
+              ],
+              "points": 0,
+              "prompt": "Hoe digitaal geletterd schat je jezelf in?\nSchuif het bolletje naar jouw keuze.\n0 betekent: ik schat mezelf helemaal niet digitaal geletterd in.\n100 betekent: ik schat mezelf heel digitaal geletterd in.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": false,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "0 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt1",
+          "title": "PT1 - Bestanden en mappen",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj3v-pt1-files",
+              "uiQuestionNumber": 1,
+              "type": "file_task_simulation",
+              "sectionId": "pt1",
+              "title": "PT1 - Bestanden en mappen beheren",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 4,
+              "prompt": "Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Volgende.\nWerk in OneDrive in de map Stageproject. Maak de mappen Actueel en Oud. Zet de nieuwste versie van het stageverslag in Actueel, zet oudere versies in Oud en hernoem stageverslag_v3.docx naar stageverslag_2026_definitief.docx.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "4 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt2",
+          "title": "PT2 - Mail opstellen",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj3v-pt2-mail",
+              "uiQuestionNumber": 2,
+              "type": "outlook_mail_simulation",
+              "sectionId": "pt2",
+              "title": "E-mail opstellen",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 4,
+              "prompt": "Stuur een e-mail aan je stagebegeleider.\n1. Kies de stagebegeleider als ontvanger in Aan.\n2. Zet je mentor in Cc en gebruik geen Bcc.\n3. Gebruik het juiste onderwerp: Stageverslag definitieve versie.\n4. Voeg de juiste bijlage toe.\n5. Verzend de e-mail.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "4 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt3",
+          "title": "PT3 - Account, apparaat en verbinding beveiligen",
+          "maxScore": 3,
+          "items": [
+            {
+              "itemId": "lj3v-pt3-security",
+              "uiQuestionNumber": 3,
+              "type": "account_security_simulation",
+              "sectionId": "pt3",
+              "title": "PT3 - Bericht beoordelen",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 3,
+              "prompt": "Bekijk de e-mail en kies je antwoorden.",
+              "randomization": {
+                "optionOrderRandomized": true,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "3 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt4",
+          "title": "PT4 - Excel/data sorteren en filteren",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj3v-pt4-excel",
+              "uiQuestionNumber": 4,
+              "type": "excel_download_task",
+              "sectionId": "pt4",
+              "title": "PT4 - Excel/data sorteren en filteren",
+              "subgoals": [
+                "21C, 21A"
+              ],
+              "points": 4,
+              "prompt": "Download LJ3_VMBO_Bestellingen.xlsx. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "2 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt6",
+          "title": "PT6 - Videovergadering en schermdelen",
+          "maxScore": 3,
+          "items": [
+            {
+              "itemId": "lj3vmbo-pt6-screen-share",
+              "uiQuestionNumber": 5,
+              "type": "teams_share_simulation",
+              "sectionId": "pt6",
+              "title": "Schermdelen in een online les",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 3,
+              "prompt": "Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "3 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt7",
+          "title": "PT7 - Blokprogrammeren",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj3v-pt7-programming-debug-v1",
+              "uiQuestionNumber": 6,
+              "type": "block_programming_task",
+              "sectionId": "pt7",
+              "title": "PT7 - Blokprogrammeren",
+              "subgoals": [
+                "22B"
+              ],
+              "points": 4,
+              "prompt": "Blokprogrammeren",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "2 debug-reparaties; 2 tests"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt8",
+          "title": "PT8 - Online gedrag",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "pt8-whutsupp-sam-video",
+              "uiQuestionNumber": 7,
+              "type": "social_action_simulation",
+              "sectionId": "pt8",
+              "title": "Whutsupp: video in de groepschat",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 4,
+              "prompt": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+              "randomization": {
+                "optionOrderRandomized": true,
+                "unknownPinnedLast": true
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "taskMetadata": {
+                "engine": "WhutsuppScenarioTask",
+                "flowVersion": "1.0-codex-ready-pilot",
+                "variantId": "lj3-vmbo",
+                "nodes": [
+                  {
+                    "nodeId": "n1",
+                    "category": "risk_boundary",
+                    "prompt": "Wat doe jij eerst?",
+                    "choiceIds": [
+                      "n1_safe_boundary",
+                      "n1_ridicule",
+                      "n1_forward_friend",
+                      "n1_wait",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n1_safe_boundary"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "ridicule_reaction",
+                      "harmful_share",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_report",
+                      "recovery_public_proof",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n2",
+                    "category": "no_spread",
+                    "prompt": "Welke reactie past nu het best?",
+                    "choiceIds": [
+                      "n2_safe_no_spread",
+                      "n2_sticker",
+                      "n2_only_known",
+                      "n2_teacher_later",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n2_safe_no_spread"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "harmful_share",
+                      "ridicule_reaction",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_report",
+                      "recovery_public_proof",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n3",
+                    "category": "support_target",
+                    "prompt": "Wat stuur je naar Sam?",
+                    "choiceIds": [
+                      "n3_safe_support",
+                      "n3_minimize",
+                      "n3_leave_chat",
+                      "n3_ask_more",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n3_safe_support"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "victim_blaming_or_minimizing",
+                      "ridicule_reaction"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_report",
+                      "recovery_public_proof",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n4",
+                    "category": "help_report",
+                    "prompt": "Wat doe je nu?",
+                    "choiceIds": [
+                      "n4_safe_help_report",
+                      "n4_unsafe_evidence",
+                      "n4_retaliate",
+                      "n4_wait",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n4_safe_help_report"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "unsafe_evidence_share",
+                      "retaliation",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_report",
+                      "recovery_public_proof",
+                      "unknown"
+                    ]
+                  }
+                ],
+                "caps": [
+                  {
+                    "flag": "harmful_share",
+                    "maxScore": 2,
+                    "reason": "Video of schadelijke inhoud verder verspreid."
+                  },
+                  {
+                    "flag": "retaliation",
+                    "maxScore": 2,
+                    "reason": "Wraakactie of terugpesten gekozen."
+                  },
+                  {
+                    "flag": "unsafe_evidence_share",
+                    "maxScore": 3,
+                    "reason": "Bewijs onveilig gedeeld, waardoor verspreiding groter kan worden."
+                  },
+                  {
+                    "flag": "ridicule_reaction",
+                    "maxScore": 3,
+                    "reason": "Mee lachen of versterken gekozen."
+                  }
+                ]
+              },
+              "scoring": {
+                "scoreBy": "choice-id-and-flags",
+                "maxPoints": 4,
+                "recoveryRestoresPoints": false
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "sr",
+          "title": "Meerkeuze",
+          "maxScore": 10,
+          "items": [
+            {
+              "itemId": "lj3v-sr1-cijfermail",
+              "uiQuestionNumber": 8,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Mail over nieuw cijfer",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 1,
+              "prompt": "Wat doe je?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": {
+                "kind": "email-message",
+                "fromName": "Cijferportaal",
+                "fromEmail": "noreply@cijferportaal-school.nl",
+                "toEmail": "sanne@leerling.citadelcollege.nl",
+                "date": "Vandaag 16:18",
+                "subject": "Nieuw cijfer beschikbaar",
+                "body": [
+                  "Hallo Sanne,",
+                  "Er staat een nieuw cijfer klaar. Log in om je cijfer te bekijken."
+                ],
+                "linkLabel": "Bekijk cijfer",
+                "linkUrl": "https://cijferportaal-school.nl/login"
+              },
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Ik open mijn cijfers via de normale schoolomgeving.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Ik gebruik de knop, want cijfers bekijken vraagt altijd om inloggen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Ik gebruik de knop, omdat de mail van een cijferportaal lijkt te komen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Ik zoek de naam van de site op en klik dan alsnog op de link.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3v-vraag9-ai-stagebrief-v4",
+              "uiQuestionNumber": 9,
+              "type": "compound-single-choice",
+              "sectionId": "sr",
+              "title": "AI gebruiken voor een stagebrief",
+              "subgoals": [
+                "21D"
+              ],
+              "points": 1,
+              "prompt": "Noor gebruikt KletsGPT om een stagebrief te verbeteren. Bekijk de chat.",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "learnerQuestionNumber": 9,
+              "internalSlot": "SR2",
+              "stimulus": {
+                "chatMockup": {
+                  "toolName": "KletsGPT",
+                  "messages": [
+                    {
+                      "sender": "student",
+                      "label": "Leerling",
+                      "text": "Verbeter mijn stagebrief.\n\nNoor Peters\nLijsterstraat 14\n6511 AB Nijmegen\n06-18473291\n\nIk wil stage lopen bij een dierenwinkel, omdat ik goed met dieren kan omgaan."
+                    },
+                    {
+                      "sender": "ai",
+                      "label": "KletsGPT",
+                      "text": "Je kunt schrijven:\n\nVolgens `StageMonitor Jongeren 2025` vindt 78% van de stagebedrijven motivatie belangrijker dan ervaring. Daarom kun je het best duidelijk uitleggen waarom je deze stageplek kiest."
+                    }
+                  ]
+                }
+              },
+              "options": [],
+              "subQuestions": [
+                {
+                  "subQuestionId": "prompt_safety",
+                  "title": "Deelvraag A",
+                  "prompt": "Welke tekst kan Noor het best aan KletsGPT geven om haar brief te laten verbeteren?",
+                  "points": 0.5,
+                  "options": [
+                    {
+                      "optionId": "best_stage_prompt_no_contact",
+                      "label": "Verbeter deze stagebrief: Ik wil stage lopen bij een dierenwinkel, omdat ik goed met dieren kan omgaan.",
+                      "isUnknown": false
+                    },
+                    {
+                      "optionId": "contact_details_included",
+                      "label": "Verbeter mijn stagebrief. Noor Peters, Lijsterstraat 14, 06-18473291. Ik wil stage lopen bij een dierenwinkel.",
+                      "isUnknown": false,
+                      "errorCategory": "contact_details_unnecessary_for_ai_input"
+                    },
+                    {
+                      "optionId": "ai_invents_motivation",
+                      "label": "Maak een stagebrief voor een dierenwinkel. Verzin zelf een goede motivatie.",
+                      "isUnknown": false,
+                      "errorCategory": "ai_generates_personal_motivation"
+                    },
+                    {
+                      "optionId": "ask_for_extra_numbers",
+                      "label": "Verbeter mijn stagebrief en maak hem extra overtuigend met cijfers over stages.",
+                      "isUnknown": false,
+                      "errorCategory": "prompts_ai_for_unverified_statistics"
+                    },
+                    {
+                      "optionId": "unknown",
+                      "label": "Ik weet het niet.",
+                      "isUnknown": true
+                    }
+                  ],
+                  "scoring": {
+                    "scoreBy": "option-id",
+                    "correctOptionIds": [
+                      "best_stage_prompt_no_contact"
+                    ],
+                    "unknownScoresZero": true,
+                    "unknownExclusive": true
+                  }
+                },
+                {
+                  "subQuestionId": "output_check",
+                  "title": "Deelvraag B",
+                  "prompt": "Wat doet Noor het best met de zin over `StageMonitor Jongeren 2025`?",
+                  "points": 0.5,
+                  "options": [
+                    {
+                      "optionId": "check_stage_source_and_claim",
+                      "label": "Ze controleert of de bron bestaat en of de uitspraak daarin staat.",
+                      "isUnknown": false
+                    },
+                    {
+                      "optionId": "source_name_found_only",
+                      "label": "Ze gebruikt de zin als ze de naam StageMonitor Jongeren 2025 online terugvindt.",
+                      "isUnknown": false,
+                      "errorCategory": "source_name_confused_with_claim_support"
+                    },
+                    {
+                      "optionId": "remove_source_keep_percentage",
+                      "label": "Ze laat het percentage staan, maar haalt de bronnaam weg.",
+                      "isUnknown": false,
+                      "errorCategory": "unverified_number_used"
+                    },
+                    {
+                      "optionId": "make_more_businesslike",
+                      "label": "Ze vraagt KletsGPT om de zin zakelijker te maken.",
+                      "isUnknown": false,
+                      "errorCategory": "style_confused_with_accuracy"
+                    },
+                    {
+                      "optionId": "unknown",
+                      "label": "Ik weet het niet.",
+                      "isUnknown": true
+                    }
+                  ],
+                  "scoring": {
+                    "scoreBy": "option-id",
+                    "correctOptionIds": [
+                      "check_stage_source_and_claim"
+                    ],
+                    "unknownScoresZero": true,
+                    "unknownExclusive": true
+                  }
+                }
+              ],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": null
+            },
+            {
+              "itemId": "lj3v-sr3-phone-actions",
+              "uiQuestionNumber": 10,
+              "type": "multiple-select",
+              "sectionId": "sr",
+              "title": "Telefoon versnellen",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 1,
+              "prompt": "Youssefs telefoon is oud, traag en loopt soms vast. Welke drie acties kunnen meestal helpen?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Oude of ongebruikte apps en bestanden opruimen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Tijdelijke bestanden of cache opruimen via de instellingen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Beschikbare systeemupdates via de instellingen installeren.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "De helderheid van het scherm lager zetten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Het toetsenbordgeluid uitzetten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "F",
+                  "label": "Een andere achtergrondfoto kiezen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "G",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A",
+                  "B",
+                  "C"
+                ],
+                "harmfulOptionIds": [],
+                "method": "partial_select",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "G",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3v-sr4-health-source",
+              "uiQuestionNumber": 11,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Gezondheidsinformatie",
+              "subgoals": [
+                "21B"
+              ],
+              "points": 1,
+              "prompt": "Je zoekt basisinformatie over slaaptekort. Welke bron is het meest geschikt om als eerste te gebruiken?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Een publieke gezondheidsorganisatie of artsensite met uitleg, datum en bronvermelding.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Een webshop die slaapdrankjes verkoopt en klantreviews toont.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Een influencer die vertelt wat voor hem persoonlijk werkt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Een forum met veel reacties van onbekende gebruikers.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3v-sr5-sponsored",
+              "uiQuestionNumber": 12,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Sponsoring herkennen",
+              "subgoals": [
+                "21B"
+              ],
+              "points": 1,
+              "prompt": "Milan kijkt vaak gamevideo’s. Daarna ziet hij meer video’s over dezelfde game én reclame voor game-accessoires. Wat is de beste uitleg?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "opt_behavior_ads",
+                  "label": "Zijn kijkgedrag kan worden gebruikt voor aanbevelingen en soms ook voor gerichte reclame.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_private_messages",
+                  "label": "De reclame bewijst dat Milan privéberichten over games heeft gestuurd.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_school_wifi",
+                  "label": "Iedereen die dezelfde schoolwifi gebruikt, krijgt automatisch dezelfde reclame.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_game_makers_control",
+                  "label": "De makers van de game bepalen precies welke video’s Milan ziet.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "unknown",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "opt_behavior_ads"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "unknown",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3v-sr6-percent",
+              "uiQuestionNumber": 13,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Poll en conclusie",
+              "subgoals": [
+                "21C"
+              ],
+              "points": 1,
+              "prompt": "In een online poll stemmen 12 leerlingen uit klas 3V2. Acht leerlingen kiezen voor “meer pauze”. Een leerling zegt: “De meeste leerlingen van de hele school willen dus meer pauze.” Wat is de beste reactie?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Dat kun je niet zomaar zeggen, want de poll gaat maar over 12 leerlingen uit één klas.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Dat klopt zeker, want acht stemmen is meer dan de helft.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Dat klopt alleen als de poll op een telefoon is ingevuld.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Dat kun je nooit onderzoeken met een poll.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3v-sr7-ai-factcheck",
+              "uiQuestionNumber": 14,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Online game en persoonsgegevens",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 1,
+              "prompt": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Je vraagt waarom die persoon dat wil weten en beslist daarna.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Je geeft de gegevens als jullie al een tijdje samen spelen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "C"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3v-sr8-media-rights",
+              "uiQuestionNumber": 15,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Muziek of afbeelding online gebruiken",
+              "subgoals": [
+                "22A"
+              ],
+              "points": 1,
+              "prompt": "Je maakt een video voor school. Je wilt een bekend liedje of een afbeelding van internet gebruiken. De video komt online. Wat is het best?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Controleren of je het materiaal mag gebruiken of kiezen voor rechtenvrij materiaal.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Het materiaal kort gebruiken. Korte stukjes mogen altijd online.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "De maker niet noemen. Dan valt het minder op.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Er een filter overheen zetten. Dan is het nieuw werk.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3v-sr9-photo-shared",
+              "uiQuestionNumber": 16,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Ongewenst gedeelde foto",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 1,
+              "prompt": "In een groepsapp deelt iemand zonder toestemming een foto van een klasgenoot. De klasgenoot staat er ongemakkelijk op. Wat is de beste reactie?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Niet verder delen en hulp inschakelen of vragen om de foto te verwijderen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "De foto alleen doorsturen naar vrienden die je vertrouwt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "De foto bewaren, want misschien heb je later bewijs nodig.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Een grapje maken, zodat het minder serieus voelt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3v-sr10-digital-access",
+              "uiQuestionNumber": 17,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Digitaal formulier en kansen",
+              "subgoals": [
+                "23C"
+              ],
+              "points": 1,
+              "prompt": "Een stagebedrijf laat leerlingen alleen reageren via een ingewikkeld online formulier. Wat kan een gevolg zijn?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Leerlingen met minder digitale vaardigheden kunnen moeilijker meedoen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Iedereen krijgt automatisch dezelfde kans, want het formulier is voor iedereen gelijk.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Het bedrijf hoeft minder op privacy te letten omdat alles digitaal is.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Online solliciteren is altijd sneller en eerlijker.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "assessmentId": "lj3-hv",
+      "title": "Leerjaar 3 HAVO/VWO",
+      "targetGroup": "LJ3 HAVO/VWO",
+      "maxScore": 36,
+      "sections": [
+        {
+          "sectionId": "zelfinschatting",
+          "title": "Zelfinschatting",
+          "maxScore": 0,
+          "items": [
+            {
+              "itemId": "self-assessment",
+              "uiQuestionNumber": "Zelfinschatting",
+              "type": "self_assessment",
+              "sectionId": "zelfinschatting",
+              "title": "Zelfinschatting",
+              "subgoals": [
+                "niet-scorend"
+              ],
+              "points": 0,
+              "prompt": "Hoe digitaal geletterd schat je jezelf in?\nSchuif het bolletje naar jouw keuze.\n0 betekent: ik schat mezelf helemaal niet digitaal geletterd in.\n100 betekent: ik schat mezelf heel digitaal geletterd in.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": false,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "0 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt1",
+          "title": "PT1 - Bestanden en mappen",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj3h-pt1-files",
+              "uiQuestionNumber": 1,
+              "type": "file_task_simulation",
+              "sectionId": "pt1",
+              "title": "PT1 - Bestanden en mappen beheren",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 4,
+              "prompt": "Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Volgende.\nWerk in OneDrive in Project Onderzoek. Maak daarin de mappen Data, Bronnen, Beelden en Archief. Plaats bestanden op basis van type en versie. Zet alleen de definitieve versie in Project Onderzoek en archiveer de oude versie.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "4 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt2",
+          "title": "PT2 - Mail opstellen",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj3h-pt2-mail",
+              "uiQuestionNumber": 2,
+              "type": "outlook_mail_simulation",
+              "sectionId": "pt2",
+              "title": "E-mail opstellen",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 4,
+              "prompt": "Stuur een projectmail naar je docent.\n1. Kies de docent als ontvanger in Aan.\n2. Zet beide groepsgenoten in Cc.\n3. Gebruik het juiste onderwerp: Definitief onderzoeksverslag.\n4. Voeg alleen de juiste bijlage toe.\n5. Verzend de e-mail.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "4 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt3",
+          "title": "PT3 - Account, apparaat en verbinding beveiligen",
+          "maxScore": 3,
+          "items": [
+            {
+              "itemId": "lj3h-pt3-security",
+              "uiQuestionNumber": 3,
+              "type": "account_security_simulation",
+              "sectionId": "pt3",
+              "title": "PT3 - Bericht beoordelen",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 3,
+              "prompt": "Bekijk de e-mail en kies je antwoorden.",
+              "randomization": {
+                "optionOrderRandomized": true,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "3 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt4",
+          "title": "PT4 - Excel/data sorteren en filteren",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj3h-pt4-excel",
+              "uiQuestionNumber": 4,
+              "type": "excel_download_task",
+              "sectionId": "pt4",
+              "title": "PT4 - Excel/data sorteren en filteren",
+              "subgoals": [
+                "21C, 21A"
+              ],
+              "points": 4,
+              "prompt": "Download LJ3_HV_OpenData.xlsx. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "2 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt6",
+          "title": "PT6 - Videovergadering en schermdelen",
+          "maxScore": 3,
+          "items": [
+            {
+              "itemId": "lj3hv-pt6-screen-share",
+              "uiQuestionNumber": 5,
+              "type": "teams_share_simulation",
+              "sectionId": "pt6",
+              "title": "Schermdelen in een online les",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 3,
+              "prompt": "Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "3 scoringsonderdelen"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt7",
+          "title": "PT7 - Blokprogrammeren",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "lj3h-pt7-programming-debug-v1",
+              "uiQuestionNumber": 6,
+              "type": "block_programming_task",
+              "sectionId": "pt7",
+              "title": "PT7 - Blokprogrammeren",
+              "subgoals": [
+                "22B"
+              ],
+              "points": 4,
+              "prompt": "Blokprogrammeren",
+              "randomization": {
+                "optionOrderRandomized": false,
+                "unknownPinnedLast": false
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "scoring": {
+                "scoreBy": "task-specific-state",
+                "summary": "2 debug-reparaties; 4 tests"
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "pt8",
+          "title": "PT8 - Online gedrag",
+          "maxScore": 4,
+          "items": [
+            {
+              "itemId": "pt8-whutsupp-sam-video",
+              "uiQuestionNumber": 7,
+              "type": "social_action_simulation",
+              "sectionId": "pt8",
+              "title": "Whutsupp: video in de groepschat",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 4,
+              "prompt": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+              "randomization": {
+                "optionOrderRandomized": true,
+                "unknownPinnedLast": true
+              },
+              "logging": {
+                "shownOptionOrder": true,
+                "selectedOptionIds": true,
+                "itemId": true,
+                "itemVersion": null
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "taskMetadata": {
+                "engine": "WhutsuppScenarioTask",
+                "flowVersion": "1.0-codex-ready-pilot",
+                "variantId": "lj3-hv",
+                "nodes": [
+                  {
+                    "nodeId": "n1",
+                    "category": "risk_boundary",
+                    "prompt": "Wat doe jij eerst?",
+                    "choiceIds": [
+                      "n1_safe_boundary",
+                      "n1_ridicule",
+                      "n1_forward_friend",
+                      "n1_wait",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n1_safe_boundary"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "ridicule_reaction",
+                      "harmful_share",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_report",
+                      "recovery_public_proof",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n2",
+                    "category": "no_spread",
+                    "prompt": "Welke reactie past nu het best?",
+                    "choiceIds": [
+                      "n2_safe_no_spread",
+                      "n2_sticker",
+                      "n2_only_known",
+                      "n2_teacher_later",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n2_safe_no_spread"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "harmful_share",
+                      "ridicule_reaction",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_report",
+                      "recovery_public_proof",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n3",
+                    "category": "support_target",
+                    "prompt": "Wat stuur je naar Sam?",
+                    "choiceIds": [
+                      "n3_safe_support",
+                      "n3_minimize",
+                      "n3_leave_chat",
+                      "n3_ask_more",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n3_safe_support"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "victim_blaming_or_minimizing",
+                      "ridicule_reaction"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_report",
+                      "recovery_public_proof",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "nodeId": "n4",
+                    "category": "help_report",
+                    "prompt": "Wat doe je nu?",
+                    "choiceIds": [
+                      "n4_safe_help_report",
+                      "n4_unsafe_evidence",
+                      "n4_retaliate",
+                      "n4_wait",
+                      "unknown"
+                    ],
+                    "correctChoiceIds": [
+                      "n4_safe_help_report"
+                    ],
+                    "unknownChoiceIds": [
+                      "unknown"
+                    ],
+                    "harmfulFlags": [
+                      "unsafe_evidence_share",
+                      "retaliation",
+                      "passive"
+                    ],
+                    "recoveryChoiceIds": [
+                      "recovery_safe_report",
+                      "recovery_public_proof",
+                      "unknown"
+                    ]
+                  }
+                ],
+                "caps": [
+                  {
+                    "flag": "harmful_share",
+                    "maxScore": 2,
+                    "reason": "Video of schadelijke inhoud verder verspreid."
+                  },
+                  {
+                    "flag": "retaliation",
+                    "maxScore": 2,
+                    "reason": "Wraakactie of terugpesten gekozen."
+                  },
+                  {
+                    "flag": "unsafe_evidence_share",
+                    "maxScore": 3,
+                    "reason": "Bewijs onveilig gedeeld, waardoor verspreiding groter kan worden."
+                  },
+                  {
+                    "flag": "ridicule_reaction",
+                    "maxScore": 3,
+                    "reason": "Mee lachen of versterken gekozen."
+                  }
+                ]
+              },
+              "scoring": {
+                "scoreBy": "choice-id-and-flags",
+                "maxPoints": 4,
+                "recoveryRestoresPoints": false
+              }
+            }
+          ]
+        },
+        {
+          "sectionId": "sr",
+          "title": "Meerkeuze",
+          "maxScore": 10,
+          "items": [
+            {
+              "itemId": "lj3h-sr1-accountmail",
+              "uiQuestionNumber": 8,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Mail over accountcontrole",
+              "subgoals": [
+                "23A"
+              ],
+              "points": 1,
+              "prompt": "Welke reactie past het best?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": {
+                "kind": "email-message",
+                "fromName": "Schoolaccount beheer",
+                "fromEmail": "beheer@schoolaccount-citadel.nl",
+                "toEmail": "sanne@leerling.citadelcollege.nl",
+                "date": "Vandaag 08:06",
+                "subject": "Controle van je schoolaccount",
+                "body": [
+                  "Hallo Sanne,",
+                  "We controleren deze week de toegang tot schoolaccounts. Bevestig je account om zonder onderbreking Teams, OneDrive en Magister te blijven gebruiken."
+                ],
+                "linkLabel": "Account bevestigen",
+                "linkUrl": "https://schoolaccount-citadel.nl/controle"
+              },
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Ik ga zelf naar de bekende schoolomgeving en controleer daar mijn account.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Ik gebruik de knop, omdat de mail meerdere bekende schooldiensten noemt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Ik gebruik de knop als de inlogpagina er hetzelfde uitziet als normaal.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Ik antwoord op de mail en vraag of mijn account echt gecontroleerd moet worden.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3h-vraag9-ai-betoog-v4",
+              "uiQuestionNumber": 9,
+              "type": "compound-single-choice",
+              "sectionId": "sr",
+              "title": "AI gebruiken voor een betoog",
+              "subgoals": [
+                "21D"
+              ],
+              "points": 1,
+              "prompt": "Sara gebruikt KletsGPT voor een betoog over telefoons in de klas. Bekijk de chat.",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "learnerQuestionNumber": 9,
+              "internalSlot": "SR2",
+              "stimulus": {
+                "chatMockup": {
+                  "toolName": "KletsGPT",
+                  "messages": [
+                    {
+                      "sender": "student",
+                      "label": "Leerling",
+                      "text": "Maak van deze informatie een sterke alinea voor mijn betoog.\n\nIk zit in 3H2. In onze mentorklasapp schreef Sam: \"Mijn cijfers zijn echt gezakt door mijn telefoon.\"\nGebruik dit als voorbeeld, maar noem zijn naam niet."
+                    },
+                    {
+                      "sender": "ai",
+                      "label": "KletsGPT",
+                      "text": "Je kunt schrijven:\n\nOnderzoek van De Vries en Khan uit 2025 in het `European Journal of School Focus` laat zien dat leerlingen gemiddeld 18% hogere cijfers halen als telefoons uit de klas blijven. Ook uit berichten van leerlingen blijkt dat telefoons hun resultaten kunnen verslechteren."
+                    }
+                  ]
+                }
+              },
+              "options": [],
+              "subQuestions": [
+                {
+                  "subQuestionId": "prompt_safety",
+                  "title": "Deelvraag A",
+                  "prompt": "Welke invoer past het best bij verantwoord gebruik van KletsGPT?",
+                  "points": 0.5,
+                  "options": [
+                    {
+                      "optionId": "best_no_private_messages",
+                      "label": "Maak een alinea voor een betoog over telefoons in de klas. Gebruik geen berichten van klasgenoten.",
+                      "isUnknown": false
+                    },
+                    {
+                      "optionId": "private_quote_without_name",
+                      "label": "Maak een alinea voor mijn betoog. Een klasgenoot schreef: \"Mijn cijfers zijn echt gezakt door mijn telefoon.\" Noem zijn naam niet.",
+                      "isUnknown": false,
+                      "errorCategory": "anonymization_overestimated"
+                    },
+                    {
+                      "optionId": "make_private_message_general",
+                      "label": "Maak het bericht van mijn klasgenoot algemener en gebruik het als voorbeeld in mijn betoog.",
+                      "isUnknown": false,
+                      "errorCategory": "private_context_still_used"
+                    },
+                    {
+                      "optionId": "invent_student_example",
+                      "label": "Maak een sterke alinea en verzin een leerlingvoorbeeld dat goed bij mijn standpunt past.",
+                      "isUnknown": false,
+                      "errorCategory": "fabricated_example_requested"
+                    },
+                    {
+                      "optionId": "unknown",
+                      "label": "Ik weet het niet.",
+                      "isUnknown": true
+                    }
+                  ],
+                  "scoring": {
+                    "scoreBy": "option-id",
+                    "correctOptionIds": [
+                      "best_no_private_messages"
+                    ],
+                    "unknownScoresZero": true,
+                    "unknownExclusive": true
+                  }
+                },
+                {
+                  "subQuestionId": "output_check",
+                  "title": "Deelvraag B",
+                  "prompt": "Wat doet Sara het best met het onderzoek dat KletsGPT noemt?",
+                  "points": 0.5,
+                  "options": [
+                    {
+                      "optionId": "verify_article_supports_18_claim",
+                      "label": "Ze zoekt het artikel op en controleert of daarin echt staat dat cijfers gemiddeld 18% hoger zijn.",
+                      "isUnknown": false
+                    },
+                    {
+                      "optionId": "trust_title_and_authors",
+                      "label": "Ze gebruikt de bron als de titel en auteurs betrouwbaar klinken.",
+                      "isUnknown": false,
+                      "errorCategory": "source_label_confused_with_reliability"
+                    },
+                    {
+                      "optionId": "longer_reference",
+                      "label": "Ze vraagt KletsGPT om een langere bronvermelding en gebruikt die in haar betoog.",
+                      "isUnknown": false,
+                      "errorCategory": "source_detail_confused_with_reliability"
+                    },
+                    {
+                      "optionId": "remove_percentage_keep_claim",
+                      "label": "Ze haalt het percentage weg, maar gebruikt de conclusie dat telefoons cijfers verlagen.",
+                      "isUnknown": false,
+                      "errorCategory": "unverified_claim_still_used"
+                    },
+                    {
+                      "optionId": "unknown",
+                      "label": "Ik weet het niet.",
+                      "isUnknown": true
+                    }
+                  ],
+                  "scoring": {
+                    "scoreBy": "option-id",
+                    "correctOptionIds": [
+                      "verify_article_supports_18_claim"
+                    ],
+                    "unknownScoresZero": true,
+                    "unknownExclusive": true
+                  }
+                }
+              ],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": null
+            },
+            {
+              "itemId": "lj3h-sr3-phone-actions",
+              "uiQuestionNumber": 10,
+              "type": "multiple-select",
+              "sectionId": "sr",
+              "title": "Telefoon en onderhoud",
+              "subgoals": [
+                "21A"
+              ],
+              "points": 1,
+              "prompt": "Youssefs telefoon wordt traag en loopt vaak vast. Welke drie acties zijn het meest logisch?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Onnodige apps en grote bestanden opruimen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Cache of tijdelijke gegevens opruimen via instellingen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Systeem en apps updaten via officiële instellingen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Schermhelderheid lager zetten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Alle meldingen aanzetten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "F",
+                  "label": "Toetsenbordgeluid uitzetten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "G",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A",
+                  "B",
+                  "C"
+                ],
+                "harmfulOptionIds": [],
+                "method": "partial_select",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "G",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3h-sr4-triangulation",
+              "uiQuestionNumber": 11,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Claim controleren",
+              "subgoals": [
+                "21B"
+              ],
+              "points": 1,
+              "prompt": "Je vindt een opvallende claim over een nieuwe schoolregel. Welke controle is het sterkst?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Controleren of de school zelf of meerdere betrouwbare bronnen dezelfde regel melden.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Kijken of de post veel gedeeld is.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Kijken of de tekst boos klinkt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "De claim geloven als er een screenshot bij staat.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3h-sr5-filterbubble",
+              "uiQuestionNumber": 12,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Filterbubbel",
+              "subgoals": [
+                "21B"
+              ],
+              "points": 1,
+              "prompt": "Sara ziet in haar nieuwsfeed vooral berichten die haar mening over een nieuwe schoolregel bevestigen. Ze denkt: “Zie je wel, bijna iedereen denkt er zo over.” Wat is de beste reactie?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "opt_careful_broaden",
+                  "label": "Voorzichtig zijn met die conclusie en actief betrouwbare bronnen of andere invalshoeken zoeken.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_feed_neutral",
+                  "label": "De conclusie klopt waarschijnlijk, want een feed laat meestal een neutraal beeld zien.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_comments_enough",
+                  "label": "Reacties onder de berichten zijn genoeg om te weten wat de meeste mensen vinden.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "opt_block_other_views",
+                  "label": "Bronnen met een andere mening kun je beter blokkeren om je feed duidelijk te houden.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "unknown",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "opt_careful_broaden"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "unknown",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3h-sr6-graph-scale",
+              "uiQuestionNumber": 13,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Klachten naar verhouding",
+              "subgoals": [
+                "21C"
+              ],
+              "points": 1,
+              "prompt": "Een grafiek vergelijkt klachten over twee apps. App A: 20 klachten bij 1.000 gebruikers. App B: 50 klachten bij 10.000 gebruikers. Welke conclusie past het best bij deze data?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "App A heeft naar verhouding meer klachten dan App B.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "App B heeft naar verhouding meer klachten, want 50 is meer dan 20.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "De apps hebben evenveel klachten, want beide apps hebben klachten.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Je kunt nooit naar verhouding kijken bij gebruikersaantallen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3h-sr7-ai-source-check",
+              "uiQuestionNumber": 14,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Online game en persoonsgegevens",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 1,
+              "prompt": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Je vraagt waarom die persoon dat wil weten en beslist daarna.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Je geeft de gegevens als jullie al een tijdje samen spelen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "C"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3h-sr8-remix-rights",
+              "uiQuestionNumber": 15,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Afbeelding aanpassen en delen",
+              "subgoals": [
+                "22A"
+              ],
+              "points": 1,
+              "prompt": "Je wilt een afbeelding van internet aanpassen voor een online poster. Wat controleer je eerst?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Of bewerken en delen mag, en welke bronvermelding nodig is.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Of de afbeelding groot genoeg is; dan hoef je de maker niet te noemen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Of je de kleuren sterk verandert; dan is het automatisch eigen werk.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Of je de poster alleen in een groepsapp deelt; dan gelden geen regels.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3h-sr9-private-photo",
+              "uiQuestionNumber": 16,
+              "type": "single-choice",
+              "sectionId": "sr",
+              "title": "Privéfoto in besloten groep",
+              "subgoals": [
+                "23B"
+              ],
+              "points": 1,
+              "prompt": "Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Wat is de beste eerste reactie?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Niet verder delen en via een veilige route hulp inschakelen of rapporteren.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "De foto bewaren om later te bewijzen dat je hem gezien hebt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "De foto doorsturen naar een kleiner groepje dat je vertrouwt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "D",
+                  "label": "Reageren met een grap, zodat de spanning daalt.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "E",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A"
+                ],
+                "harmfulOptionIds": [],
+                "method": "exact",
+                "harmfulCap": null
+              },
+              "unknownOption": {
+                "optionId": "E",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            },
+            {
+              "itemId": "lj3h-sr10-platform-dependence",
+              "uiQuestionNumber": 17,
+              "type": "multiple-select",
+              "sectionId": "sr",
+              "title": "Afhankelijk van één platform",
+              "subgoals": [
+                "23C"
+              ],
+              "points": 1,
+              "prompt": "Een school regelt bijna alles via één digitaal platform: rooster, huiswerk, cijfers en berichten. Welke twee risico’s horen daarbij?",
+              "randomization": {
+                "randomizeOptions": true,
+                "pinUnknownLast": true
+              },
+              "logging": {
+                "logShownOptionOrder": true,
+                "logSelectedOptionIds": true
+              },
+              "reporting": {
+                "contributesToScore": true,
+                "formativeOnly": true,
+                "noNormativeLabel": true
+              },
+              "stimulus": null,
+              "options": [
+                {
+                  "optionId": "A",
+                  "label": "Bij een storing kan veel schoolinformatie tegelijk onbereikbaar zijn.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "B",
+                  "label": "Leerlingen zonder goede toegang kunnen sneller informatie missen.",
+                  "isUnknown": false,
+                  "isHarmful": false
+                },
+                {
+                  "optionId": "C",
+                  "label": "Leerlingen hoeven minder apps te installeren.",
+                  "isUnknown": false,
+                  "isHarmful": true
+                },
+                {
+                  "optionId": "D",
+                  "label": "Berichten staan overzichtelijker op één plek.",
+                  "isUnknown": false,
+                  "isHarmful": true
+                },
+                {
+                  "optionId": "E",
+                  "label": "De school hoeft minder uitleg te geven.",
+                  "isUnknown": false,
+                  "isHarmful": true
+                },
+                {
+                  "optionId": "F",
+                  "label": "Ik weet het niet.",
+                  "isUnknown": true,
+                  "isHarmful": false
+                }
+              ],
+              "subQuestions": [],
+              "scoring": {
+                "scoreBy": "option-id",
+                "correctOptionIds": [
+                  "A",
+                  "B"
+                ],
+                "harmfulOptionIds": [
+                  "C",
+                  "D",
+                  "E"
+                ],
+                "method": "partial_select",
+                "harmfulCap": 0
+              },
+              "unknownOption": {
+                "optionId": "F",
+                "exclusive": true,
+                "score": 0,
+                "pinnedLast": true
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "archive": {
+    "policy": "Oude of gearchiveerde items zijn niet actief. Raadpleeg archive/ en docs/changes/ alleen als historische context.",
+    "activeItemSourceFiles": [
+      "src/data/assessments.ts",
+      "src/data/whutsupp_pt8_flow.json",
+      "nulmetingen_selected_response_herontwerp_v3.json"
+    ]
+  }
+}

@@ -8,11 +8,24 @@ const failures = [];
 const selectedResponseItemsFor = (versionId) => {
   if (Array.isArray(data.selectedResponseItems)) {
     return data.selectedResponseItems.filter(
-      (item) => (item.targetGroup ?? item.target) === versionId,
+      (item) => (item.targetGroup ?? item.target ?? item.variantFor) === versionId,
     );
   }
   return data.assessments?.find((entry) => entry.id === versionId)?.selectedResponseItems ?? [];
 };
+
+const optionGroupsFor = (item) =>
+  item.subQuestions?.length
+    ? item.subQuestions.map((subQuestion) => ({
+        id: `${item.id}:${subQuestion.id}`,
+        options: subQuestion.options ?? [],
+      }))
+    : [{ id: item.id, options: item.options ?? [] }];
+
+const isUnknownText = (value) =>
+  String(value ?? "")
+    .trim()
+    .replace(/\.$/, "") === "Ik weet het niet";
 
 for (const versionId of versionIds) {
   const items = selectedResponseItemsFor(versionId);
@@ -47,10 +60,15 @@ for (const versionId of versionIds) {
   }
 
   for (const item of items) {
-    const optionTexts = (item.options ?? []).map((option) => option.text);
-    const lastOption = optionTexts[optionTexts.length - 1] ?? "";
-    if (lastOption.replace(/\.$/, "") !== "Ik weet het niet") {
-      failures.push(`${item.id} heeft 'Ik weet het niet' niet als laatste optie.`);
+    const optionTexts = optionGroupsFor(item).flatMap((group) =>
+      group.options.map((option) => option.text ?? option.label ?? ""),
+    );
+    for (const group of optionGroupsFor(item)) {
+      const options = group.options;
+      const lastOption = options[options.length - 1];
+      if (options.length > 0 && !isUnknownText(lastOption?.text ?? lastOption?.label)) {
+        failures.push(`${group.id} heeft 'Ik weet het niet' niet als laatste optie.`);
+      }
     }
     if (item.itemType === "multiple-select") {
       const correctCount = (item.options ?? []).filter(
@@ -65,7 +83,7 @@ for (const versionId of versionIds) {
     if (text.includes("reverse image search") || text.includes("omgekeerd zoeken")) {
       failures.push(`${item.id} bevat reverse image search.`);
     }
-    if (/zoek.*(internet|google|bing)|google.*zoek|bing.*zoek/.test(text)) {
+    if (/\bzoek(?:en)?\s+(?:op\s+)?(?:internet|google|bing)\b|\b(?:google|bing)\s+(?:zoek|zoeken)\b/.test(text)) {
       failures.push(`${item.id} lijkt live internetzoeken te vragen.`);
     }
   }

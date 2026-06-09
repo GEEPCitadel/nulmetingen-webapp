@@ -1,12 +1,47 @@
 import fs from "node:fs";
 
-const jsonPath = "nulmetingen_selected_response_herontwerp_v3.json";
-const markdownPath = "nulmetingen_dg_herontwerp_v3_5_codex.md";
+const v4JsonPath = "nulmetingen_dg_v4.json";
+const v4MarkdownPath = "nulmetingen_dg_v4.md";
+const legacyJsonPath = "nulmetingen_selected_response_herontwerp_v3.json";
+const legacyMarkdownPath = "nulmetingen_dg_herontwerp_v3_5_codex.md";
 const versionIds = ["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"];
 
+const failures = [];
+
+if (fs.existsSync(v4JsonPath) && fs.existsSync(v4MarkdownPath)) {
+  const data = JSON.parse(fs.readFileSync(v4JsonPath, "utf8"));
+  const markdown = fs.readFileSync(v4MarkdownPath, "utf8");
+
+  for (const versionId of versionIds) {
+    const assessment = data.assessments?.find((entry) => entry.assessmentId === versionId);
+    const srItems = assessment?.sections?.find((section) => section.sectionId === "sr")?.items ?? [];
+    const jsonIds = srItems.map((item) => item.itemId);
+
+    if (jsonIds.length !== 10) {
+      failures.push(`${versionId}: v4 JSON bevat ${jsonIds.length} SR-items in plaats van 10.`);
+    }
+
+    const missingInMarkdown = jsonIds.filter((id) => !markdown.includes(id));
+    if (missingInMarkdown.length > 0) {
+      failures.push(`${versionId}: ontbreekt in v4 Markdown: ${missingInMarkdown.join(", ")}`);
+    }
+  }
+
+  if (failures.length > 0) {
+    console.error(failures.join("\n"));
+    process.exit(1);
+  }
+
+  console.log(
+    `SR Markdown-sync geslaagd: ${versionIds.length} nulmetingen, v4 SR-item-id's aanwezig in ${v4JsonPath} en ${v4MarkdownPath}.`,
+  );
+  process.exit(0);
+}
+
+const jsonPath = legacyJsonPath;
+const markdownPath = legacyMarkdownPath;
 const data = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
 const markdown = fs.readFileSync(markdownPath, "utf8");
-const failures = [];
 
 const selectedResponseItemsFor = (versionId) => {
   if (Array.isArray(data.selectedResponseItems)) {
