@@ -1254,8 +1254,8 @@ const AdminScreen = ({
     const classCode = classCodeInput.trim().toLowerCase();
     const windowLabel = assessmentWindow.trim();
     const cohortLabel = cohort.trim() || windowLabel;
-    if (!gradeLevel || !track || !classCode || !windowLabel || !versionId) {
-      throw new Error("Vul leerjaar, niveau/meting, klas, afnamevenster en assessment in.");
+    if (!gradeLevel || !track || !classCode || !versionId) {
+      throw new Error("Vul leerjaar, niveau/meting, klas en assessment in.");
     }
     const names = nameListText
       .split(/[\r\n;]+/)
@@ -2044,9 +2044,17 @@ const AdminScreen = ({
             />
           </label>
           <button className="btn-import" type="button" onClick={() => void importStudents([])} disabled={isLoading}>
-            Toevoegen
+            {isLoading ? "Toevoegen..." : "Toevoegen"}
           </button>
         </div>
+        {message ? (
+          <div className="success-banner-inline">{message}</div>
+        ) : null}
+        {error ? (
+          <div className="error-banner-inline" style={{ marginTop: 16 }}>
+            {error}
+          </div>
+        ) : null}
         {createdCodeRows.length > 0 ? (
           <div className="admin-preview-block printable-code-overview">
             <h4>Code-overzicht</h4>
