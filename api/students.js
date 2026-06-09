@@ -5,6 +5,14 @@ const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
 const codeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const removedLegacyCodes = ["1001", "1002", "1003", "1004"];
 
+const metadataForVersion = (versionId) => {
+  const [gradePart = "", trackPart = ""] = String(versionId).split("-");
+  return {
+    gradeLevel: gradePart === "lj3" ? "lj3" : "lj1",
+    track: trackPart === "hv" ? "hv" : "vmbo",
+  };
+};
+
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
   const chunks = [];
@@ -48,6 +56,12 @@ const ensureTables = async (sql) => {
   `;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS participant_label TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS class_code TEXT`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS class_id TEXT`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS assessment_id TEXT`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS grade_level TEXT`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS track TEXT`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS cohort TEXT`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS assessment_window TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS import_batch TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'not_started'`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
@@ -97,13 +111,31 @@ const ensureTables = async (sql) => {
 
 const normalizeStudentRows = (students, versionId, importBatch) => {
   if (!Array.isArray(students)) return [];
+  const fallbackMetadata = metadataForVersion(versionId);
   return students.map((student, index) => {
     const classCode = typeof student.classCode === "string" ? student.classCode.trim().toLowerCase() : "";
     const participantLabel =
       typeof student.participantLabel === "string" ? student.participantLabel.trim() : "";
+    const classId = String(student.classId ?? classCode).trim().toLowerCase();
+    const assessmentId = String(student.assessmentId ?? versionId).trim();
+    const gradeLevel = String(student.gradeLevel ?? fallbackMetadata.gradeLevel).trim().toLowerCase();
+    const track = String(student.track ?? fallbackMetadata.track).trim().toLowerCase();
+    const cohort = String(student.cohort ?? importBatch).trim();
+    const assessmentWindow = String(student.assessmentWindow ?? importBatch).trim();
 
     if (!classCode) throw new Error(`Rij ${index + 1}: klas ontbreekt.`);
-    return { classCode, participantLabel, versionId, importBatch };
+    return {
+      classCode,
+      participantLabel,
+      versionId,
+      importBatch,
+      classId: classId || classCode,
+      assessmentId: assessmentId || versionId,
+      gradeLevel,
+      track,
+      cohort,
+      assessmentWindow,
+    };
   });
 };
 
@@ -118,17 +150,24 @@ const createUniqueCode = async (sql) => {
 
 const listStudents = async (sql) => {
   const rows = await sql`
-    SELECT access_code, participant_label, class_code, version_id, import_batch, status, completed_at, updated_at
+    SELECT access_code, participant_label, class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, import_batch, status, completed_at, updated_at
     FROM students
     ORDER BY class_code ASC, participant_label ASC, access_code ASC
     LIMIT 10000
   `;
 
   const storedStudents = rows.map((row) => ({
+    ...metadataForVersion(row.version_id),
     participantLabel: row.participant_label ?? "",
     accessCode: row.access_code,
     classCode: row.class_code,
+    classId: row.class_id ?? row.class_code,
     versionId: row.version_id,
+    assessmentId: row.assessment_id ?? row.version_id,
+    gradeLevel: row.grade_level ?? metadataForVersion(row.version_id).gradeLevel,
+    track: row.track ?? metadataForVersion(row.version_id).track,
+    cohort: row.cohort ?? row.import_batch ?? "",
+    assessmentWindow: row.assessment_window ?? row.import_batch ?? "",
     importBatch: row.import_batch ?? "",
     status: row.status ?? "not_started",
     completedAt: row.completed_at,
@@ -285,15 +324,56 @@ export default async function handler(request, response) {
       return;
     }
 
+    const createdStudents = [];
     for (const row of rows) {
       const accessCode = await createUniqueCode(sql);
       await sql`
-        INSERT INTO students (student_number, participant_label, access_code, class_code, version_id, import_batch)
-        VALUES (${accessCode}, ${row.participantLabel || null}, ${accessCode}, ${row.classCode}, ${row.versionId}, ${row.importBatch})
+        INSERT INTO students (
+          student_number,
+          participant_label,
+          access_code,
+          class_code,
+          class_id,
+          version_id,
+          assessment_id,
+          grade_level,
+          track,
+          cohort,
+          assessment_window,
+          import_batch
+        )
+        VALUES (
+          ${accessCode},
+          ${row.participantLabel || null},
+          ${accessCode},
+          ${row.classCode},
+          ${row.classId},
+          ${row.versionId},
+          ${row.assessmentId},
+          ${row.gradeLevel},
+          ${row.track},
+          ${row.cohort || null},
+          ${row.assessmentWindow || null},
+          ${row.importBatch}
+        )
       `;
+      createdStudents.push({
+        participantLabel: row.participantLabel,
+        accessCode,
+        classCode: row.classCode,
+        classId: row.classId,
+        versionId: row.versionId,
+        assessmentId: row.assessmentId,
+        gradeLevel: row.gradeLevel,
+        track: row.track,
+        cohort: row.cohort,
+        assessmentWindow: row.assessmentWindow,
+        importBatch: row.importBatch,
+        status: "not_started",
+      });
     }
 
-    response.status(200).json({ ok: true, importedCount: rows.length, students: await listStudents(sql) });
+    response.status(200).json({ ok: true, importedCount: rows.length, createdStudents, students: await listStudents(sql) });
   } catch (error) {
     response.status(400).json({
       ok: false,

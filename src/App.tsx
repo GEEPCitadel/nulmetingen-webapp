@@ -117,7 +117,13 @@ type ApiStudent = {
   participantLabel?: string;
   accessCode: string;
   classCode: string;
+  classId?: string;
   versionId: AssessmentVersion["id"];
+  assessmentId?: string;
+  gradeLevel?: string;
+  track?: string;
+  cohort?: string;
+  assessmentWindow?: string;
   importBatch?: string;
   status?: "not_started" | "in_progress" | "completed";
   resultSessionId?: string | null;
@@ -138,6 +144,7 @@ type StudentLoginResponse = {
 type StudentsResponse = {
   ok: boolean;
   students: ApiStudent[];
+  createdStudents?: ApiStudent[];
   importedCount?: number;
   deletedCount?: number;
 };
@@ -145,6 +152,67 @@ type StudentsResponse = {
 type ImportStudentRow = {
   classCode: string;
   participantLabel: string;
+  classId?: string;
+  assessmentId?: string;
+  gradeLevel?: string;
+  track?: string;
+  cohort?: string;
+  assessmentWindow?: string;
+};
+
+type AnalysisGroup = {
+  assessmentId: string;
+  classCode: string;
+  classId: string;
+  gradeLevel: string;
+  track: string;
+  cohort: string;
+  assessmentWindow: string;
+  versionId: AssessmentVersion["id"];
+  createdCodes: number;
+  startedCount: number;
+  completedCount: number;
+  completionPercentage: number;
+  averageTotalScore: number | null;
+  averageSrScore: number | null;
+  averagePtScore: number | null;
+  averageSelfAssessment: number | null;
+  averageSelfAssessmentDifference: number | null;
+  goalScores: Record<string, number | null>;
+};
+
+type ItemAnalysisRow = {
+  itemId: string;
+  questionNumber: number | string;
+  goalId: string;
+  answerCount: number;
+  correctRate: number;
+  unknownRate: number;
+  topDistractor: string;
+  distribution: Record<string, number>;
+  harmfulOptionRate: number;
+  ptErrorCategories: Record<string, number>;
+  signals: string[];
+};
+
+type ResultsAnalysis = {
+  filters: {
+    assessmentWindows: string[];
+    gradeLevels: string[];
+    tracks: string[];
+    classCodes: string[];
+    cohorts: string[];
+    assessmentIds: string[];
+  };
+  overview: Omit<AnalysisGroup, "assessmentId" | "classCode" | "classId" | "gradeLevel" | "track" | "cohort" | "assessmentWindow" | "versionId" | "goalScores">;
+  byClass: AnalysisGroup[];
+  byGrade: AnalysisGroup[];
+  itemAnalysis: ItemAnalysisRow[];
+};
+
+type AnalysisResponse = {
+  ok: boolean;
+  analysis: ResultsAnalysis;
 };
 
 // P1 (rainbow on cream) is used for the entry / admin / fallback screens.
@@ -1036,14 +1104,41 @@ const AdminScreen = ({
 }) => {
   const [students, setStudents] = useState<ApiStudent[]>([]);
   const [versionId, setVersionId] = useState<AssessmentVersion["id"]>("lj1-vmbo");
+  const [gradeLevel, setGradeLevel] = useState<"lj1" | "lj3">("lj1");
+  const [track, setTrack] = useState<"vmbo" | "hv">("vmbo");
+  const [classCodeInput, setClassCodeInput] = useState("vmbo1a");
+  const [assessmentWindow, setAssessmentWindow] = useState("");
+  const [cohort, setCohort] = useState("");
   const [importBatch, setImportBatch] = useState("");
-  const [classPlanText, setClassPlanText] = useState("vmbo1a; 3; Noor Jansen, Samira B., Leerling 03");
+  const [nameListText, setNameListText] = useState("Sanne Jansen\nMilan Verbeek\nNoor Peters");
+  const [classPlanText, setClassPlanText] = useState("");
+  const [previewRows, setPreviewRows] = useState<ImportStudentRow[]>([]);
+  const [createdCodeRows, setCreatedCodeRows] = useState<ApiStudent[]>([]);
+  const [analysis, setAnalysis] = useState<ResultsAnalysis | null>(null);
+  const [analysisTab, setAnalysisTab] = useState<"groups" | "items">("groups");
+  const [analysisFilters, setAnalysisFilters] = useState({
+    assessmentWindow: "",
+    gradeLevel: "",
+    track: "",
+    classCode: "",
+    cohort: "",
+    assessmentId: "",
+  });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAccessCodes, setSelectedAccessCodes] = useState<string[]>([]);
 
   const adminHeaders = { "x-admin-password": adminPassword };
+  const goalColumns = ["21A", "21B", "21C", "21D", "22A", "22B", "23A", "23B", "23C"];
+  const formatMetric = (value: number | null | undefined, suffix = "%") =>
+    value === null || value === undefined ? "n.v.t." : `${value}${suffix}`;
+  const metadataForVersion = (id: AssessmentVersion["id"]) => ({
+    gradeLevel: id.startsWith("lj3") ? "lj3" : "lj1",
+    track: id.endsWith("-hv") ? "hv" : "vmbo",
+  });
+  const versionForMetadata = (nextGradeLevel = gradeLevel, nextTrack = track) =>
+    `${nextGradeLevel}-${nextTrack}` as AssessmentVersion["id"];
 
   const loadStudents = async () => {
     setIsLoading(true);
@@ -1061,9 +1156,32 @@ const AdminScreen = ({
     }
   };
 
+  const loadAnalysis = async () => {
+    try {
+      const params = new URLSearchParams(
+        Object.entries(analysisFilters).filter(([, value]) => value.trim()),
+      );
+      const data = await requestJson<AnalysisResponse>(`/api/results?${params.toString()}`, {
+        method: "GET",
+        headers: adminHeaders,
+      });
+      setAnalysis(data.analysis);
+    } catch {
+      setError("Resultatenanalyse ophalen is niet gelukt.");
+    }
+  };
+
   useEffect(() => {
     void loadStudents();
   }, []);
+
+  useEffect(() => {
+    setVersionId(versionForMetadata());
+  }, [gradeLevel, track]);
+
+  useEffect(() => {
+    void loadAnalysis();
+  }, [analysisFilters]);
 
   const parseClassPlanRowsFromText = (text: string): ImportStudentRow[] =>
     text
@@ -1092,6 +1210,61 @@ const AdminScreen = ({
       });
 
   const parseClassPlanRows = () => parseClassPlanRowsFromText(classPlanText);
+
+  const parseBulkNameRows = (): ImportStudentRow[] => {
+    const classCode = classCodeInput.trim().toLowerCase();
+    const windowLabel = assessmentWindow.trim();
+    const cohortLabel = cohort.trim() || windowLabel;
+    if (!gradeLevel || !track || !classCode || !windowLabel || !versionId) {
+      throw new Error("Vul leerjaar, niveau/meting, klas, afnamevenster en assessment in.");
+    }
+    const names = nameListText
+      .split(/[\r\n;]+/)
+      .map((name) => name.trim().replace(/\s+/g, " "))
+      .filter(Boolean);
+    if (names.length === 0) throw new Error("Plak minimaal een leerlingnaam.");
+    return names.map((participantLabel) => ({
+      participantLabel,
+      classCode,
+      classId: classCode,
+      assessmentId: versionId,
+      gradeLevel,
+      track,
+      cohort: cohortLabel,
+      assessmentWindow: windowLabel,
+    }));
+  };
+
+  const duplicateNamesForPreview = (rows: ImportStudentRow[]) => {
+    const counts = rows.reduce<Record<string, number>>((acc, row) => {
+      const key = `${row.classCode}::${row.participantLabel.toLowerCase()}`;
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {});
+    const existing = new Set(
+      students
+        .filter((student) => student.classCode === classCodeInput.trim().toLowerCase())
+        .map((student) => student.participantLabel?.trim().toLowerCase())
+        .filter(Boolean) as string[],
+    );
+    return new Set(
+      rows
+        .filter((row) => counts[`${row.classCode}::${row.participantLabel.toLowerCase()}`] > 1 || existing.has(row.participantLabel.toLowerCase()))
+        .map((row) => row.participantLabel.toLowerCase()),
+    );
+  };
+
+  const prepareBulkPreview = () => {
+    try {
+      const rows = parseBulkNameRows();
+      setPreviewRows(rows);
+      setCreatedCodeRows([]);
+      setMessage(`${rows.length} leerlingen klaargezet. Controleer de preview en bevestig daarna.`);
+      setError("");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "De namen konden niet worden gelezen.");
+    }
+  };
 
   const rowsToClassPlanText = (rows: ImportStudentRow[]) => {
     const grouped = rows.reduce<Record<string, string[]>>((acc, row) => {
@@ -1198,16 +1371,16 @@ const AdminScreen = ({
     }
   };
 
-  const importStudents = async () => {
-    let rows: Array<{ classCode: string; participantLabel: string }>;
+  const importStudents = async (rowsFromPreview = previewRows) => {
+    let rows: ImportStudentRow[];
     try {
-      rows = parseClassPlanRows();
+      rows = rowsFromPreview.length > 0 ? rowsFromPreview : parseBulkNameRows();
       if (rows.length === 0) {
-        setError("Vul minimaal een klasregel in, bijvoorbeeld: vmbo1a; 28; Noor Jansen, Samira B.");
+        setError("Plak minimaal een leerlingnaam.");
         return;
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "De klasregels konden niet worden gelezen.");
+      setError(caught instanceof Error ? caught.message : "De namen konden niet worden gelezen.");
       return;
     }
 
@@ -1218,13 +1391,16 @@ const AdminScreen = ({
         headers: adminHeaders,
         body: JSON.stringify({
           versionId,
-          importBatch,
+          importBatch: cohort.trim() || assessmentWindow.trim(),
           students: rows,
         }),
       });
       setStudents(data.students);
+      setCreatedCodeRows(data.createdStudents ?? []);
+      setPreviewRows([]);
       setMessage(`${data.importedCount ?? rows.length} afnamecodes aangemaakt.`);
       setError("");
+      void loadAnalysis();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Importeren is niet gelukt.");
     } finally {
@@ -1484,6 +1660,307 @@ const AdminScreen = ({
         ))}
       </div>
 
+      <section className="analysis-panel">
+        <div className="rd-section-head">
+          <div>
+            <span className="overline">Beheer &gt; Resultatenanalyse</span>
+            <h3 style={{ marginTop: 6 }}>Resultatenanalyse</h3>
+          </div>
+          <button className="filter-chip" type="button" onClick={() => void loadAnalysis()}>
+            Vernieuwen
+          </button>
+        </div>
+        <div className="analysis-filters">
+          {[
+            ["assessmentWindow", "Afnamevenster", analysis?.filters.assessmentWindows ?? []],
+            ["gradeLevel", "Leerjaar", analysis?.filters.gradeLevels ?? []],
+            ["track", "Niveau / meting", analysis?.filters.tracks ?? []],
+            ["classCode", "Klas", analysis?.filters.classCodes ?? []],
+            ["cohort", "Cohort", analysis?.filters.cohorts ?? []],
+            ["assessmentId", "Assessment", analysis?.filters.assessmentIds ?? []],
+          ].map(([key, label, options]) => (
+            <label className="admin-filter-select" key={String(key)}>
+              <span>{String(label)}</span>
+              <select
+                value={analysisFilters[key as keyof typeof analysisFilters]}
+                onChange={(event) =>
+                  setAnalysisFilters((current) => ({ ...current, [String(key)]: event.target.value }))
+                }
+              >
+                <option value="">Alles</option>
+                {(options as string[]).map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+        </div>
+        <div className="stats-strip analysis-stats">
+          {[
+            ["Aangemaakte codes", analysis?.overview.createdCodes ?? 0, ""],
+            ["Gestarte afnames", analysis?.overview.startedCount ?? 0, ""],
+            ["Afgeronde afnames", analysis?.overview.completedCount ?? 0, ""],
+            ["Afrondingspercentage", analysis?.overview.completionPercentage ?? 0, "%"],
+            ["Gem. totaalscore", analysis?.overview.averageTotalScore ?? null, "%"],
+            ["Gem. SR-score", analysis?.overview.averageSrScore ?? null, "%"],
+            ["Gem. PT-score", analysis?.overview.averagePtScore ?? null, "%"],
+            ["Gem. zelfinschatting", analysis?.overview.averageSelfAssessment ?? null, "%"],
+            ["Gem. verschil", analysis?.overview.averageSelfAssessmentDifference ?? null, " pt"],
+          ].map(([label, value, suffix]) => (
+            <div className="stat-card compact" key={String(label)}>
+              <span className="accent-strip" />
+              <div className="label">{String(label)}</div>
+              <div className="value">{typeof value === "number" ? formatMetric(value, String(suffix)) : "n.v.t."}</div>
+            </div>
+          ))}
+        </div>
+        <div className="analysis-tabs">
+          <button className={analysisTab === "groups" ? "active" : ""} type="button" onClick={() => setAnalysisTab("groups")}>
+            Klas en leerjaar
+          </button>
+          <button className={analysisTab === "items" ? "active" : ""} type="button" onClick={() => setAnalysisTab("items")}>
+            Itemanalyse
+          </button>
+        </div>
+        {analysisTab === "groups" ? (
+          <>
+            {[
+              ["Analyse per klas", analysis?.byClass ?? []],
+              ["Analyse per leerjaar", analysis?.byGrade ?? []],
+            ].map(([title, rows]) => (
+              <div className="admin-preview-block" key={String(title)}>
+                <h4>{String(title)}</h4>
+                <div className="analysis-table wide">
+                  <div className="analysis-row head">
+                    <span>Klas</span>
+                    <span>Leerjaar</span>
+                    <span>Niveau</span>
+                    <span>Aantal afgerond</span>
+                    <span>Totaal</span>
+                    <span>SR</span>
+                    <span>PT</span>
+                    <span>Zelfinschatting</span>
+                    {goalColumns.map((goalId) => <span key={goalId}>{goalId}</span>)}
+                  </div>
+                  {(rows as AnalysisGroup[]).map((row) => (
+                    <div className="analysis-row" key={`${String(title)}-${row.classCode}-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}`}>
+                      <span>{row.classCode || "Alle klassen"}</span>
+                      <span>{row.gradeLevel}</span>
+                      <span>{row.track}</span>
+                      <span>{row.completedCount}</span>
+                      <span>{formatMetric(row.averageTotalScore)}</span>
+                      <span>{formatMetric(row.averageSrScore)}</span>
+                      <span>{formatMetric(row.averagePtScore)}</span>
+                      <span>{formatMetric(row.averageSelfAssessment)}</span>
+                      {goalColumns.map((goalId) => <span key={goalId}>{formatMetric(row.goalScores[goalId])}</span>)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div className="admin-preview-block">
+              <h4>Domeinvisualisatie</h4>
+              <div className="heatmap-grid" style={{ gridTemplateColumns: `minmax(120px, 1fr) repeat(${goalColumns.length}, minmax(54px, 1fr))` }}>
+                <strong>Groep</strong>
+                {goalColumns.map((goalId) => <strong key={goalId}>{goalId}</strong>)}
+                {(analysis?.byClass ?? []).map((row) => (
+                  <div className="heatmap-row" key={`heat-${row.classCode}`}>
+                    <span>{row.classCode || row.gradeLevel}</span>
+                    {goalColumns.map((goalId) => {
+                      const value = row.goalScores[goalId] ?? 0;
+                      return <span key={goalId} style={{ "--heat": value / 100 } as CSSProperties}>{formatMetric(row.goalScores[goalId])}</span>;
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="admin-preview-block">
+            <h4>Itemanalyse</h4>
+            <div className="analysis-table item-analysis">
+              <div className="analysis-row head">
+                <span>itemId</span>
+                <span>Vraag</span>
+                <span>Subdoel</span>
+                <span>Antwoorden</span>
+                <span>correctRate</span>
+                <span>unknownRate</span>
+                <span>Meest gekozen afleider</span>
+                <span>Distractor distribution</span>
+                <span>harmfulOptionRate</span>
+                <span>PT-errorcategorieen</span>
+                <span>Signalen</span>
+              </div>
+              {(analysis?.itemAnalysis ?? []).map((item) => (
+                <div className="analysis-row" key={item.itemId}>
+                  <span>{item.itemId}</span>
+                  <span>{item.questionNumber}</span>
+                  <span>{item.goalId}</span>
+                  <span>{item.answerCount}</span>
+                  <span>{item.correctRate}</span>
+                  <span>{item.unknownRate}</span>
+                  <span>{item.topDistractor || "n.v.t."}</span>
+                  <span>{Object.entries(item.distribution).map(([key, value]) => `${key}: ${value}`).join(", ") || "n.v.t."}</span>
+                  <span>{item.harmfulOptionRate}</span>
+                  <span>{Object.entries(item.ptErrorCategories).map(([key, value]) => `${key}: ${value}`).join(", ") || "n.v.t."}</span>
+                  <span>{item.signals.join(", ") || "Geen signaal"}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="import-panel">
+        <span className="overline">Beheer &gt; Toegangscodes &gt; Leerlingen toevoegen</span>
+        <h3>Leerlingen toevoegen</h3>
+        <p className="help">
+          Plak meerdere namen tegelijk. De naam wordt alleen gebruikt om de toegangscode uit te delen;
+          resultaten worden in de analyse alleen als aggregaat getoond.
+        </p>
+        <div className="grid">
+          <label>
+            <span>Leerjaar</span>
+            <select value={gradeLevel} onChange={(event) => setGradeLevel(event.target.value as "lj1" | "lj3")}>
+              <option value="lj1">Leerjaar 1</option>
+              <option value="lj3">Leerjaar 3</option>
+            </select>
+          </label>
+          <label>
+            <span>Niveau / meting</span>
+            <select value={track} onChange={(event) => setTrack(event.target.value as "vmbo" | "hv")}>
+              <option value="vmbo">VMBO</option>
+              <option value="hv">HAVO/VWO</option>
+            </select>
+          </label>
+          <label>
+            <span>Klas</span>
+            <input value={classCodeInput} onChange={(event) => setClassCodeInput(event.target.value)} placeholder="bv. vmbo1a" />
+          </label>
+          <label>
+            <span>Afnamevenster</span>
+            <input value={assessmentWindow} onChange={(event) => setAssessmentWindow(event.target.value)} placeholder="bv. najaar-2026" />
+          </label>
+          <label>
+            <span>Assessment</span>
+            <select
+              value={versionId}
+              onChange={(event) => {
+                const nextVersion = event.target.value as AssessmentVersion["id"];
+                const nextMetadata = metadataForVersion(nextVersion);
+                setVersionId(nextVersion);
+                setGradeLevel(nextMetadata.gradeLevel as "lj1" | "lj3");
+                setTrack(nextMetadata.track as "vmbo" | "hv");
+              }}
+            >
+              {defaultCodeMappings.map((mapping) => (
+                <option key={mapping.instrumentId} value={mapping.instrumentId}>
+                  {mapping.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Cohort</span>
+            <input value={cohort} onChange={(event) => setCohort(event.target.value)} placeholder="optioneel, standaard afnamevenster" />
+          </label>
+          <label>
+            <span>Naam</span>
+            <textarea
+              value={nameListText}
+              onChange={(event) => setNameListText(event.target.value)}
+              placeholder={"Plak hier leerlingnamen.\nEen leerling per regel.\n\nVoorbeeld:\nSanne Jansen\nMilan Verbeek\nNoor Peters"}
+            />
+          </label>
+          <button className="btn-import" type="button" onClick={prepareBulkPreview} disabled={isLoading}>
+            Preview maken
+          </button>
+        </div>
+        {previewRows.length > 0 ? (
+          <div className="admin-preview-block">
+            <h4>Preview</h4>
+            {(() => {
+              const duplicates = duplicateNamesForPreview(previewRows);
+              return (
+                <>
+                  {duplicates.size > 0 ? (
+                    <div className="warning-banner-inline">
+                      Let op: er staan dubbele namen in deze klas. Controleer de uitgifte van codes extra zorgvuldig.
+                    </div>
+                  ) : null}
+                  <div className="analysis-table compact">
+                    <div className="analysis-row head">
+                      <span>Naam</span>
+                      <span>Leerjaar</span>
+                      <span>Klas</span>
+                      <span>Niveau / meting</span>
+                      <span>Status</span>
+                    </div>
+                    {previewRows.map((row, index) => (
+                      <div className="analysis-row" key={`${row.participantLabel}-${index}`}>
+                        <span>{row.participantLabel}</span>
+                        <span>{row.gradeLevel === "lj3" ? "Leerjaar 3" : "Leerjaar 1"}</span>
+                        <span>{row.classCode}</span>
+                        <span>{row.track === "hv" ? "HAVO/VWO" : "VMBO"}</span>
+                        <span>{duplicates.has(row.participantLabel.toLowerCase()) ? "Dubbele naam" : "Klaar"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
+            <div className="rd-result-actions">
+              <button className="btn btn-ghost" type="button" onClick={() => setPreviewRows([])}>
+                Annuleren
+              </button>
+              <button className="btn btn-primary" type="button" onClick={() => void importStudents()} disabled={isLoading}>
+                Leerlingen toevoegen en toegangscodes maken
+              </button>
+            </div>
+          </div>
+        ) : null}
+        {createdCodeRows.length > 0 ? (
+          <div className="admin-preview-block printable-code-overview">
+            <h4>Code-overzicht</h4>
+            <div className="rd-result-actions">
+              <button
+                className="filter-chip"
+                type="button"
+                onClick={() => {
+                  const text = createdCodeRows
+                    .map((student) => `${student.participantLabel ?? ""}\t${student.classCode}\t${student.accessCode}`)
+                    .join("\n");
+                  void navigator.clipboard?.writeText(`Naam\tKlas\tToegangscode\n${text}`);
+                }}
+              >
+                Kopieer
+              </button>
+              <button className="filter-chip" type="button" onClick={() => window.print()}>
+                Print
+              </button>
+            </div>
+            <div className="analysis-table compact">
+              <div className="analysis-row head">
+                <span>Naam</span>
+                <span>Klas</span>
+                <span>Toegangscode</span>
+              </div>
+              {createdCodeRows.map((student) => (
+                <div className="analysis-row" key={student.accessCode}>
+                  <span>{student.participantLabel || "Geen label"}</span>
+                  <span>{student.classCode}</span>
+                  <span className="code-cell">{student.accessCode}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </section>
+
+      {false ? (
       <section className="import-panel">
         <h3>Afnamecodes genereren</h3>
         <p className="help">
@@ -1536,7 +2013,7 @@ const AdminScreen = ({
           <button
             className="btn-import"
             type="button"
-            onClick={importStudents}
+            onClick={() => void importStudents()}
             disabled={isLoading}
           >
             Codes genereren
@@ -1551,6 +2028,7 @@ const AdminScreen = ({
           </div>
         ) : null}
       </section>
+      ) : null}
 
       <section className="rd-student-section">
         <div className="rd-section-head">
