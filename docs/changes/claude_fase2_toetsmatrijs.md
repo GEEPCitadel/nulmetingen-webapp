@@ -60,7 +60,7 @@ Aantallen zijn scorende meetpunten; (A) = ankerblok, (V) = variabel blok.
 ## 4. Anker- en groeiontwerp
 
 - **Ankerblok (30 pt):** PT1, PT2, PT3, PT4, PT6, PT7, PT8, PT9-maaktaak + 6 SR-ankers. Identiek in alle metingen van dezelfde niveau-lijn (lj1-vmbo ↔ lj3-vmbo ↔ voortgangsmetingen). Groei wordt uitsluitend op ankerscores gerapporteerd, op klas-/cohortniveau.
-- **Variabel blok (12 pt):** per meetmoment een parallelvorm (zelfde subdoel, zelfde bullet, ander scenario) uit een itembank met ≥2 varianten per slot — tegen herkenning/oefeneffect.
+- **Variabel blok (8 pt):** per meetmoment een parallelvorm (zelfde subdoel, zelfde bullet, ander scenario) uit een itembank met ≥2 varianten per slot — tegen herkenning/oefeneffect.
 - **lj1 vs. lj3:** zelfde ankers; lj3 en hv onderscheiden zich in het variabele blok (verdiepende bullets en complexere context), niet in de ankers. Daarmee is de lj1→lj3-vergelijking zuiver.
 - Bestaande v4-items worden maximaal hergebruikt als anker of parallelvorm; herschrijven gebeurt alleen op taligheidsnorm en optie-aantal (regel 4).
 
