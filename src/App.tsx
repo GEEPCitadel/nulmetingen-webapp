@@ -1335,9 +1335,16 @@ const AdminScreen = ({
 
   const parseTableRecords = (records: Array<Record<string, unknown>>): ImportStudentRow[] =>
     records.flatMap((record, index) => {
-      const classCode = valueFromRecord(record, ["klas", "class", "classcode", "class_code"]);
+      const classCode = valueFromRecord(record, ["klas", "class", "classcode", "class_code"]) || classCodeInput;
       const yearRaw = valueFromRecord(record, ["leerjaar", "jaar", "year"]);
-      const name = valueFromRecord(record, ["leerling", "naam", "student", "participantlabel", "participant_label"]);
+      const fallbackName = Object.entries(record)
+        .filter(([key]) => !["klas", "class", "classcode", "class_code", "leerjaar", "jaar", "year", "aantal", "count"].includes(key.trim().toLowerCase()))
+        .map(([, value]) => String(value ?? "").trim())
+        .find(Boolean);
+      const name =
+        valueFromRecord(record, ["leerling", "naam", "student", "participantlabel", "participant_label", "name"]) ||
+        fallbackName ||
+        "";
       const countRaw = valueFromRecord(record, ["aantal", "count"]);
       const count = countRaw ? Number.parseInt(countRaw, 10) : 1;
 
@@ -1351,6 +1358,12 @@ const AdminScreen = ({
       return Array.from({ length: Math.max(count, 1) }, (_, rowIndex) => ({
         classCode: normalizedClass,
         participantLabel: name || `${labelPrefix}Leerling ${String(rowIndex + 1).padStart(2, "0")}`,
+        classId: normalizedClass,
+        assessmentId: versionId,
+        gradeLevel,
+        track,
+        cohort: cohort.trim() || assessmentWindow.trim(),
+        assessmentWindow: assessmentWindow.trim(),
       }));
     });
 
@@ -1400,11 +1413,23 @@ const AdminScreen = ({
     try {
       const rows = await readImportFile(file);
       if (rows.length === 0) throw new Error("Geen leerlingen gevonden in het bestand.");
-      setClassPlanText(rowsToClassPlanText(rows));
-      setMessage(`${rows.length} leerlingen uit ${file.name} klaargezet. Klik op Codes genereren om te importeren.`);
+      const data = await requestJson<StudentsResponse>("/api/students", {
+        method: "POST",
+        headers: adminHeaders,
+        body: JSON.stringify({
+          versionId,
+          importBatch: cohort.trim() || assessmentWindow.trim(),
+          students: rows,
+        }),
+      });
+      setStudents(data.students);
+      setCreatedCodeRows(data.createdStudents ?? []);
+      setPreviewRows([]);
+      setMessage(`${data.importedCount ?? rows.length} leerlingen uit ${file.name} toegevoegd.`);
       setError("");
+      void loadAnalysis();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Het bestand kon niet worden gelezen.");
+      setError(caught instanceof Error ? caught.message : "Het bestand kon niet worden geïmporteerd.");
     } finally {
       setIsLoading(false);
     }
@@ -2041,6 +2066,18 @@ const AdminScreen = ({
               value={nameListText}
               onChange={(event) => setNameListText(event.target.value)}
               placeholder={"Plak hier leerlingnamen.\nEen leerling per regel.\n\nVoorbeeld:\nSanne Jansen\nMilan Verbeek\nNoor Peters"}
+            />
+          </label>
+          <label className="file-import-control">
+            <span>CSV importeren</span>
+            <input
+              type="file"
+              accept=".csv,.txt"
+              onChange={(event) => {
+                void handleImportFile(event.target.files?.[0] ?? null);
+                event.currentTarget.value = "";
+              }}
+              disabled={isLoading}
             />
           </label>
           <button className="btn-import" type="button" onClick={() => void importStudents([])} disabled={isLoading}>
