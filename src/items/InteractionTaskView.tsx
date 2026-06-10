@@ -129,9 +129,11 @@ export const InteractionTaskView = ({
     });
   const isSocialTask = item.type === "social_action_simulation";
   const isAiChatTask = item.mockup?.mediaHint === "Niet-interactieve AI-chatmock-up";
+  const isCompoundSingleScreen =
+    isSocialTask && task.screens.length === 1 && task.screens[0].id === item.id;
   const renderScreen = (screen: typeof task.screens[number]) => (
     <div className="interaction-screen" key={screen.id}>
-      {!isAiChatTask ? (
+      {!isAiChatTask && !isCompoundSingleScreen ? (
         <div className="stack-xs">
           <strong>{screen.title}</strong>
           <p>{screen.instruction}</p>
@@ -161,7 +163,13 @@ export const InteractionTaskView = ({
 
       {isSocialTask ? (
         <div className="social-chat-task">
-          <SocialChatMockup title={item.title} screens={task.screens} mockup={item.mockup} />
+          {item.mockup?.feedPosts?.length ? (
+            <FeedMockupView mockup={item.mockup} />
+          ) : item.mockup?.mediaHint === "Niet-interactieve casuskaart" ? (
+            <CaseCardView mockup={item.mockup} />
+          ) : (
+            <SocialChatMockup title={item.title} screens={task.screens} mockup={item.mockup} />
+          )}
           <div className="social-question-stack">
             {task.screens.map(renderScreen)}
           </div>
@@ -182,6 +190,43 @@ export const InteractionTaskView = ({
     </section>
   );
 };
+
+const FeedMockupView = ({ mockup }: { mockup: NonNullable<AssessmentItem["mockup"]> }) => (
+  <div className="whutsupp-phone feed-phone" aria-label={`Niet-interactieve feed van ${mockup.title}`}>
+    <div className="whutsupp-top">
+      <span className="whutsupp-avatar" aria-hidden="true">{mockup.title.slice(0, 1)}</span>
+      <div>
+        <strong>{mockup.title}</strong>
+        <small>jouw feed · voorbeeld</small>
+      </div>
+    </div>
+    <div className="whutsupp-thread">
+      {(mockup.feedPosts ?? []).map((post) => (
+        <div className="whutsupp-bubble incoming feed-post" key={`${post.author}-${post.text}`}>
+          <small className="ai-bubble-label">
+            {post.author}
+            {post.sponsored ? " · Gesponsord" : ""}
+          </small>
+          <span>{post.text}</span>
+          {post.meta ? <small>{post.meta}</small> : null}
+        </div>
+      ))}
+    </div>
+    <div className="whutsupp-compose">
+      <span>Zoeken</span>
+      <button type="button" aria-label="Niet beschikbaar">+</button>
+    </div>
+  </div>
+);
+
+const CaseCardView = ({ mockup }: { mockup: NonNullable<AssessmentItem["mockup"]> }) => (
+  <div className="notice-banner case-card" aria-label="Casus">
+    <strong>{mockup.title}</strong>
+    {mockup.content.map((line) => (
+      <p key={line}>{line}</p>
+    ))}
+  </div>
+);
 
 export const IncomingMailStimulusView = ({ email }: { email: IncomingMailStimulus }) => (
   <div className="mail-shell incoming-mail-shell" aria-label="E-mailbericht">
@@ -367,4 +412,3 @@ export const InteractionGroupControl = ({
     </div>
   );
 };
-

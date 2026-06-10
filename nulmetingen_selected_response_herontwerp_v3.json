@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "dg-nulmetingen-v3.7",
+  "schemaVersion": "dg-nulmetingen-v3.8",
   "status": "werkversie voor Codex-implementatie, pilotafname en interne review; vraag 9/SR2 vervangen door 21D/AI-vraag v4; vraag 16/SR9 hersteld als 23B foto-/toestemmingsvraag",
   "source": "docs/changes/codex_prompt_vraag9_ai_21d_v4.md",
   "selectedResponseItems": [
@@ -66,12 +66,12 @@
       "kerndoel": "21",
       "subgoal": "21D",
       "primarySubgoal": "21D",
-      "itemVersion": "vraag9-ai-21d-v4",
+      "itemVersion": "vraag9-ai-21d-v5",
       "learnerQuestionNumber": 9,
       "internalSlot": "SR2",
       "title": "AI gebruiken voor je werkstuk",
       "itemType": "compound-single-choice",
-      "selectionLimit": 2,
+      "selectionLimit": 3,
       "question": "Sanne gebruikt KletsGPT voor haar werkstuk. Bekijk de chat.",
       "context": {
         "chatMockup": {
@@ -214,10 +214,63 @@
             "unknownScoresZero": true,
             "unknownExclusive": true
           }
+        },
+        {
+          "id": "source_mention",
+          "title": "Deelvraag C",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Sanne gebruikt een deel van de verbeterde tekst in haar werkstuk. Wat hoort ze erbij te zetten?",
+          "options": [
+            {
+              "id": "mention_ai_use",
+              "text": "Dat ze KletsGPT heeft gebruikt bij het schrijven.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "own_work",
+              "text": "Ze levert de tekst in als helemaal eigen werk.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "presents_ai_text_as_own"
+            },
+            {
+              "id": "ai_as_source",
+              "text": "Ze noemt KletsGPT als bron voor het percentage.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "ai_treated_as_factual_source"
+            },
+            {
+              "id": "source_mention-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "mention_ai_use",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         }
       ],
       "scoring": {
-        "maxPoints": 1,
+        "maxPoints": 2,
         "rule": "compound-sum",
         "scoreBy": "option-id",
         "doNotScoreBy": [
@@ -736,12 +789,12 @@
       "kerndoel": "21",
       "subgoal": "21D",
       "primarySubgoal": "21D",
-      "itemVersion": "vraag9-ai-21d-v4",
+      "itemVersion": "vraag9-ai-21d-v5",
       "learnerQuestionNumber": 9,
       "internalSlot": "SR2",
       "title": "AI gebruiken voor een presentatie",
       "itemType": "compound-single-choice",
-      "selectionLimit": 2,
+      "selectionLimit": 3,
       "question": "Milan gebruikt KletsGPT voor een presentatie. Bekijk de chat.",
       "context": {
         "chatMockup": {
@@ -884,10 +937,63 @@
             "unknownScoresZero": true,
             "unknownExclusive": true
           }
+        },
+        {
+          "id": "source_mention",
+          "title": "Deelvraag C",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Milan gebruikt de verbeterde tekst in zijn presentatie. Wat hoort hij te vermelden?",
+          "options": [
+            {
+              "id": "mention_ai_use",
+              "text": "Dat KletsGPT heeft geholpen bij het maken van de tekst.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "own_work",
+              "text": "Hij presenteert de tekst als volledig eigen werk.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "presents_ai_text_as_own"
+            },
+            {
+              "id": "ai_as_source",
+              "text": "Hij noemt KletsGPT als bron van de cijfers.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "ai_treated_as_factual_source"
+            },
+            {
+              "id": "source_mention-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "mention_ai_use",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         }
       ],
       "scoring": {
-        "maxPoints": 1,
+        "maxPoints": 2,
         "rule": "compound-sum",
         "scoreBy": "option-id",
         "doNotScoreBy": [
@@ -1435,12 +1541,12 @@
       "kerndoel": "21",
       "subgoal": "21D",
       "primarySubgoal": "21D",
-      "itemVersion": "vraag9-ai-21d-v4",
+      "itemVersion": "vraag9-ai-21d-v5",
       "learnerQuestionNumber": 9,
       "internalSlot": "SR2",
       "title": "AI gebruiken voor een stagebrief",
       "itemType": "compound-single-choice",
-      "selectionLimit": 2,
+      "selectionLimit": 3,
       "question": "Noor gebruikt KletsGPT om een stagebrief te verbeteren. Bekijk de chat.",
       "context": {
         "chatMockup": {
@@ -1583,10 +1689,63 @@
             "unknownScoresZero": true,
             "unknownExclusive": true
           }
+        },
+        {
+          "id": "source_mention",
+          "title": "Deelvraag C",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Het stagebedrijf vraagt Noor hoe de brief is gemaakt. Wat is de beste reactie?",
+          "options": [
+            {
+              "id": "honest_ai_use",
+              "text": "Eerlijk zeggen dat KletsGPT heeft geholpen met de tekst.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "own_work",
+              "text": "Zeggen dat ze alles helemaal zelf heeft geschreven.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "presents_ai_text_as_own"
+            },
+            {
+              "id": "ai_always_right",
+              "text": "Zeggen dat KletsGPT-brieven altijd kloppen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "overtrust_in_ai"
+            },
+            {
+              "id": "source_mention-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "honest_ai_use",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         }
       ],
       "scoring": {
-        "maxPoints": 1,
+        "maxPoints": 2,
         "rule": "compound-sum",
         "scoreBy": "option-id",
         "doNotScoreBy": [
@@ -2144,12 +2303,12 @@
       "kerndoel": "21",
       "subgoal": "21D",
       "primarySubgoal": "21D",
-      "itemVersion": "vraag9-ai-21d-v4",
+      "itemVersion": "vraag9-ai-21d-v5",
       "learnerQuestionNumber": 9,
       "internalSlot": "SR2",
       "title": "AI gebruiken voor een betoog",
       "itemType": "compound-single-choice",
-      "selectionLimit": 2,
+      "selectionLimit": 3,
       "question": "Sara gebruikt KletsGPT voor een betoog over telefoons in de klas. Bekijk de chat.",
       "context": {
         "chatMockup": {
@@ -2292,10 +2451,63 @@
             "unknownScoresZero": true,
             "unknownExclusive": true
           }
+        },
+        {
+          "id": "source_mention",
+          "title": "Deelvraag C",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Sara gebruikt de alinea in haar betoog. Wat hoort ze te vermelden?",
+          "options": [
+            {
+              "id": "mention_ai_use",
+              "text": "Dat KletsGPT heeft geholpen bij het schrijven.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "own_work",
+              "text": "Ze levert het betoog in als volledig eigen tekst.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "presents_ai_text_as_own"
+            },
+            {
+              "id": "ai_as_source",
+              "text": "Ze noemt KletsGPT als bron voor de feiten.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "ai_treated_as_factual_source"
+            },
+            {
+              "id": "source_mention-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "mention_ai_use",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
         }
       ],
       "scoring": {
-        "maxPoints": 1,
+        "maxPoints": 2,
         "rule": "compound-sum",
         "scoreBy": "option-id",
         "doNotScoreBy": [
@@ -2779,6 +2991,1287 @@
       },
       "validityNote": "Leerlingen onderscheiden voordelen van risico’s bij platformafhankelijkheid.",
       "instruction": "Kies twee antwoorden."
+    },
+    {
+      "id": "lj1v-minipt-feed-21b-v1",
+      "targetGroup": "lj1-vmbo",
+      "kerndoel": "21",
+      "subgoal": "21B",
+      "primarySubgoal": "21B",
+      "itemVersion": "minipt-feed-21b-v1",
+      "learnerQuestionNumber": 11,
+      "internalSlot": "MINIPT-FEED",
+      "title": "Jouw feed",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Je opent SnapGram en ziet deze feed. Beantwoord de twee vragen.",
+      "context": {
+        "feedMockup": {
+          "appName": "SnapGram",
+          "posts": [
+            {
+              "author": "Sneakz",
+              "sponsored": true,
+              "text": "Laatste kans! Nog 1 uur korting op sneakers. Tik nu!",
+              "meta": "Advertentie · 2.341 likes"
+            },
+            {
+              "author": "Yara (klasgenoot)",
+              "text": "Wie gaat er zaterdag mee naar het zwembad?",
+              "meta": "10 min geleden"
+            },
+            {
+              "author": "Weerclub",
+              "text": "Morgen wordt het 18 graden met zon.",
+              "meta": "1 uur geleden"
+            },
+            {
+              "author": "Schoolnieuws",
+              "text": "De boekenmarkt is volgende week dinsdag.",
+              "meta": "Gisteren"
+            }
+          ]
+        }
+      },
+      "subQuestions": [
+        {
+          "id": "feed_attention",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Welk bericht is gemaakt om je snel te laten klikken?",
+          "options": [
+            {
+              "id": "post_sneakz",
+              "text": "Het bericht van Sneakz",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "post_yara",
+              "text": "Het bericht van Yara",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "peer_post_mistaken_for_persuasion"
+            },
+            {
+              "id": "post_weerclub",
+              "text": "Het bericht van Weerclub",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "neutral_info_mistaken_for_persuasion"
+            },
+            {
+              "id": "post_school",
+              "text": "Het bericht van Schoolnieuws",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "neutral_info_mistaken_for_persuasion"
+            },
+            {
+              "id": "feed_attention-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "post_sneakz",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        },
+        {
+          "id": "feed_ranking",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Het bericht van Sneakz staat bovenaan. Waarom doet de app dat?",
+          "options": [
+            {
+              "id": "app_earns",
+              "text": "De app verdient geld als jij op advertenties klikt.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "oldest_first",
+              "text": "De app zet altijd het oudste bericht bovenaan.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "chronological_feed_misconception"
+            },
+            {
+              "id": "coincidence",
+              "text": "Sneakz heeft het bericht toevallig als eerste geplaatst.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "no_algorithm_awareness"
+            },
+            {
+              "id": "feed_ranking-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "app_earns",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        }
+      ],
+      "scoring": {
+        "maxPoints": 2,
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "variable-slot",
+      "sourceStatus": "docs/changes/claude_fase2_toetsmatrijs.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Nieuw fase 2-item (variabel blok); parallelvariant volgt bij itembankuitbreiding."
+    },
+    {
+      "id": "lj1h-minipt-feed-21b-v1",
+      "targetGroup": "lj1-hv",
+      "kerndoel": "21",
+      "subgoal": "21B",
+      "primarySubgoal": "21B",
+      "itemVersion": "minipt-feed-21b-v1",
+      "learnerQuestionNumber": 11,
+      "internalSlot": "MINIPT-FEED",
+      "title": "Jouw feed",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Je opent Klikr en ziet deze feed. Beantwoord de twee vragen.",
+      "context": {
+        "feedMockup": {
+          "appName": "Klikr",
+          "posts": [
+            {
+              "author": "GameDealz",
+              "sponsored": true,
+              "text": "Nog 10 minuten: gratis skin bij elke aankoop!",
+              "meta": "Gesponsord"
+            },
+            {
+              "author": "Vlogger Daan",
+              "text": "Deel 3 van mijn serie staat online. Het einde verwacht je nooit…",
+              "meta": "Aanbevolen voor jou"
+            },
+            {
+              "author": "Mees (klasgenoot)",
+              "text": "Iemand zin om straks te voetballen?",
+              "meta": "25 min geleden"
+            },
+            {
+              "author": "Bieb Westerpark",
+              "text": "Nieuwe studieplekken open vanaf maandag.",
+              "meta": "2 uur geleden"
+            }
+          ]
+        }
+      },
+      "subQuestions": [
+        {
+          "id": "feed_attention",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Welk bericht gebruikt tijdsdruk om je te laten klikken?",
+          "options": [
+            {
+              "id": "post_gamedealz",
+              "text": "Het bericht van GameDealz",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "post_daan",
+              "text": "Het bericht van Vlogger Daan",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "cliffhanger_mistaken_for_time_pressure"
+            },
+            {
+              "id": "post_mees",
+              "text": "Het bericht van Mees",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "peer_post_mistaken_for_persuasion"
+            },
+            {
+              "id": "post_bieb",
+              "text": "Het bericht van Bieb Westerpark",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "neutral_info_mistaken_for_persuasion"
+            },
+            {
+              "id": "feed_attention-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "post_gamedealz",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        },
+        {
+          "id": "feed_ranking",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Daans video staat bij 'Aanbevolen voor jou'. Waarom staat die daar?",
+          "options": [
+            {
+              "id": "algorithm_watch",
+              "text": "Het algoritme ziet dat jij vaak zulke video's bekijkt.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "daan_asked",
+              "text": "Daan vroeg de app zijn video bovenaan te zetten.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "manual_curation_misconception"
+            },
+            {
+              "id": "same_order",
+              "text": "De app toont iedereen de video's in dezelfde volgorde.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "no_personalization_awareness"
+            },
+            {
+              "id": "feed_ranking-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "algorithm_watch",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        }
+      ],
+      "scoring": {
+        "maxPoints": 2,
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "variable-slot",
+      "sourceStatus": "docs/changes/claude_fase2_toetsmatrijs.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Nieuw fase 2-item (variabel blok); parallelvariant volgt bij itembankuitbreiding."
+    },
+    {
+      "id": "lj3v-minipt-feed-21b-v1",
+      "targetGroup": "lj3-vmbo",
+      "kerndoel": "21",
+      "subgoal": "21B",
+      "primarySubgoal": "21B",
+      "itemVersion": "minipt-feed-21b-v1",
+      "learnerQuestionNumber": 11,
+      "internalSlot": "MINIPT-FEED",
+      "title": "Jouw feed",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Je opent Stories+ en ziet deze feed. Beantwoord de twee vragen.",
+      "context": {
+        "feedMockup": {
+          "appName": "Stories+",
+          "posts": [
+            {
+              "author": "TrendKicks",
+              "sponsored": true,
+              "text": "Alleen vandaag: 50% korting. Op = op!",
+              "meta": "Advertentie"
+            },
+            {
+              "author": "Sneakerspot",
+              "text": "Weer nieuwe sneakervideo's voor jou!",
+              "meta": "Aanbevolen voor jou"
+            },
+            {
+              "author": "FC Westhoek",
+              "text": "Training zaterdag begint om 10:00.",
+              "meta": "1 uur geleden"
+            },
+            {
+              "author": "Romy (klasgenote)",
+              "text": "Wie helpt mee met het eindfeest?",
+              "meta": "3 uur geleden"
+            }
+          ]
+        }
+      },
+      "subQuestions": [
+        {
+          "id": "feed_attention",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Welk bericht zet je onder druk om snel te kopen?",
+          "options": [
+            {
+              "id": "post_trendkicks",
+              "text": "Het bericht van TrendKicks",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "post_sneakerspot",
+              "text": "Het bericht van Sneakerspot",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "recommendation_mistaken_for_pressure"
+            },
+            {
+              "id": "post_fc",
+              "text": "Het bericht van FC Westhoek",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "neutral_info_mistaken_for_persuasion"
+            },
+            {
+              "id": "post_romy",
+              "text": "Het bericht van Romy",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "peer_post_mistaken_for_persuasion"
+            },
+            {
+              "id": "feed_attention-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "post_trendkicks",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        },
+        {
+          "id": "feed_ranking",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Je krijgt steeds meer sneakerberichten te zien. Hoe komt dat?",
+          "options": [
+            {
+              "id": "watched_before",
+              "text": "De app ziet dat ik vaak naar sneakers kijk.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "same_for_all",
+              "text": "De app toont iedereen dezelfde berichten.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "no_personalization_awareness"
+            },
+            {
+              "id": "shops_post_more",
+              "text": "Sneakerwinkels plaatsen meer berichten dan andere bedrijven.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "supply_explains_feed_misconception"
+            },
+            {
+              "id": "feed_ranking-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "watched_before",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        }
+      ],
+      "scoring": {
+        "maxPoints": 2,
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "variable-slot",
+      "sourceStatus": "docs/changes/claude_fase2_toetsmatrijs.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Nieuw fase 2-item (variabel blok); parallelvariant volgt bij itembankuitbreiding."
+    },
+    {
+      "id": "lj3h-minipt-feed-21b-v1",
+      "targetGroup": "lj3-hv",
+      "kerndoel": "21",
+      "subgoal": "21B",
+      "primarySubgoal": "21B",
+      "itemVersion": "minipt-feed-21b-v1",
+      "learnerQuestionNumber": 11,
+      "internalSlot": "MINIPT-FEED",
+      "title": "Jouw feed",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Je opent Looply en ziet deze feed. Beantwoord de twee vragen.",
+      "context": {
+        "feedMockup": {
+          "appName": "Looply",
+          "posts": [
+            {
+              "author": "StyleNow",
+              "sponsored": true,
+              "text": "Nog 3 stuks op voorraad! Bestel direct.",
+              "meta": "Gesponsord"
+            },
+            {
+              "author": "Studietips010",
+              "text": "Met dit trucje haal je elke toets — deel 7.",
+              "meta": "Aanbevolen voor jou"
+            },
+            {
+              "author": "NieuwsNu",
+              "text": "Gemeente opent nieuw skatepark in september.",
+              "meta": "2 uur geleden"
+            },
+            {
+              "author": "Lena (klasgenote)",
+              "text": "Wie wil samen leren voor wiskunde?",
+              "meta": "4 uur geleden"
+            }
+          ]
+        }
+      },
+      "subQuestions": [
+        {
+          "id": "feed_attention",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Welk bericht gebruikt schaarste om je tot kopen aan te zetten?",
+          "options": [
+            {
+              "id": "post_stylenow",
+              "text": "Het bericht van StyleNow",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "post_studietips",
+              "text": "Het bericht van Studietips010",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "cliffhanger_mistaken_for_scarcity"
+            },
+            {
+              "id": "post_nieuwsnu",
+              "text": "Het bericht van NieuwsNu",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "neutral_info_mistaken_for_persuasion"
+            },
+            {
+              "id": "post_lena",
+              "text": "Het bericht van Lena",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "peer_post_mistaken_for_persuasion"
+            },
+            {
+              "id": "feed_attention-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "post_stylenow",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        },
+        {
+          "id": "feed_ranking",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Waarom staat Studietips010 bij 'Aanbevolen voor jou'?",
+          "options": [
+            {
+              "id": "algorithm_predicts",
+              "text": "Het algoritme voorspelt dat ik hier lang naar kijk.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "editors_choose",
+              "text": "De redactie van Looply kiest de beste studietips uit.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "manual_curation_misconception"
+            },
+            {
+              "id": "paid_placement",
+              "text": "Studietips010 betaalt Looply voor elke weergave.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "recommendation_confused_with_advertising"
+            },
+            {
+              "id": "feed_ranking-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "algorithm_predicts",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        }
+      ],
+      "scoring": {
+        "maxPoints": 2,
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "variable-slot",
+      "sourceStatus": "docs/changes/claude_fase2_toetsmatrijs.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Nieuw fase 2-item (variabel blok); parallelvariant volgt bij itembankuitbreiding."
+    },
+    {
+      "id": "lj1v-minipt-23c-gezichtsherkenning-v1",
+      "targetGroup": "lj1-vmbo",
+      "kerndoel": "23",
+      "subgoal": "23C",
+      "primarySubgoal": "23C",
+      "itemVersion": "minipt-23c-gezichtsherkenning-v1",
+      "learnerQuestionNumber": 12,
+      "internalSlot": "MINIPT-23C",
+      "title": "Wie bepaalt?",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Lees de casus. Beantwoord de twee vragen.",
+      "context": {
+        "caseCard": {
+          "title": "Camera's bij de ingang",
+          "lines": [
+            "Jouw school wil camera's met gezichtsherkenning bij de ingang.",
+            "De computer herkent dan automatisch jouw gezicht en ziet wie er binnenkomt."
+          ]
+        }
+      },
+      "subQuestions": [
+        {
+          "id": "case_say",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wie horen hierover mee te beslissen?",
+          "options": [
+            {
+              "id": "mr_included",
+              "text": "Ook leerlingen en ouders, via de medezeggenschapsraad.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "director_only",
+              "text": "Alleen de directeur, die gaat over het gebouw.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "authority_decides_alone"
+            },
+            {
+              "id": "vendor_decides",
+              "text": "Alleen het bedrijf dat de camera's maakt.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "vendor_decides"
+            },
+            {
+              "id": "case_say-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "mr_included",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        },
+        {
+          "id": "case_risk",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat is een risico van gezichtsherkenning op school?",
+          "options": [
+            {
+              "id": "data_leak",
+              "text": "Beelden van gezichten kunnen lekken of verkeerd gebruikt worden.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "benefit_as_risk",
+              "text": "De school ziet sneller wie er te laat is.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "benefit_mistaken_for_risk"
+            },
+            {
+              "id": "power_use",
+              "text": "De camera's gebruiken veel stroom.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "trivial_concern"
+            },
+            {
+              "id": "case_risk-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "data_leak",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        }
+      ],
+      "scoring": {
+        "maxPoints": 2,
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "variable-slot",
+      "sourceStatus": "docs/changes/claude_fase2_toetsmatrijs.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Nieuw fase 2-item (variabel blok); parallelvariant volgt bij itembankuitbreiding."
+    },
+    {
+      "id": "lj1h-minipt-23c-gezichtsherkenning-v1",
+      "targetGroup": "lj1-hv",
+      "kerndoel": "23",
+      "subgoal": "23C",
+      "primarySubgoal": "23C",
+      "itemVersion": "minipt-23c-gezichtsherkenning-v1",
+      "learnerQuestionNumber": 12,
+      "internalSlot": "MINIPT-23C",
+      "title": "Wie bepaalt?",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Lees de casus. Beantwoord de twee vragen.",
+      "context": {
+        "caseCard": {
+          "title": "Gezichtsherkenning bij de ingang",
+          "lines": [
+            "Jouw school wil camera's met gezichtsherkenning bij de ingang plaatsen.",
+            "Het systeem herkent automatisch gezichten en registreert wie wanneer binnenkomt."
+          ]
+        }
+      },
+      "subQuestions": [
+        {
+          "id": "case_say",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wie horen hierover mee te beslissen?",
+          "options": [
+            {
+              "id": "mr_included",
+              "text": "Ook leerlingen en ouders, via de medezeggenschapsraad.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "director_only",
+              "text": "Alleen de schoolleiding, die gaat over de veiligheid.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "authority_decides_alone"
+            },
+            {
+              "id": "municipality",
+              "text": "De gemeente bepaalt dit voor alle scholen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "wrong_authority"
+            },
+            {
+              "id": "vendor_decides",
+              "text": "Het camerabedrijf, dat kent het systeem het best.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "vendor_decides"
+            },
+            {
+              "id": "case_say-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "mr_included",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        },
+        {
+          "id": "case_risk",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat is een risico van gezichtsherkenning op school?",
+          "options": [
+            {
+              "id": "data_misuse",
+              "text": "Gevoelige gegevens kunnen lekken of voor iets anders gebruikt worden.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "benefit_as_risk",
+              "text": "De school registreert sneller wie er te laat is.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "benefit_mistaken_for_risk"
+            },
+            {
+              "id": "power_use",
+              "text": "Het systeem verbruikt extra stroom.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "trivial_concern"
+            },
+            {
+              "id": "case_risk-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "data_misuse",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        }
+      ],
+      "scoring": {
+        "maxPoints": 2,
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "variable-slot",
+      "sourceStatus": "docs/changes/claude_fase2_toetsmatrijs.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Nieuw fase 2-item (variabel blok); parallelvariant volgt bij itembankuitbreiding."
+    },
+    {
+      "id": "lj3v-minipt-23c-verkiezingen-v1",
+      "targetGroup": "lj3-vmbo",
+      "kerndoel": "23",
+      "subgoal": "23C",
+      "primarySubgoal": "23C",
+      "itemVersion": "minipt-23c-verkiezingen-v1",
+      "learnerQuestionNumber": 12,
+      "internalSlot": "MINIPT-23C",
+      "title": "Wie bepaalt?",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Lees de casus. Beantwoord de twee vragen.",
+      "context": {
+        "caseCard": {
+          "title": "Filmpjes voor de verkiezingen",
+          "lines": [
+            "Over twee weken zijn er verkiezingen.",
+            "In je video-app zie je steeds filmpjes die positief zijn over één partij."
+          ]
+        }
+      },
+      "subQuestions": [
+        {
+          "id": "case_why",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Hoe komt het dat jij vooral deze filmpjes ziet?",
+          "options": [
+            {
+              "id": "algorithm_repeats",
+              "text": "Het algoritme toont meer van wat ik eerder bekeek.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "government_chooses",
+              "text": "De overheid bepaalt welke filmpjes iedereen ziet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "wrong_authority"
+            },
+            {
+              "id": "equal_share",
+              "text": "De app laat elke partij evenveel zien.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "no_personalization_awareness"
+            },
+            {
+              "id": "case_why-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "algorithm_repeats",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        },
+        {
+          "id": "case_risk",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat is hiervan een risico voor de verkiezingen?",
+          "options": [
+            {
+              "id": "one_sided",
+              "text": "Kiezers zien één kant en stemmen daardoor misschien anders.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "data_cost",
+              "text": "Filmpjes kijken kost veel mobiele data.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "trivial_concern"
+            },
+            {
+              "id": "more_videos",
+              "text": "Partijen maken steeds meer filmpjes.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "irrelevant_consequence"
+            },
+            {
+              "id": "case_risk-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "one_sided",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        }
+      ],
+      "scoring": {
+        "maxPoints": 2,
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "variable-slot",
+      "sourceStatus": "docs/changes/claude_fase2_toetsmatrijs.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Nieuw fase 2-item (variabel blok); parallelvariant volgt bij itembankuitbreiding."
+    },
+    {
+      "id": "lj3h-minipt-23c-verkiezingen-v1",
+      "targetGroup": "lj3-hv",
+      "kerndoel": "23",
+      "subgoal": "23C",
+      "primarySubgoal": "23C",
+      "itemVersion": "minipt-23c-verkiezingen-v1",
+      "learnerQuestionNumber": 12,
+      "internalSlot": "MINIPT-23C",
+      "title": "Wie bepaalt?",
+      "itemType": "compound-single-choice",
+      "selectionLimit": 2,
+      "question": "Lees de casus. Beantwoord de twee vragen.",
+      "context": {
+        "caseCard": {
+          "title": "Aanbevelingen voor de verkiezingen",
+          "lines": [
+            "Over twee weken zijn er verkiezingen.",
+            "Je video-app beveelt je steeds filmpjes aan die positief zijn over één partij."
+          ]
+        }
+      },
+      "subQuestions": [
+        {
+          "id": "case_why",
+          "title": "Deelvraag A",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Hoe komt het dat jij vooral deze filmpjes aanbevolen krijgt?",
+          "options": [
+            {
+              "id": "algorithm_reinforces",
+              "text": "Het aanbevelingsalgoritme versterkt wat ik eerder bekeek en aanklikte.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "party_bought",
+              "text": "De partij heeft de app betaald om dit iedereen te tonen.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "ads_confused_with_recommendation"
+            },
+            {
+              "id": "same_for_all",
+              "text": "Alle gebruikers krijgen dezelfde politieke filmpjes te zien.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "no_personalization_awareness"
+            },
+            {
+              "id": "case_why-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "algorithm_reinforces",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        },
+        {
+          "id": "case_risk",
+          "title": "Deelvraag B",
+          "itemType": "single-choice",
+          "selectionLimit": 1,
+          "question": "Wat is hiervan een risico voor de verkiezingen?",
+          "options": [
+            {
+              "id": "influence_vote",
+              "text": "Eenzijdige informatie kan het stemgedrag van kiezers beïnvloeden.",
+              "isCorrect": true,
+              "correct": true,
+              "score": 1,
+              "isUnknownOption": false
+            },
+            {
+              "id": "party_costs",
+              "text": "Politieke filmpjes kosten partijen veel geld.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "irrelevant_consequence"
+            },
+            {
+              "id": "screen_time",
+              "text": "Kiezers brengen meer tijd door op de app.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": false,
+              "errorCategory": "trivial_concern"
+            },
+            {
+              "id": "case_risk-unknown",
+              "text": "Ik weet het niet.",
+              "isCorrect": false,
+              "correct": false,
+              "score": 0,
+              "isUnknownOption": true,
+              "unknown": true,
+              "exclusive": true
+            }
+          ],
+          "correctAnswer": "influence_vote",
+          "scoring": {
+            "maxPoints": 1,
+            "rule": "exact-choice",
+            "scoreBy": "option-id",
+            "unknownScoresZero": true,
+            "unknownExclusive": true
+          }
+        }
+      ],
+      "scoring": {
+        "maxPoints": 2,
+        "rule": "compound-sum",
+        "scoreBy": "option-id",
+        "doNotScoreBy": [
+          "answer-position"
+        ],
+        "unknownScoresZero": true,
+        "unknownExclusive": true
+      },
+      "anchorStatus": "variable-slot",
+      "sourceStatus": "docs/changes/claude_fase2_toetsmatrijs.md",
+      "pilotReviewStatus": "pilot-work-version",
+      "validityNote": "Nieuw fase 2-item (variabel blok); parallelvariant volgt bij itembankuitbreiding."
     }
   ],
   "archivedSelectedResponseItems": []

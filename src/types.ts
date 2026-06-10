@@ -70,6 +70,12 @@ export interface MockupCard {
     label: string;
     text: string;
   }>;
+  feedPosts?: Array<{
+    author: string;
+    text: string;
+    meta?: string;
+    sponsored?: boolean;
+  }>;
   footer?: string;
   mediaHint?: string;
   meta?: string[];
@@ -736,3 +742,4 @@ export interface AssessmentResult {
 }
 
 export type InstrumentDefinition = AssessmentVersion;
+// fase2: feedPosts toegevoegd aan MockupCard

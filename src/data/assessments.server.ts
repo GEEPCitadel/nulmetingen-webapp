@@ -233,6 +233,19 @@ type SelectedResponseJsonItem = {
         text: string;
       }>;
     };
+    feedMockup?: {
+      appName: string;
+      posts: Array<{
+        author: string;
+        text: string;
+        meta?: string;
+        sponsored?: boolean;
+      }>;
+    };
+    caseCard?: {
+      title: string;
+      lines: string[];
+    };
   };
   primarySubgoal?: string;
   itemVersion?: string;
@@ -414,6 +427,25 @@ const mockupForContext = (context?: SelectedResponseJsonItem["context"]): Mockup
     };
   }
 
+  if (context?.feedMockup) {
+    return {
+      badge: "Feed",
+      title: context.feedMockup.appName,
+      content: context.feedMockup.posts.map((post) => post.text),
+      feedPosts: context.feedMockup.posts,
+      mediaHint: "Niet-interactieve feedmock-up",
+    };
+  }
+
+  if (context?.caseCard) {
+    return {
+      badge: "Casus",
+      title: context.caseCard.title,
+      content: context.caseCard.lines,
+      mediaHint: "Niet-interactieve casuskaart",
+    };
+  }
+
   if (!context?.chatMessage) {
     return undefined;
   }
@@ -429,8 +461,8 @@ const mockupForContext = (context?: SelectedResponseJsonItem["context"]): Mockup
 const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedResponseSpec[] => {
   const sourceItems = selectedResponseItemsFor(versionId);
 
-  if (sourceItems.length !== 10) {
-    throw new Error(`${versionId} heeft niet precies 10 selected-response-items.`);
+  if (sourceItems.length !== 12) {
+    throw new Error(`${versionId} heeft niet precies 12 selected-response-items (10 SR + mini-PT feed + mini-PT 23C).`);
   }
 
   return sourceItems.map((item) => {
@@ -766,7 +798,7 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
         screens: [
           {
             id: spec.id,
-            title: "AI-chat",
+            title: spec.title,
             instruction: spec.question,
             body: spec.mockup?.content.join("\n\n"),
             groups: spec.compoundTask.groups.map((group) => ({
