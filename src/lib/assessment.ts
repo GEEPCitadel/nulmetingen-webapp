@@ -1412,3 +1412,36 @@ export const getResultForStep = (
   ) ?? null;
 
 export const getAnswerForStep = getResultForStep;
+
+// --- Server-side herscoren (MC) ---------------------------------------------
+// De client kent geen correcte antwoorden meer voor multiple_choice-items;
+// de server herscoort die bij /api/finalize op basis van selectedAnswer.
+export const rescoreSessionResults = (
+  session: AssessmentSession,
+  assessment: AssessmentVersion,
+): AssessmentSession => {
+  const itemsById = new Map<string, AssessmentItem>();
+  assessment.sections.forEach((section) =>
+    section.items.forEach((item) => itemsById.set(item.id, item)),
+  );
+
+  const results = session.results.map((result) => {
+    const item = itemsById.get(result.itemId);
+    if (!item || item.type !== "multiple_choice" || item.points <= 0) {
+      return result;
+    }
+    if (answerRecord(result.selectedAnswer).skipped === true) {
+      return result;
+    }
+    const scored = scoreMultipleChoiceItem(item, result.selectedAnswer);
+    const responseType = responseTypeFor(item, result.selectedAnswer, scored, false);
+    return {
+      ...result,
+      isCorrect: scored.isCorrect,
+      score: scored.score,
+      responseType,
+    };
+  });
+
+  return { ...session, results };
+};

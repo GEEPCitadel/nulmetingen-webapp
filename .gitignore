@@ -146,3 +146,6 @@ devserver*.log
 design-voorbeelden.html
 
 .vercel
+
+# Gegenereerde clientdata (zonder scoringsgeheimen)
+src/data/assessments.public.json

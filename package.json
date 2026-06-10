@@ -4,14 +4,16 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "npm run gen:instruments && vite",
+    "build": "npm run gen:instruments && tsc -b && vite build",
     "preview": "vite preview",
     "verify:anchors": "node scripts/verify-anchors.js",
     "verify:sr-sync": "node scripts/verify-sr-markdown-sync.js",
     "verify:whutsupp-pt8": "node scripts/verify-whutsupp-pt8.js",
     "report:questions": "node scripts/generate-question-overview.js",
-    "report:kd-coverage": "node scripts/kd-coverage.js"
+    "report:kd-coverage": "node scripts/kd-coverage.js",
+    "test": "npm run gen:instruments && vitest run",
+    "gen:instruments": "tsx scripts/generate-public-instruments.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -24,7 +26,9 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.1",
+    "tsx": "^4.22.4",
     "typescript": "^5.6.2",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "vitest": "^4.1.8"
   }
 }
