@@ -187,6 +187,7 @@ type ItemAnalysisRow = {
   goalId: string;
   answerCount: number;
   correctRate: number | null;
+  discrimination: number | null;
   unknownRate: number | null;
   topDistractor: string;
   distribution: Record<string, number>;
@@ -1169,6 +1170,8 @@ const AdminScreen = ({
     value === null || value === undefined ? "n.v.t." : `${value}${suffix}`;
   const formatRate = (value: number | null | undefined) =>
     value === null || value === undefined ? "n.v.t." : `${Math.round(value * 1000) / 10}%`;
+  const formatDiscrimination = (value: number | null | undefined) =>
+    value === null || value === undefined ? "n.v.t." : value.toFixed(2);
   const versionFilterOptions = [
     ["lj1-vmbo", "VMBO 1"],
     ["lj1-hv", "HV 1"],
@@ -1570,6 +1573,7 @@ const AdminScreen = ({
       Subdoel: item.goalId || "n.v.t.",
       "Aantal antwoorden": item.answerCount,
       "Percentage goed": formatRate(item.correctRate),
+      "Discriminatie (rit)": formatDiscrimination(item.discrimination),
       "Percentage ik weet het niet": formatRate(item.unknownRate),
       "Meest gekozen onjuist antwoord": item.topDistractor || "n.v.t.",
       "Alle gekozen antwoorden": formatDistribution(item.distribution),
@@ -2102,6 +2106,7 @@ const AdminScreen = ({
                 <span>Subdoel</span>
                 <span>Antwoorden</span>
                 <span>Percentage goed</span>
+                <span>Discriminatie (rit)</span>
                 <span>Percentage ik weet het niet</span>
                 <span>Meest gekozen onjuist antwoord</span>
                 <span>Alle gekozen antwoorden</span>
@@ -2116,6 +2121,7 @@ const AdminScreen = ({
                   <span>{item.goalId}</span>
                   <span>{item.answerCount}</span>
                   <span>{formatRate(item.correctRate)}</span>
+                  <span>{formatDiscrimination(item.discrimination)}</span>
                   <span>{formatRate(item.unknownRate)}</span>
                   <span>{item.topDistractor || "n.v.t."}</span>
                   <span>{formatDistribution(item.distribution)}</span>

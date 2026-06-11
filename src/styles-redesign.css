@@ -1210,8 +1210,8 @@ body {
 }
 
 .analysis-table.item-analysis .analysis-row {
-  grid-template-columns: minmax(130px, .8fr) minmax(240px, 1.8fr) repeat(9, minmax(130px, 1fr));
-  min-width: 1700px;
+  grid-template-columns: minmax(130px, .8fr) minmax(240px, 1.8fr) repeat(10, minmax(130px, 1fr));
+  min-width: 1830px;
 }
 
 .analysis-table.compact .analysis-row {

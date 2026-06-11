@@ -422,10 +422,32 @@ const buildGrowth = (results) => {
   };
 };
 
+const pearsonCorrelation = (pairs) => {
+  if (pairs.length < 2) return null;
+  const n = pairs.length;
+  const meanX = pairs.reduce((sum, [x]) => sum + x, 0) / n;
+  const meanY = pairs.reduce((sum, [, y]) => sum + y, 0) / n;
+  let sxy = 0;
+  let sxx = 0;
+  let syy = 0;
+  for (const [x, y] of pairs) {
+    sxy += (x - meanX) * (y - meanY);
+    sxx += (x - meanX) ** 2;
+    syy += (y - meanY) ** 2;
+  }
+  if (sxx === 0 || syy === 0) return null;
+  return Math.round((sxy / Math.sqrt(sxx * syy)) * 100) / 100;
+};
+
 const buildItemAnalysis = (results) => {
   const items = new Map();
   for (const row of results) {
     const sessionResults = row.result_json?.session?.results ?? [];
+    const scorable = sessionResults.filter(
+      (entry) => entry?.itemId && entry.itemId !== "self-assessment" && Number(entry.maxScore ?? 0) > 0,
+    );
+    const sessionScore = scorable.reduce((sum, entry) => sum + Number(entry.score ?? 0), 0);
+    const sessionMax = scorable.reduce((sum, entry) => sum + Number(entry.maxScore ?? 0), 0);
     for (const entry of sessionResults) {
       const isSelfAssessment = entry?.itemId === "self-assessment";
       if (!entry?.itemId || (!isSelfAssessment && Number(entry.maxScore ?? 0) <= 0)) continue;
@@ -440,8 +462,19 @@ const buildItemAnalysis = (results) => {
         harmfulCount: 0,
         distribution: {},
         ptErrorCategories: {},
+        ritSamples: [],
       };
       item.answerCount += 1;
+      if (!isSelfAssessment) {
+        const itemMax = Number(entry.maxScore ?? 0);
+        const restMax = sessionMax - itemMax;
+        if (itemMax > 0 && restMax > 0) {
+          item.ritSamples.push([
+            Number(entry.score ?? 0) / itemMax,
+            (sessionScore - Number(entry.score ?? 0)) / restMax,
+          ]);
+        }
+      }
       if (entry.isCorrect === true) item.correctCount += 1;
       const taskResults = entry.taskResults ?? [];
       if (taskResults.some((task) => task.unknown === true) || selectedIdsFrom(entry).some((id) => id.includes("unknown"))) {
@@ -467,13 +500,21 @@ const buildItemAnalysis = (results) => {
     const harmfulOptionRate = item.isSelfAssessment ? null : item.answerCount > 0 ? Math.round((item.harmfulCount / item.answerCount) * 1000) / 1000 : 0;
     const distractors = Object.entries(item.distribution).filter(([id]) => !id.includes("unknown"));
     const topDistractor = distractors.sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
+    const discrimination = item.isSelfAssessment ? null : pearsonCorrelation(item.ritSamples);
     const signals = [];
     if (correctRate !== null && correctRate > 0.9) signals.push("mogelijk plafonditem");
     if (correctRate !== null && correctRate < 0.25) signals.push("mogelijk te moeilijk of onduidelijk");
     if (unknownRate !== null && unknownRate > 0.3) signals.push("veel onzekerheid");
     if (harmfulOptionRate !== null && harmfulOptionRate > 0.1) signals.push("risicovolle keuze vaak gekozen");
+    if (discrimination !== null && item.answerCount >= 10) {
+      if (discrimination < 0) signals.push("negatieve discriminatie: controleer sleutel");
+      else if (discrimination < 0.15) signals.push("lage discriminatie");
+    }
+    const { ritSamples, ...rest } = item;
+    void ritSamples;
     return {
-      ...item,
+      ...rest,
+      discrimination,
       correctRate,
       unknownRate,
       harmfulOptionRate,
