@@ -352,6 +352,76 @@ const selectedIdsFrom = (entry) => {
   return taskIds;
 };
 
+const anchorPercentage = (row) => {
+  const entries = row.result_json?.session?.results ?? [];
+  let score = 0;
+  let maxScore = 0;
+  for (const entry of entries) {
+    if (entry?.ankerItemFlag !== true) continue;
+    score += Number(entry.score ?? 0);
+    maxScore += Number(entry.maxScore ?? 0);
+  }
+  return maxScore > 0 ? Math.round((score / maxScore) * 1000) / 10 : null;
+};
+
+const buildGrowth = (results) => {
+  const windowLabels = new Set();
+  const overallByWindow = new Map();
+  const classes = new Map();
+
+  for (const row of results) {
+    const metadata = resultMetadata(row);
+    const windowLabel = metadata.assessmentWindow || "onbekend";
+    const anchor = anchorPercentage(row);
+    windowLabels.add(windowLabel);
+
+    const overall = overallByWindow.get(windowLabel) ?? { completedCount: 0, _anchors: [] };
+    overall.completedCount += 1;
+    if (anchor !== null) overall._anchors.push(anchor);
+    overallByWindow.set(windowLabel, overall);
+
+    const classKey = `${metadata.classCode}||${metadata.gradeLevel}||${metadata.track}`;
+    const classEntry = classes.get(classKey) ?? {
+      classCode: metadata.classCode,
+      gradeLevel: metadata.gradeLevel,
+      track: metadata.track,
+      byWindow: new Map(),
+    };
+    const classWindow = classEntry.byWindow.get(windowLabel) ?? { completedCount: 0, _anchors: [] };
+    classWindow.completedCount += 1;
+    if (anchor !== null) classWindow._anchors.push(anchor);
+    classEntry.byWindow.set(windowLabel, classWindow);
+    classes.set(classKey, classEntry);
+  }
+
+  const sortedWindows = Array.from(windowLabels).sort((a, b) => a.localeCompare(b, "nl"));
+  const windowSummary = (entry) =>
+    entry
+      ? { completedCount: entry.completedCount, averageAnchorScore: average(entry._anchors) }
+      : { completedCount: 0, averageAnchorScore: null };
+  const deltaFor = (byWindow) => {
+    const scored = sortedWindows
+      .map((label) => windowSummary(byWindow.get(label)).averageAnchorScore)
+      .filter((value) => value !== null);
+    return scored.length >= 2 ? Math.round((scored[scored.length - 1] - scored[0]) * 10) / 10 : null;
+  };
+
+  return {
+    windows: sortedWindows,
+    overall: sortedWindows.map((label) => ({ assessmentWindow: label, ...windowSummary(overallByWindow.get(label)) })),
+    overallDelta: deltaFor(overallByWindow),
+    byClass: Array.from(classes.values())
+      .map((entry) => ({
+        classCode: entry.classCode,
+        gradeLevel: entry.gradeLevel,
+        track: entry.track,
+        windows: sortedWindows.map((label) => ({ assessmentWindow: label, ...windowSummary(entry.byWindow.get(label)) })),
+        delta: deltaFor(entry.byWindow),
+      }))
+      .sort((a, b) => a.classCode.localeCompare(b.classCode, "nl")),
+  };
+};
+
 const buildItemAnalysis = (results) => {
   const items = new Map();
   for (const row of results) {
@@ -442,6 +512,10 @@ const listAnalysis = async (sql, query) => {
   const students = studentRows.map(studentMetadata).map((metadata, index) => ({ ...metadata, status: studentRows[index].status }));
   const filteredStudents = students.filter((student) => matchesFilters(student, filters));
   const filteredResults = resultRows.filter((row) => matchesFilters(resultMetadata(row), filters));
+  // Groei vergelijkt meetmomenten onderling: zelfde filters, behalve het meetmoment zelf.
+  const growthResults = resultRows.filter((row) =>
+    matchesFilters(resultMetadata(row), { ...filters, assessmentWindow: "" }),
+  );
   const overview = buildGroups(filteredStudents, filteredResults, ["assessmentId"]).reduce(
     (combined, group) => ({
       ...combined,
@@ -473,6 +547,7 @@ const listAnalysis = async (sql, query) => {
     byClass: buildGroups(filteredStudents, filteredResults, ["classCode", "gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId"]),
     byGrade: buildGroups(filteredStudents, filteredResults, ["gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId"]),
     itemAnalysis: buildItemAnalysis(filteredResults),
+    growth: buildGrowth(growthResults),
   };
 };
 

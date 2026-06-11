@@ -195,6 +195,27 @@ type ItemAnalysisRow = {
   signals: string[];
 };
 
+type GrowthWindowScore = {
+  assessmentWindow: string;
+  completedCount: number;
+  averageAnchorScore: number | null;
+};
+
+type GrowthClassRow = {
+  classCode: string;
+  gradeLevel: string;
+  track: string;
+  windows: GrowthWindowScore[];
+  delta: number | null;
+};
+
+type GrowthAnalysis = {
+  windows: string[];
+  overall: GrowthWindowScore[];
+  overallDelta: number | null;
+  byClass: GrowthClassRow[];
+};
+
 type ResultsAnalysis = {
   filters: {
     assessmentWindows: string[];
@@ -208,6 +229,7 @@ type ResultsAnalysis = {
   byClass: AnalysisGroup[];
   byGrade: AnalysisGroup[];
   itemAnalysis: ItemAnalysisRow[];
+  growth?: GrowthAnalysis;
 };
 
 type AnalysisResponse = {
@@ -1126,7 +1148,7 @@ const AdminScreen = ({
   const [previewRows, setPreviewRows] = useState<ImportStudentRow[]>([]);
   const [createdCodeRows, setCreatedCodeRows] = useState<ApiStudent[]>([]);
   const [analysis, setAnalysis] = useState<ResultsAnalysis | null>(null);
-  const [analysisTab, setAnalysisTab] = useState<"groups" | "items">("groups");
+  const [analysisTab, setAnalysisTab] = useState<"groups" | "items" | "growth">("groups");
   const [adminTab, setAdminTab] = useState<"codes" | "results">("codes");
   const [analysisFilters, setAnalysisFilters] = useState({
     assessmentWindow: "",
@@ -1556,6 +1578,38 @@ const AdminScreen = ({
       Signalen: item.signals.join(", ") || "Geen signaal",
     }));
 
+  const formatGrowthDelta = (delta: number | null | undefined) =>
+    delta === null || delta === undefined ? "n.v.t." : `${delta > 0 ? "+" : ""}${delta} pt`;
+
+  const getGrowthExportRows = () => {
+    const growth = analysis?.growth;
+    if (!growth || growth.windows.length === 0) return [];
+    const rowFor = (
+      label: string,
+      gradeLevel: string,
+      track: string,
+      windowScores: GrowthWindowScore[],
+      delta: number | null,
+    ) => ({
+      Groep: label,
+      Leerjaar: gradeLevel ? readableFilterOption("gradeLevel", gradeLevel) : "-",
+      Niveau: track ? readableFilterOption("track", track) : "-",
+      ...Object.fromEntries(
+        windowScores.map((window) => [
+          `Ankerscore ${window.assessmentWindow}`,
+          `${formatMetric(window.averageAnchorScore)} (n=${window.completedCount})`,
+        ]),
+      ),
+      "Groei (ankerblok)": formatGrowthDelta(delta),
+    });
+    return [
+      rowFor("Alle klassen", "", "", growth.overall, growth.overallDelta),
+      ...growth.byClass.map((row) =>
+        rowFor(row.classCode || "Onbekend", row.gradeLevel, row.track, row.windows, row.delta),
+      ),
+    ];
+  };
+
   const analysisBaseName = () => `resultatenanalyse-${new Date().toISOString().slice(0, 10)}`;
 
   const exportAnalysisExcel = async () => {
@@ -1572,6 +1626,10 @@ const AdminScreen = ({
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byClass ?? [])), "Per klas");
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byGrade ?? [])), "Per leerjaar");
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getItemAnalysisExportRows()), "Itemanalyse");
+    const growthRows = getGrowthExportRows();
+    if (growthRows.length > 0) {
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(growthRows), "Groei (ankerblok)");
+    }
     XLSX.writeFile(workbook, `${analysisBaseName()}.xlsx`);
   };
 
@@ -1582,13 +1640,17 @@ const AdminScreen = ({
     };
     const classRows = getGroupAnalysisExportRows(analysis?.byClass ?? []);
     const itemRows = getItemAnalysisExportRows();
+    const growthRows = getGrowthExportRows();
+    const growthSection = growthRows.length > 0
+      ? `<h2>Groei per meetmoment (ankerblok)</h2><p>Vergelijking op basis van ankeritems; groei is laatste min eerste meetmoment.</p>${renderRows(growthRows)}`
+      : "";
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>Resultatenanalyse</title><style>body{font-family:Arial,sans-serif;color:#1b1d22}h1,h2{margin-bottom:8px}table{border-collapse:collapse;width:100%;margin:12px 0 24px}td,th{border:1px solid #999;padding:6px;text-align:left;vertical-align:top}th{background:#eee}</style></head><body><h1>Resultatenanalyse nulmeting Digitale Geletterdheid</h1><p>Exportdatum: ${new Date().toLocaleDateString("nl-NL")}</p><h2>Samenvatting</h2>${renderRows([{
       "Aangemaakte codes": analysis?.overview.createdCodes ?? 0,
       "Gestarte afnames": analysis?.overview.startedCount ?? 0,
       "Afgeronde afnames": analysis?.overview.completedCount ?? 0,
       "Afronding": formatMetric(analysis?.overview.completionPercentage ?? 0),
       "Gemiddelde totaalscore": formatMetric(analysis?.overview.averageTotalScore),
-    }])}<h2>Analyse per klas</h2>${renderRows(classRows)}<h2>Itemanalyse</h2>${renderRows(itemRows)}</body></html>`;
+    }])}<h2>Analyse per klas</h2>${renderRows(classRows)}${growthSection}<h2>Itemanalyse</h2>${renderRows(itemRows)}</body></html>`;
     downloadFile(`${analysisBaseName()}.doc`, html, "application/msword");
   };
 
@@ -1607,6 +1669,16 @@ const AdminScreen = ({
       ...getGroupAnalysisExportRows(analysis?.byClass ?? []).map((row) =>
         `${row.Klas} | ${row.Leerjaar} | ${row.Niveau} | afgerond: ${row["Afgeronde afnames"]} | score: ${row["Gemiddelde totaalscore"]}`,
       ),
+      "",
+      "Groei per meetmoment (ankerblok)",
+      ...((analysis?.growth && analysis.growth.windows.length > 0)
+        ? [
+            `Alle klassen | ${analysis.growth.overall.map((window) => `${window.assessmentWindow}: ${formatMetric(window.averageAnchorScore)} (n=${window.completedCount})`).join(" | ")} | groei: ${formatGrowthDelta(analysis.growth.overallDelta)}`,
+            ...analysis.growth.byClass.map((row) =>
+              `${row.classCode || "Onbekend"} | ${row.windows.map((window) => `${window.assessmentWindow}: ${formatMetric(window.averageAnchorScore)} (n=${window.completedCount})`).join(" | ")} | groei: ${formatGrowthDelta(row.delta)}`,
+            ),
+          ]
+        : ["Nog geen meetmomenten met resultaten."]),
       "",
       "Itemanalyse",
       ...getItemAnalysisExportRows().map((row) =>
@@ -1913,8 +1985,61 @@ const AdminScreen = ({
           <button className={analysisTab === "items" ? "active" : ""} type="button" onClick={() => setAnalysisTab("items")}>
             Itemanalyse
           </button>
+          <button className={analysisTab === "growth" ? "active" : ""} type="button" onClick={() => setAnalysisTab("growth")}>
+            Groei (ankerblok)
+          </button>
         </div>
-        {analysisTab === "groups" ? (
+        {analysisTab === "growth" ? (
+          <div className="admin-preview-block">
+            <h4>Groei per meetmoment — alleen ankeritems</h4>
+            <p className="help">
+              Vergelijking van nulmeting en voortgangsmeting(en) op basis van het ankerblok (identieke items in beide
+              metingen). Het filter Afnamevenster wordt hier genegeerd; de overige filters blijven actief. Groei is het
+              verschil tussen het eerste en laatste meetmoment.
+            </p>
+            {(analysis?.growth?.windows.length ?? 0) < 2 ? (
+              <p className="help">
+                Er zijn nog geen twee meetmomenten met resultaten. Zodra een voortgangsmeting is afgerond, verschijnt
+                hier de groeivergelijking.
+              </p>
+            ) : null}
+            <div className="analysis-table">
+              <div className="analysis-row head">
+                <span>Groep</span>
+                <span>Leerjaar</span>
+                <span>Niveau</span>
+                {(analysis?.growth?.windows ?? []).map((label) => (
+                  <span key={label}>{label} (n)</span>
+                ))}
+                <span>Groei</span>
+              </div>
+              <div className="analysis-row">
+                <span>Alle klassen</span>
+                <span>-</span>
+                <span>-</span>
+                {(analysis?.growth?.overall ?? []).map((window) => (
+                  <span key={window.assessmentWindow}>
+                    {formatMetric(window.averageAnchorScore)} ({window.completedCount})
+                  </span>
+                ))}
+                <span>{analysis?.growth?.overallDelta === null || analysis?.growth?.overallDelta === undefined ? "n.v.t." : `${analysis.growth.overallDelta > 0 ? "+" : ""}${analysis.growth.overallDelta} pt`}</span>
+              </div>
+              {(analysis?.growth?.byClass ?? []).map((row) => (
+                <div className="analysis-row" key={`growth-${row.classCode}-${row.gradeLevel}-${row.track}`}>
+                  <span>{row.classCode || "Onbekend"}</span>
+                  <span>{readableFilterOption("gradeLevel", row.gradeLevel)}</span>
+                  <span>{readableFilterOption("track", row.track)}</span>
+                  {row.windows.map((window) => (
+                    <span key={window.assessmentWindow}>
+                      {formatMetric(window.averageAnchorScore)} ({window.completedCount})
+                    </span>
+                  ))}
+                  <span>{row.delta === null ? "n.v.t." : `${row.delta > 0 ? "+" : ""}${row.delta} pt`}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : analysisTab === "groups" ? (
           <>
             {[
               ["Analyse per klas", analysis?.byClass ?? []],
