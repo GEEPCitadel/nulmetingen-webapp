@@ -31,11 +31,11 @@ Basis: functionele kerndoelen DG vo (SLO, nov 2025), verbeterrapport §3.1–3.3
 
 Aantallen zijn scorende meetpunten; (A) = ankerblok, (V) = variabel blok.
 
-### Kerndoel 21 — inzet van digitale technologie en media (15 pt)
+### Kerndoel 21 — inzet van digitale technologie en media (16 pt)
 
 | Subdoel | Meetpunten | Invulling | Dekking bullets |
 | --- | --- | --- | --- |
-| 21A (5) | PT1 bestanden (3, A) · PT2 mail (2→compacter, A) · SR netwerk/internet-werking (1, V) | PT1/PT2 ingekort: nu dubbel gewicht op kantoorvaardigheid | systemen functioneel; geavanceerde software; werking internet/slimme apparatuur (nieuw) |
+| 21A (6) | PT1 bestanden (3, A) · PT2 mail (2→compacter, A) · SR netwerk/internet-werking (1, V) | PT1/PT2 ingekort: nu dubbel gewicht op kantoorvaardigheid | systemen functioneel; geavanceerde software; werking internet/slimme apparatuur (nieuw) |
 | 21B (4) | SR zoekstrategie (1, A) · SR betrouwbaarheid bron (1, A) · mini-PT "feed": waarom zie jij dit? (2, V) | mini-PT: leerling markeert in een nagebootste feed wat aandacht trekt en waarom | zoekhulpmiddelen combineren; beoordelen betrouwbaarheid; werking sociale media/aandacht (nieuw); hv: vakspecifiek zoeken |
 | 21C (3) | PT4 data sorteren/filteren (2, A) · SR dataset-beperking (1, A) | PT4 blijft kern | onderzoek met dataset; beperkt beeld; hv: open data-variant in PT4 |
 | 21D (3) | mini-PT AI-interactie uitgebreid (2, A) · SR AI herkennen / regels vs. statistiek (1, V) | vraag 9 groeit naar volwaardige simulatie: prompt beoordelen, output controleren, bronvermelding | kritisch interacteren; AI-systemen herkennen (nieuw); regels- vs. statistiekgebaseerd (nieuw); hv: trainingsdata-effect |
@@ -55,11 +55,11 @@ Aantallen zijn scorende meetpunten; (A) = ankerblok, (V) = variabel blok.
 | 23B (5) | PT8 Whutsupp (4, A) · SR schermtijd/gezondheid (1, V) | PT8 blijft kern | respectvol handelen; invloed op gedrag; gezondheid (nieuw) |
 | 23C (3) | SR afhankelijkheid platform (1, A) · mini-PT "wie bepaalt?" — casus regulering/waarden (2, V) | mini-PT: lj1 casus gezichtsherkenning op school; lj3 casus aanbevelingsalgoritme & verkiezingen | wederzijdse beïnvloeding; afhankelijkheid; ethisch/sociaal/economisch/ecologisch redeneren (nieuw) |
 
-**Totaal: 38 punten** (was 36), waarvan ankerblok 30 en variabel blok 8. Geschatte afnameduur: ±45 min. Buiten scope verklaard: "bijhouden technologische ontwikkelingen" (21A), "experimenteren met trainen van AI" (21D, niet veilig automatiseerbaar in afname), "delen van een ontwikkeld product" (22A, procesdoel), "eigen interesse i.r.t. studies/beroepen" (23B, reflectievraag niet-scorend mee te nemen in zelfinschatting).
+**Totaal: 39 punten** (was 36), waarvan ankerblok 31 en variabel blok 8. _Correctie 11-06-2026: de eerdere kop "38" was een teltfout — de 21A-rij somt tot 6, niet 5. De app staat op 39 per meting; alle vier de metingen zijn gelijk._ Geschatte afnameduur: ±45 min. Buiten scope verklaard: "bijhouden technologische ontwikkelingen" (21A), "experimenteren met trainen van AI" (21D, niet veilig automatiseerbaar in afname), "delen van een ontwikkeld product" (22A, procesdoel), "eigen interesse i.r.t. studies/beroepen" (23B, reflectievraag niet-scorend mee te nemen in zelfinschatting).
 
 ## 4. Anker- en groeiontwerp
 
-- **Ankerblok (30 pt):** PT1, PT2, PT3, PT4, PT6, PT7, PT8, PT9-maaktaak + 6 SR-ankers. Identiek in alle metingen van dezelfde niveau-lijn (lj1-vmbo ↔ lj3-vmbo ↔ voortgangsmetingen). Groei wordt uitsluitend op ankerscores gerapporteerd, op klas-/cohortniveau.
+- **Ankerblok (31 pt):** PT1, PT2, PT3, PT4, PT6, PT7, PT8, PT9-maaktaak + 6 SR-ankers. Identiek in alle metingen van dezelfde niveau-lijn (lj1-vmbo ↔ lj3-vmbo ↔ voortgangsmetingen). Groei wordt uitsluitend op ankerscores gerapporteerd, op klas-/cohortniveau.
 - **Variabel blok (8 pt):** per meetmoment een parallelvorm (zelfde subdoel, zelfde bullet, ander scenario) uit een itembank met ≥2 varianten per slot — tegen herkenning/oefeneffect.
 - **lj1 vs. lj3:** zelfde ankers; lj3 en hv onderscheiden zich in het variabele blok (verdiepende bullets en complexere context), niet in de ankers. Daarmee is de lj1→lj3-vergelijking zuiver.
 - Bestaande v4-items worden maximaal hergebruikt als anker of parallelvorm; herschrijven gebeurt alleen op taligheidsnorm en optie-aantal (regel 4).
@@ -74,7 +74,7 @@ Aantallen zijn scorende meetpunten; (A) = ankerblok, (V) = variabel blok.
 
 ## 6. Reviewbesluiten (Pim, 10-06-2026)
 
-1. Afnameduur max 45 min → variabel blok 8 pt, totaal 38 pt.
+1. Afnameduur max 45 min → variabel blok 8 pt, totaal 38 pt. _(Teltfout: feitelijk 39 pt, zie correctie bij §3.)_
 2. PT9 in twee varianten (PowerPoint-vorm en postervorm), als parallelvormen per meetmoment.
 3. 23C-casus: lj1 gezichtsherkenning op school; lj3 aanbevelingsalgoritme & verkiezingen.
 4. Zelfinschatting blijft niet-scorend en wordt aangevuld met reflectievragen over de buiten-scope verklaarde procesdoelen.

@@ -31,7 +31,43 @@ const testStudents = {
     version_id: "lj3-hv",
     status: "not_started",
   },
+  // Testcodes voortgangsmeting (variabel blok uit de itembank, PT9-postervorm).
+  TESTVMBO1V: {
+    participant_label: "Testleerling VMBO leerjaar 1 (voortgang)",
+    access_code: "TESTVMBO1V",
+    class_code: "test-vmbo1",
+    version_id: "lj1-vmbo",
+    measurement_moment: "voortgangsmeting",
+    status: "not_started",
+  },
+  TESTHV1V: {
+    participant_label: "Testleerling HAVO/VWO leerjaar 1 (voortgang)",
+    access_code: "TESTHV1V",
+    class_code: "test-hv1",
+    version_id: "lj1-hv",
+    measurement_moment: "voortgangsmeting",
+    status: "not_started",
+  },
+  TESTVMBO3V: {
+    participant_label: "Testleerling VMBO leerjaar 3 (voortgang)",
+    access_code: "TESTVMBO3V",
+    class_code: "test-vmbo3",
+    version_id: "lj3-vmbo",
+    measurement_moment: "voortgangsmeting",
+    status: "not_started",
+  },
+  TESTHV3V: {
+    participant_label: "Testleerling HAVO/VWO leerjaar 3 (voortgang)",
+    access_code: "TESTHV3V",
+    class_code: "test-hv3",
+    version_id: "lj3-hv",
+    measurement_moment: "voortgangsmeting",
+    status: "not_started",
+  },
 };
+
+const measurementMomentOf = (student) =>
+  student?.measurement_moment === "voortgangsmeting" ? "voortgangsmeting" : "nulmeting";
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
@@ -63,6 +99,7 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'not_started'`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS measurement_moment TEXT`;
   await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
   await sql`ALTER TABLE students ALTER COLUMN student_number DROP NOT NULL`;
   await sql`ALTER TABLE students DROP CONSTRAINT IF EXISTS students_access_code_key`;
@@ -127,6 +164,7 @@ export default async function handler(request, response) {
             accessCode: testStudent.access_code,
             classCode: testStudent.class_code,
             versionId: testStudent.version_id,
+            measurementMoment: measurementMomentOf(testStudent),
           },
         });
         return;
@@ -139,7 +177,7 @@ export default async function handler(request, response) {
     await ensureTables(sql);
 
     const rows = await sql`
-      SELECT access_code, participant_label, class_code, version_id, status
+      SELECT access_code, participant_label, class_code, version_id, measurement_moment, status
       FROM students
       WHERE access_code = ${code}
       LIMIT 1
@@ -160,6 +198,7 @@ export default async function handler(request, response) {
           accessCode: student.access_code,
           classCode: student.class_code,
           versionId: student.version_id,
+          measurementMoment: measurementMomentOf(student),
         },
       });
       return;
@@ -182,6 +221,7 @@ export default async function handler(request, response) {
           accessCode: student.access_code,
           classCode: student.class_code,
           versionId: student.version_id,
+          measurementMoment: measurementMomentOf(student),
         },
       });
       return;
@@ -195,6 +235,7 @@ export default async function handler(request, response) {
         accessCode: student.access_code,
         classCode: student.class_code,
         versionId: student.version_id,
+        measurementMoment: measurementMomentOf(student),
       },
     });
   } catch {

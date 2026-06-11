@@ -1,63 +1,13 @@
-import { QuestionHeader, SubmitAnswerPayload } from "../app/shared";
+import { useState } from "react";
+import { QuestionHeader, SubmitAnswerPayload, shuffleItems } from "../app/shared";
 import { TaskNavFooter } from "../components/TaskNavFooter";
-import type { CSSProperties, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
-import {
-  assessmentMap,
-  defaultCodeMappings,
-  themes,
-} from "../data/assessments";
-import {
-  calculateResult,
-  completeSession,
-  createSession,
-  getAssessment,
-  getItemByStep,
-  getPresentedInteractionOrder,
-  getPresentedOrder,
-  getSectionById,
-  getStepDescriptors,
-  submitItemAnswer,
-} from "../lib/assessment";
-import {
-  buildPath,
-  copyNode,
-  createFile,
-  createFolder,
-  deleteNode,
-  getChildren,
-  getNodeById,
-  moveNode,
-  renameNode,
-  undoPt1,
-} from "../lib/pt1";
-import {
-  readActiveSession,
-  saveActiveSession,
-} from "../lib/storage";
-import type {
-  AssessmentItem,
-  AssessmentSection,
-  AssessmentSession,
-  AssessmentVersion,
-  EventLog,
-  GoalScore,
-  IncomingMailStimulus,
-  InteractionGroup,
-  Option,
-  Pt1Node,
-  Pt1State,
-  ProgrammingBlockDefinition,
-  SelectedAnswer,
-  SessionMetadata,
-  StepDescriptor,
-  ThemeDefinition,
-  WhutsuppChoice,
-  WhutsuppMessage,
-  WhutsuppPathEntry,
-} from "../types";
+import type { AssessmentItem, AssessmentSection } from "../types";
 
-
+/**
+ * PT9 maaktaak: leerling bouwt een digitaal product (dia of poster) op
+ * volgens ontwerpeisen. Keuzegroepen: title / image / source.
+ * Live preview toont het product. Scoring via scorePowerPointTask.
+ */
 export const PowerPointDesignTaskView = ({
   section,
   item,
@@ -73,16 +23,68 @@ export const PowerPointDesignTaskView = ({
   onSkip: () => void;
   onExit: () => void;
 }) => {
-  const [state, setState] = useState<Record<string, string>>({});
   const task = item.powerPointTask;
+  const [state, setState] = useState<Record<string, string>>({});
+  const [groups] = useState(() =>
+    (task?.groups ?? []).map((group) => ({
+      ...group,
+      options: shuffleItems(group.options),
+    })),
+  );
   if (!task) {
     return null;
   }
+  const isPoster = task.format === "poster";
 
   const selectedLabel = (groupId: string) => {
-    const group = task.groups.find((candidate) => candidate.id === groupId);
+    const group = groups.find((candidate) => candidate.id === groupId);
     return group?.options.find((option) => option.id === state[groupId])?.label ?? "";
   };
+
+  const shownOptionOrder = groups.flatMap((group) =>
+    group.options.map((option) => option.id),
+  );
+
+  const controls = (
+    <div className="powerpoint-controls">
+      <p>{task.scenario}</p>
+      {groups.map((group) => (
+        <div className="interaction-group" key={group.id}>
+          <strong>{group.title}</strong>
+          <div className="option-grid compact-grid">
+            {group.options.map((option) => (
+              <button
+                className={`option-card compact ${
+                  state[group.id] === option.id ? "selected" : ""
+                }`}
+                key={option.id}
+                type="button"
+                onClick={() =>
+                  setState((current) => ({ ...current, [group.id]: option.id }))
+                }
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const previewZones = (
+    <>
+      <div className={isPoster ? "poster-title" : "slide-title"}>
+        {selectedLabel("title") || "Titel"}
+      </div>
+      <div className={isPoster ? "poster-image-placeholder" : "slide-image-placeholder"}>
+        {selectedLabel("image") || "Beeld"}
+      </div>
+      <div className={isPoster ? "poster-footer" : "slide-footer"}>
+        {selectedLabel("source") || "Bronvermelding"}
+      </div>
+    </>
+  );
 
   return (
     <section className="panel stack-lg">
@@ -93,58 +95,29 @@ export const PowerPointDesignTaskView = ({
       />
 
       <div className="powerpoint-window">
-        <div className="powerpoint-titlebar">PowerPoint - Presentatie1</div>
+        <div className="powerpoint-titlebar">
+          {isPoster ? "Posterontwerper - Poster1" : "PowerPoint - Presentatie1"}
+        </div>
         <div className="powerpoint-ribbon">
-          {["Start", "Invoegen", "Ontwerpen", "Overgangen", "Diavoorstelling", "Bestand"].map(
-            (tab) => (
-              <span key={tab}>{tab}</span>
-            ),
-          )}
+          {(isPoster
+            ? ["Tekst", "Afbeelding", "Vormen", "Achtergrond", "Bestand"]
+            : ["Start", "Invoegen", "Ontwerpen", "Overgangen", "Diavoorstelling", "Bestand"]
+          ).map((tab) => (
+            <span key={tab}>{tab}</span>
+          ))}
         </div>
         <div className="powerpoint-task-layout">
-          <div className="powerpoint-controls">
-            <p>{task.scenario}</p>
-            {task.groups.map((group) => (
-              <div className="interaction-group" key={group.id}>
-                <strong>{group.title}</strong>
-                <div className="option-grid compact-grid">
-                  {group.options.map((option) => (
-                    <button
-                      className={`option-card compact ${
-                        state[group.id] === option.id ? "selected" : ""
-                      }`}
-                      key={option.id}
-                      type="button"
-                      onClick={() =>
-                        setState((current) => ({ ...current, [group.id]: option.id }))
-                      }
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="powerpoint-preview">
-            <div className="slide-thumbnail">1</div>
-            <div className="slide-canvas">
-              <div className="slide-title">
-                {selectedLabel("titleText") || "Titel van de dia"}
-              </div>
-              <div className="slide-body">
-                <div className="slide-image-placeholder">
-                  {selectedLabel("layout") || "Indeling"}
-                </div>
-                <div className="slide-bullets">
-                  {selectedLabel("content") || "Inhoud"}
-                </div>
-              </div>
-              <div className="slide-footer">
-                {selectedLabel("exportAction") || "Exportkeuze"}
-              </div>
+          {controls}
+          {isPoster ? (
+            <div className="poster-preview">
+              <div className="poster-canvas">{previewZones}</div>
             </div>
-          </div>
+          ) : (
+            <div className="powerpoint-preview">
+              <div className="slide-thumbnail">1</div>
+              <div className="slide-canvas">{previewZones}</div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -156,7 +129,7 @@ export const PowerPointDesignTaskView = ({
             section,
             item,
             selectedAnswer: state,
-            shownOptionOrder: [],
+            shownOptionOrder,
           })
         }
         onSkip={onSkip}
@@ -165,4 +138,3 @@ export const PowerPointDesignTaskView = ({
     </section>
   );
 };
-

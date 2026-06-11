@@ -216,6 +216,8 @@ export interface PowerPointScoringRule {
 }
 
 export interface PowerPointTaskConfig {
+  /** "slide" = PowerPoint-vorm, "poster" = postervorm (parallelvorm PT9). */
+  format?: "slide" | "poster";
   scenario: string;
   groups: PowerPointChoiceGroup[];
   rules: PowerPointScoringRule[];
@@ -607,6 +609,16 @@ export interface CodeMapping {
   label: string;
 }
 
+/**
+ * Meetmoment bepaalt welke vorm van het instrument wordt afgenomen:
+ * - "nulmeting": actieve variant per variabel slot + PT9-slidevorm.
+ * - "voortgangsmeting": bankvariant (parallelVariantItems) per variabel slot + PT9-postervorm.
+ * Ankeritems zijn in beide vormen identiek.
+ */
+export type MeasurementMoment = "nulmeting" | "voortgangsmeting";
+
+export const DEFAULT_MEASUREMENT_MOMENT: MeasurementMoment = "nulmeting";
+
 export interface SessionMetadata {
   learnerCode?: string;
   accessCode?: string;
@@ -699,6 +711,8 @@ export interface AssessmentSession {
   accessCode: string;
   versionId: AssessmentVersionId;
   instrumentId: AssessmentVersionId;
+  /** Ontbreekt bij oude sessies; dan geldt "nulmeting". */
+  measurementMoment?: MeasurementMoment;
   metadata: SessionMetadata;
   startedAt: string;
   currentStepIndex: number;
@@ -742,4 +756,4 @@ export interface AssessmentResult {
 }
 
 export type InstrumentDefinition = AssessmentVersion;
-// fase2: feedPosts toegevoegd aan MockupCard
+// fase2: feedPosts toegevoegd aan MockupCard; PT9 format toegevoegd

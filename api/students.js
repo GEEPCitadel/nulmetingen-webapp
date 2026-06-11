@@ -62,6 +62,7 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS track TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS cohort TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS assessment_window TEXT`;
+  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS measurement_moment TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS import_batch TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'not_started'`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
@@ -109,7 +110,14 @@ const ensureTables = async (sql) => {
   }
 };
 
-const normalizeStudentRows = (students, versionId, importBatch) => {
+const normalizeMeasurementMoment = (value, fallback = "nulmeting") => {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (normalized === "voortgangsmeting" || normalized === "voortgang") return "voortgangsmeting";
+  if (normalized === "nulmeting") return "nulmeting";
+  return fallback;
+};
+
+const normalizeStudentRows = (students, versionId, importBatch, defaultMeasurementMoment) => {
   if (!Array.isArray(students)) return [];
   const fallbackMetadata = metadataForVersion(versionId);
   return students.map((student, index) => {
@@ -122,6 +130,10 @@ const normalizeStudentRows = (students, versionId, importBatch) => {
     const track = String(student.track ?? fallbackMetadata.track).trim().toLowerCase();
     const cohort = String(student.cohort ?? importBatch).trim();
     const assessmentWindow = String(student.assessmentWindow ?? importBatch).trim();
+    const measurementMoment = normalizeMeasurementMoment(
+      student.measurementMoment,
+      defaultMeasurementMoment,
+    );
 
     if (!classCode) throw new Error(`Rij ${index + 1}: klas ontbreekt.`);
     return {
@@ -135,6 +147,7 @@ const normalizeStudentRows = (students, versionId, importBatch) => {
       track,
       cohort,
       assessmentWindow,
+      measurementMoment,
     };
   });
 };
@@ -150,7 +163,7 @@ const createUniqueCode = async (sql) => {
 
 const listStudents = async (sql) => {
   const rows = await sql`
-    SELECT access_code, participant_label, class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, import_batch, status, completed_at, updated_at
+    SELECT access_code, participant_label, class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, measurement_moment, import_batch, status, completed_at, updated_at
     FROM students
     ORDER BY class_code ASC, participant_label ASC, access_code ASC
     LIMIT 10000
@@ -168,6 +181,7 @@ const listStudents = async (sql) => {
     track: row.track ?? metadataForVersion(row.version_id).track,
     cohort: row.cohort ?? row.import_batch ?? "",
     assessmentWindow: row.assessment_window ?? row.import_batch ?? "",
+    measurementMoment: normalizeMeasurementMoment(row.measurement_moment),
     importBatch: row.import_batch ?? "",
     status: row.status ?? "not_started",
     completedAt: row.completed_at,
@@ -318,7 +332,8 @@ export default async function handler(request, response) {
     }
 
     const importBatch = String(body.importBatch ?? "").trim() || `Import ${new Date().toISOString().slice(0, 10)}`;
-    const rows = normalizeStudentRows(body.students, versionId, importBatch);
+    const defaultMeasurementMoment = normalizeMeasurementMoment(body.measurementMoment);
+    const rows = normalizeStudentRows(body.students, versionId, importBatch, defaultMeasurementMoment);
     if (rows.length === 0) {
       response.status(400).json({ ok: false, error: "Geen leerlingen gevonden in de import." });
       return;
@@ -340,6 +355,7 @@ export default async function handler(request, response) {
           track,
           cohort,
           assessment_window,
+          measurement_moment,
           import_batch
         )
         VALUES (
@@ -354,6 +370,7 @@ export default async function handler(request, response) {
           ${row.track},
           ${row.cohort || null},
           ${row.assessmentWindow || null},
+          ${row.measurementMoment},
           ${row.importBatch}
         )
       `;
@@ -368,6 +385,7 @@ export default async function handler(request, response) {
         track: row.track,
         cohort: row.cohort,
         assessmentWindow: row.assessmentWindow,
+        measurementMoment: row.measurementMoment,
         importBatch: row.importBatch,
         status: "not_started",
       });

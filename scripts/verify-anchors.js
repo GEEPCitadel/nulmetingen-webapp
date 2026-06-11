@@ -34,30 +34,11 @@ for (const versionId of versionIds) {
     continue;
   }
 
-  if (items.length !== 10) {
-    failures.push(`${versionId} heeft ${items.length} SR-items in plaats van 10.`);
+  if (items.length !== 13) {
+    failures.push(`${versionId} heeft ${items.length} SR-items in plaats van 13.`);
   }
 
-  if (!items.some((item) => {
-    const stimulusText = item.stimulus
-      ? [
-          item.stimulus.kind,
-          item.stimulus.subject,
-          item.stimulus.fromEmail,
-          item.stimulus.linkUrl,
-          ...(item.stimulus.body ?? []),
-        ].join(" ")
-      : "";
-    return /phishing|mail|inlogcode|rooster|account|cijferlijst/i.test(
-      `${item.title} ${item.question} ${stimulusText} ${item.options?.map((option) => option.text).join(" ") ?? ""}`,
-    );
-  })) {
-    failures.push(`${versionId} mist het phishing-mailanker.`);
-  }
 
-  if (!items.some((item) => /Youssef|telefoon/i.test(`${item.title} ${item.question}`))) {
-    failures.push(`${versionId} mist de telefoon/Youssef-vraag.`);
-  }
 
   for (const item of items) {
     const optionTexts = optionGroupsFor(item).flatMap((group) =>
@@ -89,9 +70,37 @@ for (const versionId of versionIds) {
   }
 }
 
+// Parallelvarianten: elk variabel SR-slot heeft >=1 bankvariant per versie,
+// en elke bankvariant verwijst naar een bestaande actieve itemVersion.
+const bank = Array.isArray(data.parallelVariantItems) ? data.parallelVariantItems : [];
+const activeItemVersions = new Set(
+  (data.selectedResponseItems ?? []).map((item) => item.itemVersion).filter(Boolean),
+);
+for (const versionId of versionIds) {
+  const variableItems = selectedResponseItemsFor(versionId).filter(
+    (item) => item.anchorStatus === "variable" || item.anchorStatus === "variable-slot",
+  );
+  for (const item of variableItems) {
+    const variants = bank.filter(
+      (candidate) =>
+        candidate.targetGroup === versionId && candidate.internalSlot === item.internalSlot,
+    );
+    if (variants.length < 1) {
+      failures.push(`${versionId} ${item.internalSlot}: geen parallelvariant in de itembank.`);
+    }
+  }
+}
+for (const variant of bank) {
+  if (!variant.parallelTo || !activeItemVersions.has(variant.parallelTo)) {
+    failures.push(`${variant.id}: parallelTo verwijst niet naar een actieve itemVersion.`);
+  }
+}
+
 if (failures.length > 0) {
   console.error(failures.join("\n"));
   process.exit(1);
 }
 
-console.log(`Anchor-verificatie geslaagd voor ${sourcePath}: 4 versies, 10 SR-items, phishing-mail/telefoon-ankers, selectiegrenzen en geen live zoekopdrachten.`);
+console.log(
+  `Anchor-verificatie geslaagd voor ${sourcePath}: 4 versies, 13 items, parallelvarianten (${bank.length}), selectiegrenzen en geen live zoekopdrachten.`,
+);

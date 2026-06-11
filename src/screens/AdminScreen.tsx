@@ -43,6 +43,7 @@ import type {
   GoalScore,
   IncomingMailStimulus,
   InteractionGroup,
+  MeasurementMoment,
   Option,
   Pt1Node,
   Pt1State,
@@ -66,6 +67,7 @@ export const AdminScreen = ({
 }) => {
   const [students, setStudents] = useState<ApiStudent[]>([]);
   const [versionId, setVersionId] = useState<AssessmentVersion["id"]>("lj1-vmbo");
+  const [measurementMoment, setMeasurementMoment] = useState<MeasurementMoment>("nulmeting");
   const [gradeLevel, setGradeLevel] = useState<"lj1" | "lj3">("lj1");
   const [track, setTrack] = useState<"vmbo" | "hv">("vmbo");
   const [classCodeInput, setClassCodeInput] = useState("vmbo1a");
@@ -369,6 +371,7 @@ export const AdminScreen = ({
         headers: adminHeaders,
         body: JSON.stringify({
           versionId,
+          measurementMoment,
           importBatch: cohort.trim() || assessmentWindow.trim(),
           students: rows,
         }),
@@ -406,6 +409,7 @@ export const AdminScreen = ({
         headers: adminHeaders,
         body: JSON.stringify({
           versionId,
+          measurementMoment,
           importBatch: cohort.trim() || assessmentWindow.trim(),
           students: rows,
         }),
@@ -429,6 +433,7 @@ export const AdminScreen = ({
       Leerling: student.participantLabel || "",
       Klas: student.classCode,
       Nulmeting: assessmentLabels[student.versionId] ?? student.versionId,
+      Meetmoment: student.measurementMoment === "voortgangsmeting" ? "Voortgangsmeting" : "Nulmeting",
       Status: statusLabel(student.status),
       "Import-batch": student.importBatch ?? "",
       "Afgerond op": student.completedAt ? new Date(student.completedAt).toLocaleString("nl-NL") : "",
@@ -1008,6 +1013,18 @@ export const AdminScreen = ({
             </select>
           </label>
           <label>
+            <span>Meetmoment</span>
+            <select
+              value={measurementMoment}
+              onChange={(event) =>
+                setMeasurementMoment(event.target.value as MeasurementMoment)
+              }
+            >
+              <option value="nulmeting">Nulmeting</option>
+              <option value="voortgangsmeting">Voortgangsmeting</option>
+            </select>
+          </label>
+          <label>
             <span>Cohort</span>
             <input value={cohort} onChange={(event) => setCohort(event.target.value)} placeholder="optioneel, standaard afnamevenster" />
           </label>
@@ -1302,7 +1319,11 @@ export const AdminScreen = ({
           ) : (
             filteredStudents.map((student) => {
               const palette = versionToPalette[student.versionId] ?? "p1";
-              const meting = assessmentMap[student.versionId]?.level ?? student.versionId;
+              const metingBase = assessmentMap[student.versionId]?.level ?? student.versionId;
+              const meting =
+                student.measurementMoment === "voortgangsmeting"
+                  ? `${metingBase} · voortgang`
+                  : metingBase;
               const hasScore = false;
               return (
                 <div
@@ -1385,4 +1406,3 @@ export const AdminScreen = ({
     </>
   );
 };
-

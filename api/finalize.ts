@@ -1,6 +1,8 @@
 // POST /api/finalize — herscoort multiple-choice-items server-side en berekent
 // het eindresultaat. De client kent geen correcte MC-antwoorden meer.
-import { assessmentMap } from "../src/data/assessments.server";
+// Kiest de instrumentvorm op basis van het meetmoment van de sessie
+// (nulmeting of voortgangsmeting met bankvarianten).
+import { assessmentMapForMoment } from "../src/data/assessments.server";
 import { calculateResult, rescoreSessionResults } from "../src/lib/assessment";
 import type { AssessmentSession, AssessmentVersionId } from "../src/types";
 
@@ -36,7 +38,9 @@ export default async function handler(request: any, response: any) {
     return;
   }
 
-  const assessment = assessmentMap[versionId];
+  const moment =
+    session.measurementMoment === "voortgangsmeting" ? "voortgangsmeting" : "nulmeting";
+  const assessment = assessmentMapForMoment(moment)[versionId];
   const rescored = rescoreSessionResults(session, assessment);
   const result = calculateResult(rescored, assessment);
 

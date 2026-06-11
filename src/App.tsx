@@ -8,7 +8,7 @@ import { ResultScreen } from "./screens/ResultScreen";
 import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
-  assessmentMap,
+  assessmentMapForMoment,
   defaultCodeMappings,
   themes,
 } from "./data/assessments";
@@ -50,6 +50,7 @@ import type {
   GoalScore,
   IncomingMailStimulus,
   InteractionGroup,
+  MeasurementMoment,
   Option,
   Pt1Node,
   Pt1State,
@@ -116,8 +117,12 @@ const App = () => {
           // Lokale ontwikkeling zonder API: herscoor met de volledige data.
           // Deze tak wordt door Vite uit de productiebundel verwijderd.
           try {
-            const { assessmentMap: fullMap } = await import("./data/assessments.server");
-            const fullAssessment = session ? fullMap[session.versionId] : undefined;
+            const { assessmentMapForMoment: fullMapForMoment } = await import(
+              "./data/assessments.server"
+            );
+            const fullAssessment = session
+              ? fullMapForMoment(session.measurementMoment)[session.versionId]
+              : undefined;
             if (!cancelled && session && fullAssessment) {
               const rescored = rescoreSessionResults(session, fullAssessment);
               setSession((current) =>
@@ -198,7 +203,11 @@ const App = () => {
         return;
       }
 
-      const assessment = assessmentMap[data.student.versionId];
+      const measurementMoment: MeasurementMoment =
+        data.student.measurementMoment === "voortgangsmeting"
+          ? "voortgangsmeting"
+          : "nulmeting";
+      const assessment = assessmentMapForMoment(measurementMoment)[data.student.versionId];
       const anonymousAttemptId = crypto.randomUUID();
       const metadata: SessionMetadata = {
         accessCode: data.student.accessCode,
@@ -209,7 +218,9 @@ const App = () => {
         privacyConsent: true,
         anonymousCode: anonymousAttemptId.slice(0, 8),
       };
-      setSession(createSession(assessment, data.student.accessCode, metadata));
+      setSession(
+        createSession(assessment, data.student.accessCode, metadata, measurementMoment),
+      );
       setLearnerCodeError("");
     } catch {
       setLearnerCodeError("Deze afnamecode is niet gevonden of de nulmeting kon niet worden gestart.");

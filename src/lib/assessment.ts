@@ -1,4 +1,4 @@
-import { assessmentMap, sloLabels } from "../data/assessments";
+import { assessmentMap, assessmentMapForMoment, sloLabels } from "../data/assessments";
 import { buildPath } from "./pt1";
 import type {
   AssessmentItem,
@@ -8,6 +8,7 @@ import type {
   AssessmentVersion,
   CodeMapping,
   EventLog,
+  MeasurementMoment,
   Pt1State,
   ResponseType,
   Result,
@@ -122,11 +123,13 @@ export const createSession = (
   assessment: AssessmentVersion,
   accessCode: string,
   metadata?: SessionMetadata,
+  measurementMoment: MeasurementMoment = "nulmeting",
 ): AssessmentSession => ({
   id: crypto.randomUUID(),
   accessCode,
   versionId: assessment.id,
   instrumentId: assessment.id,
+  measurementMoment,
   metadata: metadata ?? {
     anonymousAttemptId: crypto.randomUUID(),
     anonymousCode: `sessie-${new Date().toISOString().slice(0, 10)}`,
@@ -151,7 +154,7 @@ export const completeSession = (session: AssessmentSession): AssessmentSession =
 });
 
 export const getAssessment = (session: AssessmentSession) =>
-  assessmentMap[session.versionId];
+  assessmentMapForMoment(session.measurementMoment)[session.versionId];
 
 export const getInstrument = getAssessment;
 

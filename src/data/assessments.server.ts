@@ -8,8 +8,10 @@ import type {
   FileTaskRequirement,
   InteractionTaskConfig,
   MailTaskConfig,
+  MeasurementMoment,
   MockupCard,
   Option,
+  PowerPointTaskConfig,
   ProgrammingBlockDefinition,
   Pt1Node,
   Pt1Simulation,
@@ -36,7 +38,16 @@ type VersionSpec = {
   pt6: TeamsTaskSpec;
   pt7: BlockTaskSpec;
   pt8: SocialTaskSpec;
+  pt9?: Pt9Spec;
   sr: SelectedResponseSpec[];
+};
+
+type Pt9Spec = {
+  id: string;
+  title: string;
+  instruction: string;
+  itemVersion?: string;
+  config: PowerPointTaskConfig;
 };
 
 type FileTaskSpec = {
@@ -286,6 +297,7 @@ type SelectedResponseJson = {
   assessments?: SelectedResponseJsonAssessment[];
   selectedResponseItems?: SelectedResponseJsonItem[];
   archivedSelectedResponseItems?: SelectedResponseJsonItem[];
+  parallelVariantItems?: Array<SelectedResponseJsonItem & { parallelTo?: string }>;
 };
 
 const UNKNOWN_OPTION_LABEL = "Ik weet het niet.";
@@ -340,20 +352,60 @@ const subgoalCodeFrom = (value: string) =>
 const rootGoalFrom = (value: string | number) =>
   String(value).match(/\b(21|22|23)\b/)?.[1] ?? String(value);
 
-const selectedResponseItemsFor = (versionId: AssessmentVersionId): SelectedResponseJsonItem[] => {
-  if (selectedResponseJson.selectedResponseItems) {
-    return selectedResponseJson.selectedResponseItems.filter(
-      (item) => (item.targetGroup ?? item.target ?? item.variantFor) === versionId,
-    );
-  }
+const isVariableSlotItem = (item: SelectedResponseJsonItem) =>
+  item.anchorStatus === "variable" || item.anchorStatus === "variable-slot";
 
-  const sourceAssessment = selectedResponseJson.assessments?.find(
-    (assessment) => assessment.id === versionId,
-  );
-  if (!sourceAssessment) {
-    throw new Error(`Geen selected-response-set gevonden voor ${versionId}.`);
-  }
-  return sourceAssessment.selectedResponseItems;
+/**
+ * Vervangt voor de voortgangsmeting elk variabel-slot-item door zijn
+ * bankvariant uit `parallelVariantItems` (zelfde slot, `parallelTo` wijst
+ * naar de actieve `itemVersion`). Ankeritems blijven ongewijzigd.
+ */
+const withParallelVariants = (
+  versionId: AssessmentVersionId,
+  items: SelectedResponseJsonItem[],
+): SelectedResponseJsonItem[] => {
+  const bank = selectedResponseJson.parallelVariantItems ?? [];
+  return items.map((item) => {
+    if (!isVariableSlotItem(item)) {
+      return item;
+    }
+    const variant = bank.find(
+      (candidate) =>
+        (candidate.targetGroup ?? candidate.target ?? candidate.variantFor) === versionId &&
+        candidate.parallelTo === item.itemVersion,
+    );
+    if (!variant) {
+      throw new Error(
+        `Geen bankvariant gevonden voor ${versionId} slot ${item.internalSlot ?? item.id} (parallelTo ${item.itemVersion}).`,
+      );
+    }
+    return variant;
+  });
+};
+
+const selectedResponseItemsFor = (
+  versionId: AssessmentVersionId,
+  moment: MeasurementMoment = "nulmeting",
+): SelectedResponseJsonItem[] => {
+  const activeItems = (() => {
+    if (selectedResponseJson.selectedResponseItems) {
+      return selectedResponseJson.selectedResponseItems.filter(
+        (item) => (item.targetGroup ?? item.target ?? item.variantFor) === versionId,
+      );
+    }
+
+    const sourceAssessment = selectedResponseJson.assessments?.find(
+      (assessment) => assessment.id === versionId,
+    );
+    if (!sourceAssessment) {
+      throw new Error(`Geen selected-response-set gevonden voor ${versionId}.`);
+    }
+    return sourceAssessment.selectedResponseItems;
+  })();
+
+  return moment === "voortgangsmeting"
+    ? withParallelVariants(versionId, activeItems)
+    : activeItems;
 };
 
 const correctAnswerIdsFor = (item: SelectedResponseJsonItem) =>
@@ -458,11 +510,14 @@ const mockupForContext = (context?: SelectedResponseJsonItem["context"]): Mockup
   };
 };
 
-const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedResponseSpec[] => {
-  const sourceItems = selectedResponseItemsFor(versionId);
+const getSelectedResponseSpecs = (
+  versionId: AssessmentVersionId,
+  moment: MeasurementMoment = "nulmeting",
+): SelectedResponseSpec[] => {
+  const sourceItems = selectedResponseItemsFor(versionId, moment);
 
-  if (sourceItems.length !== 12) {
-    throw new Error(`${versionId} heeft niet precies 12 selected-response-items (10 SR + mini-PT feed + mini-PT 23C).`);
+  if (sourceItems.length !== 13) {
+    throw new Error(`${versionId} heeft niet precies 13 selected-response-items (10 SR + vraag 9 + mini-PT feed + mini-PT 23C).`);
   }
 
   return sourceItems.map((item) => {
@@ -685,7 +740,7 @@ const fileTaskItem = (spec: FileTaskSpec): AssessmentItem => ({
   type: "file_task_simulation",
   title: spec.title,
   instruction: spec.instruction,
-  points: 4,
+  points: spec.tasks.reduce((sum, task) => sum + task.points, 0),
   skillDomain: "21A Digitale systemen",
   kerndoel: "21A",
   ankerItemFlag: spec.ankerItemFlag,
@@ -703,7 +758,7 @@ const mailTaskItem = (spec: MailTaskSpec): AssessmentItem => ({
   type: "outlook_mail_simulation",
   title: spec.title,
   instruction: spec.instruction,
-  points: 4,
+  points: spec.config.rules.reduce((sum, rule) => sum + rule.points, 0),
   skillDomain: "21A Digitale systemen / 23B Digitaal burgerschap",
   kerndoel: spec.kerndoel,
   mailTask: spec.config,
@@ -725,7 +780,7 @@ const excelTaskItem = (spec: ExcelTaskSpec): AssessmentItem => ({
   type: "excel_download_task",
   title: spec.title,
   instruction: spec.instruction,
-  points: 4,
+  points: spec.questions.reduce((sum, question) => sum + question.points, 0),
   skillDomain: "21C Data",
   kerndoel: "21C, 21A",
   excelTask: {
@@ -740,7 +795,7 @@ const teamsTaskItem = (spec: TeamsTaskSpec): AssessmentItem => ({
   type: "teams_share_simulation",
   title: spec.title,
   instruction: spec.instruction,
-  points: 3,
+  points: spec.config.rules.reduce((sum, rule) => sum + rule.points, 0),
   skillDomain: "21A Digitale systemen / 23B Digitaal burgerschap",
   kerndoel: spec.kerndoel,
   ankerItemFlag: spec.ankerItemFlag,
@@ -759,6 +814,20 @@ const blockTaskItem = (spec: BlockTaskSpec): AssessmentItem => ({
     ...spec.config,
     intro: spec.intro,
   },
+});
+
+const powerPointTaskItem = (spec: Pt9Spec): AssessmentItem => ({
+  id: spec.id,
+  type: "powerpoint_design_task",
+  title: spec.title,
+  instruction: spec.instruction,
+  points: spec.config.rules.reduce((sum, rule) => sum + rule.points, 0),
+  skillDomain: `22A ${sloLabels["22A"] ?? ""}`.trim(),
+  kerndoel: "22A",
+  subgoal: "22A",
+  itemVersion: spec.itemVersion,
+  ankerItemFlag: true,
+  powerPointTask: spec.config,
 });
 
 const socialTaskItem = (spec: SocialTaskSpec): AssessmentItem => ({
@@ -884,7 +953,10 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
   };
 };
 
-const makeSections = (spec: VersionSpec): AssessmentSection[] => [
+const makeSections = (
+  spec: VersionSpec,
+  moment: MeasurementMoment = "nulmeting",
+): AssessmentSection[] => [
   {
     id: "zelfinschatting",
     title: "Zelfinschatting",
@@ -929,16 +1001,28 @@ const makeSections = (spec: VersionSpec): AssessmentSection[] => [
     title: "PT8 - Online gedrag",
     items: [socialTaskItem({ ...spec.pt8, whutsuppVariant: whutsuppVariantFor(spec.id) })],
   },
+  ...(spec.pt9
+    ? [
+        {
+          id: "pt9",
+          title: "PT9 - Digitaal product maken",
+          items: [powerPointTaskItem(spec.pt9)],
+        },
+      ]
+    : []),
   {
     id: "sr",
     title: "Meerkeuze",
     instruction: "Kies steeds het beste antwoord.",
-    items: getSelectedResponseSpecs(spec.id).map(selectedResponseItem),
+    items: getSelectedResponseSpecs(spec.id, moment).map(selectedResponseItem),
   },
 ];
 
-const buildAssessment = (spec: VersionSpec): AssessmentVersion => {
-  const sections = makeSections(spec);
+const buildAssessment = (
+  spec: VersionSpec,
+  moment: MeasurementMoment = "nulmeting",
+): AssessmentVersion => {
+  const sections = makeSections(spec, moment);
   const maxScore = sections.reduce(
     (sectionSum, section) =>
       sectionSum + section.items.reduce((itemSum, item) => itemSum + item.points, 0),
@@ -1195,12 +1279,6 @@ const versionSpecs: VersionSpec[] = [
           expectedPath: "Thuis/OneDrive/Schoolwerk/Verslag_Nederlands.docx",
           points: 1,
         },
-        {
-          id: "lj1v-pt1-fotos",
-          description: "Maak in Schoolwerk de map Fotos en verplaats Foto_project.jpg daarheen.",
-          expectedPath: "Thuis/OneDrive/Schoolwerk/Fotos/Foto_project.jpg",
-          points: 1,
-        },
       ],
     },
     pt2: {
@@ -1221,14 +1299,14 @@ const versionSpecs: VersionSpec[] = [
           id: "a",
           prompt: "Sorteer op Jaar, van nieuw naar oud. Welke code staat bovenaan?",
           answer: "L09",
-          points: 2,
+          points: 1,
         },
         {
           id: "b",
           prompt:
             "Filter op Genre = pop. Sorteer daarna op Jaar, van oud naar nieuw. Welke code staat bovenaan?",
           answer: "L12",
-          points: 2,
+          points: 1,
         },
       ],
     },
@@ -1452,12 +1530,6 @@ const versionSpecs: VersionSpec[] = [
           expectedPath: "Thuis/OneDrive/Schoolwerk/Nederlands/Boekverslag_Nederlands.docx",
           points: 1,
         },
-        {
-          id: "lj1h-pt1-diagram",
-          description: "Verplaats Diagram_Biologie.png naar Schoolwerk/Biologie.",
-          expectedPath: "Thuis/OneDrive/Schoolwerk/Biologie/Diagram_Biologie.png",
-          points: 1,
-        },
       ],
     },
     pt2: {
@@ -1478,14 +1550,14 @@ const versionSpecs: VersionSpec[] = [
           id: "a",
           prompt: "Sorteer op Jaar, van nieuw naar oud. Welke code staat bovenaan?",
           answer: "B07",
-          points: 2,
+          points: 1,
         },
         {
           id: "b",
           prompt:
             "Filter op Vak = biologie. Sorteer daarna op Jaar, van oud naar nieuw. Welke code staat bovenaan?",
           answer: "B06",
-          points: 2,
+          points: 1,
         },
       ],
     },
@@ -1683,12 +1755,6 @@ const versionSpecs: VersionSpec[] = [
           forbiddenPaths: ["Thuis/OneDrive/Project_stage/Plan_stage_DEF.docx"],
           points: 1,
         },
-        {
-          id: "lj3v-pt1-images",
-          description: "Maak de map Beelden en verplaats Foto_stage.jpg daarheen.",
-          expectedPath: "Thuis/OneDrive/Project_stage/Beelden/Foto_stage.jpg",
-          points: 1,
-        },
       ],
     },
     pt2: {
@@ -1792,14 +1858,14 @@ const versionSpecs: VersionSpec[] = [
           prompt:
             "Filter op Categorie = elektronica. Sorteer daarna op Jaar, van nieuw naar oud. Welke code staat bovenaan?",
           answer: "W02",
-          points: 2,
+          points: 1,
         },
         {
           id: "b",
           prompt:
             "Filter op Bedrag > 60. Sorteer daarna op Bedrag, van hoog naar laag. Welke code staat bovenaan?",
           answer: "W06",
-          points: 2,
+          points: 1,
         },
       ],
     },
@@ -2008,16 +2074,6 @@ const versionSpecs: VersionSpec[] = [
           forbiddenPaths: ["Thuis/OneDrive/Onderzoek/Onderzoek_DEF.docx"],
           points: 1,
         },
-        {
-          id: "lj3h-pt1-media",
-          description:
-            "Maak map Bronnen_en_media en verplaats Bronnen.xlsx en Afbeelding_CC_BY.png daarnaartoe.",
-          expectedPaths: [
-            "Thuis/OneDrive/Onderzoek/Bronnen_en_media/Bronnen.xlsx",
-            "Thuis/OneDrive/Onderzoek/Bronnen_en_media/Afbeelding_CC_BY.png",
-          ],
-          points: 1,
-        },
       ],
     },
     pt2: {
@@ -2129,14 +2185,14 @@ const versionSpecs: VersionSpec[] = [
           prompt:
             "Filter op Kosten > 500. Sorteer daarna op Kosten, van hoog naar laag. Welke code staat bovenaan?",
           answer: "E13",
-          points: 2,
+          points: 1,
         },
         {
           id: "b",
           prompt:
             "Filter op Woningtype = B. Sorteer daarna op Jaar, van nieuw naar oud. Welke code staat bovenaan?",
           answer: "E02",
-          points: 2,
+          points: 1,
         },
       ],
     },
@@ -2363,47 +2419,27 @@ const v3MailConfig = ({
     "stagebegeleider@bedrijf.nl",
   ],
   files,
+  // Fase 2: ingekort van 4 naar 2 scoringsonderdelen (matrijs 21A: PT2 compacter).
   rules: [
     {
-      id: "to",
-      description: "juiste ontvanger.",
-      points: 1,
-      conditions: [{ field: "to", operator: "includes", value: to }],
-    },
-    ...(cc.length > 0 || forbiddenBcc
-      ? [
-          {
-            id: "cc-bcc",
-            description: "juiste cc en bcc waar nodig.",
-            points: 1,
-            conditions: [
-              ...(cc.length > 0 ? [{ field: "cc" as const, operator: "allInclude" as const, value: cc }] : []),
-              ...(forbiddenBcc ? [{ field: "bcc" as const, operator: "noneInclude" as const, value: ["mentor@school.nl", "docent@school.nl", "klasgroep@school.nl"] }] : []),
-            ],
-          },
-        ]
-      : [
-          {
-            id: "sent",
-            description: "mail is verzonden.",
-            points: 1,
-            conditions: [{ field: "sent" as const, operator: "true" as const }],
-          },
-        ]),
-    {
-      id: "subject",
-      description: "juist onderwerp.",
-      points: 1,
-      conditions: [{ field: "subject", operator: "equals", value: subject }],
-    },
-    {
-      id: "attachment-sent",
-      description: "juiste bijlage en verzonden.",
+      id: "addressing",
+      description: "juiste ontvanger, en cc/bcc waar nodig.",
       points: 1,
       conditions: [
+        { field: "to", operator: "includes", value: to },
+        ...(cc.length > 0 ? [{ field: "cc" as const, operator: "allInclude" as const, value: cc }] : []),
+        ...(forbiddenBcc ? [{ field: "bcc" as const, operator: "noneInclude" as const, value: ["mentor@school.nl", "docent@school.nl", "klasgroep@school.nl"] }] : []),
+      ],
+    },
+    {
+      id: "content-sent",
+      description: "juist onderwerp, juiste bijlage en verzonden.",
+      points: 1,
+      conditions: [
+        { field: "subject", operator: "equals", value: subject },
         { field: "attachments", operator: "includes", value: requiredAttachment },
         ...(forbiddenAttachments.length > 0 ? [{ field: "attachments" as const, operator: "noneInclude" as const, value: forbiddenAttachments }] : []),
-        ...(cc.length > 0 || forbiddenBcc ? [{ field: "sent" as const, operator: "true" as const }] : []),
+        { field: "sent" as const, operator: "true" as const },
       ],
     },
   ],
@@ -2442,12 +2478,7 @@ const v3Pt6 = (id: string): TeamsTaskSpec => ({
         points: 1,
         conditions: ["mediaPlayerSelected"],
       },
-      {
-        id: "sound",
-        description: "computergeluid staat aan.",
-        points: 1,
-        conditions: ["computerSoundOn"],
-      },
+      // Fase 2: geluidsregel vervallen — van 3 naar 2 scoringsonderdelen (matrijs 23A: PT6 compacter).
     ],
   },
 });
@@ -3121,7 +3152,108 @@ const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
   return specs[versionId];
 };
 
-const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
+// PT9 maaktaak (22A, anker, 3 pt): digitaal product opbouwen volgens ontwerpeisen.
+// Twee parallelvormen per niveau-lijn: "slide" (nulmeting) en "poster" (voortgangsmeting).
+// Doelgroep-eis zit verweven in de titel- en beeldopties (foute optie past niet bij doelgroep).
+const v3Pt9 = (
+  versionId: AssessmentVersionId,
+  form: "slide" | "poster" = "slide",
+): Pt9Spec => {
+  const line = versionId.endsWith("vmbo") ? "vmbo" : "hv";
+
+  const rules = (prefix: string): PowerPointTaskConfig["rules"] => [
+    { id: "title", description: "kiest een titel die kort en duidelijk is en past bij de doelgroep.", points: 1, groupId: "title", correctOptionIds: [`${prefix}-title-correct`] },
+    { id: "image", description: "kiest een beeld dat past bij het doel en gebruikt mag worden.", points: 1, groupId: "image", correctOptionIds: [`${prefix}-image-correct`] },
+    { id: "source", description: "vermeldt de bron van gebruikt beeldmateriaal correct.", points: 1, groupId: "source", correctOptionIds: [`${prefix}-source-correct`] },
+  ];
+  const opts = (prefix: string, group: string, labels: [string, string, string, string]): Option[] =>
+    labels.map((label, index) => ({
+      id: index === 0 ? `${prefix}-${group}-correct` : `${prefix}-${group}-d${index}`,
+      label,
+    }));
+
+  const variants: Record<"vmbo" | "hv", Record<"slide" | "poster", Pt9Spec>> = {
+    vmbo: {
+      slide: {
+        id: "pt9-vmbo-maaktaak-slide-v1",
+        title: "PT9 - Eén dia maken",
+        instruction:
+          "Je maakt één dia voor een korte presentatie aan je klas over het schoolfeest. Kies bij elke stap wat het beste past bij de ontwerpeisen: een duidelijke titel voor je klasgenoten, een passend beeld dat je mag gebruiken en een juiste bronvermelding.",
+        itemVersion: "pt9-maaktaak-slide-v1",
+        config: {
+          format: "slide",
+          scenario: "Bouw je dia op. Kies per onderdeel de beste optie. Rechts zie je je dia groeien.",
+          groups: [
+            { id: "title", title: "Stap 1: kies de titel", options: opts("p9vs", "title", ["Schoolfeest 12 juni: doe je mee?", "Mededeling betreffende de aanstaande festiviteit", "FEEST!!!", "Op 12 juni organiseert de feestcommissie een groot feest in de aula van onze school"]) },
+            { id: "image", title: "Stap 2: kies het beeld", options: opts("p9vs", "image", ["Eigen foto van de versierde aula van vorig jaar", "Foto van een fotograaf met watermerk, zonder toestemming", "Grappig plaatje van een kat", "Acht verschillende plaatjes door elkaar"]) },
+            { id: "source", title: "Stap 3: je gebruikt ook een plaatje van een gratis fotosite. Wat zet je erbij?", options: opts("p9vs", "source", ["De naam van de maker en de site", "Niets: gratis plaatjes mag je zonder naam gebruiken", "Alleen het woord 'internet'", "Je eigen naam"]) },
+          ],
+          rules: rules("p9vs"),
+        },
+      },
+      poster: {
+        id: "pt9-vmbo-maaktaak-poster-v1",
+        title: "PT9 - Een poster maken",
+        instruction:
+          "Je maakt een poster voor in de gang van school over de sportdag. Kies bij elke stap wat het beste past bij de ontwerpeisen: een duidelijke titel voor leerlingen, een passend beeld dat je mag gebruiken en een juiste bronvermelding.",
+        itemVersion: "pt9-maaktaak-poster-v1",
+        config: {
+          format: "poster",
+          scenario: "Bouw je poster op. Kies per onderdeel de beste optie. Rechts zie je je poster groeien.",
+          groups: [
+            { id: "title", title: "Stap 1: kies de titel", options: opts("p9vp", "title", ["Sportdag vrijdag 22 mei: doe mee!", "Aankondiging inzake de sportieve activiteitendag", "SPORT!!!", "Op vrijdag 22 mei is er voor alle klassen een hele dag sport op het veld achter de school"]) },
+            { id: "image", title: "Stap 2: kies het beeld", options: opts("p9vp", "image", ["Eigen foto van de sportdag van vorig jaar", "Foto met watermerk van een sportfotograaf, zonder toestemming", "Plaatje van een beroemde voetballer uit een tijdschrift", "Tien kleine plaatjes door elkaar"]) },
+            { id: "source", title: "Stap 3: je gebruikt ook een plaatje van een gratis fotosite. Wat zet je erbij?", options: opts("p9vp", "source", ["De naam van de maker en de site", "Niets: gratis plaatjes mag je zonder naam gebruiken", "Alleen het woord 'internet'", "De naam van je school"]) },
+          ],
+          rules: rules("p9vp"),
+        },
+      },
+    },
+    hv: {
+      slide: {
+        id: "pt9-hv-maaktaak-slide-v1",
+        title: "PT9 - Eén dia maken",
+        instruction:
+          "Je maakt één dia voor een presentatie op de open avond van school. Het publiek bestaat uit ouders en nieuwe leerlingen. Kies bij elke stap wat het beste past bij de ontwerpeisen: een titel die past bij dit publiek, een passend beeld dat je mag gebruiken en een juiste bronvermelding.",
+        itemVersion: "pt9-maaktaak-slide-v1",
+        config: {
+          format: "slide",
+          scenario: "Bouw je dia op. Kies per onderdeel de beste optie. Rechts zie je je dia groeien.",
+          groups: [
+            { id: "title", title: "Stap 1: kies de titel", options: opts("p9hs", "title", ["Welkom op onze school: dit ga je meemaken", "Yo nieuwe brugpiepers, check dit", "Informatie", "Op deze avond vertellen wij u uitgebreid over alle vakken, activiteiten en regels van onze school"]) },
+            { id: "image", title: "Stap 2: kies het beeld", options: opts("p9hs", "image", ["Eigen foto van leerlingen tijdens de projectweek, met hun toestemming", "Professionele foto met watermerk van een fotobureau", "Meme die alleen leerlingen snappen", "Zeven verschillende plaatjes door elkaar"]) },
+            { id: "source", title: "Stap 3: je gebruikt ook een afbeelding met een vrije licentie. Wat zet je erbij?", options: opts("p9hs", "source", ["De naam van de maker en de licentie (bijvoorbeeld Creative Commons)", "Niets: wat online staat is rechtenvrij", "Alleen 'bron: Google'", "De naam van je school"]) },
+          ],
+          rules: rules("p9hs"),
+        },
+      },
+      poster: {
+        id: "pt9-hv-maaktaak-poster-v1",
+        title: "PT9 - Een poster maken",
+        instruction:
+          "Je maakt een poster voor de aula over de debatavond van school. De poster is voor leerlingen én ouders. Kies bij elke stap wat het beste past bij de ontwerpeisen: een titel die past bij dit publiek, een passend beeld dat je mag gebruiken en een juiste bronvermelding.",
+        itemVersion: "pt9-maaktaak-poster-v1",
+        config: {
+          format: "poster",
+          scenario: "Bouw je poster op. Kies per onderdeel de beste optie. Rechts zie je je poster groeien.",
+          groups: [
+            { id: "title", title: "Stap 1: kies de titel", options: opts("p9hp", "title", ["Debatavond 5 maart: praat en denk mee", "Effe chillen en bekvechten in de aula lol", "Avond", "Op 5 maart organiseert de debatclub in samenwerking met de sectie maatschappijleer een avond vol discussie"]) },
+            { id: "image", title: "Stap 2: kies het beeld", options: opts("p9hp", "image", ["Eigen foto van de debatclub in actie, met toestemming van de leden", "Foto met watermerk van een persbureau", "Meme die alleen leerlingen snappen", "Negen kleine plaatjes door elkaar"]) },
+            { id: "source", title: "Stap 3: je gebruikt ook een afbeelding met een vrije licentie. Wat zet je erbij?", options: opts("p9hp", "source", ["De naam van de maker en de licentie (bijvoorbeeld Creative Commons)", "Niets: wat online staat is rechtenvrij", "Alleen 'bron: Google'", "De naam van je school"]) },
+          ],
+          rules: rules("p9hp"),
+        },
+      },
+    },
+  };
+
+  return variants[line][form];
+};
+
+const withV3PerformanceTasks = (
+  spec: VersionSpec,
+  moment: MeasurementMoment = "nulmeting",
+): VersionSpec => {
   const files: Record<AssessmentVersionId, FileTaskSpec> = {
     "lj1-vmbo": {
       id: "lj1v-pt1-files",
@@ -3140,7 +3272,6 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
         { id: "main", description: "map Biologie correct.", expectedPath: "Thuis/OneDrive/Biologie", points: 1 },
         { id: "files", description: "projectbestanden correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Biologie/bron_dieren.pdf", "Thuis/OneDrive/Biologie/foto_kat.jpg"], points: 1 },
         { id: "rename", description: "verslag correct hernoemd en geplaatst.", expectedPath: "Thuis/OneDrive/Biologie/project_dieren_verslag.docx", forbiddenPaths: ["Thuis/OneDrive/concept_dieren.docx", "Thuis/OneDrive/Biologie/concept_dieren.docx"], points: 1 },
-        { id: "subjects", description: "bestaande vakmappen blijven beschikbaar.", expectedPaths: ["Thuis/OneDrive/Engels", "Thuis/OneDrive/Maatschappij", "Thuis/OneDrive/Mentorles", "Thuis/OneDrive/Nederlands", "Thuis/OneDrive/Wiskunde"], points: 1 },
       ],
     },
     "lj1-hv": {
@@ -3150,8 +3281,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       startFolders: ["Thuis/OneDrive"],
       startFiles: ["Thuis/OneDrive/bron_water.pdf", "Thuis/OneDrive/waterfoto.png", "Thuis/OneDrive/concept_verslag.docx", "Thuis/OneDrive/presentatie_water.pptx"],
       tasks: [
-        { id: "main", description: "hoofdmap Project Water correct.", expectedPath: "Thuis/OneDrive/Project Water", points: 1 },
-        { id: "subfolders", description: "submappen correct.", expectedPaths: ["Thuis/OneDrive/Project Water/Bronnen", "Thuis/OneDrive/Project Water/Afbeeldingen", "Thuis/OneDrive/Project Water/Verslag"], points: 1 },
+        { id: "subfolders", description: "hoofdmap en submappen correct.", expectedPaths: ["Thuis/OneDrive/Project Water/Bronnen", "Thuis/OneDrive/Project Water/Afbeeldingen", "Thuis/OneDrive/Project Water/Verslag"], points: 1 },
         { id: "placed", description: "bestanden per type correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Project Water/Bronnen/bron_water.pdf", "Thuis/OneDrive/Project Water/Afbeeldingen/waterfoto.png"], points: 1 },
         { id: "rename", description: "twee bestanden correct hernoemd en geplaatst.", expectedPaths: ["Thuis/OneDrive/Project Water/Verslag/project_water_verslag.docx", "Thuis/OneDrive/Project Water/Verslag/project_water_presentatie.pptx"], forbiddenPaths: ["Thuis/OneDrive/concept_verslag.docx", "Thuis/OneDrive/presentatie_water.pptx"], points: 1 },
       ],
@@ -3164,9 +3294,8 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       startFiles: ["Thuis/OneDrive/Stageproject/stageverslag_v1.docx", "Thuis/OneDrive/Stageproject/stageverslag_v2.docx", "Thuis/OneDrive/Stageproject/stageverslag_v3.docx", "Thuis/OneDrive/Stageproject/foto_stage.jpg"],
       tasks: [
         { id: "folders", description: "mappen Actueel en Oud correct.", expectedPaths: ["Thuis/OneDrive/Stageproject/Actueel", "Thuis/OneDrive/Stageproject/Oud"], points: 1 },
-        { id: "newest", description: "nieuwste versie herkend en correct geplaatst.", expectedPath: "Thuis/OneDrive/Stageproject/Actueel/stageverslag_2026_definitief.docx", points: 1 },
         { id: "archive", description: "oudere versies correct gearchiveerd.", expectedPaths: ["Thuis/OneDrive/Stageproject/Oud/stageverslag_v1.docx", "Thuis/OneDrive/Stageproject/Oud/stageverslag_v2.docx"], points: 1 },
-        { id: "name", description: "juiste definitieve bestandsnaam.", expectedPath: "Thuis/OneDrive/Stageproject/Actueel/stageverslag_2026_definitief.docx", forbiddenPaths: ["Thuis/OneDrive/Stageproject/stageverslag_v3.docx"], points: 1 },
+        { id: "name", description: "nieuwste versie herkend, hernoemd en correct geplaatst.", expectedPath: "Thuis/OneDrive/Stageproject/Actueel/stageverslag_2026_definitief.docx", forbiddenPaths: ["Thuis/OneDrive/Stageproject/stageverslag_v3.docx"], points: 1 },
       ],
     },
     "lj3-hv": {
@@ -3176,8 +3305,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       startFolders: ["Thuis/OneDrive/Project Onderzoek"],
       startFiles: ["Thuis/OneDrive/Project Onderzoek/onderzoek_v1.docx", "Thuis/OneDrive/Project Onderzoek/onderzoek_definitief.docx", "Thuis/OneDrive/Project Onderzoek/resultaten.csv", "Thuis/OneDrive/Project Onderzoek/bron_artikel.pdf", "Thuis/OneDrive/Project Onderzoek/grafiek.png"],
       tasks: [
-        { id: "structure", description: "mapstructuur correct.", expectedPaths: ["Thuis/OneDrive/Project Onderzoek/Data", "Thuis/OneDrive/Project Onderzoek/Bronnen", "Thuis/OneDrive/Project Onderzoek/Beelden", "Thuis/OneDrive/Project Onderzoek/Archief"], points: 1 },
-        { id: "types", description: "data, bron en beeld correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Project Onderzoek/Data/resultaten.csv", "Thuis/OneDrive/Project Onderzoek/Bronnen/bron_artikel.pdf", "Thuis/OneDrive/Project Onderzoek/Beelden/grafiek.png"], points: 1 },
+        { id: "types", description: "mapstructuur correct; data, bron en beeld correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Project Onderzoek/Data/resultaten.csv", "Thuis/OneDrive/Project Onderzoek/Bronnen/bron_artikel.pdf", "Thuis/OneDrive/Project Onderzoek/Beelden/grafiek.png"], points: 1 },
         { id: "versions", description: "oude versie correct gearchiveerd.", expectedPath: "Thuis/OneDrive/Project Onderzoek/Archief/onderzoek_v1.docx", points: 1 },
         { id: "final", description: "definitieve versie in hoofdmap behouden.", expectedPath: "Thuis/OneDrive/Project Onderzoek/onderzoek_definitief.docx", forbiddenPaths: ["Thuis/OneDrive/Project Onderzoek/Archief/onderzoek_definitief.docx"], points: 1 },
       ],
@@ -3251,21 +3379,41 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     pt6: v3Pt6(`${spec.id.replace("-", "").replace("lj", "lj")}-pt6-screen-share`),
     pt7: v3Pt7Debug(spec.id),
     pt8: v3Pt8(spec.id),
+    // Parallelvormen per meetmoment: nulmeting = PowerPoint-vorm,
+    // voortgangsmeting = postervorm (matrijsbesluit 10-06-2026).
+    pt9: v3Pt9(spec.id, moment === "voortgangsmeting" ? "poster" : "slide"),
   };
 };
 
-export const assessments: AssessmentVersion[] = versionSpecs
-  .map(withV3PerformanceTasks)
-  .map(buildAssessment);
+const buildAssessmentsForMoment = (moment: MeasurementMoment): AssessmentVersion[] =>
+  versionSpecs
+    .map((spec) => withV3PerformanceTasks(spec, moment))
+    .map((spec) => buildAssessment(spec, moment));
 
-export const assessmentMap: Record<AssessmentVersionId, AssessmentVersion> =
-  assessments.reduce(
+const toAssessmentMap = (list: AssessmentVersion[]): Record<AssessmentVersionId, AssessmentVersion> =>
+  list.reduce(
     (map, assessment) => ({
       ...map,
       [assessment.id]: assessment,
     }),
     {} as Record<AssessmentVersionId, AssessmentVersion>,
   );
+
+export const assessments: AssessmentVersion[] = buildAssessmentsForMoment("nulmeting");
+
+export const voortgangsAssessments: AssessmentVersion[] =
+  buildAssessmentsForMoment("voortgangsmeting");
+
+export const assessmentMap: Record<AssessmentVersionId, AssessmentVersion> =
+  toAssessmentMap(assessments);
+
+export const voortgangsAssessmentMap: Record<AssessmentVersionId, AssessmentVersion> =
+  toAssessmentMap(voortgangsAssessments);
+
+export const assessmentMapForMoment = (
+  moment: MeasurementMoment | undefined,
+): Record<AssessmentVersionId, AssessmentVersion> =>
+  moment === "voortgangsmeting" ? voortgangsAssessmentMap : assessmentMap;
 
 export const defaultCodeMappings: CodeMapping[] = [
   { codes: ["vmbo1", "6663", "testvmbo1"], instrumentId: "lj1-vmbo", label: "Leerjaar 1 VMBO" },

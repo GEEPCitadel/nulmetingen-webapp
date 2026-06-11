@@ -42,6 +42,7 @@ import type {
   GoalScore,
   IncomingMailStimulus,
   InteractionGroup,
+  MeasurementMoment,
   Option,
   Pt1Node,
   Pt1State,
@@ -125,6 +126,7 @@ export type ApiStudent = {
   track?: string;
   cohort?: string;
   assessmentWindow?: string;
+  measurementMoment?: MeasurementMoment;
   importBatch?: string;
   status?: "not_started" | "in_progress" | "completed";
   resultSessionId?: string | null;
@@ -159,6 +161,7 @@ export type ImportStudentRow = {
   track?: string;
   cohort?: string;
   assessmentWindow?: string;
+  measurementMoment?: MeasurementMoment;
 };
 
 export type AnalysisGroup = {
@@ -446,4 +449,3 @@ export const getEntryTheme = (view: EntryView) =>
 
 export const getThemeForSession = (session: AssessmentSession | null, entryView: EntryView) =>
   session ? themes[assessmentMap[session.versionId].themeKey] : getEntryTheme(entryView);
-

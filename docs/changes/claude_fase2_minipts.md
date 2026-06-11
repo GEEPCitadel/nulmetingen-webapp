@@ -34,4 +34,4 @@ Alle vier vraag 9-items (`*-vraag9-ai-*`, itemVersion v4 → v5) kregen Deelvraa
 
 ## Nog open in fase 2
 
-PT9 maaktaak, ±7 nieuwe SR-items + parallelvarianten, herschrijven bestaande SR-items (3–4 opties + taligheidsnorm), inkorten PT2/PT6, leesbaarheidscheck in `npm test`.
+~~PT9 maaktaak~~ (gebouwd 11-06-2026, zie `claude_fase2_pt9_maaktaak.md`), ±7 nieuwe SR-items + parallelvarianten, herschrijven bestaande SR-items (3–4 opties + taligheidsnorm), inkorten PT2/PT6, leesbaarheidscheck in `npm test`.
