@@ -97,11 +97,18 @@ const App = () => {
 
   // Multiple-choice-items worden server-side gescoord; bij afronden haalt de
   // client de herscoorde resultaten op via /api/finalize.
+  // Een ref bewaakt dat per sessie maar één finalize-aanroep loopt; een
+  // cleanup-vlag werkt hier niet omdat setFinalizeState("pending") het effect
+  // direct opnieuw triggert en de cleanup de aanroep dan meteen annuleert.
+  const finalizeSessionIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (!session?.completedAt || finalizeState !== "idle") {
       return;
     }
-    let cancelled = false;
+    if (finalizeSessionIdRef.current === session.id) {
+      return;
+    }
+    finalizeSessionIdRef.current = session.id;
     setFinalizeState("pending");
     void (async () => {
       try {
@@ -109,7 +116,6 @@ const App = () => {
           "/api/finalize",
           { method: "POST", body: JSON.stringify({ session }) },
         );
-        if (cancelled) return;
         setSession((current) => (current ? { ...current, results: data.results } : current));
         setFinalizeState("done");
       } catch {
@@ -120,10 +126,10 @@ const App = () => {
             const { assessmentMapForMoment: fullMapForMoment } = await import(
               "./data/assessments.server"
             );
-            const fullAssessment = session
-              ? fullMapForMoment(session.measurementMoment)[session.versionId]
-              : undefined;
-            if (!cancelled && session && fullAssessment) {
+            const fullAssessment = fullMapForMoment(session.measurementMoment)[
+              session.versionId
+            ];
+            if (fullAssessment) {
               const rescored = rescoreSessionResults(session, fullAssessment);
               setSession((current) =>
                 current ? { ...current, results: rescored.results } : current,
@@ -135,12 +141,12 @@ const App = () => {
             // val door naar foutstatus
           }
         }
-        if (!cancelled) setFinalizeState("error");
+        // "Opnieuw proberen" zet finalizeState terug op "idle"; maak de
+        // ref vrij zodat een nieuwe poging mogelijk is.
+        finalizeSessionIdRef.current = null;
+        setFinalizeState("error");
       }
     })();
-    return () => {
-      cancelled = true;
-    };
   }, [session, finalizeState]);
 
   useEffect(() => {

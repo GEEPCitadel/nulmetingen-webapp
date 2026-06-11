@@ -13,6 +13,7 @@
     "report:questions": "node scripts/generate-question-overview.js",
     "report:kd-coverage": "node scripts/kd-coverage.js",
     "test": "npm run gen:instruments && vitest run",
+    "test:e2e": "playwright test",
     "gen:instruments": "tsx scripts/generate-public-instruments.mts"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.1",
