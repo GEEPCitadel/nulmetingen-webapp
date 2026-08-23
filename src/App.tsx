@@ -4860,7 +4860,7 @@ const SharedWindowStage = ({
     ) : (
       <div className="fake-shared-window">
         <div className="fake-window-titlebar">
-          <span>Macrohard Teams</span>
+          <span>Videochat</span>
           <span>{windowName}</span>
         </div>
         <WindowPreviewArt windowName={windowName} large />
@@ -5023,10 +5023,10 @@ const FakeTeamsTask = ({
         <div className="notice-banner">{task.scenario}</div>
       </QuestionHeader>
 
-      <div className="fake-teams-shell" aria-label="Macrohard Teams-vergadering">
+      <div className="fake-teams-shell" aria-label="Videochat-vergadering">
         <div className="fake-teams-titlebar">
           <div className="fake-teams-appmark">M</div>
-          <span>Macrohard Teams</span>
+          <span>Videochat</span>
         </div>
 
         <div className={`fake-teams-content ${state.participantsOpen ? "" : "participants-hidden"}`}>

@@ -1188,7 +1188,7 @@ const createAdvancedMailConfig = (): MailTaskConfig => ({
 });
 
 const fakeTeamsInstruction =
-  "Voer in Macrohard Teams het juiste klikpad uit: klik op Delen, kies Venster en selecteer Videospeler - filmfragment.";
+  "Voer in Videochat het juiste klikpad uit: klik op Delen, kies Venster en selecteer Videospeler - filmfragment.";
 
 const excelInstruction = (filename: string) =>
   `Download ${filename}. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.`;
@@ -2464,14 +2464,14 @@ const v3MailConfig = ({
 
 const v3Pt6 = (id: string): TeamsTaskSpec => ({
   id,
-  title: "Schermdelen in een online les",
+  title: "Schermdelen in videogesprek",
   instruction:
-    "Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.",
+    "Leerling Mark Canbers zit in een online gesprek met zijn docent. Mark wil de docent een filmfragment laten zien en horen. Mark wil niet dat de docent zijn andere vensters kan zien.",
   kerndoel: "23A",
   ankerItemFlag: true,
   config: {
     scenario:
-      "Deel alleen het venster met het filmfragment. Gebruik computergeluid, maar deel niet je hele scherm.",
+      "Deel alleen het venster met het filmfragment, met geluid.",
     buttons: ["Camera", "Microfoon", "Chat", "Deelnemers", "Delen", "Meer"],
     shareOptions: ["Hele scherm", "Venster"],
     windows: [
