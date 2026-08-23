@@ -836,15 +836,18 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
   - 1 punt: juiste relevante blokken geselecteerd
   - 1 punt: juiste volgorde/structuur
   - 1 punt: juiste herhaling/voorwaarde/variabele voor het niveau
-  - 1 punt: correct eindgedrag of fout correct opgelost
+  - 1 punt: na de laatste wijziging getest en correct eindgedrag bereikt
 - Varianten:
-  - lj1-vmbo: Zet blokken in de juiste volgorde zodat Bizzy naar de vlag loopt en daarna 'Gelukt' zegt. Focus: sequentie.
-  - lj1-hv: Gebruik een herhaalblok zodat Bizzy drie gelijke stappen zet, draait en eindigt bij de vlag. Focus: herhaling + sequentie.
-  - lj3-vmbo: Maak een teller: bij elke klik op knop A gaat score +1. Als score 5 is, toont Bizzy 'Vol'. Focus: variabele/teller + voorwaarde.
-  - lj3-hv: Debug een programma met geneste keuze: als batterij < 20 en oplader niet aangesloten, toon waarschuwing; anders toon status ok. Focus: samengestelde voorwaarde + foutopsporing.
+  - lj1-vmbo: Bouw vanaf `bij start` een lineair programma waarmee hondje Teddy langs een stilstaande kat en over een boomstam naar zijn bot gaat. Geen besturingsblokken. Focus: sequentie, richting en passende acties.
+  - lj1-hv: Bouw vanaf `bij start` een programma waarin Teddy drie gelijke stappen met `herhaal` uitvoert en daarna langs een kat en boomstam naar zijn bot gaat. Focus: herhaling + sequentie.
+  - lj3-vmbo: Bouw één programma waarin Teddy tijdens vijf herhalingen met `als Teddy voor kat staat` twee stilstaande katten passeert. Focus: geneste voorwaarde binnen herhaling.
+  - lj3-hv: Bouw één programma waarin Teddy tijdens zes herhalingen twee katten met een vaste, zichtbare patrouille passeert. Focus: geneste besturing + redeneren over veranderende toestand.
 - Acceptatiecriteria:
   - Als een leerjaar-3-taak alleen volgorde en beweging meet, is deze niet acceptabel.
   - Geef deelpunten voor structuur, volgorde, parameter en eindgedrag.
+  - De leerling programmeert zelf; foutopsporing ontstaat door afspelen en verbeteren, niet door twee vooraf gemarkeerde fouten.
+  - Code, animatie en het getekende uitvoeringspad gebruiken dezelfde deterministische grid-simulatietrace.
+  - Camerarotatie is optioneel, beïnvloedt de simulatie niet en de standaardhoek toont alle informatie die nodig is om de taak op te lossen.
   - Kerndoel 22B mag niet als betrouwbaar geïnterpreteerd worden als PT7 technisch is overgeslagen.
   - Leerjaar 3-taken bevatten altijd een conceptuele eis boven sequentie: variabele, voorwaarde, samengestelde logica of debuggen.
 

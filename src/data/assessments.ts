@@ -20,6 +20,7 @@ import type {
 } from "../types";
 import selectedResponseSource from "../../nulmetingen_selected_response_herontwerp_v3.json";
 import whutsuppPt8FlowSource from "./whutsupp_pt8_flow.json";
+import { teddyWorlds } from "./pt7-teddy";
 
 export const ADMIN_CODE = "beheer";
 
@@ -1065,8 +1066,9 @@ const debugBlock = (
   category: keyof typeof blockColors,
   options: Pick<ProgrammingBlockDefinition, "isContainer" | "isCriticalDistractor"> & {
     correctReplacementId?: string;
+    indent?: number;
   } = {},
-): ProgrammingBlockDefinition & { correctReplacementId?: string } => ({
+): ProgrammingBlockDefinition & { correctReplacementId?: string; indent?: number } => ({
   id,
   label,
   category,
@@ -3123,7 +3125,7 @@ const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
         itemVersion: "pt7-debug-v1",
         device: "bizzy",
         visualGoal: { title: "DOEL", lines: ['herhaal 4 keer: 1 stap vooruit + rechts draaien', 'daarna: zeg "Vierkant"'] },
-        initialProgram: [debugBlock("lj1h_start_initial", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj1h_repeat_3_initial", "herhaal 3 keer", "besturing", { isContainer: true, correctReplacementId: "lj1h_repeat_4_fix" }), debugBlock("lj1h_move_1_initial", "1 stap vooruit", "beweging"), debugBlock("lj1h_turn_right_initial", "rechts draaien", "beweging"), debugBlock("lj1h_say_klaar_initial", 'zeg "Klaar"', "uiterlijk", { correctReplacementId: "lj1h_say_vierkant_fix" })],
+        initialProgram: [debugBlock("lj1h_start_initial", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj1h_repeat_3_initial", "herhaal 3 keer", "besturing", { isContainer: true, correctReplacementId: "lj1h_repeat_4_fix" }), debugBlock("lj1h_move_1_initial", "1 stap vooruit", "beweging", { indent: 1 }), debugBlock("lj1h_turn_right_initial", "rechts draaien", "beweging", { indent: 1 }), debugBlock("lj1h_say_klaar_initial", 'zeg "Klaar"', "uiterlijk", { correctReplacementId: "lj1h_say_vierkant_fix" })],
         wrongBlockIds: ["lj1h_repeat_3_initial", "lj1h_say_klaar_initial"],
         blocks: [debugBlock("lj1h_event_start", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj1h_event_touch", "als Bizzy wordt aangeraakt", "gebeurtenissen"), debugBlock("lj1h_event_space", "als spatie wordt ingedrukt", "gebeurtenissen"), debugBlock("lj1h_repeat_2", "herhaal 2 keer", "besturing", { isContainer: true }), debugBlock("lj1h_repeat_3", "herhaal 3 keer", "besturing", { isContainer: true }), debugBlock("lj1h_repeat_4_fix", "herhaal 4 keer", "besturing", { isContainer: true }), debugBlock("lj1h_repeat_5", "herhaal 5 keer", "besturing", { isContainer: true }), debugBlock("lj1h_wait_1", "wacht 1 seconde", "besturing"), debugBlock("lj1h_move_1", "1 stap vooruit", "beweging"), debugBlock("lj1h_move_2", "2 stappen vooruit", "beweging"), debugBlock("lj1h_move_back", "1 stap achteruit", "beweging"), debugBlock("lj1h_turn_right", "rechts draaien", "beweging"), debugBlock("lj1h_turn_left", "links draaien", "beweging"), debugBlock("lj1h_say_klaar", 'zeg "Klaar"', "uiterlijk"), debugBlock("lj1h_say_vierkant_fix", 'zeg "Vierkant"', "uiterlijk"), debugBlock("lj1h_say_fout", 'zeg "Fout"', "uiterlijk"), debugBlock("lj1h_say_hoi", 'zeg "Hoi"', "uiterlijk")],
         correctProgram: ["bij start", "herhaal 4 keer", "1 stap vooruit", "rechts draaien", 'zeg "Vierkant"'],
@@ -3143,7 +3145,7 @@ const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
         itemVersion: "pt7-debug-v1",
         device: "microbit",
         visualGoal: { title: "DOEL", lines: ["A x4 -> Nog plek", "A x5 -> Vol"] },
-        initialProgram: [debugBlock("lj3v_start_initial", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_set_counter_0_initial", "zet teller op 0", "variabelen"), debugBlock("lj3v_button_a_initial", "als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_change_counter_by_2_initial", "verander teller met 2", "variabelen", { correctReplacementId: "lj3v_change_counter_by_1_fix" }), debugBlock("lj3v_condition_greater_than_5_initial", "als teller groter dan 5 dan", "voorwaarden", { isContainer: true, correctReplacementId: "lj3v_condition_at_least_5_fix" }), debugBlock("lj3v_say_vol_initial", 'zeg "Vol"', "uiterlijk"), debugBlock("lj3v_else_initial", "anders", "voorwaarden", { isContainer: true }), debugBlock("lj3v_say_nog_plek_initial", 'zeg "Nog plek"', "uiterlijk")],
+        initialProgram: [debugBlock("lj3v_start_initial", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_set_counter_0_initial", "zet teller op 0", "variabelen"), debugBlock("lj3v_button_a_initial", "als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_change_counter_by_2_initial", "verander teller met 2", "variabelen", { correctReplacementId: "lj3v_change_counter_by_1_fix", indent: 1 }), debugBlock("lj3v_condition_greater_than_5_initial", "als teller groter dan 5 dan", "voorwaarden", { isContainer: true, correctReplacementId: "lj3v_condition_at_least_5_fix", indent: 1 }), debugBlock("lj3v_say_vol_initial", 'zeg "Vol"', "uiterlijk", { indent: 2 }), debugBlock("lj3v_else_initial", "anders", "voorwaarden", { isContainer: true, indent: 1 }), debugBlock("lj3v_say_nog_plek_initial", 'zeg "Nog plek"', "uiterlijk", { indent: 2 })],
         wrongBlockIds: ["lj3v_change_counter_by_2_initial", "lj3v_condition_greater_than_5_initial"],
         blocks: [debugBlock("lj3v_event_start", "bij start", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_event_a", "als knop A wordt ingedrukt", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_event_b", "als knop B wordt ingedrukt", "gebeurtenissen", { isContainer: true }), debugBlock("lj3v_event_touch", "als Bizzy wordt aangeraakt", "gebeurtenissen"), debugBlock("lj3v_set_counter_0", "zet teller op 0", "variabelen"), debugBlock("lj3v_set_counter_5", "zet teller op 5", "variabelen"), debugBlock("lj3v_change_counter_by_1_fix", "verander teller met 1", "variabelen"), debugBlock("lj3v_change_counter_by_2", "verander teller met 2", "variabelen"), debugBlock("lj3v_change_counter_minus_1", "verander teller met -1", "variabelen"), debugBlock("lj3v_show_counter", "toon teller", "variabelen"), debugBlock("lj3v_condition_gt_5", "als teller groter dan 5 dan", "voorwaarden", { isContainer: true }), debugBlock("lj3v_condition_at_least_5_fix", "als teller 5 of meer is dan", "voorwaarden", { isContainer: true }), debugBlock("lj3v_condition_lt_5", "als teller kleiner dan 5 dan", "voorwaarden", { isContainer: true }), debugBlock("lj3v_condition_eq_5", "als teller gelijk is aan 5 dan", "voorwaarden", { isContainer: true }), debugBlock("lj3v_else", "anders", "voorwaarden", { isContainer: true }), debugBlock("lj3v_say_vol", 'zeg "Vol"', "uiterlijk"), debugBlock("lj3v_say_nog_plek", 'zeg "Nog plek"', "uiterlijk"), debugBlock("lj3v_say_klaar", 'zeg "Klaar"', "uiterlijk"), debugBlock("lj3v_say_leeg", 'zeg "Leeg"', "uiterlijk"), debugBlock("lj3v_say_fout", 'zeg "Fout"', "uiterlijk"), debugBlock("lj3v_wait", "wacht 1 seconde", "besturing"), debugBlock("lj3v_repeat_5", "herhaal 5 keer", "besturing", { isContainer: true }), debugBlock("lj3v_stop", "stop programma", "besturing")],
         correctProgram: ["bij start", "zet teller op 0", "als knop A wordt ingedrukt", "verander teller met 1", "als teller 5 of meer is dan", 'zeg "Vol"', "anders", 'zeg "Nog plek"'],
@@ -3163,7 +3165,7 @@ const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
         itemVersion: "pt7-debug-v1",
         device: "sensor",
         visualGoal: { title: "DOEL", lines: ["27 graden + open -> Koelen", "27 graden + dicht -> Oke", "20 graden + open -> Oke", "20 graden + dicht -> Oke"] },
-        initialProgram: [debugBlock("lj3h_read_temp_initial", "lees temperatuur", "invoer"), debugBlock("lj3h_read_window_initial", "lees raamOpen", "invoer"), debugBlock("lj3h_condition_or_initial", "als temperatuur > 25 OF raamOpen = ja dan", "voorwaarden", { isContainer: true, correctReplacementId: "lj3h_condition_and_fix" }), debugBlock("lj3h_show_koelen_initial", 'toon "Koelen"', "uiterlijk"), debugBlock("lj3h_else_initial", "anders", "voorwaarden", { isContainer: true }), debugBlock("lj3h_else_show_verwarmen_initial", 'toon "Verwarmen"', "uiterlijk", { correctReplacementId: "lj3h_show_oke_fix" })],
+        initialProgram: [debugBlock("lj3h_read_temp_initial", "lees temperatuur", "invoer"), debugBlock("lj3h_read_window_initial", "lees raamOpen", "invoer"), debugBlock("lj3h_condition_or_initial", "als temperatuur > 25 OF raamOpen = ja dan", "voorwaarden", { isContainer: true, correctReplacementId: "lj3h_condition_and_fix" }), debugBlock("lj3h_show_koelen_initial", 'toon "Koelen"', "uiterlijk", { indent: 1 }), debugBlock("lj3h_else_initial", "anders", "voorwaarden", { isContainer: true }), debugBlock("lj3h_else_show_verwarmen_initial", 'toon "Verwarmen"', "uiterlijk", { correctReplacementId: "lj3h_show_oke_fix", indent: 1 })],
         wrongBlockIds: ["lj3h_condition_or_initial", "lj3h_else_show_verwarmen_initial"],
         blocks: [debugBlock("lj3h_read_temp", "lees temperatuur", "invoer"), debugBlock("lj3h_read_window", "lees raamOpen", "invoer"), debugBlock("lj3h_read_humidity", "lees luchtvochtigheid", "invoer"), debugBlock("lj3h_read_time", "lees tijdstip", "invoer"), debugBlock("lj3h_condition_and_fix", "als temperatuur > 25 EN raamOpen = ja dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_condition_or", "als temperatuur > 25 OF raamOpen = ja dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_condition_low_and_open", "als temperatuur < 25 EN raamOpen = ja dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_condition_warm_closed", "als temperatuur > 25 EN raamOpen = nee dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_condition_eq_25", "als temperatuur = 25 dan", "voorwaarden", { isContainer: true }), debugBlock("lj3h_else", "anders", "voorwaarden", { isContainer: true }), debugBlock("lj3h_logic_and", "EN", "logica"), debugBlock("lj3h_logic_or", "OF", "logica"), debugBlock("lj3h_logic_not", "NIET", "logica"), debugBlock("lj3h_show_koelen", 'toon "Koelen"', "uiterlijk"), debugBlock("lj3h_show_oke_fix", 'toon "Oké"', "uiterlijk"), debugBlock("lj3h_show_verwarmen", 'toon "Verwarmen"', "uiterlijk"), debugBlock("lj3h_show_alarm", 'toon "Alarm"', "uiterlijk"), debugBlock("lj3h_show_wait", 'toon "Wachten"', "uiterlijk"), debugBlock("lj3h_wait_10", "wacht 10 seconden", "besturing"), debugBlock("lj3h_repeat_while", "herhaal zolang", "besturing", { isContainer: true }), debugBlock("lj3h_stop", "stop programma", "besturing")],
         correctProgram: ["lees temperatuur", "lees raamOpen", "als temperatuur > 25 EN raamOpen = ja dan", 'toon "Koelen"', "anders", 'toon "Oké"'],
@@ -3172,6 +3174,122 @@ const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
         playback: { speed: "normal", stepMs: 800 },
         logging: { itemVersion: "pt7-debug-v1" },
         rules: [],
+      },
+    },
+  };
+  return specs[versionId];
+};
+
+const teddyBlock = (
+  id: string,
+  label: string,
+  opcode: NonNullable<ProgrammingBlockDefinition["opcode"]>,
+  category: "gebeurtenissen" | "acties" | "besturing",
+  options: Pick<ProgrammingBlockDefinition, "isContainer" | "defaultParameters"> = {},
+): ProgrammingBlockDefinition => ({
+  id,
+  label,
+  opcode,
+  category,
+  color: category === "gebeurtenissen" ? "#f5a623" : category === "besturing" ? "#ef8734" : "#4d8fd1",
+  ...options,
+});
+
+const teddyStart = teddyBlock("teddy-start", "bij start", "start", "gebeurtenissen");
+const teddyActions = [
+  teddyBlock("teddy-walk", "loop", "walk", "acties"),
+  teddyBlock("teddy-turn", "draai", "turn", "acties", { defaultParameters: { direction: "right" } }),
+  teddyBlock("teddy-jump", "spring", "jump", "acties"),
+  teddyBlock("teddy-bark", "blaf", "bark", "acties"),
+  teddyBlock("teddy-take-bone", "pak bot", "take_bone", "acties"),
+];
+const teddyRepeat = teddyBlock("teddy-repeat", "herhaal", "repeat", "besturing", {
+  isContainer: true,
+  defaultParameters: { count: 3 },
+});
+const teddyIfCat = teddyBlock(
+  "teddy-if-cat",
+  "als Teddy voor kat staat",
+  "if_cat_ahead",
+  "besturing",
+  { isContainer: true },
+);
+
+const v3Pt7Teddy = (versionId: AssessmentVersionId): BlockTaskSpec => {
+  const common = {
+    title: "PT7 - Blokprogrammeren",
+    instruction: "Blokprogrammeren",
+  };
+  const specs: Record<AssessmentVersionId, BlockTaskSpec> = {
+    "lj1-vmbo": {
+      ...common,
+      id: "lj1v-pt7-programming-teddy-v1",
+      intro: "Bouw zelf Teddy's programma. Laat hem het pad volgen, de kat wegblaffen, over de boomstam springen en zijn bot pakken.",
+      config: {
+        itemVersion: "pt7-teddy-build-v1",
+        device: "teddy",
+        visualGoal: {
+          title: "TEDDY WIL ZIJN BOT",
+          lines: ["Volg de pootafdrukken", "Blaft de kat weg", "Spring over de boomstam", "Pak het bot"],
+        },
+        initialProgram: [{ ...teddyStart, indent: 0 }],
+        blocks: teddyActions,
+        correctProgram: ["bij start", "loop", "loop", "draai rechts", "blaf", "loop", "spring", "pak bot"],
+        rules: [],
+        playback: { speed: "slow", stepMs: 650 },
+        logging: { itemVersion: "pt7-teddy-build-v1" },
+        teddyWorld: teddyWorlds["lj1-vmbo"],
+      },
+    },
+    "lj1-hv": {
+      ...common,
+      id: "lj1h-pt7-programming-teddy-v1",
+      intro: "Bouw Teddy's programma. Gebruik herhalen voor de drie gelijke stappen en help hem daarna langs de kat en de boomstam.",
+      config: {
+        itemVersion: "pt7-teddy-build-v1",
+        device: "teddy",
+        visualGoal: { title: "TEDDY WIL ZIJN BOT", lines: ["Herhaal 3 gelijke stappen", "Blaft de kat weg", "Spring en pak het bot"] },
+        initialProgram: [{ ...teddyStart, indent: 0 }],
+        blocks: [...teddyActions, teddyRepeat],
+        correctProgram: ["bij start", "herhaal 3 keer", "loop", "draai rechts", "blaf", "loop", "spring", "pak bot"],
+        rules: [],
+        playback: { speed: "normal", stepMs: 600 },
+        logging: { itemVersion: "pt7-teddy-build-v1" },
+        teddyWorld: teddyWorlds["lj1-hv"],
+      },
+    },
+    "lj3-vmbo": {
+      ...common,
+      id: "lj3v-pt7-programming-teddy-v1",
+      intro: "Bouw één programma dat Teddy langs beide katten brengt. Controleer tijdens het herhalen steeds of er een kat voor hem staat.",
+      config: {
+        itemVersion: "pt7-teddy-build-v1",
+        device: "teddy",
+        visualGoal: { title: "TWEE KATTEN OP HET PAD", lines: ["Herhaal de routecontrole", "Blaf alleen als er een kat staat", "Spring en pak het bot"] },
+        initialProgram: [{ ...teddyStart, indent: 0 }],
+        blocks: [...teddyActions, teddyRepeat, teddyIfCat],
+        correctProgram: ["bij start", "herhaal 5 keer", "als Teddy voor kat staat", "blaf", "loop", "draai rechts", "spring", "pak bot"],
+        rules: [],
+        playback: { speed: "normal", stepMs: 520 },
+        logging: { itemVersion: "pt7-teddy-build-v1" },
+        teddyWorld: teddyWorlds["lj3-vmbo"],
+      },
+    },
+    "lj3-hv": {
+      ...common,
+      id: "lj3h-pt7-programming-teddy-v1",
+      intro: "De katten lopen een vaste patrouille. Bouw een programma dat tijdens elke herhaling kijkt wat er vóór Teddy gebeurt.",
+      config: {
+        itemVersion: "pt7-teddy-build-v1",
+        device: "teddy",
+        visualGoal: { title: "DE KATTEN BEWEGEN", lines: ["Bekijk de patrouillepijlen", "Controleer vóór iedere stap", "Bereik de boomstam en pak het bot"] },
+        initialProgram: [{ ...teddyStart, indent: 0 }],
+        blocks: [...teddyActions, teddyRepeat, teddyIfCat],
+        correctProgram: ["bij start", "herhaal 6 keer", "als Teddy voor kat staat", "blaf", "loop", "draai rechts", "spring", "pak bot"],
+        rules: [],
+        playback: { speed: "normal", stepMs: 480 },
+        logging: { itemVersion: "pt7-teddy-build-v1" },
+        teddyWorld: teddyWorlds["lj3-hv"],
       },
     },
   };
@@ -3306,7 +3424,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
     pt2: mail[spec.id],
     pt3: v3Pt3(spec.id),
     pt6: v3Pt6(`${spec.id.replace("-", "").replace("lj", "lj")}-pt6-screen-share`),
-    pt7: v3Pt7Debug(spec.id),
+    pt7: v3Pt7Teddy(spec.id),
     pt8: v3Pt8(spec.id),
   };
 };

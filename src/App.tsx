@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   assessmentMap,
   defaultCodeMappings,
@@ -17,6 +17,7 @@ import {
   getStepDescriptors,
   submitItemAnswer,
 } from "./lib/assessment";
+import { buildPt7ExecutionPlan, matchesPt7Program } from "./lib/pt7";
 import {
   buildPath,
   copyNode,
@@ -33,6 +34,7 @@ import {
   readActiveSession,
   saveActiveSession,
 } from "./lib/storage";
+import { TeddyProgrammingTask } from "./components/pt7/TeddyProgrammingTask";
 import type {
   AssessmentItem,
   AssessmentSection,
@@ -471,9 +473,25 @@ const getThemeForSession = (session: AssessmentSession | null, entryView: EntryV
 
 const App = () => {
   const [entryView, setEntryView] = useState<EntryView>("intro");
-  const [session, setSession] = useState<AssessmentSession | null>(() =>
-    readActiveSession(),
-  );
+  const [session, setSession] = useState<AssessmentSession | null>(() => {
+    const previewVersion = new URLSearchParams(window.location.search).get("previewPt7");
+    if (import.meta.env.DEV && assessmentIds.includes(previewVersion as AssessmentVersion["id"])) {
+      const assessment = assessmentMap[previewVersion as AssessmentVersion["id"]];
+      const previewSession = createSession(assessment, "LOCAL-PT7-PREVIEW", {
+        anonymousAttemptId: crypto.randomUUID(),
+        anonymousCode: "lokale-pt7-preview",
+      });
+      return {
+        ...previewSession,
+        currentStepIndex: getStepDescriptors(assessment).findIndex((step) => step.sectionId === "pt7"),
+      };
+    }
+    const storedSession = readActiveSession();
+    if (storedSession || !import.meta.env.DEV) {
+      return storedSession;
+    }
+    return null;
+  });
   const [startContext, setStartContext] = useState(getInitialStartContext);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [learnerCodeError, setLearnerCodeError] = useState("");
@@ -2811,14 +2829,29 @@ const AssessmentScreen = ({
       ) : null}
 
       {item.type === "block_programming_task" ? (
-        <BlockProgrammingTaskView
-          section={section}
-          item={item}
-          questionNumber={questionNumber ?? 1}
-          onSubmit={onSubmitAnswer}
-          onSkip={() => onSkipPerformanceTask(section, item)}
-          onExit={onExit}
-        />
+        item.blockTask?.itemVersion === "pt7-teddy-build-v1" ? (
+          <TeddyProgrammingTask
+            item={item}
+            questionNumber={questionNumber ?? 1}
+            onSubmit={(selectedAnswer, shownOptionOrder) => onSubmitAnswer({
+              section,
+              item,
+              selectedAnswer,
+              shownOptionOrder,
+            })}
+            onSkip={() => onSkipPerformanceTask(section, item)}
+            onExit={onExit}
+          />
+        ) : (
+          <BlockProgrammingTaskView
+            section={section}
+            item={item}
+            questionNumber={questionNumber ?? 1}
+            onSubmit={onSubmitAnswer}
+            onSkip={() => onSkipPerformanceTask(section, item)}
+            onExit={onExit}
+          />
+        )
       ) : null}
 
       {item.type === "social_action_simulation" ? (
@@ -5096,9 +5129,9 @@ const BlockProgrammingTaskView = ({
   onExit: () => void;
 }) => {
   const [program, setProgram] = useState<ProgramBlock[]>(() =>
-    (item.blockTask?.initialProgram ?? []).map((block, index) => ({
+    (item.blockTask?.initialProgram ?? []).map((block) => ({
       ...block,
-      indent: block.isContainer && index > 0 ? 0 : 0,
+      indent: block.indent ?? 0,
     })),
   );
   const [executed, setExecuted] = useState(false);
@@ -5124,6 +5157,11 @@ const BlockProgrammingTaskView = ({
     emptyProgramRunEffects,
   );
   const [runStep, setRunStep] = useState(-1); // -1 idle; otherwise index of currently-active block
+  const [runTotal, setRunTotal] = useState(0);
+  const [runProgress, setRunProgress] = useState(0);
+  const [completedRunBlockIds, setCompletedRunBlockIds] = useState<string[]>([]);
+  const [draggedProgramIndex, setDraggedProgramIndex] = useState<number | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   const [runTimer, setRunTimer] = useState<number | null>(null);
   const runCancelledRef = useRef(false);
   const task = item.blockTask;
@@ -5212,6 +5250,35 @@ const BlockProgrammingTaskView = ({
     });
   };
 
+  const insertPaletteBlockAt = (block: ProgrammingBlockDefinition, insertIndex: number) => {
+    const changedAt = new Date().toISOString();
+    const safeIndex = Math.max(1, Math.min(program.length, insertIndex));
+    const previous = program[safeIndex - 1];
+    const newBlock: ProgramBlock = {
+      ...block,
+      id: `${block.id ?? block.label}-added-${Date.now()}`,
+      indent: previous?.isContainer ? Math.min(3, previous.indent + 1) : previous?.indent ?? 0,
+    };
+    setProgram((current) => [
+      ...current.slice(0, safeIndex),
+      newBlock,
+      ...current.slice(safeIndex),
+    ]);
+    setBlockAddedEvents((events) => [
+      ...events,
+      {
+        blockId: newBlock.id,
+        blockLabel: newBlock.label,
+        insertIndex: safeIndex,
+        method: "drag",
+        timestamp: changedAt,
+      },
+    ]);
+    setSelectedProgramIndex(safeIndex);
+    setDropTargetIndex(null);
+    markProgramChanged(changedAt);
+  };
+
   const removeProgramBlock = (index: number) => {
     const block = program[index];
     if (!block || (index === 0 && block.label === "bij start")) {
@@ -5256,6 +5323,75 @@ const BlockProgrammingTaskView = ({
       },
     ]);
     setSelectedProgramIndex(targetIndex);
+    markProgramChanged(changedAt);
+  };
+
+  const moveProgramBlockTo = (fromIndex: number, toIndex: number) => {
+    if (
+      fromIndex <= 0 ||
+      toIndex <= 0 ||
+      fromIndex >= program.length ||
+      toIndex > program.length ||
+      fromIndex === toIndex ||
+      fromIndex + 1 === toIndex
+    ) {
+      setDraggedProgramIndex(null);
+      setDropTargetIndex(null);
+      return;
+    }
+    const changedAt = new Date().toISOString();
+    const movedBlock = program[fromIndex];
+    const adjustedTarget = fromIndex < toIndex ? toIndex - 1 : toIndex;
+    setProgram((current) => {
+      const next = [...current];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(adjustedTarget, 0, moved);
+      return next;
+    });
+    setBlockMovedEvents((events) => [
+      ...events,
+      {
+        blockId: movedBlock.id ?? "",
+        blockLabel: movedBlock.label,
+        fromIndex,
+        toIndex: adjustedTarget,
+        method: "drag",
+        timestamp: changedAt,
+      },
+    ]);
+    setSelectedProgramIndex(adjustedTarget);
+    setDraggedProgramIndex(null);
+    setDropTargetIndex(null);
+    markProgramChanged(changedAt);
+  };
+
+  const changeProgramIndent = (index: number, delta: -1 | 1) => {
+    if (index <= 0 || !program[index]) {
+      return;
+    }
+    const previous = program[index - 1];
+    const maxIndent = Math.min(3, (previous?.indent ?? 0) + (previous?.isContainer ? 1 : 0));
+    const nextIndent = Math.max(0, Math.min(maxIndent, program[index].indent + delta));
+    if (nextIndent === program[index].indent) {
+      return;
+    }
+    const changedAt = new Date().toISOString();
+    setProgram((current) =>
+      current.map((entry, entryIndex) =>
+        entryIndex === index ? { ...entry, indent: nextIndent } : entry,
+      ),
+    );
+    setBlockMovedEvents((events) => [
+      ...events,
+      {
+        blockId: program[index].id ?? "",
+        blockLabel: program[index].label,
+        fromIndent: program[index].indent,
+        toIndent: nextIndent,
+        method: "indent",
+        timestamp: changedAt,
+      },
+    ]);
     markProgramChanged(changedAt);
   };
   const hasBlock = (label: string) => program.some((block) => block.label === label);
@@ -5517,9 +5653,7 @@ const BlockProgrammingTaskView = ({
       let log: string[] = [];
       if (item.id.startsWith("lj1v")) {
         const correctLabels = task.correctProgram ?? [];
-        const exactProgram =
-          labels.length === correctLabels.length &&
-          correctLabels.every((label, index) => labels[index] === label);
+        const exactProgram = matchesPt7Program(program, correctLabels);
         output = exactProgram
           ? 'START | vooruit | vooruit | rechts | vooruit | wacht | links | Klaar'
           : "niet hetzelfde";
@@ -5662,14 +5796,19 @@ const BlockProgrammingTaskView = ({
     setSpeechVisible(false);
     setGoalMatched(false);
     const programAtPlay = program.map((block) => ({ ...block }));
+    const executionPlan = buildPt7ExecutionPlan(programAtPlay);
+    setRunTotal(executionPlan.length);
+    setRunProgress(0);
+    setCompletedRunBlockIds([]);
     let effects: ProgramRunEffects = { ...emptyProgramRunEffects, log: [] };
     const executionTrace: Array<Record<string, unknown>> = [];
-    for (let index = 0; index < programAtPlay.length; index += 1) {
+    for (let index = 0; index < executionPlan.length; index += 1) {
       if (runCancelledRef.current) {
         return;
       }
-      const block = programAtPlay[index];
-      setRunStep(index);
+      const { block, sourceIndex } = executionPlan[index];
+      setRunStep(sourceIndex);
+      setRunProgress(index + 1);
       const beforeState = { ...effects, log: effects.log };
       const step = runBlockVisually(block, effects);
       effects = step.effects;
@@ -5678,22 +5817,28 @@ const BlockProgrammingTaskView = ({
         setSpeechVisible(true);
       }
       executionTrace.push({
-        blockId: block.id ?? `step-${index + 1}`,
+        blockId: block.id ?? `step-${sourceIndex + 1}`,
         blockLabel: block.label,
         blockType: block.category,
+        sourceProgramIndex: sourceIndex,
+        executionIndex: index,
         actionType: step.actionType,
         beforeState,
         afterState: { ...effects, log: effects.log },
         visibleOutput: step.visibleOutput,
-        matchedExpectedStep: (task.correctProgram ?? [])[index] === block.label,
+        matchedExpectedStep: (task.correctProgram ?? [])[sourceIndex] === programAtPlay[sourceIndex]?.label,
       });
       await sleep(stepDuration(block.label));
+      setCompletedRunBlockIds((current) =>
+        Array.from(new Set([...current, block.id ?? `step-${sourceIndex + 1}`])),
+      );
       if (step.actionType === "say") {
         setSpeechVisible(false);
       }
       await sleep(300);
     }
     setRunStep(-1);
+    setRunProgress(0);
     setRunTimer(null);
     if (programAtPlay.length === 0 || runCancelledRef.current) {
       return;
@@ -5716,7 +5861,7 @@ const BlockProgrammingTaskView = ({
           programStateAtPlay: { program: programAtPlay },
           playedAfterLastChange: true,
           executionTrace,
-          executionTraceComplete: executionTrace.length === programAtPlay.length,
+          executionTraceComplete: executionTrace.length === executionPlan.length,
           goalMatched: debugResult.goalMatched,
           failedStepId: debugResult.testResults.find((test) => !test.correct)?.testCaseId ?? null,
           finalOutput: debugResult.testResults.map((test) => test.finalOutput).join(" | "),
@@ -5732,12 +5877,18 @@ const BlockProgrammingTaskView = ({
     setExecuted(false);
     setSpeechVisible(false);
     setAPresses(0);
+    setRunTotal(0);
+    setRunProgress(0);
+    setCompletedRunBlockIds([]);
     setRunEffects(emptyProgramRunEffects);
   };
   const returnToEditor = () => {
     stopStepper();
     setSpeechVisible(false);
     setExecuted(false);
+    setRunTotal(0);
+    setRunProgress(0);
+    setCompletedRunBlockIds([]);
     setRunEffects(emptyProgramRunEffects);
   };
   const isRunning = runStep >= 0;
@@ -5761,52 +5912,127 @@ const BlockProgrammingTaskView = ({
       : "");
 
   return (
-    <section className="panel stack-lg">
+    <section className="panel stack-lg pt7-task-panel">
       <QuestionHeader
         questionNumber={questionNumber}
         title={item.title}
         instruction={task.intro}
-      >
-        <p className="helper-text">{item.instruction}</p>
-        {isDebugTask ? (
-          <>
-            <div className="pt7-goal-card" aria-label="Doel">
-              <strong>{task.visualGoal?.title ?? "DOEL"}</strong>
-              {task.visualGoal?.steps ? (
-                <div className="pt7-goal-steps">
-                  {task.visualGoal.steps.map((step) => (
-                    <span className={`pt7-goal-step goal-step-${step.tone ?? "arrow"}`} key={step.id}>
-                      {step.icon ? <span className="pt7-goal-icon" aria-hidden="true">{step.icon}</span> : null}
-                      <span>{step.label}</span>
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                (task.visualGoal?.lines ?? []).map((line) => (
-                  <span key={line}>{line}</span>
-                ))
-              )}
-            </div>
-            <p className="pt7-debug-instruction">
-              Gekozen foutblokken: {selectedWrongBlockIds.length}/2. Tik een fout blok aan. Kies daarna het goede blok.
-            </p>
-          </>
-        ) : null}
-        {task.codingSteps ? (
-          <ol className="coding-steps">
-            {task.codingSteps.map((stepText) => (
-              <li key={stepText}>{stepText}</li>
-            ))}
-          </ol>
-        ) : null}
-      </QuestionHeader>
+      />
 
-      <div className={`blocks-shell ${executed ? "is-executed" : ""}`}>
-        {/* ── Palette ─────────────────────────────── */}
-        <aside className="blocks-palette">
+      <div className={`blocks-shell pt7-lab-shell ${isRunning ? "is-running" : ""}`}>
+        <header className="pt7-lab-toolbar">
+          <div>
+            <span className="pt7-lab-kicker">Bizzy · technieklab</span>
+            <strong>{isRunning ? "Programma wordt uitgevoerd" : "Vind 2 fouten en repareer de code"}</strong>
+          </div>
+          <div className="pt7-toolbar-actions">
+            <span className={`run-pill ${isRunning ? "is-running" : ""}`}>
+              <span className="run-dot" />
+              {isRunning ? `Uitvoering ${runProgress}/${runTotal}` : lastPlayedAt ? "Test afgerond" : "Klaar om te testen"}
+            </span>
+            <button
+              className={`play-btn ${isRunning ? "is-running" : ""}`}
+              type="button"
+              onClick={playProgram}
+            >
+              <span className="play-glyph">{isRunning ? "■" : "▶"}</span>
+              {isRunning ? "Stoppen" : "Afspelen"}
+            </button>
+          </div>
+        </header>
+
+        <section className="blocks-preview pt7-world-panel" aria-label="Visuele wereld">
+          <div className="pt7-goal-card" aria-label="Doel">
+            <strong>{task.visualGoal?.title ?? "DOEL"}</strong>
+            {task.visualGoal?.steps ? (
+              <div className="pt7-goal-steps">
+                {task.visualGoal.steps.map((step, index) => (
+                  <span className={`pt7-goal-step goal-step-${step.tone ?? "arrow"}`} key={step.id}>
+                    {step.icon ? <span className="pt7-goal-icon" aria-hidden="true">{step.icon}</span> : null}
+                    <span>{step.label}</span>
+                    {index < task.visualGoal!.steps!.length - 1 ? <span className="pt7-goal-connector" aria-hidden="true">›</span> : null}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div className="pt7-goal-lines">
+                {(task.visualGoal?.lines ?? []).map((line) => <span key={line}>{line}</span>)}
+              </div>
+            )}
+          </div>
+          <p className="pt7-debug-instruction">
+            <strong>Gekozen foutblokken: {selectedWrongBlockIds.length}/2.</strong>{" "}
+            Tik op de roze foutknop bij twee verdachte regels. Selecteer daarna een regel om hem te vervangen.
+          </p>
+
+          <div className={`bizzy-stage device-stage-${task.device ?? "bizzy"} ${isRunning ? "is-running" : ""}`}>
+            <div className="lab-backdrop" aria-hidden="true">
+              <span className="lab-screen">PT7</span>
+              <span className="lab-light lab-light-one" />
+              <span className="lab-light lab-light-two" />
+              <span className="lab-target">DOEL</span>
+            </div>
+            {task.device === "microbit" ? (
+              <div className="microbit-device">
+                <div className="microbit-screen">{microbitDisplay}</div>
+                <div className="microbit-buttons">
+                  <button type="button" onClick={() => setAPresses((count) => count + 1)} disabled={isRunning}>A</button>
+                  <button type="button" onClick={() => setAPresses((count) => Math.max(0, count - 1))} disabled={isRunning}>B</button>
+                </div>
+              </div>
+            ) : task.device === "sensor" ? (
+              <div className="sensor-device">
+                <div className="sensor-readout">{sensorDisplay || "..."}</div>
+                <label className="field">
+                  <span>Temperatuur · {temperature}°</span>
+                  <input max="35" min="15" type="range" value={temperature} disabled={isRunning} onChange={(event) => setTemperature(Number(event.target.value))} />
+                </label>
+                <button className={`toggle-button ${windowOpen ? "active" : ""}`} type="button" disabled={isRunning} onClick={() => setWindowOpen((current) => !current)}>
+                  Raam {windowOpen ? "open" : "dicht"}
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="bizzy-track" aria-hidden="true">
+                  <i /><i /><i /><i />
+                </div>
+                <div className="bizzy-floor" />
+                <div className="bizzy-mover" style={{ transform: `translateX(${runEffects.move * 56}px) rotate(${runEffects.rotation}deg)` }}>
+                  {speechVisible ? <div className="bizzy-speech">{runEffects.speech}</div> : null}
+                  <svg className={`bizzy-svg ${isRunning ? "is-running" : ""}`} viewBox="0 0 144 168" width="120" height="140" aria-label="Bizzy">
+                    <line x1="72" y1="18" x2="72" y2="6" stroke="#1B1D22" strokeWidth="4" strokeLinecap="round" />
+                    <circle cx="72" cy="6" r="6" fill="#E51C73" stroke="#1B1D22" strokeWidth="3" />
+                    <rect x="14" y="16" width="116" height="98" rx="28" fill="#E51C73" stroke="#1B1D22" strokeWidth="4" />
+                    <ellipse cx="42" cy="42" rx="14" ry="8" fill="#fff" opacity=".22" />
+                    <circle cx="50" cy="58" r="14" fill="#fff" stroke="#1B1D22" strokeWidth="3" />
+                    <circle cx="94" cy="58" r="14" fill="#fff" stroke="#1B1D22" strokeWidth="3" />
+                    <circle className="bizzy-pupil" cx="50" cy="58" r="6" fill="#1B1D22" />
+                    <circle className="bizzy-pupil" cx="94" cy="58" r="6" fill="#1B1D22" />
+                    <path d="M52 84 Q72 100 92 84" fill="none" stroke="#1B1D22" strokeWidth="5" strokeLinecap="round" />
+                    <rect x="34" y="116" width="76" height="14" rx="6" fill="#1B1D22" />
+                    <rect x="30" y="128" width="34" height="32" rx="14" fill="#1B1D22" />
+                    <rect x="80" y="128" width="34" height="32" rx="14" fill="#1B1D22" />
+                  </svg>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className={`pt7-goal-status ${!lastPlayedAt ? "idle" : goalMatched ? "success" : "retry"}`} role="status" aria-live="polite">
+            <span aria-hidden="true">{!lastPlayedAt ? "◇" : goalMatched ? "✓" : "↻"}</span>
+            <div>
+              <strong>{!lastPlayedAt ? "Nog niet getest" : goalMatched ? "Doel bereikt!" : "Nog niet helemaal"}</strong>
+              <small>{!lastPlayedAt ? "Repareer de code en klik op Afspelen." : goalMatched ? "De uitvoering klopt met het doel." : "Je code blijft staan. Pas hem aan en probeer opnieuw."}</small>
+            </div>
+          </div>
+        </section>
+
+        <aside className="blocks-palette pt7-palette-panel">
+          <div className="pt7-panel-heading">
+            <span>Blokkenbak</span>
+            <small>Klik of sleep</small>
+          </div>
           {(() => {
-            // Group shuffled palette by category, preserving the order in
-            // which each category first appears.
             const grouped: { category: string; color: string; blocks: ProgrammingBlockDefinition[] }[] = [];
             const at = new Map<string, number>();
             paletteBlocks.forEach((b) => {
@@ -5835,6 +6061,11 @@ const BlockProgrammingTaskView = ({
                         onClick={() => addBlockToProgram(b)}
                         title={isDebugTask && paletteMode === "replace" && selectedProgramIndex !== null ? "Vervang geselecteerd blok" : "Voeg blok toe"}
                         disabled={isRunning}
+                        draggable={!isRunning}
+                        onDragStart={(event) => {
+                          event.dataTransfer.effectAllowed = "copy";
+                          event.dataTransfer.setData("text/pt7-block", b.id ?? b.label);
+                        }}
                       >
                         <span
                           className={`block block-${shape}`}
@@ -5851,46 +6082,13 @@ const BlockProgrammingTaskView = ({
           })()}
         </aside>
 
-        {/* ── Canvas ──────────────────────────────── */}
-        <section className="blocks-canvas">
+        <section className="blocks-canvas pt7-program-panel" aria-label="Programma-editor en live uitvoering">
           <div className="canvas-toolbar">
             <div className="canvas-toolbar-left">
-              <h3>Werkblad</h3>
+              <h3>Programma</h3>
               <span className="canvas-meta">{program.length} {program.length === 1 ? "blok" : "blokken"}</span>
             </div>
-            <div className="canvas-toolbar-right">
-              <button
-                className="ghost-btn"
-                type="button"
-                onClick={() => { setProgram([]); resetProgramRun(); }}
-                disabled={program.length === 0 || isDebugTask}
-              >
-                Leegmaken
-              </button>
-              <button
-                className={`play-btn ${isRunning ? "is-running" : ""}`}
-                type="button"
-                onClick={playProgram}
-              >
-                {isRunning ? (
-                  <>
-                    <span className="play-glyph">■</span> Stop
-                  </>
-                ) : (
-                  <>
-                    <span className="play-glyph">▸</span> Afspelen
-                  </>
-                )}
-              </button>
-              <button
-                className="run-back-arrow"
-                type="button"
-                onClick={returnToEditor}
-                disabled={!executed}
-                aria-label="Terug"
-                title="Terug"
-              />
-            </div>
+            <span className={`pt7-editor-state ${isRunning ? "running" : ""}`}>{isRunning ? "LIVE" : "BEWERKEN"}</span>
           </div>
 
           {isDebugTask ? (
@@ -5911,8 +6109,8 @@ const BlockProgrammingTaskView = ({
               </button>
               <span>
                 {paletteMode === "replace"
-                  ? "Selecteer een blok op het werkblad en kies een vervangblok."
-                  : "Kies een blok uit de blokkenbak; het komt na de selectie of onderaan."}
+                  ? "Selecteer een regel en kies het vervangblok."
+                  : "Selecteer een regel en kies of sleep een nieuw blok."}
               </span>
             </div>
           ) : null}
@@ -5924,6 +6122,19 @@ const BlockProgrammingTaskView = ({
                 <strong>Klik blokken aan om je programma te bouwen</strong>
               </div>
             ) : null}
+            <div
+              className={`pt7-drop-zone ${dropTargetIndex === 1 ? "active" : ""}`}
+              onDragOver={(event) => { event.preventDefault(); setDropTargetIndex(1); }}
+              onDrop={(event) => {
+                event.preventDefault();
+                const paletteId = event.dataTransfer.getData("text/pt7-block");
+                if (draggedProgramIndex !== null) moveProgramBlockTo(draggedProgramIndex, 1);
+                else {
+                  const paletteBlock = task.blocks.find((entry) => (entry.id ?? entry.label) === paletteId);
+                  if (paletteBlock) insertPaletteBlockAt(paletteBlock, 1);
+                }
+              }}
+            />
             {program.map((block, index) => {
               const def = blockByLabel.get(block.label) ?? block;
               const shape = def.category === "gebeurtenissen"
@@ -5931,165 +6142,71 @@ const BlockProgrammingTaskView = ({
                 : def.isContainer ? "container" : "stack";
               const blockId = block.id ?? `${block.label}-${index}`;
               const selectedAsWrong = selectedWrongBlockIds.includes(blockId);
+              const completed = completedRunBlockIds.includes(blockId);
               return (
-                <div
-                  className={`canvas-row ${runStep === index ? "is-active" : ""}${selectedProgramIndex === index ? " selected" : ""}${selectedAsWrong ? " debug-selected" : ""}`}
-                  key={`${block.label}-${index}`}
-                  style={{ "--depth": block.indent } as CSSProperties}
-                  onClick={() => {
-                    if (!isDebugTask || isRunning) {
-                      return;
-                    }
-                    setSelectedProgramIndex(index);
-                    setSelectedWrongBlockIds((current) => {
-                      if (current.includes(blockId)) {
-                        return current.filter((id) => id !== blockId);
-                      }
-                      if (current.length >= 3) {
-                        return current;
-                      }
-                      return [...current, blockId];
-                    });
-                  }}
-                >
-                  <span
-                    className={`block block-${shape} ${runStep === index ? "is-active" : ""}`}
-                    style={blockStyle(def)}
-                  >
-                    <span className="block-label">{block.label}</span>
-                  </span>
-                  <div className="canvas-row-tools">
-                    <button
-                      type="button"
-                      aria-label="Verplaats omhoog"
-                      disabled={isRunning || index <= 1}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        moveProgramBlock(index, -1);
-                      }}
-                    >↑</button>
-                    <button
-                      type="button"
-                      aria-label="Verplaats omlaag"
-                      disabled={isRunning || index === 0 || index >= program.length - 1}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        moveProgramBlock(index, 1);
-                      }}
-                    >↓</button>
-                  </div>
-                  <button
-                    className="canvas-row-remove"
-                    type="button"
-                    aria-label="Verwijder blok"
-                    disabled={isRunning || (index === 0 && block.label === "bij start")}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      removeProgramBlock(index);
+                <Fragment key={blockId}>
+                  <div
+                    className={`canvas-row${runStep === index ? " is-active" : ""}${completed ? " is-complete" : ""}${selectedProgramIndex === index ? " selected" : ""}${selectedAsWrong ? " debug-selected" : ""}`}
+                    style={{ "--depth": block.indent } as CSSProperties}
+                    onClick={() => { if (!isRunning) setSelectedProgramIndex(index); }}
+                    draggable={!isRunning && index > 0}
+                    onDragStart={(event) => {
+                      setDraggedProgramIndex(index);
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData("text/pt7-program", blockId);
                     }}
-                  >×</button>
-                </div>
+                    onDragEnd={() => { setDraggedProgramIndex(null); setDropTargetIndex(null); }}
+                  >
+                    <span className="pt7-line-number">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="pt7-run-marker" aria-hidden="true">{runStep === index ? "▶" : completed ? "✓" : ""}</span>
+                    <span className={`block block-${shape} ${runStep === index ? "is-active" : ""}`} style={blockStyle(def)}>
+                      <span className="block-label">{block.label}</span>
+                    </span>
+                    {isDebugTask ? (
+                      <button
+                        className={`pt7-error-toggle ${selectedAsWrong ? "active" : ""}`}
+                        type="button"
+                        aria-pressed={selectedAsWrong}
+                        aria-label={`${selectedAsWrong ? "Verwijder foutmarkering bij" : "Markeer als fout:"} ${block.label}`}
+                        disabled={isRunning || (!selectedAsWrong && selectedWrongBlockIds.length >= 2)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setSelectedWrongBlockIds((current) =>
+                            current.includes(blockId) ? current.filter((id) => id !== blockId) : [...current, blockId],
+                          );
+                        }}
+                      >!</button>
+                    ) : null}
+                    <div className="canvas-row-tools">
+                      <button type="button" aria-label="Verplaats omhoog" disabled={isRunning || index <= 1} onClick={(event) => { event.stopPropagation(); moveProgramBlock(index, -1); }}>↑</button>
+                      <button type="button" aria-label="Verplaats omlaag" disabled={isRunning || index === 0 || index >= program.length - 1} onClick={(event) => { event.stopPropagation(); moveProgramBlock(index, 1); }}>↓</button>
+                      <button type="button" aria-label="Minder inspringen" disabled={isRunning || index === 0 || block.indent === 0} onClick={(event) => { event.stopPropagation(); changeProgramIndent(index, -1); }}>←</button>
+                      <button type="button" aria-label="Plaats in bovenliggend blok" disabled={isRunning || index === 0} onClick={(event) => { event.stopPropagation(); changeProgramIndent(index, 1); }}>→</button>
+                      <button type="button" aria-label="Verwijder blok" disabled={isRunning || (index === 0 && block.label === "bij start")} onClick={(event) => { event.stopPropagation(); removeProgramBlock(index); }}>×</button>
+                    </div>
+                  </div>
+                  {index > 0 ? (
+                    <div
+                      className={`pt7-drop-zone ${dropTargetIndex === index + 1 ? "active" : ""}`}
+                      onDragOver={(event) => { event.preventDefault(); setDropTargetIndex(index + 1); }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        const targetIndex = index + 1;
+                        const paletteId = event.dataTransfer.getData("text/pt7-block");
+                        if (draggedProgramIndex !== null) moveProgramBlockTo(draggedProgramIndex, targetIndex);
+                        else {
+                          const paletteBlock = task.blocks.find((entry) => (entry.id ?? entry.label) === paletteId);
+                          if (paletteBlock) insertPaletteBlockAt(paletteBlock, targetIndex);
+                        }
+                      }}
+                    />
+                  ) : null}
+                </Fragment>
               );
             })}
           </div>
+          <p className="pt7-editor-help">Sleep regels naar een roze invoeglijn. Op touch gebruik je ↑ ↓ en ← →.</p>
         </section>
-
-        {/* ── Device preview ──────────────────────── */}
-        <aside className="blocks-preview">
-          <div className="preview-head">
-            <h3>{task.device === "microbit" ? "micro:bit" : task.device === "sensor" ? "Sensor" : "Bizzy"}</h3>
-            <span className={`run-pill ${isRunning ? "is-running" : ""}`}>
-              <span className="run-dot" />
-              {isRunning ? `Stap ${Math.min(runStep + 1, program.length)}/${program.length}` : "Stand-by"}
-            </span>
-          </div>
-
-          <div className={`bizzy-stage device-stage-${task.device ?? "bizzy"} ${isRunning ? "is-running" : ""}`}>
-            {task.device === "microbit" ? (
-              <div className="microbit-device">
-                <div className="microbit-screen">{microbitDisplay}</div>
-                <div className="microbit-buttons">
-                  <button type="button" onClick={() => setAPresses((c) => c + 1)}>A</button>
-                  <button type="button" onClick={() => setAPresses((c) => Math.max(0, c - 1))}>B</button>
-                </div>
-              </div>
-            ) : task.device === "sensor" ? (
-              <div className="sensor-device">
-                <div className="sensor-readout">{sensorDisplay || "..."}</div>
-                <label className="field">
-                  <span>Temperatuur</span>
-                  <input
-                    max="35"
-                    min="15"
-                    type="range"
-                    value={temperature}
-                    onChange={(event) => setTemperature(Number(event.target.value))}
-                  />
-                </label>
-                <button
-                  className={`toggle-button ${windowOpen ? "active" : ""}`}
-                  type="button"
-                  onClick={() => setWindowOpen((current) => !current)}
-                >
-                  Raam {windowOpen ? "open" : "dicht"}
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="bizzy-floor" />
-                <div
-                  className="bizzy-mover"
-                  style={{
-                    transform: `translateX(${runEffects.move * 18}px) rotate(${runEffects.rotation}deg)`,
-                  }}
-                >
-                  {speechVisible ? <div className="bizzy-speech">{runEffects.speech}</div> : null}
-                  <svg
-                    className={`bizzy-svg ${isRunning ? "is-running" : ""}`}
-                    viewBox="0 0 144 168"
-                    width="120"
-                    height="140"
-                    aria-hidden="true"
-                  >
-                    <line x1="72" y1="18" x2="72" y2="6" stroke="#1B1D22" strokeWidth="4" strokeLinecap="round" />
-                    <circle cx="72" cy="6" r="6" fill="#E51C73" stroke="#1B1D22" strokeWidth="3" />
-                    <rect x="14" y="16" width="116" height="98" rx="28" fill="#E51C73" stroke="#1B1D22" strokeWidth="4" />
-                    <ellipse cx="42" cy="42" rx="14" ry="8" fill="#fff" opacity=".22" />
-                    <circle cx="50" cy="58" r="14" fill="#fff" stroke="#1B1D22" strokeWidth="3" />
-                    <circle cx="94" cy="58" r="14" fill="#fff" stroke="#1B1D22" strokeWidth="3" />
-                    <circle className="bizzy-pupil" cx="50" cy="58" r="6" fill="#1B1D22" />
-                    <circle className="bizzy-pupil" cx="94" cy="58" r="6" fill="#1B1D22" />
-                    {speechVisible || isRunning ? (
-                      <path d="M52 84 Q72 100 92 84" fill="none" stroke="#1B1D22" strokeWidth="5" strokeLinecap="round" />
-                    ) : (
-                      <rect x="60" y="84" width="24" height="5" rx="2.5" fill="#1B1D22" />
-                    )}
-                    <rect x="34" y="116" width="76" height="14" rx="6" fill="#1B1D22" />
-                    <rect x="30" y="128" width="34" height="32" rx="14" fill="#1B1D22" />
-                    <rect x="80" y="128" width="34" height="32" rx="14" fill="#1B1D22" />
-                    <circle cx="47" cy="144" r="5" fill="#fff" opacity=".7" />
-                    <circle cx="97" cy="144" r="5" fill="#fff" opacity=".7" />
-                  </svg>
-                </div>
-              </>
-            )}
-          </div>
-
-          {runEffects.log.length > 0 ? (
-            <div className="execution-log">
-              <strong>Uitgevoerd:</strong>
-              <ol>
-                {runEffects.log.map((entry, index) => (
-                  <li key={`${entry}-${index}`}>{entry}</li>
-                ))}
-              </ol>
-              {runEffects.sound ? <span>Geluid: {runEffects.sound}</span> : null}
-              {runEffects.score !== null ? <span>Score: {runEffects.score}</span> : null}
-              {runEffects.speed !== null ? <span>Snelheid: {runEffects.speed}</span> : null}
-              {runEffects.animationPaused ? <span>Animatie: niet animeren</span> : null}
-            </div>
-          ) : null}
-        </aside>
       </div>
 
       {isDebugTask ? (

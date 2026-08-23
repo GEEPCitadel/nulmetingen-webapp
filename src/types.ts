@@ -260,14 +260,62 @@ export interface ProgrammingBlockDefinition {
   color: string;
   isContainer?: boolean;
   isCriticalDistractor?: boolean;
+  opcode?: Pt7Opcode;
+  defaultParameters?: Pt7BlockParameters;
+}
+
+export type Pt7Opcode =
+  | "start"
+  | "walk"
+  | "turn"
+  | "jump"
+  | "bark"
+  | "take_bone"
+  | "repeat"
+  | "if_cat_ahead";
+
+export type Pt7Heading = "north" | "east" | "south" | "west";
+export type Pt7Position = { x: number; y: number };
+export type Pt7BlockParameters = {
+  direction?: "left" | "right";
+  count?: number;
+};
+
+export interface Pt7ProgramBlock extends ProgrammingBlockDefinition {
+  id: string;
+  opcode: Pt7Opcode;
+  parameters: Pt7BlockParameters;
+  indent: number;
+}
+
+export interface Pt7CatConfig extends Pt7Position {
+  id: string;
+  name: string;
+  escapeTo: Pt7Position;
+  patrol?: Pt7Position[];
+}
+
+export interface Pt7WorldConfig {
+  id: AssessmentVersionId;
+  width: number;
+  height: number;
+  teddyStart: Pt7Position & { heading: Pt7Heading };
+  bone: Pt7Position;
+  obstacles: Pt7Position[];
+  cats: Pt7CatConfig[];
+  targetPath: Pt7Position[];
+  maxAtomicSteps: number;
+  canonicalRepeatCount?: number;
+  requiredOpcodes: Pt7Opcode[];
+  concept: "sequence" | "repeat" | "conditional" | "moving-conditional";
 }
 
 export type BlockCriteriaSpec = "pt7-lj1v" | "pt7-lj1h" | "pt7-lj3v" | "pt7-lj3h";
 
 export interface BlockProgrammingTaskConfig {
-  itemVersion?: "pt7-debug-v1";
+  itemVersion?: "pt7-debug-v1" | "pt7-teddy-build-v1";
   intro?: string;
-  device?: "bizzy" | "microbit" | "sensor";
+  device?: "bizzy" | "microbit" | "sensor" | "teddy";
   codingSteps?: string[];
   blocks: ProgrammingBlockDefinition[];
   visualGoal?: {
@@ -280,7 +328,9 @@ export interface BlockProgrammingTaskConfig {
       tone?: "start" | "arrow" | "turn" | "wait" | "say";
     }>;
   };
-  initialProgram?: Array<ProgrammingBlockDefinition & { correctReplacementId?: string }>;
+  initialProgram?: Array<
+    ProgrammingBlockDefinition & { correctReplacementId?: string; indent?: number }
+  >;
   correctProgram: string[];
   wrongBlockIds?: string[];
   debugRepairChecks?: Array<{
@@ -302,8 +352,9 @@ export interface BlockProgrammingTaskConfig {
     stepMs: number;
   };
   logging?: {
-    itemVersion: "pt7-debug-v1";
+    itemVersion: "pt7-debug-v1" | "pt7-teddy-build-v1";
   };
+  teddyWorld?: Pt7WorldConfig;
   /** When set, scoring follows the V6 criteria table for the given spec
    *  instead of the generic `rules` array. */
   criteriaSpec?: BlockCriteriaSpec;
