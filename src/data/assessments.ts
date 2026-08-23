@@ -783,7 +783,7 @@ const excelTaskItem = (spec: ExcelTaskSpec): AssessmentItem => ({
   type: "excel_download_task",
   title: spec.title,
   instruction: spec.instruction,
-  points: 4,
+  points: spec.questions.reduce((sum, question) => sum + question.points, 0),
   skillDomain: "21C Data",
   kerndoel: "21C, 21A",
   excelTask: {
@@ -1277,15 +1277,9 @@ const versionSpecs: VersionSpec[] = [
       sheetName: "Liedjes",
       questions: [
         {
-          id: "a",
-          prompt: "Sorteer op Jaar, van nieuw naar oud. Welke code staat bovenaan?",
-          answer: "L09",
-          points: 2,
-        },
-        {
           id: "b",
           prompt:
-            "Filter op Genre = pop. Sorteer daarna op Jaar, van oud naar nieuw. Welke code staat bovenaan?",
+            "Filter op Muziekstijl = pop. Sorteer daarna op Jaar, van laag naar hoog. Welke code staat bovenaan?",
           answer: "L12",
           points: 2,
         },
@@ -2512,325 +2506,218 @@ const v3Pt6 = (id: string): TeamsTaskSpec => ({
 });
 
 const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
-  const specs: Record<AssessmentVersionId, SecurityTaskSpec> = {
+  const variants: Record<AssessmentVersionId, {
+    id: string;
+    learner: string;
+    toEmail: string;
+    date: string;
+    fromEmail: string;
+    subject: string;
+    passwordRequest: string;
+    pressure: string;
+    linkUrl: string;
+    actionOptions: Option[];
+  }> = {
     "lj1-vmbo": {
       id: "lj1v-pt3-security",
-      title: "PT3 - Bericht beoordelen",
-      instruction: "Bekijk de e-mail en kies je antwoorden.",
-      kerndoel: "23A",
-      config: {
-        screens: [
-          {
-            id: "rooster-mail",
-            title: "Mail over je rooster",
-            instruction:
-              "Sanne krijgt deze mail op haar schoolaccount.",
-            emailStimulus: {
-              fromName: "Roosterhulp",
-              fromEmail: "roosterhulp@citadel-rooster.nl",
-              toEmail: "sanne@leerling.citadelcollege.nl",
-              date: "Vandaag 15:42",
-              subject: "Roosterwijziging voor morgen",
-              body: [
-                "Hallo Sanne,",
-                "Er is een roosterwijziging voor morgen. Controleer je rooster vandaag nog, zodat je geen lokaalwijziging mist.",
-                "Bekijk je rooster via de knop hieronder.",
-              ],
-              linkLabel: "Rooster bekijken",
-              linkUrl: "https://citadel-rooster.nl/login",
-            },
-            groups: [
-              {
-                id: "signals",
-                title: "Waarom moet Sanne voorzichtig zijn? Kies 2.",
-                inputType: "multi",
-                maxSelections: 2,
-                options: [
-                  {
-                    id: "sender_domain",
-                    label: "De afzender gebruikt niet het bekende schooldomein.",
-                  },
-                  {
-                    id: "unknown_roster_site",
-                    label: "De knop gaat naar een roostersite die niet duidelijk van school is.",
-                  },
-                  {
-                    id: "uses_name",
-                    label: "De mail gebruikt Sanne's naam.",
-                    errorCategory: "personalization_confused_with_trust",
-                  },
-                  {
-                    id: "neat_layout",
-                    label: "De mail ziet er netjes uit.",
-                    errorCategory: "appearance_confused_with_trust",
-                  },
-                  {
-                    id: "school_topic",
-                    label: "De mail gaat over haar rooster.",
-                    errorCategory: "school_context_confused_with_trust",
-                  },
-                  {
-                    id: "unknown",
-                    label: UNKNOWN_OPTION_LABEL,
-                    unknown: true,
-                    exclusive: true,
-                  },
-                ],
-              },
-              {
-                id: "actions",
-                title: "Wat kan Sanne nu het best doen?",
-                inputType: "single",
-                options: [
-                  {
-                    id: "known_route",
-                    label:
-                      "Niet op de knop klikken en haar rooster zelf openen via de roosterapp of bekende schoolsite.",
-                  },
-                  {
-                    id: "reply_sender",
-                    label: "De mail beantwoorden en vragen of de link klopt.",
-                    errorCategory: "replies_to_possible_phisher",
-                  },
-                  {
-                    id: "open_then_check",
-                    label: "De link openen en stoppen als de pagina vreemd lijkt.",
-                    riskFlag: "clicked_unknown_login_link",
-                  },
-                  {
-                    id: "forward_class",
-                    label: "De mail doorsturen naar de klas, zodat anderen kunnen meekijken.",
-                    riskFlag: "spreads_possible_phishing",
-                  },
-                  {
-                    id: "unknown",
-                    label: UNKNOWN_OPTION_LABEL,
-                    unknown: true,
-                    exclusive: true,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-        rules: [
-          {
-            id: "signal-sender-domain",
-            description: "herkent dat de afzender niet het bekende schooldomein gebruikt.",
-            points: 1,
-            groupId: "signals",
-            kind: "allSelected",
-            correctOptionIds: ["sender_domain"],
-            forbiddenByGroup: {
-              signals: ["uses_name", "neat_layout", "school_topic", "unknown"],
-            },
-          },
-          {
-            id: "signal-roster-site",
-            description: "herkent dat de knop naar een onbekende roostersite gaat.",
-            points: 1,
-            groupId: "signals",
-            kind: "allSelected",
-            correctOptionIds: ["unknown_roster_site"],
-            forbiddenByGroup: {
-              signals: ["uses_name", "neat_layout", "school_topic", "unknown"],
-            },
-          },
-          {
-            id: "safe-route",
-            description: "kiest de bekende roosterapp of schoolsite in plaats van de mailknop.",
-            points: 1,
-            groupId: "actions",
-            kind: "singleCorrect",
-            correctOptionIds: ["known_route"],
-          },
-        ],
-      },
+      learner: "Sanne",
+      toEmail: "sanne@leerling.citadelcollege.nl",
+      date: "Vandaag 15:42",
+      fromEmail:
+        "streamflix-wachtwoord-herstel-klantenservice-48392@account-blokkade-waarschuwing.example",
+      subject: "LAATSTE WAARSCHUWING: herstel uw wachtwoord",
+      passwordRequest:
+        "Er is een probleem met uw StreamFlix-wachtwoord. Herstel het wachtwoord via de knop hieronder.",
+      pressure:
+        "U heeft nog 15 minuten. Daarna wordt uw account direct geblokkeerd.",
+      linkUrl:
+        "https://streamflix-wachtwoord-herstel-klantenservice-48392.example/account/nu",
+      actionOptions: [
+        { id: "official-route", label: "Zelf de StreamFlix-app of de bekende website openen en daar het account controleren." },
+        { id: "click-button", label: "Op de knop klikken, omdat het account anders wordt geblokkeerd.", riskFlag: "clicked_phishing_link" },
+        { id: "reply-sender", label: "De mail beantwoorden en vragen of het bericht echt is.", errorCategory: "replies_to_possible_phisher" },
+        { id: "forward-friend", label: "De mail doorsturen naar een vriend en vragen om de link te testen.", riskFlag: "spreads_possible_phishing" },
+      ],
     },
     "lj1-hv": {
       id: "lj1h-pt3-security",
-      title: "PT3 - Bericht beoordelen",
-      instruction: "Bekijk de e-mail en kies je antwoorden.",
-      kerndoel: "23A",
-      config: {
-        screens: [
-          {
-            id: "code-mail",
-            title: "Mail over accountcontrole",
-            instruction: "Noor krijgt deze mail op haar schoolaccount. Ze vertrouwt de mail niet helemaal.",
-            emailStimulus: {
-              fromName: "ICT controle",
-              fromEmail: "ict-472kq9-check@safe-login-mailer.info",
-              toEmail: "noor@leerling.citadelcollege.nl",
-              date: "Vandaag 10:02",
-              subject: "Controleer je schoolaccount",
-              body: [
-                "Beste leerling,",
-                "Wij controleren alle accounts. Stuur je tijdelijke inlogcode terug zodat je account actief blijft.",
-                "Reageer binnen 30 minuten.",
-              ],
-              linkLabel: "Code bevestigen",
-              linkUrl: "https://citadel-controle.example.org/code",
-            },
-            groups: [
-              {
-                id: "signals",
-                title: "Wat maakt deze mail onbetrouwbaar?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Het afzenderadres is geen duidelijk schooladres.",
-                  "De mail vraagt om een persoonlijke inlogcode.",
-                  "De mail gebruikt tijdsdruk.",
-                  "Er staat 'Beste leerling' in plaats van een naam.",
-                  "De mail gaat over school.",
-                ]),
-              },
-              {
-                id: "actions",
-                title: "Wat doet Noor?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Geen code delen.",
-                  "Account of melding controleren via de normale schoolroute.",
-                  "De mail melden of aan ICT/docent laten zien.",
-                  "De code terugsturen zodat het account actief blijft.",
-                  "De link openen en daar de code invullen.",
-                ]),
-              },
-            ],
-          },
-        ],
-        rules: [
-          { id: "signals", description: "herkent minimaal twee signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["Het afzenderadres is geen duidelijk schooladres.", "De mail vraagt om een persoonlijke inlogcode.", "De mail gebruikt tijdsdruk.", "Er staat 'Beste leerling' in plaats van een naam."] },
-          { id: "safe-actions", description: "kiest veilige vervolgstappen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Geen code delen.", "Account of melding controleren via de normale schoolroute."] },
-          { id: "no-code", description: "deelt de code niet via mail of link.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["De code terugsturen zodat het account actief blijft.", "De link openen en daar de code invullen."] },
-        ],
-      },
+      learner: "Noor",
+      toEmail: "noor@leerling.citadelcollege.nl",
+      date: "Vandaag 10:02",
+      fromEmail:
+        "streamflix-klanten-accountcontrole-72@beveiligde-streaming-helpdesk.example",
+      subject: "Actie nodig: uw wachtwoord verloopt vandaag",
+      passwordRequest:
+        "Wij hebben uw wachtwoord uit veiligheid tijdelijk ongeldig gemaakt. Stel via de knop hieronder een nieuw wachtwoord in.",
+      pressure:
+        "Rond dit binnen 30 minuten af. Anders verliest u vandaag de toegang tot uw account.",
+      linkUrl:
+        "https://streamflix.herstel-account-klantenservice.example/veilig-inloggen",
+      actionOptions: [
+        { id: "official-route", label: "Zelf de officiële StreamFlix-app of het bekende webadres openen en de accountstatus controleren." },
+        { id: "trust-name", label: "De knop gebruiken, omdat de afzendernaam StreamFlix Klantenservice is.", errorCategory: "display_name_confused_with_trust" },
+        { id: "hover-then-click", label: "Eerst het linkadres bekijken en daarna klikken als de pagina professioneel oogt.", riskFlag: "clicked_phishing_link" },
+        { id: "reply-sender", label: "Via een antwoord op deze mail om uitleg vragen.", errorCategory: "replies_to_possible_phisher" },
+      ],
     },
     "lj3-vmbo": {
       id: "lj3v-pt3-security",
-      title: "PT3 - Bericht beoordelen",
-      instruction: "Bekijk de e-mail en kies je antwoorden.",
-      kerndoel: "23A",
-      config: {
-        screens: [
-          {
-            id: "attachment-mail",
-            title: "Mail met bestand",
-            instruction: "Jayden krijgt deze mail vlak voor een toetsweek.",
-            emailStimulus: {
-              fromName: "Cijfersysteem",
-              fromEmail: "c1jf3r-upd8-771@doc-viewer-login.com",
-              toEmail: "jayden@leerling.citadelcollege.nl",
-              date: "Gisteren 19:48",
-              subject: "Cijferlijst controleren",
-              body: [
-                "Hallo,",
-                "Er is een fout gevonden in je cijferlijst. Open de bijlage en schakel bewerken in om de nieuwe cijfers te bekijken.",
-                "Controleer dit voor morgen.",
-              ],
-              attachments: ["Cijferlijst_update.xlsm"],
-              linkLabel: "Online bekijken",
-              linkUrl: "https://cijfers-school-update.example.net/login",
-            },
-            groups: [
-              {
-                id: "signals",
-                title: "Welke signalen vragen om extra controle?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Het afzenderadres hoort niet duidelijk bij school.",
-                  "De bijlage is een macrobestand.",
-                  "De mail vraagt om bewerken of macro's in te schakelen.",
-                  "De mail zet druk met een korte deadline.",
-                  "De mail gaat over cijfers.",
-                ]),
-              },
-              {
-                id: "actions",
-                title: "Wat is veilig om te doen?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Bijlage niet openen of macro's niet inschakelen.",
-                  "Cijfers controleren via het normale schoolportaal.",
-                  "De mail melden of laten controleren.",
-                  "Bijlage openen en bewerken inschakelen.",
-                  "Inloggen via de link in de mail.",
-                ]),
-              },
-            ],
-          },
-        ],
-        rules: [
-          { id: "signals", description: "herkent minimaal twee signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["Het afzenderadres hoort niet duidelijk bij school.", "De bijlage is een macrobestand.", "De mail vraagt om bewerken of macro's in te schakelen.", "De mail zet druk met een korte deadline."] },
-          { id: "safe-actions", description: "kiest veilige controle- en meldactie.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Bijlage niet openen of macro's niet inschakelen.", "Cijfers controleren via het normale schoolportaal."] },
-          { id: "no-danger", description: "kiest geen risicovolle actie.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["Bijlage openen en bewerken inschakelen.", "Inloggen via de link in de mail."] },
-        ],
-      },
+      learner: "Jayden",
+      toEmail: "jayden@leerling.citadelcollege.nl",
+      date: "Gisteren 19:48",
+      fromEmail:
+        "controle-streamflix-gebruikersaccount-83017@streaming-account-hulpcentrum.example",
+      subject: "Uw StreamFlix-account wordt tijdelijk beperkt",
+      passwordRequest:
+        "Onze automatische controle vraagt om bevestiging. Vul via de knop uw huidige wachtwoord in en kies daarna een nieuw wachtwoord.",
+      pressure:
+        "Bevestig binnen 45 minuten. Daarna worden alle profielen op uw account geblokkeerd.",
+      linkUrl:
+        "https://streamflix-login.streaming-beveiliging-accountcheck.example/wachtwoord",
+      actionOptions: [
+        { id: "official-route", label: "Niet op de link klikken en zelf via de officiële app of website controleren of er echt een melding is." },
+        { id: "use-link", label: "De link openen en alleen doorgaan als er een slotje in de adresbalk staat.", riskFlag: "clicked_phishing_link" },
+        { id: "reply-sender", label: "De afzender vragen waarom het huidige wachtwoord nodig is.", errorCategory: "replies_to_possible_phisher" },
+        { id: "wait-for-block", label: "Niets controleren en afwachten of het account werkelijk wordt geblokkeerd.", errorCategory: "passive_no_verification" },
+      ],
     },
     "lj3-hv": {
       id: "lj3h-pt3-security",
-      title: "PT3 - Bericht beoordelen",
-      instruction: "Bekijk de e-mail en kies je antwoorden.",
-      kerndoel: "23A",
-      config: {
-        screens: [
-          {
-            id: "session-mail",
-            title: "Mail over accountactiviteit",
-            instruction:
-              "Mila krijgt deze mail nadat ze thuis heeft ingelogd op haar schoolaccount.",
-            emailStimulus: {
-              fromName: "Account team",
-              fromEmail: "acc-veilig-90z1@verify-device-center.co",
-              toEmail: "mila@leerling.citadelcollege.nl",
-              date: "Vandaag 21:06",
-              subject: "Onbekend apparaat gevonden",
-              body: [
-                "Beste Mila,",
-                "Er is een onbekend apparaat gekoppeld. Voorkom afsluiting van je account door je wachtwoord via onderstaande knop te vernieuwen.",
-                "Gebruik dezelfde gegevens als je schoolaccount.",
-              ],
-              linkLabel: "Wachtwoord vernieuwen",
-              linkUrl: "https://citadel-device-check.example.com/security",
-            },
-            groups: [
-              {
-                id: "signals",
-                title: "Welke signalen maken dat Mila voorzichtig moet zijn?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Het domein van de afzender is geen herkenbaar schooldomein.",
-                  "De link gebruikt een andere domeinnaam dan de schoolsite.",
-                  "De mail dreigt met afsluiting van het account.",
-                  "De mail vraagt om schoolgegevens in te vullen via een link.",
-                  "De mail noemt Mila bij naam.",
-                ]),
-              },
-              {
-                id: "actions",
-                title: "Wat is de beste aanpak?",
-                inputType: "multi",
-                options: fixedOptions([
-                  "Niet via de link inloggen.",
-                  "Zelf naar de officiele accountinstellingen gaan.",
-                  "Actieve sessies en tweestapsverificatie controleren.",
-                  "Wachtwoord invullen via de knop om afsluiting te voorkomen.",
-                  "De mail negeren zonder verder te controleren.",
-                ]),
-              },
-            ],
-          },
-        ],
-        rules: [
-          { id: "signals", description: "herkent minimaal drie signalen in de mail.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 3, correctOptionIds: ["Het domein van de afzender is geen herkenbaar schooldomein.", "De link gebruikt een andere domeinnaam dan de schoolsite.", "De mail dreigt met afsluiting van het account.", "De mail vraagt om schoolgegevens in te vullen via een link."] },
-          { id: "account-check", description: "kiest controle via eigen accountinstellingen.", points: 1, groupId: "actions", kind: "allSelected", correctOptionIds: ["Niet via de link inloggen.", "Zelf naar de officiele accountinstellingen gaan.", "Actieve sessies en tweestapsverificatie controleren."] },
-          { id: "no-link", description: "vermijdt link en passief negeren.", points: 1, groupId: "actions", kind: "noForbidden", forbiddenOptionIds: ["Wachtwoord invullen via de knop om afsluiting te voorkomen.", "De mail negeren zonder verder te controleren."] },
-        ],
-      },
+      learner: "Mila",
+      toEmail: "mila@leerling.citadelcollege.nl",
+      date: "Vandaag 21:06",
+      fromEmail:
+        "security-noreply-streamflix-session-9914@account-streamflix-notices.example",
+      subject: "Beveiligingsmelding bij uw StreamFlix-account",
+      passwordRequest:
+        "Er is een afwijkende aanmelding gevonden. Valideer de sessie en vernieuw uw wachtwoord via onderstaande knop.",
+      pressure:
+        "Voorkom automatische blokkering: bevestig uw gegevens binnen 20 minuten.",
+      linkUrl:
+        "https://streamflix.com.account-herstel-beveiliging.example/session/verify",
+      actionOptions: [
+        { id: "official-route", label: "Zelf naar de bekende StreamFlix-app of website gaan, actieve sessies controleren en zo nodig daar het wachtwoord wijzigen." },
+        { id: "trust-subdomain", label: "De link gebruiken, omdat het adres begint met streamflix.com en een beveiligde verbinding kan tonen.", errorCategory: "subdomain_confused_with_domain" },
+        { id: "reply-sender", label: "De mail beantwoorden en om technische details van de afwijkende aanmelding vragen.", errorCategory: "replies_to_possible_phisher" },
+        { id: "reuse-link-later", label: "De link bewaren en later gebruiken als de StreamFlix-app niet meer werkt.", riskFlag: "clicked_phishing_link" },
+      ],
     },
   };
-  return specs[versionId];
+
+  const variant = variants[versionId];
+  const correctSignalIds = [
+    "sender-email",
+    "urgent-subject",
+    "generic-greeting",
+    "password-request",
+    "time-pressure",
+    "suspicious-link",
+  ];
+  const markerOptions: Option[] = [
+    { id: "urgent-subject", label: "Onderwerp met waarschuwing of dreiging" },
+    { id: "sender-name", label: "Afzendernaam StreamFlix Klantenservice", errorCategory: "display_name_confused_with_evidence" },
+    { id: "sender-email", label: "Lang en vreemd afzenderadres" },
+    { id: "recipient-email", label: "Eigen schoolmailadres bij Aan", errorCategory: "recipient_confused_with_evidence" },
+    { id: "message-date", label: "Datum en tijd van de mail", errorCategory: "timestamp_confused_with_evidence" },
+    { id: "generic-greeting", label: "Onpersoonlijke aanhef Geachte klant" },
+    { id: "password-request", label: "Verzoek om het wachtwoord via de knop te herstellen" },
+    { id: "time-pressure", label: "Korte deadline en dreiging met blokkeren" },
+    { id: "polite-closing", label: "Beleefde afsluiting", errorCategory: "politeness_confused_with_evidence" },
+    { id: "team-name", label: "Ondertekening Team StreamFlix", errorCategory: "brand_name_confused_with_evidence" },
+    { id: "suspicious-link", label: "Vreemd doeladres achter de knop" },
+  ];
+
+  return {
+    id: variant.id,
+    title: "PT3 - Phishingmail beoordelen",
+    instruction: "Onderzoek de StreamFlix-mail en beantwoord beide vragen.",
+    kerndoel: "23A",
+    config: {
+      screens: [
+        {
+          id: "streamflix-phishing-mail",
+          title: "StreamFlix: wachtwoord herstellen",
+          instruction: `${variant.learner} ontvangt deze mail. De mail lijkt van StreamFlix te komen.`,
+          emailStimulus: {
+            fromName: "StreamFlix Klantenservice",
+            fromEmail: variant.fromEmail,
+            toEmail: variant.toEmail,
+            date: variant.date,
+            subject: variant.subject,
+            body: [
+              "Geachte klant,",
+              variant.passwordRequest,
+              variant.pressure,
+              "Met vriendelijke groet,",
+              "Team StreamFlix",
+            ],
+            linkLabel: "Wachtwoord nu herstellen",
+            linkUrl: variant.linkUrl,
+            selectableParts: [
+              { id: "urgent-subject", target: "subject" },
+              { id: "sender-name", target: "fromName" },
+              { id: "sender-email", target: "fromEmail" },
+              { id: "recipient-email", target: "toEmail" },
+              { id: "message-date", target: "date" },
+              { id: "generic-greeting", target: "body:0" },
+              { id: "password-request", target: "body:1" },
+              { id: "time-pressure", target: "body:2" },
+              { id: "polite-closing", target: "body:3" },
+              { id: "team-name", target: "body:4" },
+              { id: "suspicious-link", target: "link" },
+            ],
+          },
+          groups: [
+            {
+              id: "signals",
+              title: "1. Markeer twee onderdelen waaraan je kunt zien dat deze mail niet betrouwbaar is.",
+              instruction:
+                "Klik rechtstreeks in de mail. Beweeg je muis over de knop om het echte linkadres te bekijken. Er staan ook onderdelen in die geen bewijs zijn.",
+              inputType: "emailMarkers",
+              maxSelections: 2,
+              options: markerOptions,
+            },
+            {
+              id: "action",
+              title: `2. Wat kan ${variant.learner} nu het best doen?`,
+              instruction: "Kies één antwoord.",
+              inputType: "single",
+              showOptionLetters: true,
+              options: variant.actionOptions,
+            },
+          ],
+        },
+      ],
+      rules: [
+        {
+          id: "first-phishing-signal",
+          description: "markeert minimaal één geldig phishingsignaal in de mail.",
+          points: 1,
+          groupId: "signals",
+          kind: "minCorrect",
+          minCorrect: 1,
+          correctOptionIds: correctSignalIds,
+        },
+        {
+          id: "second-phishing-signal",
+          description: "markeert twee geldige phishingsignalen in de mail.",
+          points: 1,
+          groupId: "signals",
+          kind: "minCorrect",
+          minCorrect: 2,
+          correctOptionIds: correctSignalIds,
+        },
+        {
+          id: "safe-official-route",
+          description: "controleert het account via de zelf geopende officiële app of website.",
+          points: 1,
+          groupId: "action",
+          kind: "singleCorrect",
+          correctOptionIds: ["official-route"],
+        },
+      ],
+    },
+  };
 };
 const v3Pt8 = (versionId: AssessmentVersionId): SocialTaskSpec => {
   const cap = (optionIds: string[], groupIds?: string[]) => [{ id: "harmful-cap", maxScore: 2, optionIds, groupIds }];

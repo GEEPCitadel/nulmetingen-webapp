@@ -41,7 +41,7 @@ Kerndoel- en subdoelkoppeling wordt per item vastgelegd in `kerndoel`, `subgoal`
 | ---: | --- | --- | --- | ---: | --- | --- |
 | 1 | lj1v-pt1-files | file_task_simulation | 21A | 4 | PT1 - Bestanden en mappen beheren | 4 scoringsonderdelen |
 | 2 | lj1v-pt2-mail | outlook_mail_simulation | 21A | 4 | E-mail opstellen | 4 scoringsonderdelen |
-| 3 | lj1v-pt3-security | account_security_simulation | 23A | 3 | PT3 - Bericht beoordelen | 3 scoringsonderdelen |
+| 3 | lj1v-pt3-security | account_security_simulation | 23A | 3 | PT3 - Phishingmail beoordelen | 3 scoringsonderdelen |
 | 4 | lj1v-pt4-excel | excel_download_task | 21C, 21A | 4 | PT4 - Excel/data sorteren en filteren | 2 scoringsonderdelen |
 | 5 | lj1vmbo-pt6-screen-share | teams_share_simulation | 23A | 3 | Schermdelen in een online les | 3 scoringsonderdelen |
 | 6 | lj1v-pt7-programming-debug-v1 | block_programming_task | 22B | 4 | PT7 - Blokprogrammeren | 2 debug-reparaties; 1 tests |
@@ -63,7 +63,7 @@ Kerndoel- en subdoelkoppeling wordt per item vastgelegd in `kerndoel`, `subgoal`
 | ---: | --- | --- | --- | ---: | --- | --- |
 | 1 | lj1h-pt1-files | file_task_simulation | 21A | 4 | PT1 - Bestanden en mappen beheren | 4 scoringsonderdelen |
 | 2 | lj1h-pt2-mail | outlook_mail_simulation | 21A | 4 | E-mail opstellen | 4 scoringsonderdelen |
-| 3 | lj1h-pt3-security | account_security_simulation | 23A | 3 | PT3 - Bericht beoordelen | 3 scoringsonderdelen |
+| 3 | lj1h-pt3-security | account_security_simulation | 23A | 3 | PT3 - Phishingmail beoordelen | 3 scoringsonderdelen |
 | 4 | lj1h-pt4-excel | excel_download_task | 21C, 21A | 4 | PT4 - Excel/data sorteren en filteren | 2 scoringsonderdelen |
 | 5 | lj1hv-pt6-screen-share | teams_share_simulation | 23A | 3 | Schermdelen in een online les | 3 scoringsonderdelen |
 | 6 | lj1h-pt7-programming-debug-v1 | block_programming_task | 22B | 4 | PT7 - Blokprogrammeren | 2 debug-reparaties; 1 tests |
@@ -85,7 +85,7 @@ Kerndoel- en subdoelkoppeling wordt per item vastgelegd in `kerndoel`, `subgoal`
 | ---: | --- | --- | --- | ---: | --- | --- |
 | 1 | lj3v-pt1-files | file_task_simulation | 21A | 4 | PT1 - Bestanden en mappen beheren | 4 scoringsonderdelen |
 | 2 | lj3v-pt2-mail | outlook_mail_simulation | 21A | 4 | E-mail opstellen | 4 scoringsonderdelen |
-| 3 | lj3v-pt3-security | account_security_simulation | 23A | 3 | PT3 - Bericht beoordelen | 3 scoringsonderdelen |
+| 3 | lj3v-pt3-security | account_security_simulation | 23A | 3 | PT3 - Phishingmail beoordelen | 3 scoringsonderdelen |
 | 4 | lj3v-pt4-excel | excel_download_task | 21C, 21A | 4 | PT4 - Excel/data sorteren en filteren | 2 scoringsonderdelen |
 | 5 | lj3vmbo-pt6-screen-share | teams_share_simulation | 23A | 3 | Schermdelen in een online les | 3 scoringsonderdelen |
 | 6 | lj3v-pt7-programming-debug-v1 | block_programming_task | 22B | 4 | PT7 - Blokprogrammeren | 2 debug-reparaties; 2 tests |
@@ -107,7 +107,7 @@ Kerndoel- en subdoelkoppeling wordt per item vastgelegd in `kerndoel`, `subgoal`
 | ---: | --- | --- | --- | ---: | --- | --- |
 | 1 | lj3h-pt1-files | file_task_simulation | 21A | 4 | PT1 - Bestanden en mappen beheren | 4 scoringsonderdelen |
 | 2 | lj3h-pt2-mail | outlook_mail_simulation | 21A | 4 | E-mail opstellen | 4 scoringsonderdelen |
-| 3 | lj3h-pt3-security | account_security_simulation | 23A | 3 | PT3 - Bericht beoordelen | 3 scoringsonderdelen |
+| 3 | lj3h-pt3-security | account_security_simulation | 23A | 3 | PT3 - Phishingmail beoordelen | 3 scoringsonderdelen |
 | 4 | lj3h-pt4-excel | excel_download_task | 21C, 21A | 4 | PT4 - Excel/data sorteren en filteren | 2 scoringsonderdelen |
 | 5 | lj3hv-pt6-screen-share | teams_share_simulation | 23A | 3 | Schermdelen in een online les | 3 scoringsonderdelen |
 | 6 | lj3h-pt7-programming-debug-v1 | block_programming_task | 22B | 4 | PT7 - Blokprogrammeren | 2 debug-reparaties; 4 tests |

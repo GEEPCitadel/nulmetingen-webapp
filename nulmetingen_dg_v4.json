@@ -138,12 +138,12 @@
               "uiQuestionNumber": 3,
               "type": "account_security_simulation",
               "sectionId": "pt3",
-              "title": "PT3 - Bericht beoordelen",
+              "title": "PT3 - Phishingmail beoordelen",
               "subgoals": [
                 "23A"
               ],
               "points": 3,
-              "prompt": "Bekijk de e-mail en kies je antwoorden.",
+              "prompt": "Markeer twee phishingsignalen in de StreamFlix-mail en kies daarna de veiligste vervolgactie.",
               "randomization": {
                 "optionOrderRandomized": true,
                 "unknownPinnedLast": false
@@ -1407,12 +1407,12 @@
               "uiQuestionNumber": 3,
               "type": "account_security_simulation",
               "sectionId": "pt3",
-              "title": "PT3 - Bericht beoordelen",
+              "title": "PT3 - Phishingmail beoordelen",
               "subgoals": [
                 "23A"
               ],
               "points": 3,
-              "prompt": "Bekijk de e-mail en kies je antwoorden.",
+              "prompt": "Markeer twee phishingsignalen in de StreamFlix-mail en kies daarna de veiligste vervolgactie.",
               "randomization": {
                 "optionOrderRandomized": true,
                 "unknownPinnedLast": false
@@ -2683,12 +2683,12 @@
               "uiQuestionNumber": 3,
               "type": "account_security_simulation",
               "sectionId": "pt3",
-              "title": "PT3 - Bericht beoordelen",
+              "title": "PT3 - Phishingmail beoordelen",
               "subgoals": [
                 "23A"
               ],
               "points": 3,
-              "prompt": "Bekijk de e-mail en kies je antwoorden.",
+              "prompt": "Markeer twee phishingsignalen in de StreamFlix-mail en kies daarna de veiligste vervolgactie.",
               "randomization": {
                 "optionOrderRandomized": true,
                 "unknownPinnedLast": false
@@ -3979,12 +3979,12 @@
               "uiQuestionNumber": 3,
               "type": "account_security_simulation",
               "sectionId": "pt3",
-              "title": "PT3 - Bericht beoordelen",
+              "title": "PT3 - Phishingmail beoordelen",
               "subgoals": [
                 "23A"
               ],
               "points": 3,
-              "prompt": "Bekijk de e-mail en kies je antwoorden.",
+              "prompt": "Markeer twee phishingsignalen in de StreamFlix-mail en kies daarna de veiligste vervolgactie.",
               "randomization": {
                 "optionOrderRandomized": true,
                 "unknownPinnedLast": false

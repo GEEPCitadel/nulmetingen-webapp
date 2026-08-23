@@ -3384,6 +3384,75 @@ body {
   line-height: 1.25;
 }
 
+.email-marker-question {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+  border: 1px solid #b8d4ee;
+  border-radius: 8px;
+  background: #f3f8fd;
+}
+
+.email-marker-question p {
+  margin: 0;
+}
+
+.email-marker-question > span {
+  color: #38566f;
+  font-size: .88rem;
+  font-weight: 700;
+}
+
+.mail-selectable-part {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  margin: -2px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  padding: 2px 4px;
+  text-align: left;
+  vertical-align: baseline;
+  cursor: pointer;
+}
+
+.mail-selectable-part:hover,
+.mail-selectable-part:focus-visible {
+  border-color: #79aee0;
+  background: #eef6fd;
+  outline: none;
+}
+
+.mail-selectable-part.selected {
+  border-color: #0f6cbd;
+  background: #dceeff;
+  box-shadow: 0 0 0 2px rgba(15, 108, 189, .18);
+}
+
+.mail-selectable-part[data-selection-limit="reached"]:not(.selected) {
+  cursor: not-allowed;
+}
+
+.mail-selection-badge {
+  flex: 0 0 auto;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 999px;
+  background: #0f6cbd;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 900;
+}
+
 .incoming-mail-meta span {
   overflow-wrap: anywhere;
 }
@@ -3410,7 +3479,8 @@ body {
   margin: 0;
 }
 
-.incoming-link-block {
+.incoming-link-block,
+.mail-selectable-part.incoming-link-block {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
@@ -3431,6 +3501,47 @@ body {
   font-size: .78rem;
   font-weight: 600;
   overflow-wrap: anywhere;
+}
+
+.incoming-link-preview {
+  display: none;
+}
+
+.incoming-link-block:hover .incoming-link-preview,
+.incoming-link-block:focus-visible .incoming-link-preview,
+.incoming-link-block.selected .incoming-link-preview {
+  display: block;
+}
+
+.option-letter {
+  flex: 0 0 auto;
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(15, 108, 189, .1);
+  color: #0f4d8f;
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+.lettered-option-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lettered-option-grid .chip-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.chip-button.selected .option-letter {
+  background: rgba(255, 255, 255, .85);
 }
 
 /* Bijlage-picker (selecteer bestand) */

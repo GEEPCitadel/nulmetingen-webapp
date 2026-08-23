@@ -360,7 +360,12 @@ export interface BlockProgrammingTaskConfig {
   criteriaSpec?: BlockCriteriaSpec;
 }
 
-export type InteractionInputType = "single" | "multi" | "toggle" | "matching";
+export type InteractionInputType =
+  | "single"
+  | "multi"
+  | "toggle"
+  | "matching"
+  | "emailMarkers";
 
 export interface InteractionGroup {
   id: string;
@@ -370,6 +375,21 @@ export interface InteractionGroup {
   options?: Option[];
   cards?: Option[];
   maxSelections?: number;
+  showOptionLetters?: boolean;
+}
+
+export type IncomingMailPartTarget =
+  | "fromName"
+  | "fromEmail"
+  | "toEmail"
+  | "date"
+  | "subject"
+  | "link"
+  | `body:${number}`;
+
+export interface IncomingMailSelectablePart {
+  id: string;
+  target: IncomingMailPartTarget;
 }
 
 export interface IncomingMailStimulus {
@@ -382,6 +402,7 @@ export interface IncomingMailStimulus {
   linkLabel?: string;
   linkUrl?: string;
   attachments?: string[];
+  selectableParts?: IncomingMailSelectablePart[];
 }
 
 export interface InteractionScoringRule {

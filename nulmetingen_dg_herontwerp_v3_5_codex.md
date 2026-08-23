@@ -3,6 +3,8 @@
 Status: Codex-bruikbare verbeterde pilotversie. Niet presenteren als gevalideerd meetinstrument.
 
 ## 1. Wat is verbeterd in v3.7
+- PT3 is voor alle vier niveaus omgebouwd tot een interactieve StreamFlix-phishingmail: de leerling markeert twee onderdelen in de mail en kiest daarna één veilige vervolgactie uit vier antwoordopties.
+- De aanklikbare mail bevat zowel geldige phishingsignalen als afleiders. Iedere combinatie van twee geldige signalen is correct; het doeladres van de knop verschijnt bij hover, toetsenbordfocus of selectie en de knop navigeert nooit naar een website.
 - De vier phishing-/linkcontrole-items zijn aangescherpt met minder sturende vraagteksten, realistischere e-mailmock-ups en plausibele afleiders.
 - Actuele canonical item-id's: `lj1v-sr2-rooster-mail`, `lj1h-sr2-rooster-mail`, `lj3v-sr1-cijfermail`, `lj3h-sr1-accountmail`.
 - De vraagteksten, stimuli, antwoordopties, correcte antwoorden, scoring en metadata in deze Markdown-specificatie zijn gesynchroniseerd met `nulmetingen_selected_response_herontwerp_v3.json`.
@@ -777,21 +779,44 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 ### `pt3-security` — Account, apparaat en verbinding beveiligen
 - Subdoel: 23A
 - Max. punten: 3
-- Doel: Meet concrete veilige handelingen bij verdachte digitale situaties.
+- Doel: Meet of leerlingen phishingsignalen rechtstreeks in een e-mail herkennen en daarna via een veilige, zelf gekozen route controleren wat er aan de hand is.
 - Scoring:
-  - 1 punt: risico herkennen
-  - 1 punt: onveilige actie vermijden
-  - 1 punt: veilige controle/herstelactie kiezen
+  - 1 punt: minimaal één geldig phishingsignaal gemarkeerd
+  - 1 punt: twee geldige phishingsignalen gemarkeerd
+  - 1 punt: in de ABCD-vervolgvraag gekozen voor controle via de zelf geopende officiële StreamFlix-app of bekende website
+- Gedeelde stimuluskenmerken:
+  - Fictieve dienst: StreamFlix.
+  - Onpersoonlijke aanhef: `Geachte klant`.
+  - Verzoek om een wachtwoord via een knop te herstellen of te vernieuwen.
+  - Korte deadline en dreiging met blokkeren of beperken van het account.
+  - Zeer lang, vreemd afzenderadres op een gereserveerd `.example`-domein.
+  - De linktekst luidt `Wachtwoord nu herstellen`; het afwijkende doeladres verschijnt alleen bij hover, toetsenbordfocus of selectie.
+  - De link is een niet-navigerende knop en kan geen echte website openen.
+- Interactie eerste deelvraag:
+  - Vraag: `Markeer twee onderdelen waaraan je kunt zien dat deze mail niet betrouwbaar is.`
+  - De leerling klikt rechtstreeks op onderdelen van de e-mail en kan maximaal twee onderdelen selecteren.
+  - Een selectie krijgt een duidelijke blauwe omlijning en een vinkje; opnieuw klikken maakt de selectie ongedaan.
+  - Geldige signalen: urgent of dreigend onderwerp, vreemd afzenderadres, onpersoonlijke aanhef, wachtwoordverzoek via de knop, tijdsdruk/blokkadedreiging en het vreemde doeladres achter de knop.
+  - Afleiders: de herkenbare afzendernaam, het eigen ontvangeradres, datum/tijd, beleefde afsluiting en de ondertekening `Team StreamFlix`.
+  - Iedere combinatie van twee geldige signalen levert de volledige 2 punten voor dit deel op. Eén geldig signaal levert 1 punt op. Een afleider levert geen punt op.
+- Interactie tweede deelvraag:
+  - Vraag: `Wat kan [naam] nu het best doen?`
+  - Vraagtype: single choice met precies vier opties, in de UI aangeduid met A, B, C en D.
+  - Optievolgorde wordt per sessie gerandomiseerd en de getoonde volgorde wordt gelogd.
+  - Correcte handeling: niet via de mailknop handelen, maar zelf de officiële StreamFlix-app of het bekende webadres openen en daar het account controleren.
 - Varianten:
-  - lj1-vmbo: PT3-light: leerling ziet een bericht 'Deel je schoolcode om je account te herstellen'. Kies veilige actie: code niet delen, officiële schoolomgeving openen, hulp vragen.
-  - lj1-hv: PT3-light: leerling ziet appmachtiging voor camera, locatie en contacten terwijl de app alleen rooster toont. Kies beperkte machtiging of weigeren van onnodige machtigingen.
-  - lj3-vmbo: Onverwachte inlogmelding/MFA en verdachte update. Kies afwijzen, account via officiële instellingen controleren, niet klikken op losse link.
-  - lj3-hv: Combinatie van datalek, verdachte macro en onbekende wifi. Kies wachtwoord wijzigen/MFA controleren, macro niet inschakelen, geen gevoelige login via onbekend netwerk.
+  - lj1-vmbo: zeer expliciete laatste waarschuwing, blokkade na 15 minuten en een opvallend lang hersteladres.
+  - lj1-hv: wachtwoord verloopt vandaag, blokkade na 30 minuten en een schoolachtig opgebouwde maar fictieve herstelhost.
+  - lj3-vmbo: automatische accountcontrole, verzoek om het huidige wachtwoord en een misleidend StreamFlix-subdomein.
+  - lj3-hv: afwijkende aanmelding, sessievalidatie en een URL waarin `streamflix.com` slechts vóór het werkelijke fictieve domein staat.
 - Acceptatiecriteria:
-  - Leerjaar 1 heeft PT3-light met één herkenbare securityhandeling.
-  - Leerjaar 3 bevat minstens één scenario waarin https/slotje niet voldoende bewijs is.
-  - Geen echte links, echte permissies of echte accountinstellingen gebruiken.
-  - Alle securityscenario’s meten een concrete keuze; geen scenario vraagt alleen naar een algemene attitude zoals “veilig doen”.
+  - Alle vier varianten gebruiken dezelfde interactielogica en blijven afzonderlijk selecteerbaar en volledig doorloopbaar.
+  - Er zijn minimaal vier verdedigbare phishingsignalen en minimaal drie aanklikbare afleiders; maximaal twee onderdelen kunnen tegelijk zijn geselecteerd.
+  - De linkpreview werkt met muis, toetsenbord en aanraking, maar veroorzaakt nooit navigatie.
+  - De ABCD-opties worden per sessie gerandomiseerd en de getoonde optievolgorde wordt gelogd.
+  - Correcte antwoorden en de classificatie van signalen/afleiders zijn niet zichtbaar in de leerling-UI.
+  - Leerjaar 3 bevat minstens één scenario waarin een herkenbare tekst of `https` aan het begin van een adres niet voldoende bewijs is.
+  - Alle onderdelen zijn automatisch scorebaar; er is geen open of rubric-gebaseerd antwoord.
 
 ### `pt4-data` — Data sorteren, filteren en interpreteren
 - Subdoel: 21C

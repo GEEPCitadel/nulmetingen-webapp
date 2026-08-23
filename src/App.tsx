@@ -4034,10 +4034,14 @@ const InteractionTaskView = ({
       : undefined,
   });
   const shownOptionOrder = task.screens.flatMap((screen) =>
-    screen.groups.flatMap((group) => [
-      ...orderFor(screen.id, group, "cards"),
-      ...orderFor(screen.id, group, "options"),
-    ]),
+    screen.groups.flatMap((group) =>
+      group.inputType === "emailMarkers"
+        ? screen.emailStimulus?.selectableParts?.map((part) => part.id) ?? []
+        : [
+            ...orderFor(screen.id, group, "cards"),
+            ...orderFor(screen.id, group, "options"),
+          ],
+    ),
   );
 
   const setGroupValue = (groupId: string, value: unknown) => {
@@ -4053,27 +4057,71 @@ const InteractionTaskView = ({
     });
   const isSocialTask = item.type === "social_action_simulation";
   const isAiChatTask = item.mockup?.mediaHint === "Niet-interactieve AI-chatmock-up";
-  const renderScreen = (screen: typeof task.screens[number]) => (
-    <div className="interaction-screen" key={screen.id}>
-      {!isAiChatTask ? (
-        <div className="stack-xs">
-          <strong>{screen.title}</strong>
-          <p>{screen.instruction}</p>
-          {!isSocialTask && screen.body ? <div className="notice-banner">{screen.body}</div> : null}
-        </div>
-      ) : null}
-      {screen.emailStimulus ? <IncomingMailStimulusView email={screen.emailStimulus} /> : null}
-      {screen.groups.map((group) => (
-        <InteractionGroupControl
-          key={group.id}
-          group={orderedGroup(screen.id, group)}
-          value={state[group.id]}
-          allowSkip={item.type === "social_action_simulation"}
-          onChange={(value) => setGroupValue(group.id, value)}
-        />
-      ))}
-    </div>
-  );
+  const renderScreen = (screen: typeof task.screens[number]) => {
+    const emailMarkerGroup = screen.groups.find(
+      (group) => group.inputType === "emailMarkers",
+    );
+    const selectedEmailMarkers = Array.isArray(state[emailMarkerGroup?.id ?? ""])
+      ? (state[emailMarkerGroup?.id ?? ""] as unknown[]).map(String)
+      : [];
+
+    return (
+      <div className="interaction-screen" key={screen.id}>
+        {!isAiChatTask ? (
+          <div className="stack-xs">
+            <strong>{screen.title}</strong>
+            <p>{screen.instruction}</p>
+            {!isSocialTask && screen.body ? <div className="notice-banner">{screen.body}</div> : null}
+          </div>
+        ) : null}
+        {emailMarkerGroup ? (
+          <div className="email-marker-question">
+            <strong>{emailMarkerGroup.title}</strong>
+            {emailMarkerGroup.instruction ? <p>{emailMarkerGroup.instruction}</p> : null}
+            <span aria-live="polite">
+              {selectedEmailMarkers.length} van {emailMarkerGroup.maxSelections ?? 2} geselecteerd
+            </span>
+          </div>
+        ) : null}
+        {screen.emailStimulus ? (
+          <IncomingMailStimulusView
+            email={screen.emailStimulus}
+            selectedPartIds={selectedEmailMarkers}
+            maxSelections={emailMarkerGroup?.maxSelections}
+            onPartToggle={emailMarkerGroup
+              ? (partId) => {
+                  if (selectedEmailMarkers.includes(partId)) {
+                    setGroupValue(
+                      emailMarkerGroup.id,
+                      selectedEmailMarkers.filter((id) => id !== partId),
+                    );
+                    return;
+                  }
+                  if (
+                    emailMarkerGroup.maxSelections &&
+                    selectedEmailMarkers.length >= emailMarkerGroup.maxSelections
+                  ) {
+                    return;
+                  }
+                  setGroupValue(emailMarkerGroup.id, [...selectedEmailMarkers, partId]);
+                }
+              : undefined}
+          />
+        ) : null}
+        {screen.groups
+          .filter((group) => group.inputType !== "emailMarkers")
+          .map((group) => (
+            <InteractionGroupControl
+              key={group.id}
+              group={orderedGroup(screen.id, group)}
+              value={state[group.id]}
+              allowSkip={item.type === "social_action_simulation"}
+              onChange={(value) => setGroupValue(group.id, value)}
+            />
+          ))}
+      </div>
+    );
+  };
 
   return (
     <section className="panel stack-lg">
@@ -4107,7 +4155,48 @@ const InteractionTaskView = ({
   );
 };
 
-const IncomingMailStimulusView = ({ email }: { email: IncomingMailStimulus }) => (
+const IncomingMailStimulusView = ({
+  email,
+  selectedPartIds = [],
+  maxSelections,
+  onPartToggle,
+}: {
+  email: IncomingMailStimulus;
+  selectedPartIds?: string[];
+  maxSelections?: number;
+  onPartToggle?: (partId: string) => void;
+}) => {
+  const partIdFor = (target: string) =>
+    email.selectableParts?.find((part) => part.target === target)?.id;
+  const renderPart = (
+    target: string,
+    content: ReactNode,
+    className = "",
+  ) => {
+    const partId = partIdFor(target);
+    if (!partId || !onPartToggle) {
+      return content;
+    }
+    const selected = selectedPartIds.includes(partId);
+    const atLimit = Boolean(
+      maxSelections && selectedPartIds.length >= maxSelections && !selected,
+    );
+    return (
+      <button
+        className={`mail-selectable-part ${className} ${selected ? "selected" : ""}`}
+        type="button"
+        aria-pressed={selected}
+        aria-label={`${target === "link" ? `${email.linkLabel}. Linkadres: ${email.linkUrl}` : typeof content === "string" ? content : "Onderdeel van de e-mail"}${selected ? ", geselecteerd" : ""}`}
+        onClick={() => onPartToggle(partId)}
+        data-selection-limit={atLimit ? "reached" : undefined}
+      >
+        <span>{content}</span>
+        {selected ? <span className="mail-selection-badge" aria-hidden="true">✓</span> : null}
+      </button>
+    );
+  };
+
+  return (
   <div className="mail-shell incoming-mail-shell" aria-label="E-mailbericht">
     <div className="mail-main">
       <div className="mail-titlebar">E-mail</div>
@@ -4130,13 +4219,13 @@ const IncomingMailStimulusView = ({ email }: { email: IncomingMailStimulus }) =>
           {email.fromName.slice(0, 2).toUpperCase()}
         </div>
         <div className="incoming-mail-meta">
-          <strong>{email.subject}</strong>
+          <strong>{renderPart("subject", email.subject)}</strong>
           <span>
-            Van: {email.fromName} &lt;{email.fromEmail}&gt;
+            Van: {renderPart("fromName", email.fromName)} &lt;{renderPart("fromEmail", email.fromEmail)}&gt;
           </span>
-          <span>Aan: {email.toEmail}</span>
+          <span>Aan: {renderPart("toEmail", email.toEmail)}</span>
         </div>
-        <time>{email.date}</time>
+        <time>{renderPart("date", email.date)}</time>
       </div>
       {email.attachments && email.attachments.length > 0 ? (
         <div className="mail-attachments mail-attachments-inline incoming-attachments">
@@ -4150,19 +4239,24 @@ const IncomingMailStimulusView = ({ email }: { email: IncomingMailStimulus }) =>
         </div>
       ) : null}
       <div className="mail-body-area incoming-mail-body">
-        {email.body.map((line) => (
-          <p key={line}>{line}</p>
+        {email.body.map((line, index) => (
+          <p key={`${line}-${index}`}>{renderPart(`body:${index}`, line)}</p>
         ))}
         {email.linkLabel && email.linkUrl ? (
-          <div className="incoming-link-block">
-            <span>{email.linkLabel}</span>
-            <code>{email.linkUrl}</code>
-          </div>
+          renderPart(
+            "link",
+            <>
+              <span>{email.linkLabel}</span>
+              <code className="incoming-link-preview">Linkadres: {email.linkUrl}</code>
+            </>,
+            "incoming-link-block",
+          )
         ) : null}
       </div>
     </div>
   </div>
-);
+  );
+};
 
 const InteractionGroupControl = ({
   group,
@@ -4240,8 +4334,8 @@ const InteractionGroupControl = ({
     <div className="interaction-group">
       <strong>{group.title}</strong>
       {group.instruction ? <p>{group.instruction}</p> : null}
-      <div className="chip-grid">
-        {(group.options ?? []).map((option) => {
+      <div className={`chip-grid ${group.showOptionLetters ? "lettered-option-grid" : ""}`}>
+        {(group.options ?? []).map((option, index) => {
           const selected =
             group.inputType === "multi"
               ? selectedMulti.includes(option.id)
@@ -4274,6 +4368,11 @@ const InteractionGroupControl = ({
                 onChange(option.id);
               }}
             >
+              {group.showOptionLetters ? (
+                <span className="option-letter" aria-hidden="true">
+                  {String.fromCharCode(65 + index)}
+                </span>
+              ) : null}
               {option.label}
             </button>
           );
