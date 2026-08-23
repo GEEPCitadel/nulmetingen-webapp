@@ -2392,7 +2392,7 @@ const versionSpecs: VersionSpec[] = [
 ];
 
 const v3FileInstruction =
-  "Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Volgende.";
+  "Kun jij je bestanden netjes ordenen?\nWerk in het venster dat je hieronder ziet.\nVoer de taken hieronder uit en klik daarna op Volgende.\nAls je meerdere bestanden tegelijk moet verplaatsen, selecteer je ze eerst allemaal en sleep je daarna één van de geselecteerde bestanden naar de doelmap.";
 
 const v3MailConfig = ({
   to,
@@ -3302,7 +3302,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       id: "lj1v-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
       instruction:
-        "Kun jij je bestanden netjes ordenen? Voer de taken hieronder uit en klik daarna op 'Volgende'.\nWerk in OneDrive. Maak daarin de map Biologie.\nVerplaats de drie projectbestanden naar Biologie.\nHernoem concept_dieren.docx naar project_dieren_verslag.docx.",
+        `${v3FileInstruction}\n1. Maak in OneDrive de map Biologie.\n2. Zoek de drie projectbestanden: concept_dieren.docx, foto_kat.jpg en bron_dieren.pdf.\n3. Verplaats de drie projectbestanden naar Biologie. Selecteer ze eerst alle drie en sleep daarna één van de geselecteerde bestanden naar de map Biologie.\n4. Hernoem concept_dieren.docx in Biologie naar Verslag_Dieren.docx.`,
       startFolders: [
         "Thuis/OneDrive/Engels",
         "Thuis/OneDrive/Maatschappij",
@@ -3314,7 +3314,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       tasks: [
         { id: "main", description: "map Biologie correct.", expectedPath: "Thuis/OneDrive/Biologie", points: 1 },
         { id: "files", description: "projectbestanden correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Biologie/bron_dieren.pdf", "Thuis/OneDrive/Biologie/foto_kat.jpg"], points: 1 },
-        { id: "rename", description: "verslag correct hernoemd en geplaatst.", expectedPath: "Thuis/OneDrive/Biologie/project_dieren_verslag.docx", forbiddenPaths: ["Thuis/OneDrive/concept_dieren.docx", "Thuis/OneDrive/Biologie/concept_dieren.docx"], points: 1 },
+        { id: "rename", description: "verslag correct hernoemd en geplaatst.", expectedPath: "Thuis/OneDrive/Biologie/Verslag_Dieren.docx", forbiddenPaths: ["Thuis/OneDrive/concept_dieren.docx", "Thuis/OneDrive/Biologie/concept_dieren.docx"], points: 1 },
         { id: "subjects", description: "bestaande vakmappen blijven beschikbaar.", expectedPaths: ["Thuis/OneDrive/Engels", "Thuis/OneDrive/Maatschappij", "Thuis/OneDrive/Mentorles", "Thuis/OneDrive/Nederlands", "Thuis/OneDrive/Wiskunde"], points: 1 },
       ],
     },
@@ -3364,7 +3364,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       id: "lj1v-pt2-mail",
       title: "E-mail opstellen",
       instruction:
-        "Stuur een verslag van Nederlands via e-mail naar je mentor.\n1. Kies de juiste ontvanger in het juiste veld.\n2. Gebruik het juiste onderwerp: Verslag Nederlands.\n3. Voeg de juiste bijlage toe.\n4. Verzend de e-mail.",
+        "Gebruik het venster hieronder om op de juiste manier een e-mail te sturen aan je mentor.\nZorg dat je mentor door deze e-mail het verslag voor Nederlands krijgt.",
       kerndoel: "21A",
       config: v3MailConfig({
         to: "mentor@school.nl",

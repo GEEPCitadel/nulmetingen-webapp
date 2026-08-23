@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, DragEvent, ReactNode } from "react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import {
   assessmentMap,
@@ -2964,6 +2964,26 @@ const SelfAssessmentView = ({
   );
 };
 
+const PaperclipIcon = ({ className = "classic-paperclip" }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    role="img"
+    aria-label="Bijlage"
+    focusable="false"
+  >
+    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+  </svg>
+);
+
+const HyperlinkIcon = () => (
+  <svg className="hyperlink-icon" viewBox="0 0 28 20" aria-hidden="true" focusable="false">
+    <path d="M11 3.5H8a6.5 6.5 0 0 0 0 13h3" />
+    <path d="M17 3.5h3a6.5 6.5 0 0 1 0 13h-3" />
+    <path d="M8 10h12" />
+  </svg>
+);
+
 const MailTaskView = ({
   section,
   item,
@@ -2981,6 +3001,7 @@ const MailTaskView = ({
 }) => {
   type AddressField = "to" | "cc" | "bcc";
   type CommandPanel = "attachments" | "link" | null;
+  type MailTab = "Bestand" | "Bericht" | "Invoegen" | "Tekst opmaken" | "Tekenen" | "Opties";
 
   const [draft, setDraft] = useState({
     to: [] as string[],
@@ -3008,8 +3029,11 @@ const MailTaskView = ({
   const [undoSnapshot, setUndoSnapshot] = useState<typeof draft | null>(null);
   const [activeAddressField, setActiveAddressField] = useState<AddressField | null>(null);
   const [activeCommandPanel, setActiveCommandPanel] = useState<CommandPanel>(null);
+  const [activeMailTab, setActiveMailTab] = useState<MailTab>("Bericht");
   const [sendMenuOpen, setSendMenuOpen] = useState(false);
   const [subjectFocused, setSubjectFocused] = useState(false);
+  const [subjectPickerVisible, setSubjectPickerVisible] = useState(false);
+  const [sendPrompt, setSendPrompt] = useState<"missing-subject" | null>(null);
   const [notice, setNotice] = useState("");
   const task = item.mailTask;
   if (!task) {
@@ -3017,6 +3041,7 @@ const MailTaskView = ({
   }
 
   const updateDraft = (updater: (current: typeof draft) => typeof draft) => {
+    setNotice("");
     setDraft((current) => {
       setUndoSnapshot(current);
       return updater(current);
@@ -3153,9 +3178,26 @@ const MailTaskView = ({
     }
   };
 
-  const sendMessage = () => {
+  const sendMessage = (allowMissingSubject = false) => {
+    const hasRecipient = draft.to.length > 0 || draft.cc.length > 0;
+    if (!hasRecipient) {
+      setSendPrompt(null);
+      setNotice("Dit bericht moet minstens één geadresseerde hebben.");
+      return false;
+    }
+
+    if (!allowMissingSubject && !draft.subject.trim()) {
+      setNotice("");
+      setSendPrompt("missing-subject");
+      setSubjectPickerVisible(item.id === "lj1v-pt2-mail");
+      return false;
+    }
+
     updateDraft((current) => ({ ...current, sent: true, deleted: false }));
     setSendMenuOpen(false);
+    setSendPrompt(null);
+    setNotice("E-mail verzonden.");
+    return true;
   };
 
   const submit = () => {
@@ -3210,6 +3252,39 @@ const MailTaskView = ({
   const sortedFiles = [...task.files].sort((a, b) =>
     a.localeCompare(b, "nl", { sensitivity: "base" }),
   );
+  const attachmentPicker = activeCommandPanel === "attachments" ? (
+    <div className="mail-attach-menu">
+      <strong className="mail-attach-picker-label">Bestand kiezen</strong>
+      <div className="mail-attach-list">
+        {sortedFiles.map((file) => {
+          const picked = draft.attachments.includes(file);
+          return (
+            <button
+              key={file}
+              type="button"
+              className={`attach-chip is-picker ${picked ? "is-picked" : ""}`}
+              onClick={() => toggleListValue("attachments", file)}
+            >
+              <span className="file-pic">{fileExt(file)}</span>
+              <span className="attach-name">{file}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  ) : null;
+  const mailTabs: MailTab[] = ["Bestand", "Bericht", "Invoegen", "Tekst opmaken", "Tekenen", "Opties"];
+  const selectMailTab = (tab: MailTab) => {
+    setActiveMailTab(tab);
+    setActiveAddressField(null);
+    setSubjectPickerVisible(false);
+    setActiveCommandPanel(null);
+  };
+  const selectSubject = () => {
+    updateDraft((current) => ({ ...current, subject: "Verslag Nederlands" }));
+    setSubjectPickerVisible(false);
+    setSubjectFocused(true);
+  };
   const ribbonIcon = (button: string): ReactNode => {
     if (button === "Ongedaan maken") return "↶";
     if (button === "Lettertype") return "Aa";
@@ -3218,8 +3293,8 @@ const MailTaskView = ({
     if (button === "Cursief") return <span className="rb-icon-italic">I</span>;
     if (button === "Onderstrepen") return <span className="rb-icon-underline">U</span>;
     if (button === "BCC tonen") return "Bcc";
-    if (button === "Bestand invoegen") return <span className="classic-paperclip" />;
-    if (button === "Hyperlink invoegen") return "🔗";
+    if (button === "Bestand invoegen") return <PaperclipIcon />;
+    if (button === "Hyperlink invoegen") return <HyperlinkIcon />;
     if (button === "Prioriteit") return "!";
     if (button === "Afdrukken") return "⎙";
     return button.slice(0, 1);
@@ -3243,13 +3318,62 @@ const MailTaskView = ({
       <div className="mail-shell">
         <div className="mail-main">
           <div className="mail-titlebar">Nieuwe e-mail</div>
+          {draft.sent ? (
+            <div className="mail-sent-status" role="status" aria-live="polite">
+              E-mail verzonden
+            </div>
+          ) : null}
+          {notice ? <div className="mail-notice mail-validation-alert" role="status">{notice}</div> : null}
+          {sendPrompt === "missing-subject" ? (
+            <div className="mail-send-prompt" role="alertdialog" aria-live="assertive">
+              <strong>Onderwerp ontbreekt.</strong>
+              <span>Wilt u dit bericht verzenden zonder onderwerp?</span>
+              <div className="mail-send-prompt-actions">
+                <button className="mail-send-prompt-confirm" type="button" onClick={() => sendMessage(true)}>
+                  Verzenden
+                </button>
+                <button className="mail-send-prompt-cancel" type="button" onClick={() => {
+                  setSendPrompt(null);
+                  setSubjectPickerVisible(item.id === "lj1v-pt2-mail");
+                }}>
+                  Niet verzenden
+                </button>
+              </div>
+            </div>
+          ) : null}
           <div className="mail-tabs" aria-label="Menubalk">
-            {["Bestand", "Bericht", "Invoegen", "Tekst opmaken", "Tekenen", "Opties"].map((tab) => (
-              <span key={tab} className={tab === "Bericht" ? "active" : ""}>{tab}</span>
+            {mailTabs.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                className={tab === activeMailTab ? "active" : ""}
+                onClick={() => selectMailTab(tab)}
+                aria-pressed={tab === activeMailTab}
+              >
+                {tab}
+              </button>
             ))}
           </div>
           <div className="mail-ribbon">
-            <div className="mail-ribbon-group">
+            {activeMailTab === "Invoegen" ? (
+              <div className="mail-ribbon-group mail-insert-actions">
+                <span className="mail-ribbon-section-label">Invoegen</span>
+                <span className="mail-ribbon-button-wrap">
+                  <button
+                    className="rb mail-insert-file-button"
+                    type="button"
+                    onClick={() => handleRibbonCommand("Bestand invoegen")}
+                    aria-label="Bestand invoegen"
+                    title="Bestand invoegen"
+                  >
+                    <PaperclipIcon />
+                    <span>Bestand invoegen</span>
+                  </button>
+                  {attachmentPicker}
+                </span>
+              </div>
+            ) : (
+              <div className="mail-ribbon-group">
               {toolbarButtons.map((button) => {
                 const isActive =
                   (button === "Bestand invoegen" && activeCommandPanel === "attachments") ||
@@ -3276,32 +3400,12 @@ const MailTaskView = ({
                 return (
                   <span className="mail-ribbon-button-wrap" key={button}>
                     {buttonElement}
-                    {activeCommandPanel === "attachments" ? (
-                      <div className="mail-attach-menu">
-                        <strong className="mail-attach-picker-label">Bestand kiezen</strong>
-                        <div className="mail-attach-list">
-                          {sortedFiles.map((file) => {
-                            const picked = draft.attachments.includes(file);
-                            return (
-                              <button
-                                key={file}
-                                type="button"
-                                className={`attach-chip is-picker ${picked ? "is-picked" : ""}`}
-                                onClick={() => toggleListValue("attachments", file)}
-                              >
-                                <span className="file-pic">{fileExt(file)}</span>
-                                <span className="attach-name">{file}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ) : null}
+                    {attachmentPicker}
                   </span>
                 );
               })}
-            </div>
-            {notice ? <span className="mail-notice" role="status">{notice}</span> : null}
+              </div>
+            )}
             {sendMenuOpen ? (
               <div className="mail-send-menu">
                 <button className="rb" type="button" onClick={() => setSendMenuOpen(false)}>
@@ -3312,7 +3416,7 @@ const MailTaskView = ({
           </div>
 
           <div className="mail-send-row">
-            <button className="mail-send-button" type="button" onClick={sendMessage}>
+            <button className="mail-send-button" type="button" onClick={() => sendMessage()}>
               <span aria-hidden="true">▷</span>
               <span>Verzenden</span>
             </button>
@@ -3374,6 +3478,7 @@ const MailTaskView = ({
                 onClick={() => {
                   setActiveAddressField((current) => (current === field ? null : field));
                   setActiveCommandPanel(null);
+                  setSubjectPickerVisible(false);
                 }}
               >
                 <span className="label">{fieldLabel(field)}</span>
@@ -3431,19 +3536,44 @@ const MailTaskView = ({
               className="subject-input"
               value={draft.subject}
               placeholder={subjectFocused ? "" : "Onderwerp toevoegen"}
-              onFocus={() => setSubjectFocused(true)}
+              onClick={() => {
+                setSubjectFocused(true);
+                if (item.id === "lj1v-pt2-mail") {
+                  setSubjectPickerVisible(true);
+                }
+              }}
+              onFocus={() => {
+                setSubjectFocused(true);
+                if (item.id === "lj1v-pt2-mail") {
+                  setSubjectPickerVisible(true);
+                }
+              }}
               onBlur={() => setSubjectFocused(false)}
               onChange={(event) =>
                 updateDraft((current) => ({ ...current, subject: event.target.value }))
               }
             />
+            {item.id === "lj1v-pt2-mail" && subjectPickerVisible ? (
+              <div className="mail-subject-picker">
+                <div className="mail-subject-picker-label">Onderwerp kiezen</div>
+                <button
+                  className={`mail-subject-option ${draft.subject === "Verslag Nederlands" ? "is-picked" : ""}`}
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={selectSubject}
+                >
+                  <span>Verslag Nederlands</span>
+                  {draft.subject === "Verslag Nederlands" ? <span aria-hidden="true">✓</span> : null}
+                </button>
+              </div>
+            ) : null}
             {draft.priority === "Hoog" ? (
               <span className="priority-flag" aria-label="Hoge prioriteit">!</span>
             ) : null}
           </div>
           {draft.attachments.length > 0 ? (
             <div className="mail-attachments mail-attachments-inline">
-              <span className="classic-paperclip" aria-hidden="true" />
+              <PaperclipIcon />
               {draft.attachments.map((attachment) => (
                 <span className="attach-chip" key={attachment}>
                   <span className="file-pic">{fileExt(attachment)}</span>
@@ -3490,7 +3620,7 @@ const MailTaskView = ({
       <TaskNavFooter
         questionNumber={questionNumber}
         primaryLabel="Volgende"
-        onPrimary={draft.sent ? submit : () => { sendMessage(); submit(); }}
+        onPrimary={draft.sent ? submit : () => { sendMessage(); }}
         onSkip={onSkip}
         onExit={onExit}
       />
@@ -4010,7 +4140,7 @@ const IncomingMailStimulusView = ({ email }: { email: IncomingMailStimulus }) =>
       </div>
       {email.attachments && email.attachments.length > 0 ? (
         <div className="mail-attachments mail-attachments-inline incoming-attachments">
-          <span className="classic-paperclip" aria-hidden="true" />
+          <PaperclipIcon />
           {email.attachments.map((attachment) => (
             <span className="attach-chip" key={attachment}>
               <span className="file-pic">{attachment.split(".").pop()?.toUpperCase().slice(0, 4) ?? "FILE"}</span>
@@ -6602,22 +6732,49 @@ const FileTaskWorkspace = ({
   const getFolder = (name: string) =>
     state.nodes.find((node) => node.name === name && node.type === "folder") ?? null;
 
-  const handleDrop = (nodeId: string, targetFolderId: string) => {
-    const dragged = getNodeById(state.nodes, nodeId);
-    if (!dragged) {
+  const handleDrop = (draggedNodeIds: string | string[], targetFolderId: string) => {
+    const requestedNodeIds = Array.isArray(draggedNodeIds) ? draggedNodeIds : [draggedNodeIds];
+    const nodeIds = Array.from(new Set(requestedNodeIds)).filter((nodeId) => {
+      const node = getNodeById(state.nodes, nodeId);
+      return Boolean(node && node.id !== targetFolderId);
+    });
+
+    if (nodeIds.length === 0) {
       return;
     }
 
-    const hasConflict = getChildren(state.nodes, targetFolderId).some(
-      (child) => child.name === dragged.name && child.id !== dragged.id,
+    const firstConflict = nodeIds.find((nodeId) => {
+      const dragged = getNodeById(state.nodes, nodeId);
+      return dragged && getChildren(state.nodes, targetFolderId).some(
+        (child) => child.name === dragged.name && child.id !== dragged.id,
+      );
+    });
+
+    if (firstConflict) {
+      setPendingConflict({ nodeId: firstConflict, targetParentId: targetFolderId });
+      return;
+    }
+
+    const nextState = nodeIds.reduce(
+      (currentState, nodeId) => moveNode(currentState, nodeId, targetFolderId),
+      state,
     );
+    onChange(nextState);
+  };
 
-    if (hasConflict) {
-      setPendingConflict({ nodeId, targetParentId: targetFolderId });
-      return;
+  const getDraggedNodeIds = (event: DragEvent<HTMLElement>) => {
+    const encodedIds = event.dataTransfer.getData("application/x-pt1-nodes");
+    if (encodedIds) {
+      try {
+        const parsed = JSON.parse(encodedIds);
+        if (Array.isArray(parsed) && parsed.every((value) => typeof value === "string")) {
+          return parsed;
+        }
+      } catch {
+        // Fall back to the single-id payload for older browsers and keyboard tests.
+      }
     }
-
-    onChange(moveNode(state, nodeId, targetFolderId));
+    return event.dataTransfer.getData("text/plain");
   };
 
   const resolveConflict = (choice: ConflictChoice) => {
@@ -7050,8 +7207,7 @@ const FileTaskWorkspace = ({
                     onDragOver={(event) => event.preventDefault()}
                     onDrop={(event) => {
                       event.preventDefault();
-                      const draggedId = event.dataTransfer.getData("text/plain");
-                      handleDrop(draggedId, folder.id);
+                      handleDrop(getDraggedNodeIds(event), folder.id);
                     }}
                   >
                     <span className="ico ico-folder" aria-hidden="true" />
@@ -7125,6 +7281,14 @@ const FileTaskWorkspace = ({
                         }}
                         draggable={node.parentId !== null}
                         onDragStart={(event) => {
+                          const draggedNodeIds = checkedNodeIds.includes(node.id)
+                            ? checkedNodeIds
+                            : [node.id];
+                          event.dataTransfer.effectAllowed = "move";
+                          event.dataTransfer.setData(
+                            "application/x-pt1-nodes",
+                            JSON.stringify(draggedNodeIds),
+                          );
                           event.dataTransfer.setData("text/plain", node.id);
                         }}
                         onDragOver={(event) => {
@@ -7137,8 +7301,7 @@ const FileTaskWorkspace = ({
                             return;
                           }
                           event.preventDefault();
-                          const draggedId = event.dataTransfer.getData("text/plain");
-                          handleDrop(draggedId, node.id);
+                          handleDrop(getDraggedNodeIds(event), node.id);
                         }}
                       >
                         <div className="icon">

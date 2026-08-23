@@ -2802,13 +2802,21 @@ body {
   color: #222;
   font-size: .86rem;
 }
-.mail-tabs span {
+.mail-tabs button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
   height: 33px;
   display: inline-flex;
   align-items: center;
   border-bottom: 2px solid transparent;
+  padding: 0;
 }
-.mail-tabs span.active {
+.mail-tabs button:hover { color: #0f4d8f; }
+.mail-tabs button.active {
   color: #0f4d8f;
   font-weight: 700;
   border-bottom-color: #0f6cbd;
@@ -2866,6 +2874,16 @@ body {
 .mail-shell .rb-icon-only[aria-label="Lettertype"] { width: 52px; }
 .mail-shell .rb-icon-only[aria-label="Lettergrootte"] { width: 40px; }
 .mail-shell .rb-icon-only[aria-label="BCC tonen"] { width: 44px; font-size: .78rem; }
+.mail-insert-actions { min-height: 44px; }
+.mail-ribbon-section-label {
+  color: var(--c-ink-soft);
+  font-size: .76rem;
+  font-weight: 800;
+  margin-right: 4px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.mail-insert-file-button { gap: 8px; }
 .mail-ribbon-button-wrap {
   position: relative;
   display: inline-flex;
@@ -2873,25 +2891,31 @@ body {
 .rb-icon-italic { font-style: italic; }
 .rb-icon-underline { text-decoration: underline; text-underline-offset: 3px; }
 .classic-paperclip {
-  width: 10px;
-  height: 20px;
-  border: 2px solid currentColor;
-  border-left-width: 0;
-  border-radius: 0 10px 10px 0;
+  width: 21px;
+  height: 21px;
   display: inline-block;
-  position: relative;
-  transform: rotate(45deg);
+  flex: 0 0 auto;
+  color: currentColor;
 }
-.classic-paperclip::after {
-  content: "";
-  position: absolute;
-  left: 2px;
-  top: 4px;
-  width: 6px;
-  height: 10px;
-  border: 2px solid currentColor;
-  border-left-width: 0;
-  border-radius: 0 8px 8px 0;
+.classic-paperclip path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hyperlink-icon {
+  width: 24px;
+  height: 20px;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+.hyperlink-icon path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .mail-shell .rb-divider {
   width: 1px;
@@ -2921,6 +2945,46 @@ body {
   font-size: .82rem;
   font-weight: 700;
 }
+.mail-validation-alert {
+  margin: 8px 16px 0;
+  display: block;
+  font-weight: 700;
+}
+.mail-sent-status {
+  margin: 8px 16px 0;
+  padding: 10px 14px;
+  border: 1px solid #77be8c;
+  border-radius: 5px;
+  background: #eaf8ee;
+  color: #176b32;
+  font-size: .95rem;
+  font-weight: 800;
+}
+.mail-send-prompt {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 8px 16px 0;
+  padding: 10px 12px;
+  border: 1px solid #e0a33a;
+  border-radius: 5px;
+  background: #fff8e7;
+  color: #5f4200;
+  font-size: .88rem;
+}
+.mail-send-prompt strong { color: #7c4f00; }
+.mail-send-prompt-actions { display: inline-flex; gap: 8px; margin-left: auto; }
+.mail-send-prompt-actions button {
+  border: 1px solid #b88320;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mail-send-prompt-confirm { background: #0f6cbd; color: #fff; border-color: #0f6cbd !important; }
+.mail-send-prompt-cancel { background: #fff; color: #5f4200; }
 
 .mail-send-row {
   display: flex;
@@ -3043,6 +3107,43 @@ body {
 }
 .mail-shell .mail-field.mail-field-subject > .label { display: none; }
 .mail-shell .mail-field.mail-field-subject .subject-input { font-weight: 400; }
+.mail-subject-picker {
+  position: absolute;
+  top: calc(100% - 2px);
+  left: 0;
+  z-index: 15;
+  min-width: 250px;
+  background: #fff;
+  border: 1px solid var(--c-line);
+  border-radius: 5px;
+  box-shadow: var(--shadow-md);
+  padding: 8px;
+}
+.mail-subject-picker-label {
+  padding: 2px 8px 6px;
+  color: var(--c-ink-soft);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.mail-subject-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--c-ink);
+  padding: 8px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.mail-subject-option:hover,
+.mail-subject-option.is-picked { background: #eef5ff; border-color: #b9d4f2; color: #0f4d8f; }
 .mail-shell .chips-row {
   display: flex;
   flex-wrap: wrap;
