@@ -2611,15 +2611,15 @@
         },
         {
           "optionId": "C",
-          "text": "Leerlingen hoeven minder apps te installeren."
+          "text": "Een storing kan alleen de berichten raken; rooster en huiswerk blijven altijd beschikbaar."
         },
         {
           "optionId": "D",
-          "text": "Berichten staan overzichtelijker op één plek."
+          "text": "Een centraal platform maakt de informatie automatisch veilig tegen misbruik."
         },
         {
           "optionId": "E",
-          "text": "De school hoeft minder uitleg te geven."
+          "text": "Als een platform veel gebruikt wordt, worden problemen vanzelf sneller opgelost."
         },
         {
           "optionId": "F",
@@ -2633,24 +2633,19 @@
         "A",
         "B"
       ],
-      "harmfulAnswers": [
-        "C",
-        "D",
-        "E"
-      ],
+      "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
-        "rule": "partial-select-with-harmful-zero-cap",
+        "rule": "partial-select",
         "unknownScoresZero": true,
         "unknownExclusive": true,
-        "harmfulCap": 0,
         "partialCredit": 0.5,
         "fullCredit": [
           "A",
           "B"
         ]
       },
-      "validityNote": "Leerlingen onderscheiden voordelen van risico’s bij platformafhankelijkheid.",
+      "validityNote": "Leerlingen onderscheiden risico’s van plausibele maar onjuiste aannames over platformafhankelijkheid; de afleiders zijn daarom niet meer als voordelen geformuleerd.",
       "instruction": "Kies twee antwoorden."
     }
   ],
