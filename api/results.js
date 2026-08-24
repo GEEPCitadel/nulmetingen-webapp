@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
+const testAccessCodes = new Set(["TESTVMBO1", "TESTHV1", "TESTVMBO3", "TESTHV3"]);
 const aggregateOnlyItemIds = new Set(["lj1v-sr4-official-source-v36", "pt8-whutsupp-sam-video"]);
 const goalIds = ["21A", "21B", "21C", "21D", "22A", "22B", "23A", "23B", "23C"];
 
@@ -37,8 +38,6 @@ const ensureTables = async (sql) => {
   await sql`
     CREATE TABLE IF NOT EXISTS students (
       id BIGSERIAL PRIMARY KEY,
-      student_number TEXT UNIQUE,
-      participant_label TEXT,
       access_code TEXT NOT NULL,
       class_code TEXT NOT NULL,
       version_id TEXT NOT NULL,
@@ -50,7 +49,6 @@ const ensureTables = async (sql) => {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
-  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS participant_label TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS class_id TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS assessment_id TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS grade_level TEXT`;
@@ -61,6 +59,8 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
+  await sql`ALTER TABLE students DROP COLUMN IF EXISTS participant_label`;
+  await sql`ALTER TABLE students DROP COLUMN IF EXISTS student_number`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS assessment_sessions (
@@ -633,6 +633,12 @@ export default async function handler(request, response) {
       !session.completedAt
     ) {
       response.status(400).json({ ok: false });
+      return;
+    }
+
+    const requestedAccessCode = String(session?.metadata?.accessCode ?? session?.accessCode ?? "").trim().toUpperCase();
+    if (testAccessCodes.has(requestedAccessCode)) {
+      response.status(200).json({ ok: true });
       return;
     }
 

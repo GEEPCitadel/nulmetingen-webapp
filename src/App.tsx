@@ -115,8 +115,6 @@ type SubmitAnswerPayload = {
 };
 
 type ApiStudent = {
-  studentNumber?: string;
-  participantLabel?: string;
   accessCode: string;
   classCode: string;
   classId?: string;
@@ -584,7 +582,6 @@ const App = () => {
       const anonymousAttemptId = crypto.randomUUID();
       const metadata: SessionMetadata = {
         accessCode: data.student.accessCode,
-        participantLabel: data.student.participantLabel,
         classId: data.student.classCode,
         classCode: data.student.classCode,
         anonymousAttemptId,
@@ -1116,15 +1113,14 @@ const StudentStartScreen = ({
             <li>De voortgangsmeting bestaat uit <strong>{assignmentCount}</strong> opdrachten.</li>
             <li>De voortgangsmeting duurt ongeveer 30 minuten.</li>
             <li>Zoek geen antwoorden op internet.</li>
-            <li>Per ongeluk afgesloten?</li>
-            <li>Vul dezelfde inlogcode opnieuw in.</li>
+            <li>Per ongeluk afgesloten? Vul dezelfde inlogcode opnieuw in.</li>
             <li>Aan het einde zie je welke score jij hebt gehaald.</li>
           </ul>
         </div>
 
         <div className="privacy-consent-box">
           <p>
-            Deze voortgangsmeting wordt aangeboden door Citadel College. Je antwoorden worden <strong>zonder naam</strong> opgeslagen — de uitkomsten zijn niet terug te leiden naar jou persoonlijk. De school bekijkt de resultaten per klas en per leerjaar.
+            Deze voortgangsmeting gebruikt geen namen of leerlingnummers. Je afnamecode is niet gekoppeld aan jouw naam; de school ziet alleen anonieme codes, aantallen per klas en resultaten per klas en leerjaar.
           </p>
           <p>Meedoen is niet verplicht.</p>
           <label className="check-row">
@@ -1231,6 +1227,7 @@ const AdminScreen = ({
   const [gradeLevel, setGradeLevel] = useState<"lj1" | "lj3">("lj1");
   const [track, setTrack] = useState<"vmbo" | "hv">("vmbo");
   const [classCodeInput, setClassCodeInput] = useState("vmbo1a");
+  const [codeCount, setCodeCount] = useState(28);
   const [assessmentWindow, setAssessmentWindow] = useState("");
   const [cohort, setCohort] = useState("");
   const [importBatch, setImportBatch] = useState("");
@@ -1387,23 +1384,26 @@ const AdminScreen = ({
     }));
   };
 
-  const duplicateNamesForPreview = (rows: ImportStudentRow[]) => {
-    const counts = rows.reduce<Record<string, number>>((acc, row) => {
-      const key = `${row.classCode}::${row.participantLabel.toLowerCase()}`;
-      acc[key] = (acc[key] ?? 0) + 1;
-      return acc;
-    }, {});
-    const existing = new Set(
-      students
-        .filter((student) => student.classCode === classCodeInput.trim().toLowerCase())
-        .map((student) => student.participantLabel?.trim().toLowerCase())
-        .filter(Boolean) as string[],
-    );
-    return new Set(
-      rows
-        .filter((row) => counts[`${row.classCode}::${row.participantLabel.toLowerCase()}`] > 1 || existing.has(row.participantLabel.toLowerCase()))
-        .map((row) => row.participantLabel.toLowerCase()),
-    );
+  const createAnonymousCodeRows = (): ImportStudentRow[] => {
+    const classCode = classCodeInput.trim().toLowerCase();
+    const windowLabel = assessmentWindow.trim();
+    const cohortLabel = cohort.trim() || windowLabel;
+    if (!gradeLevel || !track || !classCode || !versionId) {
+      throw new Error("Vul leerjaar, niveau/meting en klas in.");
+    }
+    if (!Number.isInteger(codeCount) || codeCount < 1 || codeCount > 250) {
+      throw new Error("Vul een aantal tussen 1 en 250 in.");
+    }
+    return Array.from({ length: codeCount }, () => ({
+      classCode,
+      participantLabel: "",
+      classId: classCode,
+      assessmentId: versionId,
+      gradeLevel,
+      track,
+      cohort: cohortLabel,
+      assessmentWindow: windowLabel,
+    }));
   };
 
   const prepareBulkPreview = () => {
@@ -1551,13 +1551,13 @@ const AdminScreen = ({
   const importStudents = async (rowsFromPreview = previewRows) => {
     let rows: ImportStudentRow[];
     try {
-      rows = rowsFromPreview.length > 0 ? rowsFromPreview : parseBulkNameRows();
+      rows = rowsFromPreview.length > 0 ? rowsFromPreview : createAnonymousCodeRows();
       if (rows.length === 0) {
-        setError("Plak minimaal een leerlingnaam.");
+        setError("Vul een geldig aantal anonieme codes in.");
         return;
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "De namen konden niet worden gelezen.");
+      setError(caught instanceof Error ? caught.message : "De anonieme codes konden niet worden aangemaakt.");
       return;
     }
 
@@ -1588,7 +1588,6 @@ const AdminScreen = ({
   const getExportRows = () =>
     filteredStudents.map((student) => ({
       Inlogcode: student.accessCode,
-      Leerling: student.participantLabel || "",
       Klas: student.classCode,
       Nulmeting: assessmentLabels[student.versionId] ?? student.versionId,
       Status: statusLabel(student.status),
@@ -1615,10 +1614,10 @@ const AdminScreen = ({
     const htmlRows = rows
       .map(
         (row) =>
-          `<tr><td>${escapeHtml(row.Inlogcode)}</td><td>${escapeHtml(row.Leerling)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td><td>${escapeHtml(row["Import-batch"])}</td></tr>`,
+          `<tr><td>${escapeHtml(row.Inlogcode)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td><td>${escapeHtml(row["Import-batch"])}</td></tr>`,
       )
       .join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Inlogcodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Inlogcodes nulmeting</h1><table><thead><tr><th>Inlogcode</th><th>Leerling</th><th>Klas</th><th>Nulmeting</th><th>Status</th><th>Import-batch</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Inlogcodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Anonieme inlogcodes nulmeting</h1><table><thead><tr><th>Inlogcode</th><th>Klas</th><th>Nulmeting</th><th>Status</th><th>Import-batch</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     downloadFile(`${exportBaseName()}.doc`, html, "application/msword");
   };
 
@@ -1628,7 +1627,7 @@ const AdminScreen = ({
       "Inlogcodes nulmeting Digitale Geletterdheid",
       "",
       ...rows.flatMap((row) => [
-        `${row.Klas} | ${row.Leerling || "Geen label"} | ${row.Inlogcode} | ${row.Status}`,
+        `${row.Klas} | ${row.Inlogcode} | ${row.Status}`,
       ]),
     ];
     downloadFile(`${exportBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
@@ -1893,6 +1892,23 @@ const AdminScreen = ({
   const completedCount = classFilteredStudents.filter((s) => s.status === "completed").length;
   const busyCount = classFilteredStudents.filter((s) => s.status === "in_progress").length;
   const notStartedCount = classFilteredStudents.filter((s) => !s.status || s.status === "not_started").length;
+  const classProgress = Object.values(
+    students.reduce<Record<string, { classCode: string; versionId: AssessmentVersion["id"]; total: number; completed: number; busy: number }>>((groups, student) => {
+      const key = `${student.classCode}:${student.versionId}:${student.assessmentWindow ?? ""}`;
+      const group = groups[key] ?? {
+        classCode: student.classCode,
+        versionId: student.versionId,
+        total: 0,
+        completed: 0,
+        busy: 0,
+      };
+      group.total += 1;
+      if (student.status === "completed") group.completed += 1;
+      if (student.status === "in_progress") group.busy += 1;
+      groups[key] = group;
+      return groups;
+    }, {}),
+  ).sort((left, right) => left.classCode.localeCompare(right.classCode, "nl"));
   const stats: Array<{
     label: string;
     value: string;
@@ -1900,7 +1916,7 @@ const AdminScreen = ({
     up: boolean;
   }> = [
     {
-      label: "Totaal leerlingen",
+      label: "Totaal codes",
       value: String(classFilteredStudents.length),
       delta: classFilter.length === 0 ? "Binnen het gekozen leerjaar" : classFilterLabel,
       up: true,
@@ -1914,7 +1930,7 @@ const AdminScreen = ({
     {
       label: "Afgerond",
       value: String(completedCount),
-      delta: "Status zonder scorekoppeling",
+      delta: "Anonieme voortgang",
       up: true,
     },
     {
@@ -1952,7 +1968,7 @@ const AdminScreen = ({
             Beheer inlogcodes<br />en klasvoortgang
           </h1>
           <p className="intro">
-            Filter op klas en status om tijdens de afname direct te zien wie bezig of klaar is.
+            Vernieuw om per klas te zien hoeveel anonieme afnames bezig of afgerond zijn. Namen en individuele scores zijn niet beschikbaar.
           </p>
         </div>
         <div className="admin-side-card">
@@ -1982,7 +1998,7 @@ const AdminScreen = ({
           <hr style={{ border: 0, borderTop: "1px solid var(--c-line)", margin: "12px 0" }} />
           <div style={{ display: "flex", gap: 24, fontSize: ".88rem" }}>
             <div>
-              <div style={{ color: "var(--c-ink-soft)", fontWeight: 500 }}>Leerlingen</div>
+              <div style={{ color: "var(--c-ink-soft)", fontWeight: 500 }}>Codes</div>
               <div style={{ fontWeight: 700 }}>{classFilteredStudents.length}</div>
             </div>
             <div>
@@ -2007,6 +2023,23 @@ const AdminScreen = ({
           </div>
         ))}
       </div>
+
+      <section className="admin-preview-block">
+        <h3>Voortgang per klas</h3>
+        <p className="help">Ververs deze pagina om de anonieme voortgang bij te werken. Alleen aantallen worden getoond.</p>
+        <div className="analysis-table compact">
+          <div className="analysis-row head"><span>Klas</span><span>Meting</span><span>Afgerond</span><span>Bezig</span></div>
+          {classProgress.map((progress) => (
+            <div className="analysis-row" key={`${progress.classCode}-${progress.versionId}`}>
+              <span>{progress.classCode}</span>
+              <span>{assessmentLabels[progress.versionId]}</span>
+              <span>{progress.completed} / {progress.total}</span>
+              <span>{progress.busy}</span>
+            </div>
+          ))}
+          {classProgress.length === 0 ? <p className="help">Er zijn nog geen codepools aangemaakt.</p> : null}
+        </div>
+      </section>
 
       <nav className="admin-main-tabs" aria-label="Beheeromgeving">
         <button className={adminTab === "codes" ? "active" : ""} type="button" onClick={() => setAdminTab("codes")}>
@@ -2250,15 +2283,14 @@ const AdminScreen = ({
       <>
       <details className="import-panel admin-add-students">
         <summary>
-          <span>Leerlingen toevoegen</span>
-          <small>Open alleen wanneer je nieuwe inlogcodes nodig hebt</small>
+          <span>Anonieme codepool aanmaken</span>
+          <small>Maak één willekeurige code per leerling, zonder namenlijst</small>
         </summary>
         <div className="admin-add-students-content">
-        <span className="overline">Beheer &gt; Inlogcodes &gt; Leerlingen toevoegen</span>
-        <h3>Leerlingen toevoegen</h3>
+        <span className="overline">Beheer &gt; Inlogcodes &gt; Anonieme codepool</span>
+        <h3>Anonieme codepool aanmaken</h3>
         <p className="help">
-          Kies klas en meting, plak één leerling per regel en klik op <strong>Inlogcodes maken</strong>.
-          Namen zijn alleen zichtbaar voor het uitdelen; resultaten blijven op klasniveau.
+          Kies klas en meting en maak precies genoeg willekeurige codes. Deel de codes willekeurig uit en houd geen koppeling met namen bij.
         </p>
         <div className="grid">
           <label>
@@ -2295,27 +2327,17 @@ const AdminScreen = ({
             </label>
           </details>
           <label>
-            <span>Leerlingen (één per regel)</span>
-            <textarea
-              value={nameListText}
-              onChange={(event) => setNameListText(event.target.value)}
-              placeholder={"Plak hier leerlingnamen.\nEen leerling per regel.\n\nVoorbeeld:\nSanne Jansen\nMilan Verbeek\nNoor Peters"}
-            />
-          </label>
-          <label className="file-import-control">
-            <span>CSV importeren</span>
+            <span>Aantal codes</span>
             <input
-              type="file"
-              accept=".csv,.txt"
-              onChange={(event) => {
-                void handleImportFile(event.target.files?.[0] ?? null);
-                event.currentTarget.value = "";
-              }}
-              disabled={isLoading}
+              type="number"
+              min="1"
+              max="250"
+              value={codeCount}
+              onChange={(event) => setCodeCount(Number(event.target.value))}
             />
           </label>
           <button className="btn-import" type="button" onClick={() => void importStudents([])} disabled={isLoading}>
-            {isLoading ? "Maken..." : "Inlogcodes maken"}
+            {isLoading ? "Maken..." : "Anonieme codes maken"}
           </button>
         </div>
         {message ? (
@@ -2335,9 +2357,9 @@ const AdminScreen = ({
                 type="button"
                 onClick={() => {
                   const text = createdCodeRows
-                    .map((student) => `${student.participantLabel ?? ""}\t${student.classCode}\t${student.accessCode}`)
+                    .map((student) => `${student.classCode}\t${student.accessCode}`)
                     .join("\n");
-                  void navigator.clipboard?.writeText(`Naam\tKlas\tInlogcode\n${text}`);
+                  void navigator.clipboard?.writeText(`Klas\tInlogcode\n${text}`);
                 }}
               >
                 Kopieer
@@ -2348,13 +2370,11 @@ const AdminScreen = ({
             </div>
             <div className="analysis-table compact">
               <div className="analysis-row head">
-                <span>Naam</span>
                 <span>Klas</span>
                 <span>Inlogcode</span>
               </div>
               {createdCodeRows.map((student) => (
                 <div className="analysis-row" key={student.accessCode}>
-                  <span>{student.participantLabel || "Geen label"}</span>
                   <span>{student.classCode}</span>
                   <span className="code-cell">{student.accessCode}</span>
                 </div>
@@ -2362,6 +2382,17 @@ const AdminScreen = ({
             </div>
           </div>
         ) : null}
+        <div className="admin-preview-block">
+          <h4>Testcodes voor beheerders</h4>
+          <p className="help">Deze vier codes werken altijd, slaan geen voortgang of resultaten op en tellen niet mee in een klas.</p>
+          <div className="analysis-table compact">
+            <div className="analysis-row head"><span>Meting</span><span>Testcode</span></div>
+            <div className="analysis-row"><span>VMBO leerjaar 1</span><span className="code-cell">TESTVMBO1</span></div>
+            <div className="analysis-row"><span>HAVO/VWO leerjaar 1</span><span className="code-cell">TESTHV1</span></div>
+            <div className="analysis-row"><span>VMBO leerjaar 3</span><span className="code-cell">TESTVMBO3</span></div>
+            <div className="analysis-row"><span>HAVO/VWO leerjaar 3</span><span className="code-cell">TESTHV3</span></div>
+          </div>
+        </div>
         </div>
       </details>
 
@@ -2439,7 +2470,7 @@ const AdminScreen = ({
         <div className="rd-section-head">
           <div>
             <span className="overline">Overzicht</span>
-            <h3 style={{ marginTop: 6 }}>Leerlingen ({filteredStudents.length})</h3>
+            <h3 style={{ marginTop: 6 }}>Anonieme codes ({filteredStudents.length})</h3>
           </div>
           <div className="rd-section-head" style={{ marginBottom: 0, gap: 12 }}>
             <div className="filters">
@@ -2578,7 +2609,7 @@ const AdminScreen = ({
           <div className="rd-student-row head">
             <span>
               <input
-                aria-label="Selecteer alle zichtbare leerlingen"
+                aria-label="Selecteer alle zichtbare codes"
                 type="checkbox"
                 checked={allVisibleSelected}
                 disabled={filteredAccessCodes.length === 0}
@@ -2592,7 +2623,7 @@ const AdminScreen = ({
               />
             </span>
             <span>Inlogcode</span>
-            <span>Leerling</span>
+            <span>Anoniem</span>
             <span>Klas</span>
             <span>Meting</span>
             <span>Status</span>
@@ -2630,7 +2661,7 @@ const AdminScreen = ({
                     />
                   </span>
                   <span className="code-cell">{student.accessCode}</span>
-                  <span>{student.participantLabel || "Geen label"}</span>
+                  <span>Ja</span>
                   <span>{student.classCode}</span>
                   <span>
                     <span className="meting-pill" data-p={palette}>
@@ -2744,6 +2775,7 @@ const FinishAssessmentScreen = ({
           </button>
         ))}
       </div>
+
       {missingCount > 0 ? (
         <p className="finish-missing-message" role="alert">
           Vul eerst nog {missingCount} {missingCount === 1 ? "onderdeel" : "onderdelen"} in.

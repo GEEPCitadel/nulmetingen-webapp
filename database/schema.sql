@@ -1,11 +1,10 @@
 -- Nulmetingen DG Assessment Database Schema
--- Persoonlijke afnamecodes worden alleen gebruikt voor statusbeheer.
+-- Afnamecodes zijn willekeurige, anonieme codes per klas. Sla geen namen,
+-- leerlingnummers of een koppeltabel tussen die gegevens en codes op.
 -- Resultaten worden zonder afnamecode, naam of leerlingnummer opgeslagen.
 
 CREATE TABLE IF NOT EXISTS students (
   id BIGSERIAL PRIMARY KEY,
-  student_number TEXT UNIQUE,
-  participant_label TEXT,
   access_code TEXT NOT NULL,
   class_code TEXT NOT NULL,
   version_id TEXT NOT NULL,

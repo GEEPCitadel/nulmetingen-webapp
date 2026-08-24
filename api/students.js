@@ -41,8 +41,6 @@ const ensureTables = async (sql) => {
   await sql`
     CREATE TABLE IF NOT EXISTS students (
       id BIGSERIAL PRIMARY KEY,
-      student_number TEXT UNIQUE,
-      participant_label TEXT,
       access_code TEXT NOT NULL,
       class_code TEXT NOT NULL,
       version_id TEXT NOT NULL,
@@ -54,7 +52,6 @@ const ensureTables = async (sql) => {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
-  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS participant_label TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS class_code TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS class_id TEXT`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS assessment_id TEXT`;
@@ -67,8 +64,11 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
-  await sql`ALTER TABLE students ALTER COLUMN student_number DROP NOT NULL`;
   await sql`ALTER TABLE students DROP CONSTRAINT IF EXISTS students_access_code_key`;
+  // Older versions linked an access code to a name or pupil number. Remove those
+  // columns entirely during migration so new data cannot recreate that link.
+  await sql`ALTER TABLE students DROP COLUMN IF EXISTS participant_label`;
+  await sql`ALTER TABLE students DROP COLUMN IF EXISTS student_number`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS assessment_sessions (
@@ -105,7 +105,7 @@ const ensureTables = async (sql) => {
 
   for (const code of removedLegacyCodes) {
     await sql`DELETE FROM assessment_sessions WHERE access_code = ${code}`;
-    await sql`DELETE FROM students WHERE access_code = ${code} OR student_number = ${code}`;
+    await sql`DELETE FROM students WHERE access_code = ${code}`;
   }
 };
 
@@ -114,8 +114,6 @@ const normalizeStudentRows = (students, versionId, importBatch) => {
   const fallbackMetadata = metadataForVersion(versionId);
   return students.map((student, index) => {
     const classCode = typeof student.classCode === "string" ? student.classCode.trim().toLowerCase() : "";
-    const participantLabel =
-      typeof student.participantLabel === "string" ? student.participantLabel.trim() : "";
     const classId = String(student.classId ?? classCode).trim().toLowerCase();
     const assessmentId = String(student.assessmentId ?? versionId).trim();
     const gradeLevel = String(student.gradeLevel ?? fallbackMetadata.gradeLevel).trim().toLowerCase();
@@ -126,7 +124,6 @@ const normalizeStudentRows = (students, versionId, importBatch) => {
     if (!classCode) throw new Error(`Rij ${index + 1}: klas ontbreekt.`);
     return {
       classCode,
-      participantLabel,
       versionId,
       importBatch,
       classId: classId || classCode,
@@ -150,15 +147,14 @@ const createUniqueCode = async (sql) => {
 
 const listStudents = async (sql) => {
   const rows = await sql`
-    SELECT access_code, participant_label, class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, import_batch, status, completed_at, updated_at
+    SELECT access_code, class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, import_batch, status, completed_at, updated_at
     FROM students
-    ORDER BY class_code ASC, participant_label ASC, access_code ASC
+    ORDER BY class_code ASC, access_code ASC
     LIMIT 10000
   `;
 
   const storedStudents = rows.map((row) => ({
     ...metadataForVersion(row.version_id),
-    participantLabel: row.participant_label ?? "",
     accessCode: row.access_code,
     classCode: row.class_code,
     classId: row.class_id ?? row.class_code,
@@ -329,8 +325,6 @@ export default async function handler(request, response) {
       const accessCode = await createUniqueCode(sql);
       await sql`
         INSERT INTO students (
-          student_number,
-          participant_label,
           access_code,
           class_code,
           class_id,
@@ -344,8 +338,6 @@ export default async function handler(request, response) {
         )
         VALUES (
           ${accessCode},
-          ${row.participantLabel || null},
-          ${accessCode},
           ${row.classCode},
           ${row.classId},
           ${row.versionId},
@@ -358,7 +350,6 @@ export default async function handler(request, response) {
         )
       `;
       createdStudents.push({
-        participantLabel: row.participantLabel,
         accessCode,
         classCode: row.classCode,
         classId: row.classId,

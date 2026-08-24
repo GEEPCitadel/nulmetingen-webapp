@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
+const testAccessCodes = new Set(["TESTVMBO1", "TESTHV1", "TESTVMBO3", "TESTHV3"]);
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") return request.body;
@@ -13,8 +14,6 @@ const ensureTable = async (sql) => {
   await sql`
     CREATE TABLE IF NOT EXISTS students (
       id BIGSERIAL PRIMARY KEY,
-      student_number TEXT UNIQUE,
-      participant_label TEXT,
       access_code TEXT NOT NULL,
       class_code TEXT NOT NULL,
       version_id TEXT NOT NULL,
@@ -50,6 +49,8 @@ const ensureTable = async (sql) => {
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
+  await sql`ALTER TABLE students DROP COLUMN IF EXISTS participant_label`;
+  await sql`ALTER TABLE students DROP COLUMN IF EXISTS student_number`;
 };
 
 export default async function handler(request, response) {
@@ -86,6 +87,12 @@ export default async function handler(request, response) {
       !validVersionIds.has(versionId)
     ) {
       response.status(400).json({ ok: false });
+      return;
+    }
+
+    // Test runs must not create a resumable session or affect class progress.
+    if (testAccessCodes.has(accessCode)) {
+      response.status(200).json({ ok: true });
       return;
     }
 
