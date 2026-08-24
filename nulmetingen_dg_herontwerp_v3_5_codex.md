@@ -128,7 +128,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Anchorstatus: concept-anchor
 - Max. punten: 1
 - Titel: School morgen dicht?
-- Vraag: In Whutsupp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?
+- Vraag: In WhatsApp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?
 - Antwoordopties:
   - A. Checken of hetzelfde bericht in de schoolapp, schoolmail of op de schoolsite staat. *(correct)*
   - B. Aan de klasgenoot vragen waar hij het vandaan heeft; als hij “van iemand van school” zegt, stuur je het door.
@@ -197,7 +197,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: In Whutsupp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?
+- Vraag: In WhatsApp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?
 - Antwoordopties:
   - A. Vragen of iedereen op de foto dat goed vindt. *(correct)*
   - B. De foto alleen in de klassenapp zetten; dan is toestemming niet nodig.
@@ -886,7 +886,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
   - 1 punt: passende hulp-, meld- of verificatieroute kiezen
   - 1 punt: veilige en respectvolle follow-up kiezen
 - PT8-varianten zijn volledig gespecificeerd in de JSON. Samenvatting:
-  - lj1-vmbo: Whutsupp: foto van klasgenoten — In Whutsupp wil iemand een foto van drie klasgenoten in de klassenapp zetten. Eén klasgenoot wil eerst weten welke foto het is. De leerling kiest toestemming vragen, niet delen zolang niet iedereen akkoord is, en verwijderen als iemand geen toestemming geeft.
+  - lj1-vmbo: WhatsApp: foto van klasgenoten — In WhatsApp wil iemand een foto van drie klasgenoten in de klassenapp zetten. Eén klasgenoot wil eerst weten welke foto het is. De leerling kiest toestemming vragen, niet delen zolang niet iedereen akkoord is, en verwijderen als iemand geen toestemming geeft.
   - lj1-hv: Challenge: locatie en rooster delen — In een groepschat gaat een challenge rond: “Laat zien waar je bent: stuur je rooster en zet je live locatie aan.” Een paar leerlingen zetten druk om mee te doen.
   - lj3-vmbo: Nepaccount met naam en foto — Er verschijnt een account met de naam en foto van een leerling. Het account plaatst vervelende reacties. De leerling zegt dat hij dit account niet heeft gemaakt.
   - lj3-hv: Gemanipuleerde clip via anoniem account — Een korte clip over een docent of leerling gaat rond via een anoniem account. De clip lijkt echt, maar context ontbreekt en beeld en geluid lopen net niet gelijk.

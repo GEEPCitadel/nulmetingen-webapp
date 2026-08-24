@@ -290,12 +290,12 @@
               "uiQuestionNumber": 7,
               "type": "social_action_simulation",
               "sectionId": "pt8",
-              "title": "Whutsupp: video in de groepschat",
+              "title": "WhatsApp: video in de groepschat",
               "subgoals": [
                 "23B"
               ],
               "points": 4,
-              "prompt": "Je zit in de Whutsupp-groep van je klas. Er komt een video van Sam in de chat. Kies wat jij doet.",
+              "prompt": "Je zit in de WhatsApp-groep van je klas. Er komt een video van Sam in de chat. Kies wat jij doet.",
               "randomization": {
                 "optionOrderRandomized": true,
                 "unknownPinnedLast": true
@@ -765,7 +765,7 @@
                 "21B"
               ],
               "points": 1,
-              "prompt": "In Whutsupp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?",
+              "prompt": "In WhatsApp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?",
               "randomization": {
                 "randomizeOptions": true,
                 "pinUnknownLast": true
@@ -1135,7 +1135,7 @@
                 "23B"
               ],
               "points": 1,
-              "prompt": "In Whutsupp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?",
+              "prompt": "In WhatsApp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?",
               "randomization": {
                 "randomizeOptions": true,
                 "pinUnknownLast": true
@@ -1559,12 +1559,12 @@
               "uiQuestionNumber": 7,
               "type": "social_action_simulation",
               "sectionId": "pt8",
-              "title": "Whutsupp: video in de groepschat",
+              "title": "WhatsApp: video in de groepschat",
               "subgoals": [
                 "23B"
               ],
               "points": 4,
-              "prompt": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+              "prompt": "Je zit in een WhatsApp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
               "randomization": {
                 "optionOrderRandomized": true,
                 "unknownPinnedLast": true
@@ -2835,12 +2835,12 @@
               "uiQuestionNumber": 7,
               "type": "social_action_simulation",
               "sectionId": "pt8",
-              "title": "Whutsupp: video in de groepschat",
+              "title": "WhatsApp: video in de groepschat",
               "subgoals": [
                 "23B"
               ],
               "points": 4,
-              "prompt": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+              "prompt": "Je zit in een WhatsApp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
               "randomization": {
                 "optionOrderRandomized": true,
                 "unknownPinnedLast": true
@@ -4131,12 +4131,12 @@
               "uiQuestionNumber": 7,
               "type": "social_action_simulation",
               "sectionId": "pt8",
-              "title": "Whutsupp: video in de groepschat",
+              "title": "WhatsApp: video in de groepschat",
               "subgoals": [
                 "23B"
               ],
               "points": 4,
-              "prompt": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+              "prompt": "Je zit in een WhatsApp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
               "randomization": {
                 "optionOrderRandomized": true,
                 "unknownPinnedLast": true

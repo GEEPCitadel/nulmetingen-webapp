@@ -45,7 +45,7 @@ Kerndoel- en subdoelkoppeling wordt per item vastgelegd in `kerndoel`, `subgoal`
 | 4 | lj1v-pt4-excel | excel_download_task | 21C, 21A | 4 | PT4 - Excel/data sorteren en filteren | 2 scoringsonderdelen |
 | 5 | lj1vmbo-pt6-screen-share | teams_share_simulation | 23A | 3 | Schermdelen in een online les | 3 scoringsonderdelen |
 | 6 | lj1v-pt7-programming-debug-v1 | block_programming_task | 22B | 4 | PT7 - Blokprogrammeren | 2 debug-reparaties; 1 tests |
-| 7 | pt8-whutsupp-sam-video | social_action_simulation | 23B | 4 | Whutsupp: video in de groepschat | 4 Whutsupp-beslismomenten; harmful caps actief |
+| 7 | pt8-whutsupp-sam-video | social_action_simulation | 23B | 4 | WhatsApp: video in de groepschat | 4 WhatsApp-beslismomenten; harmful caps actief |
 | 8 | lj1v-sr1-pw-passphrase | multiple_choice | 23A | 1 | Sterk wachtwoord kiezen | single choice; option-id scoring; 5 opties |
 | 9 | lj1v-vraag9-ai-workstuk-v4 | social_action_simulation | 21D | 1 | AI gebruiken voor je werkstuk | 2 scoringsonderdelen |
 | 10 | lj1v-sr3-phone | multiple_choice | 21A | 1 | Opslag bijna vol | single choice; option-id scoring; 5 opties |
@@ -67,7 +67,7 @@ Kerndoel- en subdoelkoppeling wordt per item vastgelegd in `kerndoel`, `subgoal`
 | 4 | lj1h-pt4-excel | excel_download_task | 21C, 21A | 4 | PT4 - Excel/data sorteren en filteren | 2 scoringsonderdelen |
 | 5 | lj1hv-pt6-screen-share | teams_share_simulation | 23A | 3 | Schermdelen in een online les | 3 scoringsonderdelen |
 | 6 | lj1h-pt7-programming-debug-v1 | block_programming_task | 22B | 4 | PT7 - Blokprogrammeren | 2 debug-reparaties; 1 tests |
-| 7 | pt8-whutsupp-sam-video | social_action_simulation | 23B | 4 | Whutsupp: video in de groepschat | 4 Whutsupp-beslismomenten; harmful caps actief |
+| 7 | pt8-whutsupp-sam-video | social_action_simulation | 23B | 4 | WhatsApp: video in de groepschat | 4 WhatsApp-beslismomenten; harmful caps actief |
 | 8 | lj1h-sr1-pw-passphrase | multiple_choice | 23A | 1 | Sterk wachtwoord kiezen | single choice; option-id scoring; 5 opties |
 | 9 | lj1h-vraag9-ai-presentatie-v4 | social_action_simulation | 21D | 1 | AI gebruiken voor een presentatie | 2 scoringsonderdelen |
 | 10 | lj1h-sr3-phone-actions | multiple_choice | 21A | 1 | Trage telefoon | multiple select; option-id scoring; 6 opties |
@@ -89,7 +89,7 @@ Kerndoel- en subdoelkoppeling wordt per item vastgelegd in `kerndoel`, `subgoal`
 | 4 | lj3v-pt4-excel | excel_download_task | 21C, 21A | 4 | PT4 - Excel/data sorteren en filteren | 2 scoringsonderdelen |
 | 5 | lj3vmbo-pt6-screen-share | teams_share_simulation | 23A | 3 | Schermdelen in een online les | 3 scoringsonderdelen |
 | 6 | lj3v-pt7-programming-debug-v1 | block_programming_task | 22B | 4 | PT7 - Blokprogrammeren | 2 debug-reparaties; 2 tests |
-| 7 | pt8-whutsupp-sam-video | social_action_simulation | 23B | 4 | Whutsupp: video in de groepschat | 4 Whutsupp-beslismomenten; harmful caps actief |
+| 7 | pt8-whutsupp-sam-video | social_action_simulation | 23B | 4 | WhatsApp: video in de groepschat | 4 WhatsApp-beslismomenten; harmful caps actief |
 | 8 | lj3v-sr1-cijfermail | multiple_choice | 23A | 1 | Mail over nieuw cijfer | single choice; option-id scoring; 5 opties |
 | 9 | lj3v-vraag9-ai-stagebrief-v4 | social_action_simulation | 21D | 1 | AI gebruiken voor een stagebrief | 2 scoringsonderdelen |
 | 10 | lj3v-sr3-phone-actions | multiple_choice | 21A | 1 | Telefoon versnellen | multiple select; option-id scoring; 7 opties |
@@ -111,7 +111,7 @@ Kerndoel- en subdoelkoppeling wordt per item vastgelegd in `kerndoel`, `subgoal`
 | 4 | lj3h-pt4-excel | excel_download_task | 21C, 21A | 4 | PT4 - Excel/data sorteren en filteren | 2 scoringsonderdelen |
 | 5 | lj3hv-pt6-screen-share | teams_share_simulation | 23A | 3 | Schermdelen in een online les | 3 scoringsonderdelen |
 | 6 | lj3h-pt7-programming-debug-v1 | block_programming_task | 22B | 4 | PT7 - Blokprogrammeren | 2 debug-reparaties; 4 tests |
-| 7 | pt8-whutsupp-sam-video | social_action_simulation | 23B | 4 | Whutsupp: video in de groepschat | 4 Whutsupp-beslismomenten; harmful caps actief |
+| 7 | pt8-whutsupp-sam-video | social_action_simulation | 23B | 4 | WhatsApp: video in de groepschat | 4 WhatsApp-beslismomenten; harmful caps actief |
 | 8 | lj3h-sr1-accountmail | multiple_choice | 23A | 1 | Mail over accountcontrole | single choice; option-id scoring; 5 opties |
 | 9 | lj3h-vraag9-ai-betoog-v4 | social_action_simulation | 21D | 1 | AI gebruiken voor een betoog | 2 scoringsonderdelen |
 | 10 | lj3h-sr3-phone-actions | multiple_choice | 21A | 1 | Telefoon en onderhoud | multiple select; option-id scoring; 7 opties |

@@ -243,6 +243,12 @@ type AnalysisResponse = {
 // P1 (rainbow on cream) is used for the entry / admin / fallback screens.
 const defaultTheme = themes.rainbowCream;
 const UNKNOWN_OPTION_LABEL = "Ik weet het niet.";
+const selectedIdsFromAnswer = (answer?: SelectedAnswer) =>
+  Array.isArray(answer)
+    ? answer.map(String)
+    : typeof answer === "string"
+      ? [answer]
+      : [];
 
 /* Korte weergavenamen voor secties in de zijbalk */
 const SECTION_SHORT_TITLE: Record<string, string> = {
@@ -503,6 +509,7 @@ const App = () => {
   const [stepStartedAt, setStepStartedAt] = useState(Date.now());
   const [now, setNow] = useState(Date.now());
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
+  const [returnToReviewAfterAnswer, setReturnToReviewAfterAnswer] = useState(false);
 
   const activeAssessment = session ? getAssessment(session) : null;
   const activeTheme = getThemeForSession(session, entryView);
@@ -546,7 +553,7 @@ const App = () => {
   const startAssessment = async () => {
     const code = startContext.classToken.trim().toUpperCase();
     if (!code) {
-      setLearnerCodeError("Vul je persoonlijke afnamecode in.");
+      setLearnerCodeError("Vul je persoonlijke inlogcode in.");
       return;
     }
 
@@ -563,7 +570,7 @@ const App = () => {
       });
 
       if (data.status === "completed") {
-        setLearnerCodeError("Deze afnamecode is al afgerond. Vraag je docent om de code opnieuw open te zetten.");
+        setLearnerCodeError("Deze inlogcode is al afgerond. Vraag je docent om de code opnieuw open te zetten.");
         return;
       }
 
@@ -587,7 +594,7 @@ const App = () => {
       setSession(createSession(assessment, data.student.accessCode, metadata));
       setLearnerCodeError("");
     } catch {
-      setLearnerCodeError("Deze afnamecode is niet gevonden of de nulmeting kon niet worden gestart.");
+      setLearnerCodeError("Deze inlogcode is niet gevonden of de nulmeting kon niet worden gestart.");
     } finally {
       setIsStarting(false);
     }
@@ -621,13 +628,12 @@ const App = () => {
     const stepList = getStepDescriptors(getAssessment(nextSession));
     const nextIndex = nextSession.currentStepIndex + 1;
 
-    if (nextIndex >= stepList.length) {
-      setSession(
-        completeSession({
-          ...nextSession,
-          currentStepIndex: stepList.length,
-        }),
-      );
+    if (returnToReviewAfterAnswer || nextIndex >= stepList.length) {
+      setReturnToReviewAfterAnswer(false);
+      setSession({
+        ...nextSession,
+        currentStepIndex: stepList.length,
+      });
       return;
     }
 
@@ -635,6 +641,60 @@ const App = () => {
       ...nextSession,
       currentStepIndex: nextIndex,
     });
+  };
+
+  const goToPreviousStep = () => {
+    setSession((current) => {
+      if (!current || current.currentStepIndex <= 0 || current.completedAt) {
+        return current;
+      }
+      return {
+        ...current,
+        currentStepIndex: current.currentStepIndex - 1,
+      };
+    });
+  };
+
+  const goToStep = (stepIndex: number) => {
+    if (!session || session.completedAt) {
+      return;
+    }
+    const stepList = getStepDescriptors(getAssessment(session));
+    if (stepIndex < 0 || stepIndex >= stepList.length) {
+      return;
+    }
+    setReturnToReviewAfterAnswer(true);
+    setSession({ ...session, currentStepIndex: stepIndex });
+  };
+
+  const resetApplicationTask = (item: AssessmentItem) => {
+    setSession((current) => {
+      if (!current || current.completedAt) {
+        return current;
+      }
+      const resetFileState = item.type === "file_task_simulation"
+        ? {
+            nodes: item.fileTask?.simulation.nodes.map((node) => ({ ...node })) ?? [],
+            actionLogs: [],
+            undoStack: [],
+            completed: false,
+            score: 0,
+            taskResults: [],
+          }
+        : null;
+      return {
+        ...current,
+        results: current.results.filter((resultEntry) => resultEntry.itemId !== item.id),
+        pt1States: resetFileState
+          ? { ...current.pt1States, [item.id]: resetFileState }
+          : current.pt1States,
+      };
+    });
+  };
+
+  const finalizeAssessment = () => {
+    setReturnToReviewAfterAnswer(false);
+    setSession((current) => current && !current.completedAt ? completeSession(current) : current);
   };
 
   const submitAnswer = ({
@@ -725,6 +785,7 @@ const App = () => {
     setAdminCode("");
     setAdminError("");
     setExitConfirmOpen(false);
+    setReturnToReviewAfterAnswer(false);
   };
 
   const exitAssessment = () => {
@@ -829,8 +890,19 @@ const App = () => {
           onUpdateFileTaskState={updateFileTaskState}
           onFinishFileTask={finishFileTask}
           onSkipPerformanceTask={skipPerformanceTask}
+          onResetApplicationTask={resetApplicationTask}
+          onPrevious={goToPreviousStep}
           onReset={resetSession}
           onExit={exitAssessment}
+        />
+      ) : null}
+
+      {session && activeAssessment && !currentStep && !session.completedAt ? (
+        <FinishAssessmentScreen
+          assessment={activeAssessment}
+          session={session}
+          onEditStep={goToStep}
+          onFinish={finalizeAssessment}
         />
       ) : null}
 
@@ -993,7 +1065,7 @@ const StudentStartScreen = ({
             Digitale Geletterdheid
           </h1>
           <label className="field-block welcome-field">
-            <span className="field-label">Jouw persoonlijke afnamecode</span>
+            <span className="field-label">Jouw persoonlijke inlogcode</span>
             <input
               className="field-input"
               value={classToken}
@@ -1045,7 +1117,7 @@ const StudentStartScreen = ({
             <li>De voortgangsmeting duurt ongeveer 30 minuten.</li>
             <li>Zoek geen antwoorden op internet.</li>
             <li>Per ongeluk afgesloten?</li>
-            <li>Vul dezelfde afnamecode opnieuw in.</li>
+            <li>Vul dezelfde inlogcode opnieuw in.</li>
             <li>Aan het einde zie je welke score jij hebt gehaald.</li>
           </ul>
         </div>
@@ -1110,7 +1182,7 @@ const AdminAccessScreen = ({
     <div className="rd-modal" role="dialog" aria-labelledby="admin-access-title">
       <h3 id="admin-access-title">Beheeromgeving openen</h3>
       <p>
-        Met de beheercode open je de docentomgeving om afnamecodes te
+        Met de beheercode open je de docentomgeving om inlogcodes te
         beheren en de voortgang per klas te bekijken.
       </p>
       <label className="field-block">
@@ -1180,6 +1252,7 @@ const AdminScreen = ({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
   const [selectedAccessCodes, setSelectedAccessCodes] = useState<string[]>([]);
 
   const adminHeaders = { "x-admin-password": adminPassword };
@@ -1215,10 +1288,6 @@ const AdminScreen = ({
     Object.entries(distribution).map(([key, value]) => `${key}: ${value}`).join(", ") || "n.v.t.";
   const formatErrorCategories = (categories: Record<string, number>) =>
     Object.entries(categories).map(([key, value]) => `${key}: ${value}`).join(", ") || "n.v.t.";
-  const metadataForVersion = (id: AssessmentVersion["id"]) => ({
-    gradeLevel: id.startsWith("lj3") ? "lj3" : "lj1",
-    track: id.endsWith("-hv") ? "hv" : "vmbo",
-  });
   const versionForMetadata = (nextGradeLevel = gradeLevel, nextTrack = track) =>
     `${nextGradeLevel}-${nextTrack}` as AssessmentVersion["id"];
 
@@ -1230,6 +1299,7 @@ const AdminScreen = ({
         headers: adminHeaders,
       });
       setStudents(data.students);
+      setLastUpdatedAt(new Date());
       setError("");
     } catch {
       setError("Leerlingen ophalen is niet gelukt. Controleer de databasekoppeling.");
@@ -1505,7 +1575,7 @@ const AdminScreen = ({
       setStudents(data.students);
       setCreatedCodeRows(data.createdStudents ?? []);
       setPreviewRows([]);
-      setMessage(`${data.importedCount ?? rows.length} afnamecodes aangemaakt.`);
+      setMessage(`${data.importedCount ?? rows.length} inlogcodes aangemaakt.`);
       setError("");
       void loadAnalysis();
     } catch (caught) {
@@ -1517,7 +1587,7 @@ const AdminScreen = ({
 
   const getExportRows = () =>
     filteredStudents.map((student) => ({
-      Afnamecode: student.accessCode,
+      Inlogcode: student.accessCode,
       Leerling: student.participantLabel || "",
       Klas: student.classCode,
       Nulmeting: assessmentLabels[student.versionId] ?? student.versionId,
@@ -1529,14 +1599,14 @@ const AdminScreen = ({
   const exportBaseName = () => {
     const yearSuffix = yearFilter === "all" ? "alle-leerjaren" : yearFilter;
     const classSuffix = classFilter.length === 0 ? "alle-klassen" : classFilter.join("-");
-    return `afnamecodes-${yearSuffix}-${classSuffix}-${new Date().toISOString().slice(0, 10)}`;
+    return `inlogcodes-${yearSuffix}-${classSuffix}-${new Date().toISOString().slice(0, 10)}`;
   };
 
   const exportCodesExcel = async () => {
     const XLSX = await import("xlsx");
     const worksheet = XLSX.utils.json_to_sheet(getExportRows());
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Afnamecodes");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inlogcodes");
     XLSX.writeFile(workbook, `${exportBaseName()}.xlsx`);
   };
 
@@ -1545,20 +1615,20 @@ const AdminScreen = ({
     const htmlRows = rows
       .map(
         (row) =>
-          `<tr><td>${escapeHtml(row.Afnamecode)}</td><td>${escapeHtml(row.Leerling)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td><td>${escapeHtml(row["Import-batch"])}</td></tr>`,
+          `<tr><td>${escapeHtml(row.Inlogcode)}</td><td>${escapeHtml(row.Leerling)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td><td>${escapeHtml(row["Import-batch"])}</td></tr>`,
       )
       .join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Afnamecodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Afnamecodes nulmeting</h1><table><thead><tr><th>Afnamecode</th><th>Leerling</th><th>Klas</th><th>Nulmeting</th><th>Status</th><th>Import-batch</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Inlogcodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Inlogcodes nulmeting</h1><table><thead><tr><th>Inlogcode</th><th>Leerling</th><th>Klas</th><th>Nulmeting</th><th>Status</th><th>Import-batch</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     downloadFile(`${exportBaseName()}.doc`, html, "application/msword");
   };
 
   const exportCodesPdf = () => {
     const rows = getExportRows();
     const lines = [
-      "Afnamecodes nulmeting Digitale Geletterdheid",
+      "Inlogcodes nulmeting Digitale Geletterdheid",
       "",
       ...rows.flatMap((row) => [
-        `${row.Klas} | ${row.Leerling || "Geen label"} | ${row.Afnamecode} | ${row.Status}`,
+        `${row.Klas} | ${row.Leerling || "Geen label"} | ${row.Inlogcode} | ${row.Status}`,
       ]),
     ];
     downloadFile(`${exportBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
@@ -1572,7 +1642,7 @@ const AdminScreen = ({
       "Afnamevenster": row.assessmentWindow || "",
       Cohort: row.cohort || "",
       Assessment: readableFilterOption("assessmentId", row.assessmentId),
-      "Aangemaakte codes": row.createdCodes,
+      "Aangemaakte inlogcodes": row.createdCodes,
       "Gestarte afnames": row.startedCount,
       "Afgeronde afnames": row.completedCount,
       "Afronding": formatMetric(row.completionPercentage),
@@ -1638,7 +1708,7 @@ const AdminScreen = ({
     const XLSX = await import("xlsx");
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([{
-      "Aangemaakte codes": analysis?.overview.createdCodes ?? 0,
+      "Aangemaakte inlogcodes": analysis?.overview.createdCodes ?? 0,
       "Gestarte afnames": analysis?.overview.startedCount ?? 0,
       "Afgeronde afnames": analysis?.overview.completedCount ?? 0,
       "Afronding": formatMetric(analysis?.overview.completionPercentage ?? 0),
@@ -1667,7 +1737,7 @@ const AdminScreen = ({
       ? `<h2>Groei per meetmoment (ankerblok)</h2><p>Vergelijking op basis van ankeritems; groei is laatste min eerste meetmoment.</p>${renderRows(growthRows)}`
       : "";
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>Resultatenanalyse</title><style>body{font-family:Arial,sans-serif;color:#1b1d22}h1,h2{margin-bottom:8px}table{border-collapse:collapse;width:100%;margin:12px 0 24px}td,th{border:1px solid #999;padding:6px;text-align:left;vertical-align:top}th{background:#eee}</style></head><body><h1>Resultatenanalyse nulmeting Digitale Geletterdheid</h1><p>Exportdatum: ${new Date().toLocaleDateString("nl-NL")}</p><h2>Samenvatting</h2>${renderRows([{
-      "Aangemaakte codes": analysis?.overview.createdCodes ?? 0,
+      "Aangemaakte inlogcodes": analysis?.overview.createdCodes ?? 0,
       "Gestarte afnames": analysis?.overview.startedCount ?? 0,
       "Afgeronde afnames": analysis?.overview.completedCount ?? 0,
       "Afronding": formatMetric(analysis?.overview.completionPercentage ?? 0),
@@ -1681,7 +1751,7 @@ const AdminScreen = ({
       "Resultatenanalyse nulmeting Digitale Geletterdheid",
       "",
       `Exportdatum: ${new Date().toLocaleDateString("nl-NL")}`,
-      `Aangemaakte codes: ${analysis?.overview.createdCodes ?? 0}`,
+      `Aangemaakte inlogcodes: ${analysis?.overview.createdCodes ?? 0}`,
       `Gestarte afnames: ${analysis?.overview.startedCount ?? 0}`,
       `Afgeronde afnames: ${analysis?.overview.completedCount ?? 0}`,
       `Afronding: ${formatMetric(analysis?.overview.completionPercentage ?? 0)}`,
@@ -1749,6 +1819,7 @@ const AdminScreen = ({
 
   const [yearFilter, setYearFilter] = useState<"all" | "lj1" | "lj3">("all");
   const [classFilter, setClassFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<"all" | "not_started" | "in_progress" | "completed">("all");
   const yearFilteredStudents =
     yearFilter === "all"
       ? students
@@ -1756,10 +1827,14 @@ const AdminScreen = ({
   const availableClassCodes = Array.from(
     new Set(yearFilteredStudents.map((student) => student.classCode).filter(Boolean)),
   ).sort((a, b) => a.localeCompare(b, "nl"));
-  const filteredStudents =
+  const classFilteredStudents =
     classFilter.length === 0
       ? yearFilteredStudents
       : yearFilteredStudents.filter((student) => classFilter.includes(student.classCode));
+  const filteredStudents =
+    statusFilter === "all"
+      ? classFilteredStudents
+      : classFilteredStudents.filter((student) => (student.status ?? "not_started") === statusFilter);
   const filteredAccessCodes = filteredStudents.map((student) => student.accessCode);
   const selectedVisibleAccessCodes = selectedAccessCodes.filter((code) =>
     filteredAccessCodes.includes(code),
@@ -1815,9 +1890,9 @@ const AdminScreen = ({
     setSelectedAccessCodes((selected) => selected.filter((code) => availableCodes.has(code)));
   }, [students]);
 
-  const completedCount = students.filter((s) => s.status === "completed").length;
-  const busyCount = students.filter((s) => s.status === "in_progress").length;
-  const notStartedCount = students.filter((s) => !s.status || s.status === "not_started").length;
+  const completedCount = classFilteredStudents.filter((s) => s.status === "completed").length;
+  const busyCount = classFilteredStudents.filter((s) => s.status === "in_progress").length;
+  const notStartedCount = classFilteredStudents.filter((s) => !s.status || s.status === "not_started").length;
   const stats: Array<{
     label: string;
     value: string;
@@ -1826,8 +1901,8 @@ const AdminScreen = ({
   }> = [
     {
       label: "Totaal leerlingen",
-      value: String(students.length),
-      delta: "Alle klassen samen",
+      value: String(classFilteredStudents.length),
+      delta: classFilter.length === 0 ? "Binnen het gekozen leerjaar" : classFilterLabel,
       up: true,
     },
     {
@@ -1852,15 +1927,32 @@ const AdminScreen = ({
 
   return (
     <>
+      <div className="admin-topbar">
+        <div>
+          <strong>Docentomgeving</strong>
+          <span aria-live="polite">
+            {lastUpdatedAt
+              ? `Laatst bijgewerkt om ${lastUpdatedAt.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`
+              : "Gegevens worden geladen…"}
+          </span>
+        </div>
+        <div className="admin-topbar-actions">
+          <button className="filter-chip admin-refresh-button" type="button" onClick={loadStudents} disabled={isLoading}>
+            <span aria-hidden="true">↻</span> {isLoading ? "Bijwerken…" : "Vernieuwen"}
+          </button>
+          <button className="btn btn-ghost" type="button" onClick={onBack}>
+            ← Terug naar leerlingstart
+          </button>
+        </div>
+      </div>
       <section className="admin-hero">
         <div>
           <span className="badge">Docentomgeving</span>
           <h1>
-            Beheer afnamecodes<br />en klasvoortgang
+            Beheer inlogcodes<br />en klasvoortgang
           </h1>
           <p className="intro">
-            Importeer per klas wie een code nodig heeft en volg alleen de afnamestatus.
-            Resultaten worden los van leerlingen opgeslagen voor rapportage op klasniveau.
+            Filter op klas en status om tijdens de afname direct te zien wie bezig of klaar is.
           </p>
         </div>
         <div className="admin-side-card">
@@ -1891,7 +1983,7 @@ const AdminScreen = ({
           <div style={{ display: "flex", gap: 24, fontSize: ".88rem" }}>
             <div>
               <div style={{ color: "var(--c-ink-soft)", fontWeight: 500 }}>Leerlingen</div>
-              <div style={{ fontWeight: 700 }}>{students.length}</div>
+              <div style={{ fontWeight: 700 }}>{classFilteredStudents.length}</div>
             </div>
             <div>
               <div style={{ color: "var(--c-ink-soft)", fontWeight: 500 }}>Afgerond</div>
@@ -1983,7 +2075,7 @@ const AdminScreen = ({
         </div>
         <div className="stats-strip analysis-stats">
           {[
-            ["Aangemaakte codes", analysis?.overview.createdCodes ?? 0, ""],
+            ["Aangemaakte inlogcodes", analysis?.overview.createdCodes ?? 0, ""],
             ["Gestarte afnames", analysis?.overview.startedCount ?? 0, ""],
             ["Afgeronde afnames", analysis?.overview.completedCount ?? 0, ""],
             ["Afrondingspercentage", analysis?.overview.completionPercentage ?? 0, "%"],
@@ -2156,12 +2248,17 @@ const AdminScreen = ({
 
       {adminTab === "codes" ? (
       <>
-      <section className="import-panel">
-        <span className="overline">Beheer &gt; Toegangscodes &gt; Leerlingen toevoegen</span>
+      <details className="import-panel admin-add-students">
+        <summary>
+          <span>Leerlingen toevoegen</span>
+          <small>Open alleen wanneer je nieuwe inlogcodes nodig hebt</small>
+        </summary>
+        <div className="admin-add-students-content">
+        <span className="overline">Beheer &gt; Inlogcodes &gt; Leerlingen toevoegen</span>
         <h3>Leerlingen toevoegen</h3>
         <p className="help">
-          Plak meerdere namen tegelijk. De naam wordt alleen gebruikt om de toegangscode uit te delen;
-          resultaten worden in de analyse alleen als aggregaat getoond.
+          Kies klas en meting, plak één leerling per regel en klik op <strong>Inlogcodes maken</strong>.
+          Namen zijn alleen zichtbaar voor het uitdelen; resultaten blijven op klasniveau.
         </p>
         <div className="grid">
           <label>
@@ -2183,34 +2280,22 @@ const AdminScreen = ({
             <input value={classCodeInput} onChange={(event) => setClassCodeInput(event.target.value)} placeholder="bv. vmbo1a" />
           </label>
           <label>
-            <span>Afnamevenster</span>
+            <span>Meetmoment</span>
             <input value={assessmentWindow} onChange={(event) => setAssessmentWindow(event.target.value)} placeholder="bv. najaar-2026" />
           </label>
+          <details className="admin-import-options">
+            <summary>Extra gegevens (optioneel)</summary>
+            <label>
+              <span>Cohort</span>
+              <input value={cohort} onChange={(event) => setCohort(event.target.value)} placeholder="standaard: meetmoment" />
+            </label>
+            <label>
+              <span>Import-batch</span>
+              <input value={importBatch} onChange={(event) => setImportBatch(event.target.value)} placeholder="bv. lokaal-1" />
+            </label>
+          </details>
           <label>
-            <span>Assessment</span>
-            <select
-              value={versionId}
-              onChange={(event) => {
-                const nextVersion = event.target.value as AssessmentVersion["id"];
-                const nextMetadata = metadataForVersion(nextVersion);
-                setVersionId(nextVersion);
-                setGradeLevel(nextMetadata.gradeLevel as "lj1" | "lj3");
-                setTrack(nextMetadata.track as "vmbo" | "hv");
-              }}
-            >
-              {defaultCodeMappings.map((mapping) => (
-                <option key={mapping.instrumentId} value={mapping.instrumentId}>
-                  {mapping.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>Cohort</span>
-            <input value={cohort} onChange={(event) => setCohort(event.target.value)} placeholder="optioneel, standaard afnamevenster" />
-          </label>
-          <label>
-            <span>Naam</span>
+            <span>Leerlingen (één per regel)</span>
             <textarea
               value={nameListText}
               onChange={(event) => setNameListText(event.target.value)}
@@ -2230,7 +2315,7 @@ const AdminScreen = ({
             />
           </label>
           <button className="btn-import" type="button" onClick={() => void importStudents([])} disabled={isLoading}>
-            {isLoading ? "Toevoegen..." : "Toevoegen"}
+            {isLoading ? "Maken..." : "Inlogcodes maken"}
           </button>
         </div>
         {message ? (
@@ -2243,7 +2328,7 @@ const AdminScreen = ({
         ) : null}
         {createdCodeRows.length > 0 ? (
           <div className="admin-preview-block printable-code-overview">
-            <h4>Code-overzicht</h4>
+            <h4>Overzicht nieuwe inlogcodes</h4>
             <div className="rd-result-actions">
               <button
                 className="filter-chip"
@@ -2252,7 +2337,7 @@ const AdminScreen = ({
                   const text = createdCodeRows
                     .map((student) => `${student.participantLabel ?? ""}\t${student.classCode}\t${student.accessCode}`)
                     .join("\n");
-                  void navigator.clipboard?.writeText(`Naam\tKlas\tToegangscode\n${text}`);
+                  void navigator.clipboard?.writeText(`Naam\tKlas\tInlogcode\n${text}`);
                 }}
               >
                 Kopieer
@@ -2265,7 +2350,7 @@ const AdminScreen = ({
               <div className="analysis-row head">
                 <span>Naam</span>
                 <span>Klas</span>
-                <span>Toegangscode</span>
+                <span>Inlogcode</span>
               </div>
               {createdCodeRows.map((student) => (
                 <div className="analysis-row" key={student.accessCode}>
@@ -2277,13 +2362,14 @@ const AdminScreen = ({
             </div>
           </div>
         ) : null}
-      </section>
+        </div>
+      </details>
 
       {false ? (
       <section className="import-panel">
-        <h3>Afnamecodes genereren</h3>
+        <h3>Inlogcodes genereren</h3>
         <p className="help">
-          Maak per klas of leerjaar in een keer genoeg codes aan. Gebruik tekstregels
+          Maak per klas of leerjaar in één keer genoeg inlogcodes aan. Gebruik tekstregels
           <code> klas; aantal; namen gescheiden door komma&apos;s</code>, of lever Excel aan met kolommen
           <code>klas</code>, <code>leerling</code> en optioneel <code>aantal</code>/<code>leerjaar</code>.
           Een Wordbestand (.docx) mag dezelfde tekstregels bevatten.
@@ -2335,7 +2421,7 @@ const AdminScreen = ({
             onClick={() => void importStudents()}
             disabled={isLoading}
           >
-            Codes genereren
+            Inlogcodes genereren
           </button>
         </div>
         {message ? (
@@ -2400,53 +2486,75 @@ const AdminScreen = ({
                   ))}
                 </div>
               </details>
+              <label className="admin-filter-select">
+                <span>Status</span>
+                <select
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+                >
+                  <option value="all">Alle statussen</option>
+                  <option value="not_started">Niet gestart</option>
+                  <option value="in_progress">Bezig</option>
+                  <option value="completed">Afgerond</option>
+                </select>
+              </label>
+              {yearFilter !== "all" || classFilter.length > 0 || statusFilter !== "all" ? (
+                <button
+                  className="filter-chip"
+                  type="button"
+                  onClick={() => {
+                    setYearFilter("all");
+                    setClassFilter([]);
+                    setStatusFilter("all");
+                  }}
+                >
+                  Wis filters
+                </button>
+              ) : null}
             </div>
-            <button
-              className="filter-chip"
-              type="button"
-              onClick={loadStudents}
-              disabled={isLoading}
-            >
-              ↻ Vernieuwen
-            </button>
-            <button
-              className="filter-chip danger"
-              type="button"
-              onClick={() =>
-                deleteStudents(
-                  "deleteStudents",
-                  { accessCodes: selectedVisibleAccessCodes },
-                  `${selectedVisibleAccessCodes.length} geselecteerd`,
-                )
-              }
-              disabled={isLoading || selectedVisibleAccessCodes.length === 0}
-            >
-              Wis selectie
-            </button>
-            <button
-              className="filter-chip danger"
-              type="button"
-              onClick={() =>
-                deleteStudents("deleteClasses", { classCodes: classFilter }, classFilter.join(", "))
-              }
-              disabled={isLoading || classFilter.length === 0}
-            >
-              Wis klas(sen)
-            </button>
-            <button
-              className="filter-chip danger"
-              type="button"
-              onClick={() =>
-                deleteStudents(
-                  "deleteYears",
-                  { yearIds: [yearFilter] },
-                  yearFilter === "lj1" ? "leerjaar 1" : "leerjaar 3",
-                )
-              }
-              disabled={isLoading || yearFilter === "all"}
-            >
-              Wis leerjaar
-            </button>
+            <details className="admin-export-menu admin-actions-menu">
+              <summary className="filter-chip">Beheeracties</summary>
+              <div className="admin-export-options">
+                <button
+                  className="filter-chip danger"
+                  type="button"
+                  onClick={() =>
+                    deleteStudents(
+                      "deleteStudents",
+                      { accessCodes: selectedVisibleAccessCodes },
+                      `${selectedVisibleAccessCodes.length} geselecteerd`,
+                    )
+                  }
+                  disabled={isLoading || selectedVisibleAccessCodes.length === 0}
+                >
+                  Wis selectie
+                </button>
+                <button
+                  className="filter-chip danger"
+                  type="button"
+                  onClick={() =>
+                    deleteStudents("deleteClasses", { classCodes: classFilter }, classFilter.join(", "))
+                  }
+                  disabled={isLoading || classFilter.length === 0}
+                >
+                  Wis klas(sen)
+                </button>
+                <button
+                  className="filter-chip danger"
+                  type="button"
+                  onClick={() =>
+                    deleteStudents(
+                      "deleteYears",
+                      { yearIds: [yearFilter] },
+                      yearFilter === "lj1" ? "leerjaar 1" : "leerjaar 3",
+                    )
+                  }
+                  disabled={isLoading || yearFilter === "all"}
+                >
+                  Wis leerjaar
+                </button>
+              </div>
+            </details>
             <details className="admin-export-menu">
               <summary className={`filter-chip ${filteredStudents.length === 0 ? "disabled" : ""}`}>
                 Exporteer
@@ -2483,7 +2591,7 @@ const AdminScreen = ({
                 }}
               />
             </span>
-            <span>Code</span>
+            <span>Inlogcode</span>
             <span>Leerling</span>
             <span>Klas</span>
             <span>Meting</span>
@@ -2575,12 +2683,81 @@ const AdminScreen = ({
       </>
       ) : null}
 
-      <div style={{ marginTop: 32 }}>
-        <button className="btn btn-ghost" type="button" onClick={onBack}>
-          ← Terug naar leerlingstart
+    </>
+  );
+};
+
+const FinishAssessmentScreen = ({
+  assessment,
+  session,
+  onEditStep,
+  onFinish,
+}: {
+  assessment: AssessmentVersion;
+  session: AssessmentSession;
+  onEditStep: (stepIndex: number) => void;
+  onFinish: () => void;
+}) => {
+  const steps = getStepDescriptors(assessment);
+  let questionNumber = 0;
+  const reviewRows = steps.flatMap((step, stepIndex) => {
+    const item = getItemByStep(assessment, step);
+    if (!item) return [];
+    const isSelfAssessment = item.type === "self_assessment";
+    if (!isSelfAssessment) questionNumber += 1;
+    const answer = session.results.find(
+      (entry) => entry.sectionId === step.sectionId && entry.itemId === step.itemId,
+    );
+    return [{
+      stepIndex,
+      item,
+      label: isSelfAssessment ? "Zelfinschatting" : `Vraag ${questionNumber}`,
+      answered: Boolean(answer),
+      skipped: answer?.skipped === true,
+    }];
+  });
+  const missingCount = reviewRows.filter((row) => !row.answered).length;
+
+  return (
+    <section className="finish-assessment-screen">
+      <span className="eyebrow">Laatste controle</span>
+      <h1>Controleer je antwoorden</h1>
+      <p className="finish-assessment-intro">
+        Je antwoorden zijn nog niet definitief. Bekijk of wijzig een vraag en rond de nulmeting pas af wanneer je tevreden bent.
+      </p>
+      <div className="finish-question-list">
+        {reviewRows.map((row) => (
+          <button
+            className="finish-question-row"
+            type="button"
+            key={`${row.item.id}-${row.stepIndex}`}
+            onClick={() => onEditStep(row.stepIndex)}
+          >
+            <span>
+              <strong>{row.label}</strong>
+              <small>{cleanQuestionTitle(row.item.title)}</small>
+            </span>
+            <span className={`finish-answer-status ${row.answered ? "answered" : "missing"}`}>
+              {row.skipped ? "Overgeslagen" : row.answered ? "Beantwoord" : "Nog invullen"}
+            </span>
+            <span aria-hidden="true">Wijzig →</span>
+          </button>
+        ))}
+      </div>
+      {missingCount > 0 ? (
+        <p className="finish-missing-message" role="alert">
+          Vul eerst nog {missingCount} {missingCount === 1 ? "onderdeel" : "onderdelen"} in.
+        </p>
+      ) : null}
+      <div className="finish-assessment-actions">
+        <button className="btn btn-ghost" type="button" onClick={() => onEditStep(steps.length - 1)}>
+          ← Terug naar laatste vraag
+        </button>
+        <button className="btn btn-primary" type="button" onClick={onFinish} disabled={missingCount > 0}>
+          Nulmeting definitief afronden
         </button>
       </div>
-    </>
+    </section>
   );
 };
 
@@ -2594,6 +2771,8 @@ const AssessmentScreen = ({
   onUpdateFileTaskState,
   onFinishFileTask,
   onSkipPerformanceTask,
+  onResetApplicationTask,
+  onPrevious,
   onReset,
   onExit,
 }: {
@@ -2606,11 +2785,17 @@ const AssessmentScreen = ({
   onUpdateFileTaskState: (item: AssessmentItem, nextState: Pt1State) => void;
   onFinishFileTask: (section: AssessmentSection, item: AssessmentItem) => void;
   onSkipPerformanceTask: (section: AssessmentSection, item: AssessmentItem) => void;
+  onResetApplicationTask: (item: AssessmentItem) => void;
+  onPrevious: () => void;
   onReset: () => void;
   onExit: () => void;
 }) => {
+  const [taskResetVersion, setTaskResetVersion] = useState(0);
   const section = getSectionById(assessment, step.sectionId);
   const item = getItemByStep(assessment, step);
+  useEffect(() => {
+    setTaskResetVersion(0);
+  }, [step.key]);
   if (!section || !item) {
     return null;
   }
@@ -2632,6 +2817,11 @@ const AssessmentScreen = ({
       : item.type === "self_assessment"
         ? "Zelfinschatting"
         : "Praktijkopdracht";
+  const isApplicationTask = item.type !== "multiple_choice" && item.type !== "self_assessment";
+  const handleResetApplicationTask = () => {
+    onResetApplicationTask(item);
+    setTaskResetVersion((current) => current + 1);
+  };
 
   return (
     <div className="q-wrap">
@@ -2736,14 +2926,29 @@ const AssessmentScreen = ({
           {questionNumber != null ? (
             <span className="q-question-num">Vraag {questionNumber} / {questionCount}</span>
           ) : null}
+          <button
+            className="q-previous-btn"
+            type="button"
+            onClick={onPrevious}
+            disabled={stepIndex === 0}
+          >
+            ← Vorige
+          </button>
+          {isApplicationTask ? (
+            <button className="q-recover-task-btn" type="button" onClick={handleResetApplicationTask}>
+              ↺ Herstel antwoord
+            </button>
+          ) : null}
           <button className="q-pauze-btn" type="button" onClick={onReset}>Pauze</button>
         </div>
 
+      <Fragment key={`${step.key}-${taskResetVersion}`}>
       {item.type === "self_assessment" ? (
         <SelfAssessmentView
           section={section}
           item={item}
           questionNumber={questionNumber ?? 1}
+          initialValue={session.results.find((entry) => entry.itemId === item.id)?.selectedAnswer}
           onSubmit={onSubmitAnswer}
         />
       ) : null}
@@ -2885,10 +3090,12 @@ const AssessmentScreen = ({
           item={item}
           questionNumber={questionNumber ?? 1}
           presentedOrder={getPresentedOrder(session, section.id, item.id)}
+          initialAnswer={session.results.find((entry) => entry.itemId === item.id)?.selectedAnswer}
           onSubmit={onSubmitAnswer}
           onExit={onExit}
         />
       ) : null}
+      </Fragment>
       </div>
     </div>
   );
@@ -2898,14 +3105,18 @@ const SelfAssessmentView = ({
   section,
   item,
   questionNumber,
+  initialValue,
   onSubmit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
+  initialValue?: SelectedAnswer;
   onSubmit: (payload: SubmitAnswerPayload) => void;
 }) => {
-  const [value, setValue] = useState(50);
+  const [value, setValue] = useState(() =>
+    typeof initialValue === "number" ? initialValue : 50,
+  );
   const instructionLines = item.instruction
     .split(/\n|(?<=[.!?])\s+/)
     .map((line) => line.trim())
@@ -3871,12 +4082,12 @@ const WhutsuppScenarioTask = ({
         instruction={variant.introText}
       />
       <div className="whutsupp-scenario-grid">
-        <div className="whutsupp-phone" aria-label="Whutsupp groepschat">
+        <div className="whutsupp-phone" aria-label="WhatsApp groepschat">
           <div className="whutsupp-top">
             <span className="whutsupp-back" aria-hidden="true">‹</span>
             <span className="whutsupp-avatar" aria-hidden="true">W</span>
             <div>
-              <strong>Whutsupp</strong>
+              <strong>WhatsApp</strong>
               <small>{variant.groupTitle}</small>
             </div>
           </div>
@@ -3950,12 +4161,12 @@ const SocialChatMockup = ({
     : [{ sender: "student" as const, label: "Leerling", text: "Bekijk de situatie en kies de veiligste reactie." }];
 
   return (
-    <div className={`whutsupp-phone ${isAiChat ? "ai-chat-phone" : ""}`} aria-label={isAiChat ? "KletsGPT-chatmock-up" : "Whutsupp groepschat"}>
+    <div className={`whutsupp-phone ${isAiChat ? "ai-chat-phone" : ""}`} aria-label={isAiChat ? "KletsGPT-chatmock-up" : "WhatsApp groepschat"}>
       <div className="whutsupp-top">
         <span className="whutsupp-back" aria-hidden="true">{isAiChat ? "AI" : "<"}</span>
         <span className="whutsupp-avatar" aria-hidden="true">{isAiChat ? "AI" : "DG"}</span>
         <div>
-          <strong>{isAiChat ? "KletsGPT" : title.includes("groepschat") ? "Klasgroep" : "Whutsupp"}</strong>
+          <strong>{isAiChat ? "KletsGPT" : title.includes("groepschat") ? "Klasgroep" : "WhatsApp"}</strong>
           <small>{isAiChat ? "chatvoorbeeld" : "online"}</small>
         </div>
       </div>
@@ -6529,6 +6740,7 @@ const ChoiceItemView = ({
   item,
   questionNumber,
   presentedOrder,
+  initialAnswer,
   onSubmit,
   onExit,
 }: {
@@ -6536,6 +6748,7 @@ const ChoiceItemView = ({
   item: AssessmentItem;
   questionNumber: number;
   presentedOrder: string[];
+  initialAnswer?: SelectedAnswer;
   onSubmit: (payload: SubmitAnswerPayload) => void;
   onExit: () => void;
 }) => {
@@ -6543,7 +6756,9 @@ const ChoiceItemView = ({
   const orderedOptions = (presentedOrder.length > 0 ? presentedOrder : options.map((option) => option.id))
     .map((optionId) => options.find((option) => option.id === optionId))
     .filter(Boolean) as typeof options;
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(() =>
+    selectedIdsFromAnswer(initialAnswer),
+  );
   const isMultiple = item.selectionMode === "multiple";
   const selectCount = item.selectCount ?? (Array.isArray(item.correctAnswer) ? item.correctAnswer.length : 1);
   const unknownOptionId = item.unknownOptionId;
@@ -6553,8 +6768,8 @@ const ChoiceItemView = ({
     : selectedIds.length === 1;
 
   useEffect(() => {
-    setSelectedIds([]);
-  }, [item.id]);
+    setSelectedIds(selectedIdsFromAnswer(initialAnswer));
+  }, [item.id, initialAnswer]);
 
   const toggleOption = (optionId: string) => {
     if (optionId === unknownOptionId) {
@@ -7798,6 +8013,38 @@ const ResultScreen = ({
     ["21", "22", "23"].includes(goal.goalId),
   );
   const subgoalScores = result.goalScores.filter((goal) => goal.level === "subgoal");
+  const scoredQuestionSteps = getStepDescriptors(assessment).filter((candidateStep) => {
+    const candidateItem = getItemByStep(assessment, candidateStep);
+    return candidateItem?.type !== "self_assessment";
+  });
+  const questionNumberByItem = new Map(
+    scoredQuestionSteps.map((candidateStep, index) => [
+      `${candidateStep.sectionId}:${candidateStep.itemId}`,
+      index + 1,
+    ]),
+  );
+  const subgoalAssignments = new Map(
+    subgoalScores.map((goal) => {
+      const assignments = assessment.sections.flatMap((section) =>
+        section.items
+          .filter((item) => {
+            if (item.points <= 0) return false;
+            const source = `${item.primarySubgoal ?? ""},${item.subgoal ?? ""},${item.kerndoel}`;
+            return Array.from(source.matchAll(/\b(21[A-D]|22[A-B]|23[A-C])\b/g)).some(
+              (match) => match[1] === goal.goalId,
+            );
+          })
+          .map((item) => ({
+            itemId: item.id,
+            questionNumber: questionNumberByItem.get(`${section.id}:${item.id}`),
+            points: item.points,
+          })),
+      );
+      return [goal.goalId, assignments] as const;
+    }),
+  );
+  const assignmentText = (questionNumber: number | undefined, points: number) =>
+    `Vraag ${questionNumber ?? "?"}: ${points} ${points === 1 ? "punt" : "punten"}`;
   const whutsuppFeedback =
     session.results.find((entry) => entry.itemId === "pt8-whutsupp-sam-video")
       ?.scoringSummary?.feedback ?? [];
@@ -7822,10 +8069,12 @@ const ResultScreen = ({
       "",
       "Detail per subdoel",
       subgoalWarning,
-      ...subgoalScores.map(
-        (goal) =>
-          `${goal.goalId} - ${goal.label}: ${goal.score}/${goal.maxScore} punten (${goal.percentage}%)`,
-      ),
+      ...subgoalScores.flatMap((goal) => [
+        `${goal.goalId} - ${goal.label}: ${goal.score}/${goal.maxScore} punten (${goal.percentage}%)`,
+        ...(subgoalAssignments.get(goal.goalId) ?? []).map((assignment) =>
+          `  ${assignmentText(assignment.questionNumber, assignment.points)}`,
+        ),
+      ]),
       ...(whutsuppFeedback.length > 0
         ? ["", "Online gedrag", ...whutsuppFeedback]
         : []),
@@ -7901,6 +8150,13 @@ const ResultScreen = ({
                 <div>
                   <strong>{goal.goalId}</strong>
                   <span>{goal.label}</span>
+                  <ul className="goal-question-list" aria-label={`Vragen bij subdoel ${goal.goalId}`}>
+                    {(subgoalAssignments.get(goal.goalId) ?? []).map((assignment) => (
+                      <li key={assignment.itemId}>
+                        {assignmentText(assignment.questionNumber, assignment.points)}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <div className="goal-score-value">
                   <span>{goal.percentage}%</span>

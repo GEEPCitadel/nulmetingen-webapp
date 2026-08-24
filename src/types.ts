@@ -70,6 +70,28 @@ export interface MockupCard {
     label: string;
     text: string;
   }>;
+  aiUsage?: {
+    toolName: string;
+    prompt: string;
+    response: string;
+  };
+  trainingData?: {
+    platformName: string;
+    requirement: string;
+    notRequired: string;
+    historicalRows: Array<{
+      id: string;
+      projectScore: number;
+      codingClub: boolean;
+      selected: boolean;
+    }>;
+    candidate: {
+      id: string;
+      projectScore: number;
+      codingClub: boolean;
+      aiDecision: string;
+    };
+  };
   footer?: string;
   mediaHint?: string;
   meta?: string[];
@@ -376,6 +398,7 @@ export interface InteractionGroup {
   cards?: Option[];
   maxSelections?: number;
   showOptionLetters?: boolean;
+  allowUnknown?: boolean;
 }
 
 export type IncomingMailPartTarget =

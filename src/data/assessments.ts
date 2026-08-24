@@ -198,6 +198,12 @@ type SelectedResponseSpec = {
       points: number;
     }>;
   };
+  sortTask?: {
+    cards: SelectedResponseOptionSpec[];
+    categories: SelectedResponseOptionSpec[];
+    correctMatches: Record<string, string>;
+    pointsPerCard: number;
+  };
   renderOptionsAsSourceCards?: boolean;
   ankerItemFlag?: boolean;
   aiSnelVeranderendFlag?: boolean;
@@ -284,7 +290,7 @@ type SelectedResponseJsonItem = {
   subgoal: string;
   type?: "single" | "multiple" | "single_choice" | "multiple_choice";
   maxScore?: number;
-  itemType?: "single-choice" | "multiple-select" | "compound-single-choice";
+  itemType?: "single-choice" | "multiple-select" | "compound-single-choice" | "binary-card-sort";
   selectCount?: number | null;
   selectionLimit?: number | null;
   question: string;
@@ -302,6 +308,28 @@ type SelectedResponseJsonItem = {
         text: string;
       }>;
     };
+    aiUsageMockup?: {
+      toolName: string;
+      prompt: string;
+      response: string;
+    };
+    trainingDataMockup?: {
+      platformName: string;
+      requirement: string;
+      notRequired: string;
+      historicalRows: Array<{
+        id: string;
+        projectScore: number;
+        codingClub: boolean;
+        selected: boolean;
+      }>;
+      candidate: {
+        id: string;
+        projectScore: number;
+        codingClub: boolean;
+        aiDecision: string;
+      };
+    };
   };
   primarySubgoal?: string;
   itemVersion?: string;
@@ -309,6 +337,18 @@ type SelectedResponseJsonItem = {
   internalSlot?: string;
   archivedFrom?: string;
   subQuestions?: SelectedResponseJsonSubQuestion[];
+  sortTask?: {
+    cards: Array<{
+      id: string;
+      text: string;
+      correctCategory: string;
+      errorCategory?: string;
+    }>;
+    categories: Array<{
+      id: string;
+      text: string;
+    }>;
+  };
   ui?: {
     renderAsSourceCards?: boolean;
     pinUnknownOptionLast?: boolean;
@@ -346,6 +386,7 @@ type SelectedResponseJson = {
 
 const UNKNOWN_OPTION_LABEL = "Ik weet het niet.";
 const whutsuppPt8Flow = whutsuppPt8FlowSource as WhutsuppFlow;
+const normalizeStudentFacingText = (text: string) => text.replace(/\bWhutsupp\b/gi, "WhatsApp");
 
 const whutsuppVariantFor = (versionId: AssessmentVersionId): WhutsuppVariant => {
   const variant = whutsuppPt8Flow.variants.find(
@@ -388,8 +429,8 @@ const makeOptions = (prefix: string, labels: string[]): Option[] =>
 const makeSelectedResponseOptions = (options: SelectedResponseOptionSpec[]): Option[] =>
   options.map((option) => ({
     id: option.id,
-    label: option.label,
-    description: option.description,
+    label: normalizeStudentFacingText(option.label),
+    description: option.description ? normalizeStudentFacingText(option.description) : undefined,
     sourceType: option.sourceType,
     errorCategory: option.errorCategory,
   }));
@@ -494,12 +535,55 @@ const mockupForStimulus = (stimulus?: SelectedResponseStimulus): MockupCard | un
 };
 
 const mockupForContext = (context?: SelectedResponseJsonItem["context"]): MockupCard | undefined => {
+  if (context?.aiUsageMockup) {
+    return {
+      badge: "AI-hulp",
+      title: normalizeStudentFacingText(context.aiUsageMockup.toolName),
+      content: [
+        normalizeStudentFacingText(context.aiUsageMockup.prompt),
+        normalizeStudentFacingText(context.aiUsageMockup.response),
+      ],
+      aiUsage: {
+        toolName: normalizeStudentFacingText(context.aiUsageMockup.toolName),
+        prompt: normalizeStudentFacingText(context.aiUsageMockup.prompt),
+        response: normalizeStudentFacingText(context.aiUsageMockup.response),
+      },
+      mediaHint: "Niet-interactieve AI-gebruiksmock-up",
+    };
+  }
+
+  if (context?.trainingDataMockup) {
+    return {
+      badge: "Trainingsgegevens",
+      title: normalizeStudentFacingText(context.trainingDataMockup.platformName),
+      content: [
+        context.trainingDataMockup.requirement,
+        context.trainingDataMockup.notRequired,
+        context.trainingDataMockup.candidate.aiDecision,
+      ].map(normalizeStudentFacingText),
+      trainingData: {
+        ...context.trainingDataMockup,
+        platformName: normalizeStudentFacingText(context.trainingDataMockup.platformName),
+        requirement: normalizeStudentFacingText(context.trainingDataMockup.requirement),
+        notRequired: normalizeStudentFacingText(context.trainingDataMockup.notRequired),
+        candidate: {
+          ...context.trainingDataMockup.candidate,
+          aiDecision: normalizeStudentFacingText(context.trainingDataMockup.candidate.aiDecision),
+        },
+      },
+      mediaHint: "Niet-interactief trainingsdatadashboard",
+    };
+  }
+
   if (context?.chatMockup) {
     return {
       badge: "AI-chat",
-      title: context.chatMockup.toolName,
-      content: context.chatMockup.messages.map((message) => message.text),
-      chatMessages: context.chatMockup.messages,
+      title: normalizeStudentFacingText(context.chatMockup.toolName),
+      content: context.chatMockup.messages.map((message) => normalizeStudentFacingText(message.text)),
+      chatMessages: context.chatMockup.messages.map((message) => ({
+        ...message,
+        text: normalizeStudentFacingText(message.text),
+      })),
       mediaHint: "Niet-interactieve AI-chatmock-up",
     };
   }
@@ -510,8 +594,8 @@ const mockupForContext = (context?: SelectedResponseJsonItem["context"]): Mockup
 
   return {
     badge: "Groepsapp",
-    title: context.chatMessage.sender,
-    content: [context.chatMessage.text],
+    title: normalizeStudentFacingText(context.chatMessage.sender),
+    content: [normalizeStudentFacingText(context.chatMessage.text)],
     mediaHint: "Contextbericht",
   };
 };
@@ -524,6 +608,52 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
   }
 
   return sourceItems.map((item) => {
+    if (item.itemType === "binary-card-sort" && item.sortTask) {
+      const cards = item.sortTask.cards.map((card) => ({
+        id: card.id,
+        label: normalizeStudentFacingText(card.text),
+        errorCategory: card.errorCategory,
+      }));
+      const categories = item.sortTask.categories.map((category) => ({
+        id: category.id,
+        label: normalizeStudentFacingText(category.text),
+      }));
+      const categoryIds = new Set(categories.map((category) => category.id));
+      const correctMatches = Object.fromEntries(
+        item.sortTask.cards.map((card) => {
+          if (!categoryIds.has(card.correctCategory)) {
+            throw new Error(`Onbekende sorteercategorie voor ${item.id}:${card.id}.`);
+          }
+          return [card.id, card.correctCategory];
+        }),
+      );
+      const maxPoints = Number(item.scoring?.maxScore ?? 2);
+
+      return {
+        id: item.id,
+        title: normalizeStudentFacingText(item.title),
+        kerndoel: rootGoalFrom(item.kerndoel ?? item.primarySubgoal ?? item.subgoal),
+        subgoal: subgoalCodeFrom(item.primarySubgoal ?? item.subgoal),
+        primarySubgoal: item.primarySubgoal ?? subgoalCodeFrom(item.subgoal),
+        itemVersion: item.itemVersion,
+        learnerQuestionNumber: item.learnerQuestionNumber,
+        internalSlot: item.internalSlot,
+        question: normalizeStudentFacingText(item.question),
+        mockup: mockupForContext(item.context),
+        sortTask: {
+          cards,
+          categories,
+          correctMatches,
+          pointsPerCard: maxPoints / Math.max(cards.length, 1),
+        },
+        aiSnelVeranderendFlag: item.aiSnelVeranderendFlag,
+        anchorStatus: item.anchorStatus,
+        sourceStatus: item.sourceStatus,
+        pilotReviewStatus: item.pilotReviewStatus,
+        validityNote: item.validityNote,
+      };
+    }
+
     if (item.itemType === "compound-single-choice" && item.subQuestions?.length) {
       const compoundGroups = item.subQuestions.map((subQuestion) => {
         const correctAnswerId = String(
@@ -533,11 +663,11 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
         );
         const options = subQuestion.options.map((option) => ({
           id: String(option.optionId ?? option.id ?? option.text),
-          label: normalizeUnknownLabel(option.label ?? option.text),
+          label: normalizeStudentFacingText(normalizeUnknownLabel(option.label ?? option.text)),
           errorCategory: option.errorCategory,
           description:
             option.label && normalizeUnknownLabel(option.label) !== normalizeUnknownLabel(option.text)
-              ? option.text
+              ? normalizeStudentFacingText(option.text)
               : undefined,
           sourceType: option.sourceType,
           isUnknown:
@@ -552,8 +682,8 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
 
         return {
           id: subQuestion.id,
-          title: subQuestion.title ?? subQuestion.id,
-          question: subQuestion.question,
+          title: normalizeStudentFacingText(subQuestion.title ?? subQuestion.id),
+          question: normalizeStudentFacingText(subQuestion.question),
           options,
           correctOptionId: correctAnswerId,
           points: Number(subQuestion.scoring?.maxPoints ?? 0.5),
@@ -562,14 +692,14 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
 
       return {
         id: item.id,
-        title: item.title,
+        title: normalizeStudentFacingText(item.title),
         kerndoel: rootGoalFrom(item.kerndoel ?? item.primarySubgoal ?? item.subgoal),
         subgoal: subgoalCodeFrom(item.primarySubgoal ?? item.subgoal),
         primarySubgoal: item.primarySubgoal ?? subgoalCodeFrom(item.subgoal),
         itemVersion: item.itemVersion,
         learnerQuestionNumber: item.learnerQuestionNumber,
         internalSlot: item.internalSlot,
-        question: item.question,
+        question: normalizeStudentFacingText(item.question),
         mockup: mockupForContext(item.context),
         compoundTask: {
           itemVersion: item.itemVersion,
@@ -596,10 +726,10 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
         const id = String(option.optionId ?? option.id ?? option.text);
         return {
           id,
-          label: normalizeUnknownLabel(option.label ?? option.text),
+          label: normalizeStudentFacingText(normalizeUnknownLabel(option.label ?? option.text)),
           description:
             option.label && normalizeUnknownLabel(option.label) !== normalizeUnknownLabel(option.text)
-              ? option.text
+              ? normalizeStudentFacingText(option.text)
               : undefined,
           sourceType: option.sourceType,
           errorCategory: option.errorCategory,
@@ -621,7 +751,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
       label: UNKNOWN_OPTION_LABEL,
       description:
         unknownSource?.text && normalizeUnknownLabel(unknownSource.text) !== UNKNOWN_OPTION_LABEL
-          ? unknownSource.text
+          ? normalizeStudentFacingText(unknownSource.text)
           : undefined,
       sourceType: unknownSource?.sourceType,
       isUnknown: true,
@@ -629,8 +759,8 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
     const options: SelectedResponseOptionSpec[] = [
       ...contentOptions.map((option) => ({
         id: option.id,
-        label: option.label,
-        description: option.description,
+        label: normalizeStudentFacingText(option.label),
+        description: option.description ? normalizeStudentFacingText(option.description) : undefined,
         sourceType: option.sourceType,
         errorCategory: option.errorCategory,
       })),
@@ -649,7 +779,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
 
     return {
       id: item.id,
-      title: item.title,
+      title: normalizeStudentFacingText(item.title),
       kerndoel: rootGoalFrom(item.kerndoel ?? item.subgoal),
       subgoal: subgoalCodeFrom(item.subgoal),
       primarySubgoal: item.primarySubgoal,
@@ -661,7 +791,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
         responseType === "multiple"
           ? (item.selectCount ?? item.selectionLimit ?? correctOptions.length)
           : null,
-      question: item.question,
+      question: normalizeStudentFacingText(item.question),
       options,
       correct: responseType === "multiple" ? correctOptions : correctOptions[0],
       harmful: harmfulOptions,
@@ -837,6 +967,63 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
   const subgoal = spec.subgoal ?? subgoalCodeFrom(spec.kerndoel);
   const responseType = spec.type ?? "single";
 
+  if (spec.sortTask) {
+    return {
+      id: spec.id,
+      type: "social_action_simulation",
+      title: spec.title,
+      instruction: spec.question,
+      points: spec.sortTask.cards.length * spec.sortTask.pointsPerCard,
+      skillDomain: `${subgoal} ${sloLabels[subgoal] ?? ""}`.trim(),
+      kerndoel: spec.kerndoel,
+      subgoal,
+      primarySubgoal: spec.primarySubgoal ?? subgoal,
+      itemVersion: spec.itemVersion,
+      learnerQuestionNumber: spec.learnerQuestionNumber,
+      internalSlot: spec.internalSlot,
+      mockup: spec.mockup,
+      socialTask: {
+        screens: [
+          {
+            id: spec.id,
+            title: "AI-acties sorteren",
+            instruction: spec.question,
+            groups: [
+              {
+                id: "ai-actions",
+                title: "Plaats ieder kaartje",
+                instruction: "Kies bij ieder kaartje één categorie.",
+                inputType: "matching",
+                cards: spec.sortTask.cards,
+                options: spec.sortTask.categories,
+                allowUnknown: true,
+              },
+            ],
+          },
+        ],
+        rules: Object.entries(spec.sortTask.correctMatches).map(([cardId, categoryId]) => ({
+          id: `sort-${cardId}`,
+          description: `plaatst ${cardId} in de juiste categorie.`,
+          points: spec.sortTask?.pointsPerCard ?? 0,
+          groupId: "ai-actions",
+          kind: "matchingAll",
+          correctMatches: { [cardId]: categoryId },
+        })),
+      },
+      aiSnelVeranderendFlag: spec.aiSnelVeranderendFlag,
+      anchorStatus: spec.anchorStatus,
+      sourceStatus: spec.sourceStatus,
+      pilotReviewStatus: spec.pilotReviewStatus,
+      validityNote: spec.validityNote,
+      developerNotes: [
+        spec.itemVersion ? `itemVersion: ${spec.itemVersion}` : "",
+        spec.learnerQuestionNumber ? `learnerQuestionNumber: ${spec.learnerQuestionNumber}` : "",
+        spec.internalSlot ? `internalSlot: ${spec.internalSlot}` : "",
+        spec.primarySubgoal ? `primarySubgoal: ${spec.primarySubgoal}` : "",
+      ].filter(Boolean),
+    };
+  }
+
   if (spec.compoundTask) {
     return {
       id: spec.id,
@@ -856,7 +1043,7 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
         screens: [
           {
             id: spec.id,
-            title: "AI-chat",
+            title: spec.mockup?.trainingData ? "Trainingsgegevens" : "AI-chat",
             instruction: spec.question,
             body: spec.mockup?.content.join("\n\n"),
             groups: spec.compoundTask.groups.map((group) => ({
@@ -1398,9 +1585,9 @@ const versionSpecs: VersionSpec[] = [
           },
           {
             id: "classchat",
-            title: "Scherm 2 - Whutsupp foto",
+            title: "Scherm 2 - WhatsApp foto",
             instruction:
-              'In Whutsupp wil iemand een foto van drie klasgenoten in de klassenapp zetten. Een klasgenoot schrijft: "Wacht, ik wil eerst weten welke foto dit is." Kies twee acties die jij zou doen.',
+              'In WhatsApp wil iemand een foto van drie klasgenoten in de klassenapp zetten. Een klasgenoot schrijft: "Wacht, ik wil eerst weten welke foto dit is." Kies twee acties die jij zou doen.',
             body:
               "Toestemming vragen betekent dat iedereen die herkenbaar op de foto staat akkoord is voordat de foto wordt gedeeld.",
             groups: [
@@ -2725,14 +2912,14 @@ const v3Pt8 = (versionId: AssessmentVersionId): SocialTaskSpec => {
     "lj1-vmbo": {
       id: "lj1v-pt8-online",
       title: "PT8 - Online gedrag: foto delen",
-      instruction: "Bekijk wat er in Whutsupp gebeurt. Kies per scherm de beste reactie.",
+      instruction: "Bekijk wat er in WhatsApp gebeurt. Kies per scherm de beste reactie.",
       kerndoel: "23B",
       config: {
         screens: [
           {
             id: "judgement",
-            title: "Whutsupp: foto van klasgenoten",
-            instruction: "In Whutsupp wil iemand een foto van drie klasgenoten in de klassenapp zetten. Een van hen schrijft: \"Wacht, ik wil eerst weten welke foto dit is.\" Jij ziet het bericht.",
+            title: "WhatsApp: foto van klasgenoten",
+            instruction: "In WhatsApp wil iemand een foto van drie klasgenoten in de klassenapp zetten. Een van hen schrijft: \"Wacht, ik wil eerst weten welke foto dit is.\" Jij ziet het bericht.",
             groups: [{ id: "problem", title: "Wat is hier het belangrijkste probleem?", inputType: "single", options: fixedOptions(["Je moet eerst toestemming vragen aan iedereen die herkenbaar op de foto staat.", "Delen in een klassenapp mag altijd, omdat het over school gaat.", "Alleen de namen weglaten is genoeg.", "Je mag de foto plaatsen en hem later weghalen als iemand klaagt."]) }],
           },
           {
@@ -2813,15 +3000,15 @@ const v3Pt8 = (versionId: AssessmentVersionId): SocialTaskSpec => {
   specs["lj1-vmbo"] = {
     id: "pt8-lj1v-online-behaviour-photo-consent-v4",
     title: "PT8 - Online gedrag: foto delen",
-    instruction: "Bekijk wat er in Whutsupp gebeurt. Kies per scherm de beste reactie.",
+    instruction: "Bekijk wat er in WhatsApp gebeurt. Kies per scherm de beste reactie.",
     kerndoel: "23B",
     config: {
       screens: [
         {
           id: "screen1",
-          title: "Whutsupp: foto van klasgenoten",
+          title: "WhatsApp: foto van klasgenoten",
           instruction: "Wat is nu de beste eerste reactie van jou?",
-          body: "In Whutsupp wil iemand een foto van drie klasgenoten in de klassenapp zetten.\n\nEen klasgenoot schrijft:\n\n\"Wacht, ik wil eerst weten welke foto dit is.\"\n\nEen paar leerlingen reageren dat het snel gedeeld moet worden.",
+          body: "In WhatsApp wil iemand een foto van drie klasgenoten in de klassenapp zetten.\n\nEen klasgenoot schrijft:\n\n\"Wacht, ik wil eerst weten welke foto dit is.\"\n\nEen paar leerlingen reageren dat het snel gedeeld moet worden.",
           groups: [{ id: "screen1", title: "Kies de beste reactie", inputType: "single", options: [
             { id: "s1-no-share-no-react", label: "Niet plaatsen of doorsturen zolang niet iedereen akkoord is." },
             { id: "s1-wait-for-group", label: "Eerst kijken hoeveel anderen de foto willen zien voordat je beslist." },

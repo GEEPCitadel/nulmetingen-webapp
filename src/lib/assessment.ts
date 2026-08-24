@@ -800,6 +800,7 @@ const scoreInteractionTask = (
       ids.some((id) => selectedIdsForGroup(state, groupId).includes(id)),
     );
     const matches = answerRecord(state[rule.groupId] as SelectedAnswer);
+    const matchingUnknown = matches.__unknown === "unknown";
     const matchEntries = Object.entries(rule.correctMatches ?? {});
     const correctMatchCount = matchEntries.filter(
       ([cardId, optionId]) => matches[cardId] === optionId,
@@ -841,7 +842,11 @@ const scoreInteractionTask = (
       correct: awardedPoints === rule.points,
       points: awardedPoints,
       selectedOptionId: selectedOptionId || undefined,
-      unknown: selectedOption?.unknown === true || selectedOption?.exclusive === true || selectedOptionId === "unknown",
+      unknown:
+        selectedOption?.unknown === true ||
+        selectedOption?.exclusive === true ||
+        selectedOptionId === "unknown" ||
+        matchingUnknown,
       errorCategory: selectedOption?.errorCategory,
     };
   });

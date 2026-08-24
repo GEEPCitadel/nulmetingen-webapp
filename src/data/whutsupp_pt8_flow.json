@@ -1,12 +1,12 @@
 {
   "taskId": "pt8-whutsupp-sam-video",
-  "title": "Whutsupp: video in de groepschat",
+  "title": "WhatsApp: video in de groepschat",
   "version": "1.0-codex-ready-pilot",
   "subgoal": "23B",
   "maxPoints": 4,
   "engine": "WhutsuppScenarioTask",
   "ui": {
-    "brandName": "Whutsupp",
+    "brandName": "WhatsApp",
     "doNotUseRealWhatsappLogo": true,
     "layout": "smartphone_chat_frame",
     "showOneDecisionAtATime": true,
@@ -103,7 +103,7 @@
       "gradeLabel": "Leerjaar 1 vmbo",
       "languageLevel": "very_low",
       "groupTitle": "Klas 1B zonder docent",
-      "introText": "Je zit in de Whutsupp-groep van je klas. Er komt een video van Sam in de chat. Kies wat jij doet.",
+      "introText": "Je zit in de WhatsApp-groep van je klas. Er komt een video van Sam in de chat. Kies wat jij doet.",
       "nodes": [
         {
           "nodeId": "n1",
@@ -635,7 +635,7 @@
       "gradeLabel": "Leerjaar 1 havo/vwo",
       "languageLevel": "low",
       "groupTitle": "Klas 1H2 zonder docent",
-      "introText": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+      "introText": "Je zit in een WhatsApp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
       "nodes": [
         {
           "nodeId": "n1",
@@ -1167,7 +1167,7 @@
       "gradeLabel": "Leerjaar 3 vmbo",
       "languageLevel": "medium",
       "groupTitle": "Klas 3V2 zonder docent",
-      "introText": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+      "introText": "Je zit in een WhatsApp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
       "nodes": [
         {
           "nodeId": "n1",
@@ -1723,7 +1723,7 @@
       "gradeLabel": "Leerjaar 3 havo/vwo",
       "languageLevel": "medium_plus",
       "groupTitle": "Klas 3H4 zonder docent",
-      "introText": "Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
+      "introText": "Je zit in een WhatsApp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.",
       "nodes": [
         {
           "nodeId": "n1",

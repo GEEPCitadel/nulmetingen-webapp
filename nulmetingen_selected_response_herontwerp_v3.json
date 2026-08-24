@@ -60,176 +60,49 @@
       "validityNote": "A is lang en niet gebaseerd op duidelijke persoonlijke gegevens of toetsenbordpatronen. De afleiders representeren herkenbare misconcepties: naam/jaar/schoolcontext, symbolen zonder echte sterkte en bekend toetsenbordpatroon."
     },
     {
-      "id": "lj1v-vraag9-ai-workstuk-v4",
-      "replaces": "lj1v-sr2-rooster-mail",
+      "id": "lj1v-vraag9-ai-acties-v5",
+      "replaces": "lj1v-vraag9-ai-workstuk-v4",
       "targetGroup": "lj1-vmbo",
       "kerndoel": "21",
       "subgoal": "21D",
       "primarySubgoal": "21D",
-      "itemVersion": "vraag9-ai-21d-v4",
+      "itemVersion": "vraag9-ai-21d-v5",
       "learnerQuestionNumber": 9,
       "internalSlot": "SR2",
-      "title": "AI gebruiken voor je werkstuk",
-      "itemType": "compound-single-choice",
-      "selectionLimit": 2,
-      "question": "Sanne gebruikt KletsGPT voor haar werkstuk. Bekijk de chat.",
+      "title": "AI zorgvuldig gebruiken",
+      "itemType": "binary-card-sort",
+      "selectionLimit": 4,
+      "question": "Sorteer vier acties bij het gebruiken van AI.",
       "context": {
-        "chatMockup": {
+        "aiUsageMockup": {
           "toolName": "KletsGPT",
-          "messages": [
-            {
-              "sender": "student",
-              "label": "Leerling",
-              "text": "Maak mijn tekst beter.\n\nIk ben Sanne de Jong en ik zit in klas 1B op het Citadel College.\n\nMijn tekst:\nVeel brugklassers slapen slecht door hun telefoon."
-            },
-            {
-              "sender": "ai",
-              "label": "KletsGPT",
-              "text": "Je kunt schrijven:\n\nVolgens het rapport `Brugklassers en slaap 2024` slaapt 62% van de brugklassers te weinig door telefoongebruik. Daarom is het slim om je telefoon een uur voor het slapen weg te leggen."
-            }
-          ]
+          "prompt": "Geef een feit voor mijn presentatie over leren met muziek.",
+          "response": "Volgens LeerMonitor 2025 leert 68% van de brugklassers beter met muziek."
         }
       },
-      "subQuestions": [
-        {
-          "id": "prompt_safety",
-          "title": "Deelvraag A",
-          "itemType": "single-choice",
-          "selectionLimit": 1,
-          "question": "Welke invoer kan Sanne het best aan KletsGPT geven?",
-          "options": [
-            {
-              "id": "best_less_identifying_prompt",
-              "text": "Maak mijn tekst duidelijker voor een werkstuk: Veel brugklassers slapen slecht door hun telefoon.",
-              "isCorrect": true,
-              "correct": true,
-              "score": 0.5,
-              "isUnknownOption": false
-            },
-            {
-              "id": "class_context_unneeded",
-              "text": "Ik zit in klas 1B en maak een werkstuk. Maak deze tekst duidelijker: Veel brugklassers slapen slecht door hun telefoon.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "unnecessary_identifying_context"
-            },
-            {
-              "id": "ai_writes_new_text",
-              "text": "Schrijf een betere tekst over brugklassers en slapen.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "ai_generates_content_instead_of_improving_given_text"
-            },
-            {
-              "id": "classmate_example",
-              "text": "Maak mijn tekst beter en gebruik een voorbeeld van iemand uit mijn klas die vaak moe is door haar telefoon.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "adds_unnecessary_personal_context_about_other"
-            },
-            {
-              "id": "unknown",
-              "text": "Ik weet het niet.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": true,
-              "unknown": true,
-              "exclusive": true
-            }
-          ],
-          "correctAnswer": "best_less_identifying_prompt",
-          "scoring": {
-            "maxPoints": 0.5,
-            "rule": "exact-choice",
-            "scoreBy": "option-id",
-            "unknownScoresZero": true,
-            "unknownExclusive": true
-          }
-        },
-        {
-          "id": "output_check",
-          "title": "Deelvraag B",
-          "itemType": "single-choice",
-          "selectionLimit": 1,
-          "question": "Wat doet Sanne het best met het antwoord van KletsGPT?",
-          "options": [
-            {
-              "id": "check_source_and_number",
-              "text": "Ze zoekt of het rapport bestaat en of het percentage daar echt in staat.",
-              "isCorrect": true,
-              "correct": true,
-              "score": 0.5,
-              "isUnknownOption": false
-            },
-            {
-              "id": "ask_kletsgpt_for_link",
-              "text": "Ze vraagt KletsGPT om een link naar het rapport en gebruikt het als er een link verschijnt.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "same_ai_as_verification"
-            },
-            {
-              "id": "remove_source_keep_percentage",
-              "text": "Ze haalt alleen de naam van het rapport weg, maar laat het percentage staan.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "unverified_number_used"
-            },
-            {
-              "id": "check_if_logical",
-              "text": "Ze controleert of de tekst logisch klinkt en past bij haar werkstuk.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "style_or_logic_confused_with_accuracy"
-            },
-            {
-              "id": "unknown",
-              "text": "Ik weet het niet.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": true,
-              "unknown": true,
-              "exclusive": true
-            }
-          ],
-          "correctAnswer": "check_source_and_number",
-          "scoring": {
-            "maxPoints": 0.5,
-            "rule": "exact-choice",
-            "scoreBy": "option-id",
-            "unknownScoresZero": true,
-            "unknownExclusive": true
-          }
-        }
-      ],
-      "scoring": {
-        "maxPoints": 1,
-        "rule": "compound-sum",
-        "scoreBy": "option-id",
-        "doNotScoreBy": [
-          "answer-position"
+      "sortTask": {
+        "categories": [
+          { "id": "careful", "text": "Verstandig" },
+          { "id": "not-careful", "text": "Niet verstandig" }
         ],
-        "unknownScoresZero": true,
-        "unknownExclusive": true
+        "cards": [
+          { "id": "task-only", "text": "Alleen je opdracht invoeren", "correctCategory": "careful" },
+          { "id": "personal-details", "text": "Je naam, klas en school toevoegen", "correctCategory": "not-careful", "errorCategory": "unnecessary_personal_data" },
+          { "id": "verify-claim", "text": "De bron en het percentage controleren", "correctCategory": "careful" },
+          { "id": "same-ai-check", "text": "KletsGPT vragen of het zelf gelijk heeft", "correctCategory": "not-careful", "errorCategory": "same_ai_as_verification" }
+        ]
+      },
+      "scoring": {
+        "maxScore": 2,
+        "method": "matching-per-card",
+        "scoreBy": "option-id",
+        "doNotScoreBy": ["answer-position"],
+        "unknownScore": 0
       },
       "anchorStatus": "concept-anchor",
-      "sourceStatus": "docs/changes/codex_prompt_vraag9_ai_21d_v4.md",
+      "sourceStatus": "explicit-user-rewrite-2026-08-24",
       "pilotReviewStatus": "pilot-work-version",
-      "validityNote": "Leerlingvraag 9 / SR2: vervangt de dubbele rooster-/phishingvraag door een automatisch scorebare 21D/AI-vraag met twee single-choice deelvragen van 0,5 punt."
+      "validityNote": "Leerlingvraag 9 / SR2: vier korte, eenduidige beslissingen over doelgerichte invoer, dataminimalisatie en onafhankelijke controle van AI-uitvoer; 0,5 punt per kaart."
     },
     {
       "id": "lj1v-sr3-phone",
@@ -294,7 +167,7 @@
       "title": "School morgen dicht?",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "In Whutsupp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?",
+      "question": "In WhatsApp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?",
       "options": [
         {
           "id": "A",
@@ -573,7 +446,7 @@
       "title": "Foto delen",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "In Whutsupp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?",
+      "question": "In WhatsApp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?",
       "options": [
         {
           "optionId": "A",
