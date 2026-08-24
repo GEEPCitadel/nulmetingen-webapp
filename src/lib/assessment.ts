@@ -802,6 +802,9 @@ const scoreInteractionTask = (
     const matches = answerRecord(state[rule.groupId] as SelectedAnswer);
     const matchingUnknown = matches.__unknown === "unknown";
     const matchEntries = Object.entries(rule.correctMatches ?? {});
+    const matchedCardId = matchEntries[0]?.[0];
+    const matchedCategoryId = matchedCardId ? matches[matchedCardId] : undefined;
+    const matchedCard = group?.cards?.find((card) => card.id === matchedCardId);
     const correctMatchCount = matchEntries.filter(
       ([cardId, optionId]) => matches[cardId] === optionId,
     ).length;
@@ -841,13 +844,16 @@ const scoreInteractionTask = (
       description: rule.description,
       correct: awardedPoints === rule.points,
       points: awardedPoints,
-      selectedOptionId: selectedOptionId || undefined,
+      selectedOptionId: selectedOptionId || matchedCategoryId || undefined,
       unknown:
         selectedOption?.unknown === true ||
         selectedOption?.exclusive === true ||
         selectedOptionId === "unknown" ||
         matchingUnknown,
-      errorCategory: selectedOption?.errorCategory,
+      errorCategory:
+        awardedPoints === rule.points
+          ? undefined
+          : selectedOption?.errorCategory ?? matchedCard?.errorCategory,
     };
   });
   const uncappedScore = taskResults.reduce((sum, result) => sum + result.points, 0);

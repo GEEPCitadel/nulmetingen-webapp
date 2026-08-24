@@ -6,7 +6,7 @@ Status: Codex-bruikbare verbeterde pilotversie. Niet presenteren als gevalideerd
 - PT3 is voor alle vier niveaus omgebouwd tot een interactieve StreamFlix-phishingmail: de leerling markeert twee onderdelen in de mail en kiest daarna één veilige vervolgactie uit vier antwoordopties.
 - De aanklikbare mail bevat zowel geldige phishingsignalen als afleiders. Iedere combinatie van twee geldige signalen is correct; het doeladres van de knop verschijnt bij hover, toetsenbordfocus of selectie en de knop navigeert nooit naar een website.
 - De vier phishing-/linkcontrole-items zijn aangescherpt met minder sturende vraagteksten, realistischere e-mailmock-ups en plausibele afleiders.
-- Actuele canonical item-id's: `lj1v-sr2-rooster-mail`, `lj1h-sr2-rooster-mail`, `lj3v-sr1-cijfermail`, `lj3h-sr1-accountmail`.
+- De vier leerlingvragen 9 zijn in de pilotwerkversie vervangen door AI/21D-items met itemversie `vraag9-ai-21d-v5`; leerjaar 1 gebruikt actiekaartjes en leerjaar 3 een trainingsdatadashboard.
 - De vraagteksten, stimuli, antwoordopties, correcte antwoorden, scoring en metadata in deze Markdown-specificatie zijn gesynchroniseerd met `nulmetingen_selected_response_herontwerp_v3.json`.
 - De mailstimuli tonen URL-achtige tekst alleen als niet-klikbare linkweergave.
 - De v3.4-verbeteringen blijven gehandhaafd: aangescherpte afleiders, eenduidige scoring, geen omgekeerde PT8-vraagvorm en aangevulde PT-acceptatiecriteria.
@@ -27,9 +27,11 @@ Status: Codex-bruikbare verbeterde pilotversie. Niet presenteren als gevalideerd
 ## 3. Scorearchitectuur
 | Onderdeel | Max. punten |
 |---|---:|
-| Selected response | 10 |
-| Performance tasks | 26 |
-| Totaal | 36 |
+| Selected response | 11 |
+| Performance tasks | 26* |
+| Totaal | 37* |
+
+\* Dit is de beoogde standaardverhouding. In de actieve variant `lj1-vmbo` is PT4 al eerder op 2 punten gezet; daardoor bedraagt die variant momenteel 35 punten (SR 11 + PT 24). Deze bestaande afwijking valt buiten de wijziging aan vraag 9 en wordt meegenomen in de latere totaalanalyse van scoreverhoudingen.
 
 PT-punten: PT1 4, PT2 4, PT3 3, PT4 4, PT6 3, PT7 4, PT8 4. PT5 blijft ongebruikt voor compatibiliteit met bestaande taaknummering.
 
@@ -81,32 +83,24 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Meet kern-DG rond accountveiligheid. De correcte optie is een lange wachtwoordzin zonder persoonlijke context of bekend patroon. Afleiders zijn herkenbare maar zwakke strategieën: naam/jaar/school, jaartal met symbolen en toetsenbordpatroon.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj1v-sr2-rooster-mail` — 23A
-- Vraagtype: single
-- Anchorstatus: concept-anchor
-- Max. punten: 1
-- Stimulus: niet-interactieve e-mailmock-up (`email-message`)
-  - Van: Roosterhulp <roosterhulp@schoolrooster-info.nl>
-  - Aan: sanne@leerling.citadelcollege.nl
-  - Datum: Vandaag 15:42
-  - Onderwerp: Je rooster voor morgen
-  - Body:
-    - Hallo,
-    - Je rooster voor morgen is aangepast. Bekijk je rooster via de knop hieronder.
-  - Linktekst: Bekijk rooster
-  - Linkweergave: `https://schoolrooster-info.nl/citadel`
-- Vraag: Wat kun je nu het best doen?
-- Antwoordopties:
-  - A. Mijn rooster openen via de roosterapp van school. *(correct)*
-  - B. De knop gebruiken, want het gaat alleen om mijn rooster.
-  - C. De mail beantwoorden en vragen of het klopt.
-  - D. Eerst kijken of de pagina er netjes uitziet.
-  - E. Ik weet het niet. *(score 0, exclusief)*
-- CorrectAnswer: `A`
-- HarmfulAnswers: `[]`
-- Scoring: maxPoints 1; rule `exact-choice`; unknownScoresZero `true`; unknownExclusive `true`.
-- Onderbouwing: Meet basiskeuze voor veilige route bij een mail over rooster: zelf via de roosterapp van school controleren in plaats van vertrouwen op knop, afzenderreactie of uiterlijk.
-- V3.7-review: roosterlinkmail aangescherpt naar gewone handelingskeuze met plausibele afleiders.
+#### `lj1v-vraag9-ai-acties-v5` — 21D
+- Leerlingvraagnummer: 9; interne plek: SR2.
+- Vraagtype: binary-card-sort.
+- Anchorstatus: concept-anchor; pilot-work-version.
+- Max. punten: 2; 0,5 punt per correct geplaatst kaartje.
+- Stimulus: realistische, niet-interactieve KletsGPT-mock-up.
+  - Leerling: "Geef een feit voor mijn presentatie over leren met muziek."
+  - KletsGPT: "Volgens LeerMonitor 2025 leert 68% van de brugklassers beter met muziek."
+- Vraag: Sorteer vier acties bij het gebruiken van AI.
+- Categorieën: `Verstandig` en `Niet verstandig`.
+- Kaartjes:
+  - Alleen informatie invoeren die nodig is voor je opdracht. *(Verstandig)*
+  - Je naam, klas en school toevoegen. *(Niet verstandig)*
+  - De bron en het percentage controleren. *(Verstandig)*
+  - KletsGPT vragen of het zelf gelijk heeft. *(Niet verstandig)*
+- `Ik weet het niet.` geeft 0 punten en is exclusief.
+- Scoring: maxPoints 2; rule `matching-per-card`; scoreBy `option-id`; doNotScoreBy `answer-position`.
+- Onderbouwing: Meet vier korte, eenduidige beslissingen over doelgerichte invoer, dataminimalisatie en onafhankelijke controle van AI-uitvoer.
 
 #### `lj1v-sr3-phone` — 21A
 - Vraagtype: single
@@ -237,32 +231,24 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Lange wachtwoordzin zonder persoonlijke context is sterker dan korte complexe patronen of herleidbare gegevens.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj1h-sr2-rooster-mail` — 23A
-- Vraagtype: single
-- Anchorstatus: concept-anchor
-- Max. punten: 1
-- Stimulus: niet-interactieve e-mailmock-up (`email-message`)
-  - Van: Leerlingportaal <bericht@leerlingportaal-citadel.nl>
-  - Aan: sanne@leerling.citadelcollege.nl
-  - Datum: Vandaag 07:31
-  - Onderwerp: Roosterwijziging deze week
-  - Body:
-    - Hallo Sanne,
-    - Er is een roosterwijziging voor deze week. Log in om te bekijken om welke les het gaat.
-  - Linktekst: Roosterwijziging bekijken
-  - Linkweergave: `https://leerlingportaal-citadel.nl/rooster`
-- Vraag: Welke keuze is het verstandigst?
-- Antwoordopties:
-  - A. Zelf naar de bekende schoolomgeving gaan en daar kijken. *(correct)*
-  - B. De knop gebruiken, omdat mijn naam in de mail staat.
-  - C. De knop gebruiken, omdat de link op school lijkt.
-  - D. De mail beantwoorden en vragen welke les is veranderd.
-  - E. Ik weet het niet. *(score 0, exclusief)*
-- CorrectAnswer: `A`
-- HarmfulAnswers: `[]`
-- Scoring: maxPoints 1; rule `exact-choice`; unknownScoresZero `true`; unknownExclusive `true`.
-- Onderbouwing: Meet keuze voor bekende schoolomgeving bij een gepersonaliseerde roosterwijzigingsmail met schoolachtig domein.
-- V3.7-review: roosterwijzigingsmail aangescherpt met personalisatie en schoolachtig domein.
+#### `lj1h-vraag9-ai-acties-v5` — 21D
+- Leerlingvraagnummer: 9; interne plek: SR2.
+- Vraagtype: binary-card-sort.
+- Anchorstatus: concept-anchor; pilot-work-version.
+- Max. punten: 2; 0,5 punt per correct geplaatst kaartje.
+- Stimulus: realistische, niet-interactieve KletsGPT-mock-up.
+  - Leerling: "Geef een feit voor mijn presentatie over leren met muziek."
+  - KletsGPT: "Volgens LeerMonitor 2025 leert 68% van de brugklassers beter met muziek."
+- Vraag: Sorteer de acties bij zorgvuldig gebruik van AI.
+- Categorieën: `Verstandig` en `Niet verstandig`.
+- Kaartjes:
+  - Doel en doelgroep van je presentatie noemen. *(Verstandig)*
+  - Een privébericht van een klasgenoot toevoegen. *(Niet verstandig)*
+  - De oorspronkelijke bron en bewering controleren. *(Verstandig)*
+  - Alleen KletsGPT om bevestiging en een link vragen. *(Niet verstandig)*
+- `Ik weet het niet.` geeft 0 punten en is exclusief.
+- Scoring: maxPoints 2; rule `matching-per-card`; scoreBy `option-id`; doNotScoreBy `answer-position`.
+- Onderbouwing: Meet vier korte, eenduidige beslissingen over doelgerichte invoer, privé-informatie en onafhankelijke controle van AI-uitvoer.
 
 #### `lj1h-sr3-phone-actions` — 21A
 - Vraagtype: multiple
@@ -406,19 +392,24 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Meet keuze voor normale schoolomgeving bij cijferlogincontext; afleiders richten op verwachte login, afzendernaamvertrouwen en zwakke verificatie.
 - V3.7-review: cijfermail aangescherpt naar logincontext met plausibele verificatiefout.
 
-#### `lj3v-sr2-mfa` — 23A
-- Vraagtype: single
-- Anchorstatus: replaceable
-- Max. punten: 1
-- Vraag: Je krijgt een melding: “Wil je deze login goedkeuren?” Je probeert zelf niet in te loggen. Wat is de beste actie?
-- Antwoordopties:
-  - A. Afwijzen en je account via de officiële instellingen controleren. *(correct)*
-  - B. Goedkeuren om te zien of er daarna meer informatie komt.
-  - C. Goedkeuren als de melding maar één keer komt.
-  - D. De melding wegvegen en verder niets controleren.
-  - E. Ik weet het niet.
-- Onderbouwing: Afleiders zijn nu realistischer bij MFA-promptmisbruik: nieuwsgierigheid, eenmaligheid en passief negeren.
-- V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
+#### `lj3v-vraag9-ai-stage-training-v5` — 21D
+- Leerlingvraagnummer: 9; interne plek: SR2.
+- Vraagtype: compound-single-choice met trainingsdatadashboard.
+- Anchorstatus: concept-anchor; pilot-work-version.
+- Max. punten: 2; twee deelvragen van 1 punt.
+- Stimulus: StageMatch vermeldt `Belangrijk: digitaal schoolproject` en `Niet vereist: programmeerclub`. In de vier oude trainingsrijen zijn kandidaten A en B met programmeerclub gekozen en kandidaten C en D zonder programmeerclub niet gekozen, ondanks hogere projectscores. Nieuwe kandidaat E heeft projectscore 9, geen programmeerclub en krijgt `Niet geschikt`.
+- Deelvraag A: Wat heeft de AI waarschijnlijk geleerd?
+  - Programmeerclub telt zwaarder dan het schoolproject. *(correct)*
+  - Zonder programmeerclub heeft iemand geen digitaal project.
+  - De AI kan geen cijfers uit profielen gebruiken.
+  - Ik weet het niet.
+- Deelvraag B: Hoe verbeter je de AI het best?
+  - Train met verschillende kandidaten en relevante projectgegevens. *(correct)*
+  - Voeg meer gekozen leden van de programmeerclub toe.
+  - Verwijder de cijfers van alle schoolprojecten.
+  - Ik weet het niet.
+- Scoring: maxPoints 2; compound-sum; scoreBy `option-id`; antwoorden per deelvraag randomiseren; onbekend blijft onderaan en scoort 0.
+- Onderbouwing: Meet herkenning van een historisch selectiepatroon en verbetering van trainingsdata zonder kennis van programmeerclubs of stagebeleid te vereisen.
 
 #### `lj3v-sr3-phone-actions` — 21A
 - Vraagtype: multiple
@@ -563,19 +554,25 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Meet keuze voor bekende schoolomgeving bij accountcontrolecontext; afleiders richten op bekende diensten, uiterlijk van inlogpagina en antwoorden op afzender.
 - V3.7-review: accountcontrolemail aangescherpt met bekende diensten, professioneel klinkende afzender en realistische afleiders.
 
-#### `lj3h-sr2-datalek` — 23A
-- Vraagtype: single
-- Anchorstatus: concept-anchor
-- Max. punten: 1
-- Vraag: Een website waar jij een account hebt, meldt een datalek. Je gebruikte daar hetzelfde wachtwoord als voor school. Wat is de beste actie?
-- Antwoordopties:
-  - A. Het gelekte wachtwoord overal waar je het gebruikte wijzigen en voor school tweestapsverificatie controleren. *(correct)*
-  - B. Alleen het wachtwoord van de gelekte website wijzigen.
-  - C. Wachten tot school zegt dat er iets mis is met je schoolaccount.
-  - D. Hetzelfde wachtwoord houden als het lang en sterk genoeg lijkt.
-  - E. Ik weet het niet.
-- Onderbouwing: Correcte optie is breder en security-inhoudelijk sterker: hergebruik is het risico, niet alleen het schoolaccount.
-- V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
+#### `lj3h-vraag9-ai-stage-training-v5` — 21D
+- Leerlingvraagnummer: 9; interne plek: SR2.
+- Vraagtype: compound-single-choice met trainingsdatadashboard.
+- Anchorstatus: concept-anchor; pilot-work-version.
+- Max. punten: 2; twee deelvragen van 1 punt.
+- Stimulus: StageMatch vermeldt `Belangrijk: digitaal schoolproject` en `Niet vereist: programmeerclub`. In de vier historische trainingsrijen zijn kandidaten A en B met programmeerclub gekozen en kandidaten C en D zonder programmeerclub niet gekozen, ondanks hogere projectscores. Nieuwe kandidaat E heeft projectscore 9, geen programmeerclub en krijgt `Niet geschikt`.
+- Deelvraag A: Welk probleem is hier het meest waarschijnlijk?
+  - De AI neemt een oud selectiepatroon over als maat voor geschiktheid. *(correct)*
+  - De gegevens bewijzen dat programmeerclub stagesucces veroorzaakt.
+  - Kandidaat E is ongeschikt omdat één profielveld afwijkt.
+  - Ik weet het niet.
+- Deelvraag B: Welke verbetering is het sterkst?
+  - Gebruik relevante criteria, gevarieerde voorbeelden en een aparte testgroep. *(correct)*
+  - Train verder met dezelfde historische selecties omdat die echt zijn.
+  - Verberg alleen het veld programmeerclub en test verder niets.
+  - Gebruik het AI-oordeel als advies zonder het systeem te evalueren.
+  - Ik weet het niet.
+- Scoring: maxPoints 2; compound-sum; scoreBy `option-id`; antwoorden per deelvraag randomiseren; onbekend blijft onderaan en scoort 0.
+- Onderbouwing: Meet onderscheid tussen historisch patroon en geschiktheid plus relevante, gevarieerde training en onafhankelijke toetsing.
 
 #### `lj3h-sr3-phone-actions` — 21A
 - Vraagtype: multiple
@@ -694,7 +691,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | Versie | Item | Subdoel | Actie | Oordeel |
 |---|---|---|---|---|
 | lj1-vmbo | `lj1v-sr1-pw-passphrase` | 23A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
-| lj1-vmbo | `lj1v-sr2-rooster-mail` | 23A | Phishing-/linkcontrole-item aangescherpt in v3.7 | pilotreview nodig op herkenbaarheid van veilige roosterapp-route |
+| lj1-vmbo | `lj1v-vraag9-ai-acties-v5` | 21D | volledig herschreven op expliciete gebruikersinstructie | pilotreview nodig op eenduidigheid van de vier kaartplaatsingen |
 | lj1-vmbo | `lj1v-sr3-phone` | 21A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr4-official-source` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr5-algorithm` | 21B | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
@@ -704,7 +701,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | lj1-vmbo | `lj1v-sr9-photo-consent` | 23B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr10-platform-risk` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr1-pw-passphrase` | 23A | behouden na review | sterk genoeg voor pilot na v3.4-review |
-| lj1-hv | `lj1h-sr2-rooster-mail` | 23A | Phishing-/linkcontrole-item aangescherpt in v3.7 | pilotreview nodig op personalisatie en schoolachtig domein |
+| lj1-hv | `lj1h-vraag9-ai-acties-v5` | 21D | volledig herschreven op expliciete gebruikersinstructie | pilotreview nodig op privacy- en verificatieafleiders |
 | lj1-hv | `lj1h-sr3-phone-actions` | 21A | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr4-search-query` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr5-feed-sample` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
@@ -714,7 +711,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | lj1-hv | `lj1h-sr9-threat-message` | 23B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr10-ad-profile` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr1-cijfermail` | 23A | Phishing-/linkcontrole-item aangescherpt in v3.7 | pilotreview nodig op cijferlogincontext en zwakke verificatie |
-| lj3-vmbo | `lj3v-sr2-mfa` | 23A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
+| lj3-vmbo | `lj3v-vraag9-ai-stage-training-v5` | 21D | volledig herschreven op expliciete gebruikersinstructie | pilotreview nodig op begrip van trainingsdata en selectiepatronen |
 | lj3-vmbo | `lj3v-sr3-phone-actions` | 21A | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr4-health-source` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr5-sponsored` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
@@ -724,7 +721,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | lj3-vmbo | `lj3v-sr9-fake-account` | 23B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr10-digital-chances` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj3-hv | `lj3h-sr1-accountmail` | 23A | Phishing-/linkcontrole-item aangescherpt in v3.7 | pilotreview nodig op bekende diensten, visueel vertrouwen en replyen |
-| lj3-hv | `lj3h-sr2-datalek` | 23A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
+| lj3-hv | `lj3h-vraag9-ai-stage-training-v5` | 21D | volledig herschreven op expliciete gebruikersinstructie | pilotreview nodig op patroon/causaliteit en modeltoetsing |
 | lj3-hv | `lj3h-sr3-phone-actions` | 21A | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-hv | `lj3h-sr4-triangulation` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-hv | `lj3h-sr5-filterbubble` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
@@ -907,7 +904,7 @@ Codex moet aggregaten bijwerken per assessment/class/cohort/grade/track/window. 
 - Alle vier assessmentIds hebben exact 10 SR-items.
 - Alle SR-items hebben een exclusieve optie “Ik weet het niet.” met score 0.
 - Geen item vereist internet, echte accounts, echte uploads of echte externe rapportage.
-- Maxscore is 36: SR 10 + PT 26.
+- Vraag 9 telt 2 punten, waardoor het SR-deel 11 punten omvat. De beoogde totaalscore is 37 (SR 11 + PT 26); de actieve variant `lj1-vmbo` komt door de al bestaande PT4-afwijking uit op 35 (SR 11 + PT 24). De verhouding tussen onderdelen wordt later afzonderlijk verantwoord.
 - Leerlingfeedback kan worden getoond zonder persistente individuele pogingrij.
 - Permanente opslag bevat uitsluitend aggregate counters per classId/cohort/gradeLevel/track/assessmentWindow.
 - PT8 heeft per variant 4 schermen, 4 categorieën en caps op schadelijke acties.
@@ -918,9 +915,9 @@ Codex moet aggregaten bijwerken per assessment/class/cohort/grade/track/window. 
 - V3.5: PT8 bevat geen omgekeerde vraagvorm waarin een foutieve handeling als juiste antwoord gekozen moet worden omdat de prompt vraagt wat vermeden moet worden.
 - V3.5: Permanente opslag blijft aggregaatniveau; leerlingresultaat blijft vluchtig/client-side.
 - V3.6: De vier HTTPS-/slotje-items zijn vervangen door een phishing-/mailstimulusfamilie met niet-interactieve e-mailmock-ups.
-- V3.6: De totale SR-score blijft 10 punten per nulmeting; elk nieuw phishing-mailitem is single-choice met precies één correct antwoord.
+- V3.6-historie: de SR-score was toen 10 punten per nulmeting. Dit is door vraag 9 v5 gewijzigd naar 11 punten.
 - V3.7: De phishing-/linkcontrole-items zijn opnieuw aangescherpt omdat eerdere versies te veel last hadden van sturende vraagstelling, te duidelijke neplinks en te zwakke afleiders. De nieuwe items gebruiken korte handelingsvragen zonder woorden als phishing, verdacht, slotje of https in de vraagtekst. De afleiders zijn realistischer gemaakt: vertrouwen op de afzendernaam, schoolachtige domeinen, personalisatie, bekende diensten, professioneel uiterlijk of antwoorden op de afzender. De correcte handeling blijft steeds: niet via de mailknop inloggen, maar zelf naar de bekende schoolomgeving, roosterapp of officiële schoolomgeving gaan.
-- V3.7 sync: Markdown en actieve JSON gebruiken dezelfde canonical item-id's: `lj1v-sr2-rooster-mail`, `lj1h-sr2-rooster-mail`, `lj3v-sr1-cijfermail`, `lj3h-sr1-accountmail`.
+- Vraag 9 v5-sync: Markdown en actieve JSON gebruiken dezelfde vier AI/21D-item-id's en dezelfde maximumscore van 2 punten.
 
 ## 12. Pilotanalyse en revisieregels
 - Minimum vóór claims: voer minimaal één pilotronde uit per doelgroep voordat items worden frozen.

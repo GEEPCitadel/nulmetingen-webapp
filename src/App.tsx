@@ -4136,6 +4136,98 @@ const WhutsuppScenarioTask = ({
   );
 };
 
+const AIUsageMockup = ({ mockup }: { mockup: NonNullable<AssessmentItem["mockup"]> }) => {
+  const scenario = mockup.aiUsage;
+  if (!scenario) {
+    return null;
+  }
+
+  return (
+    <div className="ai-usage-window" aria-label={`Voorbeeldscherm van ${scenario.toolName}`}>
+      <div className="ai-usage-titlebar">
+        <span className="ai-usage-logo" aria-hidden="true">AI</span>
+        <div>
+          <strong>{scenario.toolName}</strong>
+          <small>AI-hulp voor school</small>
+        </div>
+        <span className="ai-usage-status">online</span>
+      </div>
+      <div className="ai-usage-thread">
+        <div className="ai-usage-message student">
+          <small>Jij</small>
+          <span>{scenario.prompt}</span>
+        </div>
+        <div className="ai-usage-message assistant">
+          <small>{scenario.toolName}</small>
+          <span>{scenario.response}</span>
+        </div>
+      </div>
+      <div className="ai-usage-composer" aria-hidden="true">
+        <span>Typ een bericht…</span>
+        <b>↑</b>
+      </div>
+    </div>
+  );
+};
+
+const TrainingDataMockup = ({ mockup }: { mockup: NonNullable<AssessmentItem["mockup"]> }) => {
+  const data = mockup.trainingData;
+  if (!data) {
+    return null;
+  }
+
+  const yesNo = (value: boolean) => value ? "Ja" : "Nee";
+  return (
+    <div className="training-data-window" aria-label={`${data.platformName}: historische stagekeuzes en nieuw AI-oordeel`}>
+      <div className="training-data-titlebar">
+        <div>
+          <span className="training-data-kicker">Stageportaal</span>
+          <strong>{data.platformName}</strong>
+        </div>
+        <span className="training-data-model">AI-model actief</span>
+      </div>
+      <div className="training-data-criteria">
+        <span><b aria-hidden="true">✓</b>{data.requirement}</span>
+        <span><b aria-hidden="true">–</b>{data.notRequired}</span>
+      </div>
+      <div className="training-data-section">
+        <div className="training-data-heading">
+          <strong>Oude keuzes waarmee de AI oefende</strong>
+          <small>{data.historicalRows.length} kandidaten</small>
+        </div>
+        <div className="training-data-table" role="table" aria-label="Historische trainingsgegevens">
+          <div className="training-data-row header" role="row">
+            <span role="columnheader">Kandidaat</span>
+            <span role="columnheader">Project</span>
+            <span role="columnheader">Club</span>
+            <span role="columnheader">Keuze</span>
+          </div>
+          {data.historicalRows.map((row) => (
+            <div className="training-data-row" role="row" key={row.id}>
+              <span role="cell"><i aria-hidden="true">{row.id}</i>Dossier {row.id}</span>
+              <span role="cell">{row.projectScore}</span>
+              <span role="cell">{yesNo(row.codingClub)}</span>
+              <span role="cell" className={row.selected ? "selected" : "rejected"}>
+                {row.selected ? "Gekozen" : "Niet gekozen"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="training-data-candidate">
+        <div>
+          <span className="training-data-avatar" aria-hidden="true">{data.candidate.id}</span>
+          <p><strong>Nieuwe kandidaat {data.candidate.id}</strong><small>Schoolproject {data.candidate.projectScore} · Programmeerclub {yesNo(data.candidate.codingClub)}</small></p>
+        </div>
+        <div className="training-data-decision">
+          <small>AI-oordeel</small>
+          <strong>{data.candidate.aiDecision}</strong>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SocialChatMockup = ({
   title,
   screens,
@@ -4214,6 +4306,7 @@ const InteractionTaskView = ({
   onExit: () => void;
 }) => {
   const [state, setState] = useState<Record<string, unknown>>({});
+  const [activeTrainingGroupIndex, setActiveTrainingGroupIndex] = useState(0);
   if (!task) {
     return null;
   }
@@ -4251,6 +4344,7 @@ const InteractionTaskView = ({
         : [
             ...orderFor(screen.id, group, "cards"),
             ...orderFor(screen.id, group, "options"),
+            ...(group.allowUnknown ? [`${group.id}-unknown`] : []),
           ],
     ),
   );
@@ -4268,6 +4362,30 @@ const InteractionTaskView = ({
     });
   const isSocialTask = item.type === "social_action_simulation";
   const isAiChatTask = item.mockup?.mediaHint === "Niet-interactieve AI-chatmock-up";
+  const isAiUsageTask = Boolean(item.mockup?.aiUsage);
+  const isTrainingDataTask = Boolean(item.mockup?.trainingData);
+  const allGroups = task.screens.flatMap((screen) => screen.groups);
+  const activeTrainingGroup = isTrainingDataTask
+    ? allGroups[activeTrainingGroupIndex]
+    : undefined;
+  const groupIsAnswered = (group?: InteractionGroup) => {
+    if (!group) {
+      return false;
+    }
+    const answer = state[group.id];
+    if (group.inputType === "matching") {
+      const matchState = answer && typeof answer === "object" && !Array.isArray(answer)
+        ? (answer as Record<string, string>)
+        : {};
+      return matchState.__unknown === "unknown" ||
+        (group.cards?.length ?? 0) > 0 && group.cards?.every((card) => Boolean(matchState[card.id]));
+    }
+    if (group.inputType === "multi") {
+      return Array.isArray(answer) && answer.length > 0;
+    }
+    return typeof answer === "string" ? answer.length > 0 : answer === true;
+  };
+  const visualAiTask = isAiUsageTask || isTrainingDataTask;
   const renderScreen = (screen: typeof task.screens[number]) => {
     const emailMarkerGroup = screen.groups.find(
       (group) => group.inputType === "emailMarkers",
@@ -4278,7 +4396,7 @@ const InteractionTaskView = ({
 
     return (
       <div className="interaction-screen" key={screen.id}>
-        {!isAiChatTask ? (
+        {!isAiChatTask && !visualAiTask ? (
           <div className="stack-xs">
             <strong>{screen.title}</strong>
             <p>{screen.instruction}</p>
@@ -4321,6 +4439,7 @@ const InteractionTaskView = ({
         ) : null}
         {screen.groups
           .filter((group) => group.inputType !== "emailMarkers")
+          .filter((group) => !isTrainingDataTask || group.id === activeTrainingGroup?.id)
           .map((group) => (
             <InteractionGroupControl
               key={group.id}
@@ -4344,8 +4463,15 @@ const InteractionTaskView = ({
 
       {isSocialTask ? (
         <div className="social-chat-task">
-          <SocialChatMockup title={item.title} screens={task.screens} mockup={item.mockup} />
+          {isAiUsageTask && item.mockup ? <AIUsageMockup mockup={item.mockup} /> : null}
+          {isTrainingDataTask && item.mockup ? <TrainingDataMockup mockup={item.mockup} /> : null}
+          {!visualAiTask ? <SocialChatMockup title={item.title} screens={task.screens} mockup={item.mockup} /> : null}
           <div className="social-question-stack">
+            {isTrainingDataTask ? (
+              <div className="training-question-progress" aria-live="polite">
+                Deelvraag {activeTrainingGroupIndex + 1} van {allGroups.length}
+              </div>
+            ) : null}
             {task.screens.map(renderScreen)}
           </div>
         </div>
@@ -4357,8 +4483,23 @@ const InteractionTaskView = ({
 
       <TaskNavFooter
         questionNumber={questionNumber}
-        primaryLabel="Volgende"
-        onPrimary={submit}
+        primaryLabel={
+          isTrainingDataTask && activeTrainingGroupIndex < allGroups.length - 1
+            ? "Naar deelvraag B"
+            : "Volgende"
+        }
+        onPrimary={
+          isTrainingDataTask && activeTrainingGroupIndex < allGroups.length - 1
+            ? () => setActiveTrainingGroupIndex((current) => current + 1)
+            : submit
+        }
+        primaryDisabled={
+          isTrainingDataTask
+            ? !groupIsAnswered(activeTrainingGroup)
+            : isAiUsageTask
+              ? !allGroups.every(groupIsAnswered)
+              : undefined
+        }
         onSkip={onSkip}
         onExit={onExit}
       />
@@ -4509,33 +4650,45 @@ const InteractionGroupControl = ({
   }
 
   if (group.inputType === "matching") {
+    const unknownSelected = matches.__unknown === "unknown";
     return (
-      <div className="interaction-group">
+      <div className="interaction-group action-sort-group">
         <strong>{group.title}</strong>
-        <div className="matching-grid">
+        {group.instruction ? <p>{group.instruction}</p> : null}
+        <div className="action-sort-grid">
           {(group.cards ?? []).map((card) => (
-            <label className="field" key={card.id}>
-              <span>{card.label}</span>
-              <select
-                value={matches[card.id] ?? ""}
-                onChange={(event) =>
-                  onChange({ ...matches, [card.id]: event.target.value })
-                }
-              >
-                <option value="">Kies</option>
+            <fieldset className="action-sort-card" key={card.id}>
+              <legend>{card.label}</legend>
+              <div className="action-sort-options">
                 {(group.options ?? []).map((option) => (
-                  <option value={option.id} key={option.id}>
+                  <button
+                    type="button"
+                    className={matches[card.id] === option.id ? "selected" : ""}
+                    aria-pressed={matches[card.id] === option.id}
+                    key={option.id}
+                    onClick={() => {
+                      const { __unknown: _unknown, ...currentMatches } = matches;
+                      onChange({ ...currentMatches, [card.id]: option.id });
+                    }}
+                  >
                     {option.label}
-                  </option>
+                  </button>
                 ))}
-              </select>
-            </label>
+              </div>
+            </fieldset>
           ))}
         </div>
-        {allowSkip ? (
-          <button className="ghost-button" type="button" onClick={() => onChange({})}>
-            Sla over
+        {group.allowUnknown ? (
+          <button
+            className={`ghost-button action-sort-unknown ${unknownSelected ? "selected" : ""}`}
+            type="button"
+            aria-pressed={unknownSelected}
+            onClick={() => onChange(unknownSelected ? {} : { __unknown: "unknown" })}
+          >
+            Ik weet het niet.
           </button>
+        ) : allowSkip ? (
+          <button className="ghost-button" type="button" onClick={() => onChange({})}>Sla over</button>
         ) : null}
       </div>
     );

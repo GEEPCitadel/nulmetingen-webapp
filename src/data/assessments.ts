@@ -360,6 +360,7 @@ type SelectedResponseJsonItem = {
     harmfulCap?: string | number;
     method?: string;
     correctOptionId?: string;
+    maxPoints?: number;
     maxScore?: number;
     unknownScore?: number;
     scoreBy?: string;
@@ -627,7 +628,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
           return [card.id, card.correctCategory];
         }),
       );
-      const maxPoints = Number(item.scoring?.maxScore ?? 2);
+      const maxPoints = Number(item.scoring?.maxPoints ?? item.scoring?.maxScore ?? 2);
 
       return {
         id: item.id,

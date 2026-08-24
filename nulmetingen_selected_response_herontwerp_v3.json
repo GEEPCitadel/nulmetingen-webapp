@@ -1,7 +1,7 @@
 {
   "schemaVersion": "dg-nulmetingen-v3.7",
-  "status": "werkversie voor Codex-implementatie, pilotafname en interne review; vraag 9/SR2 vervangen door 21D/AI-vraag v4; vraag 16/SR9 hersteld als 23B foto-/toestemmingsvraag",
-  "source": "docs/changes/codex_prompt_vraag9_ai_21d_v4.md",
+  "status": "werkversie voor Codex-implementatie, pilotafname en interne review; vraag 9/SR2 vervangen door 21D/AI-vraag v5; vraag 16/SR9 hersteld als 23B foto-/toestemmingsvraag",
+  "source": "nulmetingen_dg_herontwerp_v3_5_codex.md en expliciete gebruikersinstructies van 2026-08-24",
   "selectedResponseItems": [
     {
       "id": "lj1v-sr1-pw-passphrase",
@@ -86,14 +86,14 @@
           { "id": "not-careful", "text": "Niet verstandig" }
         ],
         "cards": [
-          { "id": "task-only", "text": "Alleen je opdracht invoeren", "correctCategory": "careful" },
+          { "id": "task-only", "text": "Alleen informatie invoeren die nodig is voor je opdracht", "correctCategory": "careful" },
           { "id": "personal-details", "text": "Je naam, klas en school toevoegen", "correctCategory": "not-careful", "errorCategory": "unnecessary_personal_data" },
           { "id": "verify-claim", "text": "De bron en het percentage controleren", "correctCategory": "careful" },
           { "id": "same-ai-check", "text": "KletsGPT vragen of het zelf gelijk heeft", "correctCategory": "not-careful", "errorCategory": "same_ai_as_verification" }
         ]
       },
       "scoring": {
-        "maxScore": 2,
+        "maxPoints": 2,
         "method": "matching-per-card",
         "scoreBy": "option-id",
         "doNotScoreBy": ["answer-position"],
@@ -603,176 +603,49 @@
       "validityNote": "Lange wachtwoordzin zonder voorspelbare persoonlijke gegevens is sterker dan kortere patronen of symbolenreeksen."
     },
     {
-      "id": "lj1h-vraag9-ai-presentatie-v4",
-      "replaces": "lj1h-sr2-rooster-mail",
+      "id": "lj1h-vraag9-ai-acties-v5",
+      "replaces": "lj1h-vraag9-ai-presentatie-v4",
       "targetGroup": "lj1-hv",
       "kerndoel": "21",
       "subgoal": "21D",
       "primarySubgoal": "21D",
-      "itemVersion": "vraag9-ai-21d-v4",
+      "itemVersion": "vraag9-ai-21d-v5",
       "learnerQuestionNumber": 9,
       "internalSlot": "SR2",
-      "title": "AI gebruiken voor een presentatie",
-      "itemType": "compound-single-choice",
-      "selectionLimit": 2,
-      "question": "Milan gebruikt KletsGPT voor een presentatie. Bekijk de chat.",
+      "title": "AI zorgvuldig gebruiken",
+      "itemType": "binary-card-sort",
+      "selectionLimit": 4,
+      "question": "Sorteer de acties bij zorgvuldig gebruik van AI.",
       "context": {
-        "chatMockup": {
+        "aiUsageMockup": {
           "toolName": "KletsGPT",
-          "messages": [
-            {
-              "sender": "student",
-              "label": "Leerling",
-              "text": "Help mijn tekst voor een presentatie verbeteren.\n\nIk ben Milan Verbeek uit 1H2. Onze klas doet een project over energiedrank.\n\nMijn tekst:\nEnergiedrank is populair onder jongeren."
-            },
-            {
-              "sender": "ai",
-              "label": "KletsGPT",
-              "text": "Je kunt schrijven:\n\nVolgens het onderzoek `Jongeren en Energiedrank 2025` drinkt 41% van de brugklassers elke week energiedrank. Daardoor kunnen leerlingen zich soms minder goed concentreren."
-            }
-          ]
+          "prompt": "Geef een feit voor mijn presentatie over leren met muziek.",
+          "response": "Volgens LeerMonitor 2025 leert 68% van de brugklassers beter met muziek."
         }
       },
-      "subQuestions": [
-        {
-          "id": "prompt_safety",
-          "title": "Deelvraag A",
-          "itemType": "single-choice",
-          "selectionLimit": 1,
-          "question": "Welke invoer kan Milan het best aan KletsGPT geven?",
-          "options": [
-            {
-              "id": "best_presentation_prompt",
-              "text": "Verbeter deze tekst voor een presentatie: Energiedrank is populair onder jongeren.",
-              "isCorrect": true,
-              "correct": true,
-              "score": 0.5,
-              "isUnknownOption": false
-            },
-            {
-              "id": "class_project_context",
-              "text": "Ik zit in 1H2 en onze klas doet een project over energiedrank. Verbeter deze tekst: Energiedrank is populair onder jongeren.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "unnecessary_identifying_context"
-            },
-            {
-              "id": "one_sided_prompt",
-              "text": "Maak een sterke tekst over waarom energiedrank slecht is voor jongeren.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "prompt_steers_to_one_sided_claim"
-            },
-            {
-              "id": "classmate_examples",
-              "text": "Verbeter mijn tekst en voeg een voorbeeld toe van leerlingen uit mijn klas die energiedrank drinken.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "adds_unnecessary_personal_context_about_others"
-            },
-            {
-              "id": "unknown",
-              "text": "Ik weet het niet.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": true,
-              "unknown": true,
-              "exclusive": true
-            }
-          ],
-          "correctAnswer": "best_presentation_prompt",
-          "scoring": {
-            "maxPoints": 0.5,
-            "rule": "exact-choice",
-            "scoreBy": "option-id",
-            "unknownScoresZero": true,
-            "unknownExclusive": true
-          }
-        },
-        {
-          "id": "output_check",
-          "title": "Deelvraag B",
-          "itemType": "single-choice",
-          "selectionLimit": 1,
-          "question": "Wat doet Milan het best met het antwoord van KletsGPT?",
-          "options": [
-            {
-              "id": "find_source_and_check_claim",
-              "text": "Hij zoekt de bron en controleert of die dit percentage echt ondersteunt.",
-              "isCorrect": true,
-              "correct": true,
-              "score": 0.5,
-              "isUnknownOption": false
-            },
-            {
-              "id": "source_name_only",
-              "text": "Hij gebruikt het percentage als hij dezelfde bronnaam ook op internet vindt.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "source_name_confused_with_claim_support"
-            },
-            {
-              "id": "more_sources_official_name",
-              "text": "Hij vraagt KletsGPT om nog twee bronnen en kiest de bron die het meest officieel klinkt.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "source_appearance_confused_with_quality"
-            },
-            {
-              "id": "precise_number_trust",
-              "text": "Hij gebruikt het percentage omdat een precies getal meestal uit onderzoek komt.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "specific_number_confused_with_accuracy"
-            },
-            {
-              "id": "unknown",
-              "text": "Ik weet het niet.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": true,
-              "unknown": true,
-              "exclusive": true
-            }
-          ],
-          "correctAnswer": "find_source_and_check_claim",
-          "scoring": {
-            "maxPoints": 0.5,
-            "rule": "exact-choice",
-            "scoreBy": "option-id",
-            "unknownScoresZero": true,
-            "unknownExclusive": true
-          }
-        }
-      ],
-      "scoring": {
-        "maxPoints": 1,
-        "rule": "compound-sum",
-        "scoreBy": "option-id",
-        "doNotScoreBy": [
-          "answer-position"
+      "sortTask": {
+        "categories": [
+          { "id": "careful", "text": "Verstandig" },
+          { "id": "not-careful", "text": "Niet verstandig" }
         ],
-        "unknownScoresZero": true,
-        "unknownExclusive": true
+        "cards": [
+          { "id": "purpose-audience", "text": "Doel en doelgroep van je presentatie noemen", "correctCategory": "careful" },
+          { "id": "private-message", "text": "Een privébericht van een klasgenoot toevoegen", "correctCategory": "not-careful", "errorCategory": "shares_private_message" },
+          { "id": "verify-original", "text": "De oorspronkelijke bron en bewering controleren", "correctCategory": "careful" },
+          { "id": "same-ai-source", "text": "Alleen KletsGPT om bevestiging en een link vragen", "correctCategory": "not-careful", "errorCategory": "same_ai_as_verification" }
+        ]
+      },
+      "scoring": {
+        "maxPoints": 2,
+        "method": "matching-per-card",
+        "scoreBy": "option-id",
+        "doNotScoreBy": ["answer-position"],
+        "unknownScore": 0
       },
       "anchorStatus": "concept-anchor",
-      "sourceStatus": "docs/changes/codex_prompt_vraag9_ai_21d_v4.md",
+      "sourceStatus": "explicit-user-rewrite-2026-08-24",
       "pilotReviewStatus": "pilot-work-version",
-      "validityNote": "Leerlingvraag 9 / SR2: vervangt de dubbele rooster-/phishingvraag door een automatisch scorebare 21D/AI-vraag met twee single-choice deelvragen van 0,5 punt."
+      "validityNote": "Leerlingvraag 9 / SR2: vier korte, eenduidige beslissingen over doelgerichte invoer, privé-informatie en onafhankelijke controle van AI-uitvoer; 0,5 punt per kaart."
     },
     {
       "id": "lj1h-sr3-phone-actions",
@@ -1302,176 +1175,82 @@
       "validityNote": "Meet keuze voor normale schoolomgeving bij cijferlogincontext; afleiders richten op verwachte login, afzendernaamvertrouwen en zwakke verificatie."
     },
     {
-      "id": "lj3v-vraag9-ai-stagebrief-v4",
-      "replaces": "lj3v-sr2-mfa",
+      "id": "lj3v-vraag9-ai-stage-training-v5",
+      "replaces": "lj3v-vraag9-ai-stagebrief-v4",
       "targetGroup": "lj3-vmbo",
       "kerndoel": "21",
       "subgoal": "21D",
       "primarySubgoal": "21D",
-      "itemVersion": "vraag9-ai-21d-v4",
+      "itemVersion": "vraag9-ai-21d-v5",
       "learnerQuestionNumber": 9,
       "internalSlot": "SR2",
-      "title": "AI gebruiken voor een stagebrief",
+      "title": "AI kiest een stagiair",
       "itemType": "compound-single-choice",
       "selectionLimit": 2,
-      "question": "Noor gebruikt KletsGPT om een stagebrief te verbeteren. Bekijk de chat.",
+      "question": "Bekijk hoe StageMatch met oude keuzes een nieuwe kandidaat beoordeelt.",
       "context": {
-        "chatMockup": {
-          "toolName": "KletsGPT",
-          "messages": [
-            {
-              "sender": "student",
-              "label": "Leerling",
-              "text": "Verbeter mijn stagebrief.\n\nNoor Peters\nLijsterstraat 14\n6511 AB Nijmegen\n06-18473291\n\nIk wil stage lopen bij een dierenwinkel, omdat ik goed met dieren kan omgaan."
-            },
-            {
-              "sender": "ai",
-              "label": "KletsGPT",
-              "text": "Je kunt schrijven:\n\nVolgens `StageMonitor Jongeren 2025` vindt 78% van de stagebedrijven motivatie belangrijker dan ervaring. Daarom kun je het best duidelijk uitleggen waarom je deze stageplek kiest."
-            }
-          ]
+        "trainingDataMockup": {
+          "platformName": "StageMatch",
+          "requirement": "Belangrijk: digitaal schoolproject",
+          "notRequired": "Niet vereist: programmeerclub",
+          "historicalRows": [
+            { "id": "A", "projectScore": 6, "codingClub": true, "selected": true },
+            { "id": "B", "projectScore": 7, "codingClub": true, "selected": true },
+            { "id": "C", "projectScore": 9, "codingClub": false, "selected": false },
+            { "id": "D", "projectScore": 8, "codingClub": false, "selected": false }
+          ],
+          "candidate": {
+            "id": "E",
+            "projectScore": 9,
+            "codingClub": false,
+            "aiDecision": "Niet geschikt"
+          }
         }
       },
       "subQuestions": [
         {
-          "id": "prompt_safety",
+          "id": "learned_pattern",
           "title": "Deelvraag A",
           "itemType": "single-choice",
           "selectionLimit": 1,
-          "question": "Welke tekst kan Noor het best aan KletsGPT geven om haar brief te laten verbeteren?",
+          "question": "Wat heeft de AI waarschijnlijk geleerd?",
           "options": [
-            {
-              "id": "best_stage_prompt_no_contact",
-              "text": "Verbeter deze stagebrief: Ik wil stage lopen bij een dierenwinkel, omdat ik goed met dieren kan omgaan.",
-              "isCorrect": true,
-              "correct": true,
-              "score": 0.5,
-              "isUnknownOption": false
-            },
-            {
-              "id": "contact_details_included",
-              "text": "Verbeter mijn stagebrief. Noor Peters, Lijsterstraat 14, 06-18473291. Ik wil stage lopen bij een dierenwinkel.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "contact_details_unnecessary_for_ai_input"
-            },
-            {
-              "id": "ai_invents_motivation",
-              "text": "Maak een stagebrief voor een dierenwinkel. Verzin zelf een goede motivatie.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "ai_generates_personal_motivation"
-            },
-            {
-              "id": "ask_for_extra_numbers",
-              "text": "Verbeter mijn stagebrief en maak hem extra overtuigend met cijfers over stages.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "prompts_ai_for_unverified_statistics"
-            },
-            {
-              "id": "unknown",
-              "text": "Ik weet het niet.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": true,
-              "unknown": true,
-              "exclusive": true
-            }
+            { "id": "club_over_project", "text": "Programmeerclub telt zwaarder dan het schoolproject.", "isCorrect": true, "correct": true, "score": 1, "isUnknownOption": false },
+            { "id": "no_club_no_project", "text": "Zonder programmeerclub heeft iemand geen digitaal project.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": false, "errorCategory": "confuses_club_with_project" },
+            { "id": "cannot_use_numbers", "text": "De AI kan geen cijfers uit profielen gebruiken.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": false, "errorCategory": "misunderstands_ai_data" },
+            { "id": "unknown", "text": "Ik weet het niet.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": true, "unknown": true, "exclusive": true }
           ],
-          "correctAnswer": "best_stage_prompt_no_contact",
-          "scoring": {
-            "maxPoints": 0.5,
-            "rule": "exact-choice",
-            "scoreBy": "option-id",
-            "unknownScoresZero": true,
-            "unknownExclusive": true
-          }
+          "correctAnswer": "club_over_project",
+          "scoring": { "maxPoints": 1, "rule": "exact-choice", "scoreBy": "option-id", "unknownScoresZero": true, "unknownExclusive": true }
         },
         {
-          "id": "output_check",
+          "id": "improve_training",
           "title": "Deelvraag B",
           "itemType": "single-choice",
           "selectionLimit": 1,
-          "question": "Wat doet Noor het best met de zin over `StageMonitor Jongeren 2025`?",
+          "question": "Hoe verbeter je de AI het best?",
           "options": [
-            {
-              "id": "check_stage_source_and_claim",
-              "text": "Ze controleert of de bron bestaat en of de uitspraak daarin staat.",
-              "isCorrect": true,
-              "correct": true,
-              "score": 0.5,
-              "isUnknownOption": false
-            },
-            {
-              "id": "source_name_found_only",
-              "text": "Ze gebruikt de zin als ze de naam StageMonitor Jongeren 2025 online terugvindt.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "source_name_confused_with_claim_support"
-            },
-            {
-              "id": "remove_source_keep_percentage",
-              "text": "Ze laat het percentage staan, maar haalt de bronnaam weg.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "unverified_number_used"
-            },
-            {
-              "id": "make_more_businesslike",
-              "text": "Ze vraagt KletsGPT om de zin zakelijker te maken.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "style_confused_with_accuracy"
-            },
-            {
-              "id": "unknown",
-              "text": "Ik weet het niet.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": true,
-              "unknown": true,
-              "exclusive": true
-            }
+            { "id": "varied_relevant_data", "text": "Train met verschillende kandidaten en relevante projectgegevens.", "isCorrect": true, "correct": true, "score": 1, "isUnknownOption": false },
+            { "id": "more_club_members", "text": "Voeg meer gekozen leden van de programmeerclub toe.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": false, "errorCategory": "reinforces_historical_bias" },
+            { "id": "remove_project_scores", "text": "Verwijder de cijfers van alle schoolprojecten.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": false, "errorCategory": "removes_relevant_data" },
+            { "id": "unknown", "text": "Ik weet het niet.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": true, "unknown": true, "exclusive": true }
           ],
-          "correctAnswer": "check_stage_source_and_claim",
-          "scoring": {
-            "maxPoints": 0.5,
-            "rule": "exact-choice",
-            "scoreBy": "option-id",
-            "unknownScoresZero": true,
-            "unknownExclusive": true
-          }
+          "correctAnswer": "varied_relevant_data",
+          "scoring": { "maxPoints": 1, "rule": "exact-choice", "scoreBy": "option-id", "unknownScoresZero": true, "unknownExclusive": true }
         }
       ],
       "scoring": {
-        "maxPoints": 1,
+        "maxPoints": 2,
         "rule": "compound-sum",
         "scoreBy": "option-id",
-        "doNotScoreBy": [
-          "answer-position"
-        ],
+        "doNotScoreBy": ["answer-position"],
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "sourceStatus": "docs/changes/codex_prompt_vraag9_ai_21d_v4.md",
+      "sourceStatus": "explicit-user-rewrite-2026-08-24",
       "pilotReviewStatus": "pilot-work-version",
-      "validityNote": "Leerlingvraag 9 / SR2: vervangt de dubbele rooster-/phishingvraag door een automatisch scorebare 21D/AI-vraag met twee single-choice deelvragen van 0,5 punt."
+      "validityNote": "Leerlingvraag 9 / SR2: meet herkenning van een historisch selectiepatroon en verbetering van trainingsdata met twee eenduidige deelvragen van 1 punt."
     },
     {
       "id": "lj3v-sr3-phone-actions",
@@ -2011,176 +1790,83 @@
       "validityNote": "Meet keuze voor bekende schoolomgeving bij accountcontrolecontext; afleiders richten op bekende diensten, uiterlijk van inlogpagina en antwoorden op afzender."
     },
     {
-      "id": "lj3h-vraag9-ai-betoog-v4",
-      "replaces": "lj3h-sr2-datalek",
+      "id": "lj3h-vraag9-ai-stage-training-v5",
+      "replaces": "lj3h-vraag9-ai-betoog-v4",
       "targetGroup": "lj3-hv",
       "kerndoel": "21",
       "subgoal": "21D",
       "primarySubgoal": "21D",
-      "itemVersion": "vraag9-ai-21d-v4",
+      "itemVersion": "vraag9-ai-21d-v5",
       "learnerQuestionNumber": 9,
       "internalSlot": "SR2",
-      "title": "AI gebruiken voor een betoog",
+      "title": "AI bij stage-selectie",
       "itemType": "compound-single-choice",
       "selectionLimit": 2,
-      "question": "Sara gebruikt KletsGPT voor een betoog over telefoons in de klas. Bekijk de chat.",
+      "question": "Bekijk hoe StageMatch met historische keuzes een nieuwe kandidaat beoordeelt.",
       "context": {
-        "chatMockup": {
-          "toolName": "KletsGPT",
-          "messages": [
-            {
-              "sender": "student",
-              "label": "Leerling",
-              "text": "Maak van deze informatie een sterke alinea voor mijn betoog.\n\nIk zit in 3H2. In onze mentorklasapp schreef Sam: \"Mijn cijfers zijn echt gezakt door mijn telefoon.\"\nGebruik dit als voorbeeld, maar noem zijn naam niet."
-            },
-            {
-              "sender": "ai",
-              "label": "KletsGPT",
-              "text": "Je kunt schrijven:\n\nOnderzoek van De Vries en Khan uit 2025 in het `European Journal of School Focus` laat zien dat leerlingen gemiddeld 18% hogere cijfers halen als telefoons uit de klas blijven. Ook uit berichten van leerlingen blijkt dat telefoons hun resultaten kunnen verslechteren."
-            }
-          ]
+        "trainingDataMockup": {
+          "platformName": "StageMatch",
+          "requirement": "Belangrijk: digitaal schoolproject",
+          "notRequired": "Niet vereist: programmeerclub",
+          "historicalRows": [
+            { "id": "A", "projectScore": 6, "codingClub": true, "selected": true },
+            { "id": "B", "projectScore": 7, "codingClub": true, "selected": true },
+            { "id": "C", "projectScore": 9, "codingClub": false, "selected": false },
+            { "id": "D", "projectScore": 8, "codingClub": false, "selected": false }
+          ],
+          "candidate": {
+            "id": "E",
+            "projectScore": 9,
+            "codingClub": false,
+            "aiDecision": "Niet geschikt"
+          }
         }
       },
       "subQuestions": [
         {
-          "id": "prompt_safety",
+          "id": "historical_pattern",
           "title": "Deelvraag A",
           "itemType": "single-choice",
           "selectionLimit": 1,
-          "question": "Welke invoer past het best bij verantwoord gebruik van KletsGPT?",
+          "question": "Welk probleem is hier het meest waarschijnlijk?",
           "options": [
-            {
-              "id": "best_no_private_messages",
-              "text": "Maak een alinea voor een betoog over telefoons in de klas. Gebruik geen berichten van klasgenoten.",
-              "isCorrect": true,
-              "correct": true,
-              "score": 0.5,
-              "isUnknownOption": false
-            },
-            {
-              "id": "private_quote_without_name",
-              "text": "Maak een alinea voor mijn betoog. Een klasgenoot schreef: \"Mijn cijfers zijn echt gezakt door mijn telefoon.\" Noem zijn naam niet.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "anonymization_overestimated"
-            },
-            {
-              "id": "make_private_message_general",
-              "text": "Maak het bericht van mijn klasgenoot algemener en gebruik het als voorbeeld in mijn betoog.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "private_context_still_used"
-            },
-            {
-              "id": "invent_student_example",
-              "text": "Maak een sterke alinea en verzin een leerlingvoorbeeld dat goed bij mijn standpunt past.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "fabricated_example_requested"
-            },
-            {
-              "id": "unknown",
-              "text": "Ik weet het niet.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": true,
-              "unknown": true,
-              "exclusive": true
-            }
+            { "id": "pattern_as_suitability", "text": "De AI neemt een oud selectiepatroon over als maat voor geschiktheid.", "isCorrect": true, "correct": true, "score": 1, "isUnknownOption": false },
+            { "id": "real_means_objective", "text": "De gegevens bewijzen dat programmeerclub stagesucces veroorzaakt.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": false, "errorCategory": "correlation_as_causation" },
+            { "id": "different_means_unsuitable", "text": "Kandidaat E is ongeschikt omdat één profielveld afwijkt.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": false, "errorCategory": "difference_as_unsuitability" },
+            { "id": "unknown", "text": "Ik weet het niet.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": true, "unknown": true, "exclusive": true }
           ],
-          "correctAnswer": "best_no_private_messages",
-          "scoring": {
-            "maxPoints": 0.5,
-            "rule": "exact-choice",
-            "scoreBy": "option-id",
-            "unknownScoresZero": true,
-            "unknownExclusive": true
-          }
+          "correctAnswer": "pattern_as_suitability",
+          "scoring": { "maxPoints": 1, "rule": "exact-choice", "scoreBy": "option-id", "unknownScoresZero": true, "unknownExclusive": true }
         },
         {
-          "id": "output_check",
+          "id": "improve_and_test",
           "title": "Deelvraag B",
           "itemType": "single-choice",
           "selectionLimit": 1,
-          "question": "Wat doet Sara het best met het onderzoek dat KletsGPT noemt?",
+          "question": "Welke verbetering is het sterkst?",
           "options": [
-            {
-              "id": "verify_article_supports_18_claim",
-              "text": "Ze zoekt het artikel op en controleert of daarin echt staat dat cijfers gemiddeld 18% hoger zijn.",
-              "isCorrect": true,
-              "correct": true,
-              "score": 0.5,
-              "isUnknownOption": false
-            },
-            {
-              "id": "trust_title_and_authors",
-              "text": "Ze gebruikt de bron als de titel en auteurs betrouwbaar klinken.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "source_label_confused_with_reliability"
-            },
-            {
-              "id": "longer_reference",
-              "text": "Ze vraagt KletsGPT om een langere bronvermelding en gebruikt die in haar betoog.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "source_detail_confused_with_reliability"
-            },
-            {
-              "id": "remove_percentage_keep_claim",
-              "text": "Ze haalt het percentage weg, maar gebruikt de conclusie dat telefoons cijfers verlagen.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": false,
-              "errorCategory": "unverified_claim_still_used"
-            },
-            {
-              "id": "unknown",
-              "text": "Ik weet het niet.",
-              "isCorrect": false,
-              "correct": false,
-              "score": 0,
-              "isUnknownOption": true,
-              "unknown": true,
-              "exclusive": true
-            }
+            { "id": "relevant_varied_test", "text": "Gebruik relevante criteria, gevarieerde voorbeelden en een aparte testgroep.", "isCorrect": true, "correct": true, "score": 1, "isUnknownOption": false },
+            { "id": "more_historical", "text": "Train verder met dezelfde historische selecties omdat die echt zijn.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": false, "errorCategory": "more_same_historical_data" },
+            { "id": "hide_field_only", "text": "Verberg alleen het veld programmeerclub en test verder niets.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": false, "errorCategory": "removes_field_without_revalidation" },
+            { "id": "advice_without_evaluation", "text": "Gebruik het AI-oordeel als advies zonder het systeem te evalueren.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": false, "errorCategory": "human_in_loop_without_model_evaluation" },
+            { "id": "unknown", "text": "Ik weet het niet.", "isCorrect": false, "correct": false, "score": 0, "isUnknownOption": true, "unknown": true, "exclusive": true }
           ],
-          "correctAnswer": "verify_article_supports_18_claim",
-          "scoring": {
-            "maxPoints": 0.5,
-            "rule": "exact-choice",
-            "scoreBy": "option-id",
-            "unknownScoresZero": true,
-            "unknownExclusive": true
-          }
+          "correctAnswer": "relevant_varied_test",
+          "scoring": { "maxPoints": 1, "rule": "exact-choice", "scoreBy": "option-id", "unknownScoresZero": true, "unknownExclusive": true }
         }
       ],
       "scoring": {
-        "maxPoints": 1,
+        "maxPoints": 2,
         "rule": "compound-sum",
         "scoreBy": "option-id",
-        "doNotScoreBy": [
-          "answer-position"
-        ],
+        "doNotScoreBy": ["answer-position"],
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "sourceStatus": "docs/changes/codex_prompt_vraag9_ai_21d_v4.md",
+      "sourceStatus": "explicit-user-rewrite-2026-08-24",
       "pilotReviewStatus": "pilot-work-version",
-      "validityNote": "Leerlingvraag 9 / SR2: vervangt de dubbele rooster-/phishingvraag door een automatisch scorebare 21D/AI-vraag met twee single-choice deelvragen van 0,5 punt."
+      "validityNote": "Leerlingvraag 9 / SR2: meet herkenning van historische selectiepatronen en verbetering plus toetsing van trainingsdata met twee eenduidige deelvragen van 1 punt."
     },
     {
       "id": "lj3h-sr3-phone-actions",

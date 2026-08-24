@@ -38,6 +38,42 @@ for (const versionId of versionIds) {
     failures.push(`${versionId} heeft ${items.length} SR-items in plaats van 10.`);
   }
 
+  const question9 = items.find((item) => item.learnerQuestionNumber === 9);
+  const question9MaxPoints = Number(
+    question9?.scoring?.maxPoints ?? question9?.scoring?.maxScore ?? 0,
+  );
+  if (!question9 || question9.primarySubgoal !== "21D" || question9MaxPoints !== 2) {
+    failures.push(`${versionId} mist een vraag 9 voor 21D met exact 2 punten.`);
+  } else if (versionId.startsWith("lj1")) {
+    const cards = question9.sortTask?.cards ?? [];
+    const categories = new Set(question9.sortTask?.categories?.map((entry) => entry.id) ?? []);
+    if (
+      question9.itemType !== "binary-card-sort" ||
+      cards.length !== 4 ||
+      categories.size !== 2 ||
+      cards.some((card) => !categories.has(card.correctCategory))
+    ) {
+      failures.push(`${versionId} heeft geen geldige vierkaartensortering op vraag 9.`);
+    }
+  } else {
+    const subQuestions = question9.subQuestions ?? [];
+    if (
+      question9.itemType !== "compound-single-choice" ||
+      subQuestions.length !== 2 ||
+      subQuestions.some((entry) => Number(entry.scoring?.maxPoints) !== 1)
+    ) {
+      failures.push(`${versionId} heeft geen twee geldige deelvragen van 1 punt op vraag 9.`);
+    }
+  }
+
+  const srMaxPoints = items.reduce(
+    (sum, item) => sum + Number(item.scoring?.maxPoints ?? item.scoring?.maxScore ?? item.maxScore ?? 1),
+    0,
+  );
+  if (srMaxPoints !== 11) {
+    failures.push(`${versionId} heeft een SR-maximum van ${srMaxPoints} in plaats van 11.`);
+  }
+
   if (!items.some((item) => {
     const stimulusText = item.stimulus
       ? [
