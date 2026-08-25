@@ -1839,6 +1839,48 @@ const AdminScreen = ({
     downloadFile(`${exportBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
   };
 
+  const getCreatedCodeExportRows = () =>
+    createdCodeRows.map((student) => ({
+      Inlogcode: student.accessCode,
+      Klas: student.classCode,
+      Nulmeting: assessmentLabels[student.versionId] ?? student.versionId,
+      Status: statusLabel(student.status),
+      "Import-batch": student.importBatch ?? "",
+    }));
+
+  const createdCodesExportBaseName = () =>
+    `nieuwe-inlogcodes-${classCodeInput.trim() || "klas"}-${new Date().toISOString().slice(0, 10)}`;
+
+  const exportCreatedCodesExcel = async () => {
+    const XLSX = await import("xlsx");
+    const worksheet = XLSX.utils.json_to_sheet(getCreatedCodeExportRows());
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inlogcodes");
+    XLSX.writeFile(workbook, `${createdCodesExportBaseName()}.xlsx`);
+  };
+
+  const exportCreatedCodesWord = () => {
+    const rows = getCreatedCodeExportRows();
+    const htmlRows = rows
+      .map(
+        (row) =>
+          `<tr><td>${escapeHtml(row.Inlogcode)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td><td>${escapeHtml(row["Import-batch"])}</td></tr>`,
+      )
+      .join("");
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Nieuwe inlogcodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Nieuwe anonieme inlogcodes</h1><table><thead><tr><th>Inlogcode</th><th>Klas</th><th>Nulmeting</th><th>Status</th><th>Import-batch</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    downloadFile(`${createdCodesExportBaseName()}.doc`, html, "application/msword");
+  };
+
+  const exportCreatedCodesPdf = () => {
+    const rows = getCreatedCodeExportRows();
+    const lines = [
+      "Nieuwe anonieme inlogcodes",
+      "",
+      ...rows.map((row) => `${row.Klas} | ${row.Inlogcode} | ${row.Status}`),
+    ];
+    downloadFile(`${createdCodesExportBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
+  };
+
   const getGroupAnalysisExportRows = (rows: AnalysisGroup[]) =>
     rows.map((row) => ({
       Klas: row.classCode || "Alle klassen",
@@ -2557,23 +2599,20 @@ const AdminScreen = ({
         {createdCodeRows.length > 0 ? (
           <div className="admin-preview-block printable-code-overview">
             <h4>Overzicht nieuwe inlogcodes</h4>
-            <div className="rd-result-actions">
-              <button
-                className="filter-chip"
-                type="button"
-                onClick={() => {
-                  const text = createdCodeRows
-                    .map((student) => `${student.classCode}\t${student.accessCode}`)
-                    .join("\n");
-                  void navigator.clipboard?.writeText(`Klas\tInlogcode\n${text}`);
-                }}
-              >
-                Kopieer
-              </button>
-              <button className="filter-chip" type="button" onClick={() => window.print()}>
-                Print
-              </button>
-            </div>
+            <details className="admin-export-menu">
+              <summary className="filter-chip">Exporteer</summary>
+              <div className="admin-export-options">
+                <button className="filter-chip" type="button" onClick={() => void exportCreatedCodesExcel()}>
+                  Excel
+                </button>
+                <button className="filter-chip" type="button" onClick={exportCreatedCodesWord}>
+                  Word
+                </button>
+                <button className="filter-chip" type="button" onClick={exportCreatedCodesPdf}>
+                  PDF
+                </button>
+              </div>
+            </details>
             <div className="analysis-table compact">
               <div className="analysis-row head">
                 <span>Klas</span>
