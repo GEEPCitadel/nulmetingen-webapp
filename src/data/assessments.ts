@@ -2574,7 +2574,7 @@ const versionSpecs: VersionSpec[] = [
 ];
 
 const v3FileInstruction =
-  "Werk in de Verkenner hieronder.\nVoer de opdrachten uit en klik daarna op Volgende.";
+  "Werk in het venster hieronder.\nVoer de opdrachten uit en klik daarna op Volgende.";
 
 const v3MailConfig = ({
   to,
@@ -3377,7 +3377,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       id: "lj1v-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
       instruction:
-        `${v3FileInstruction}\nMaak in OneDrive de map Biologie.\nZoek de bestanden concept_dieren.docx, foto_kat.jpg en bron_dieren.pdf.\nVerplaats de drie bestanden naar Biologie.\nHernoem concept_dieren.docx in Biologie naar Verslag_Dieren.docx.`,
+        `${v3FileInstruction}\nMaak in OneDrive de map Biologie.\nZoek de bestanden concept_dieren.docx, foto_kat.jpg en bron_dieren.pdf.\nVerplaats deze drie bestanden naar de map Biologie.\nVerander de naam van 'concept_dieren.docx' in 'verslag_dieren.docx'.`,
       startFolders: [
         "Thuis/OneDrive/Engels",
         "Thuis/OneDrive/Maatschappij",
@@ -3389,7 +3389,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       tasks: [
         { id: "main", description: "map Biologie correct.", expectedPath: "Thuis/OneDrive/Biologie", points: 1 },
         { id: "files", description: "projectbestanden correct geplaatst.", expectedPaths: ["Thuis/OneDrive/Biologie/bron_dieren.pdf", "Thuis/OneDrive/Biologie/foto_kat.jpg"], points: 1 },
-        { id: "rename", description: "verslag correct hernoemd en geplaatst.", expectedPath: "Thuis/OneDrive/Biologie/Verslag_Dieren.docx", forbiddenPaths: ["Thuis/OneDrive/concept_dieren.docx", "Thuis/OneDrive/Biologie/concept_dieren.docx"], points: 1 },
+        { id: "rename", description: "verslag correct hernoemd en geplaatst.", expectedPath: "Thuis/OneDrive/Biologie/verslag_dieren.docx", forbiddenPaths: ["Thuis/OneDrive/concept_dieren.docx", "Thuis/OneDrive/Biologie/concept_dieren.docx"], points: 1 },
         { id: "subjects", description: "bestaande vakmappen blijven beschikbaar.", expectedPaths: ["Thuis/OneDrive/Engels", "Thuis/OneDrive/Maatschappij", "Thuis/OneDrive/Mentorles", "Thuis/OneDrive/Nederlands", "Thuis/OneDrive/Wiskunde"], points: 1 },
       ],
     },

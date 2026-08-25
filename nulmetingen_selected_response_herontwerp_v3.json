@@ -185,7 +185,7 @@
         },
         {
           "id": "C",
-          "text": "Kijken of het screenshot een logo en datum heeft; als dat klopt, is het betrouwbaar genoeg.",
+          "text": "Kijken of het screenshot een logo en datum heeft; als dat klopt, is het betrouwbaar.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -223,7 +223,7 @@
       "title": "Aanbevelingen",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Luna kijkt drie voetbalvideo’s helemaal af. Eén video vindt ze leuk. Daarna ziet ze meer voetbalvideo’s. Wat is de beste uitleg?",
+      "question": "Luna kijkt drie voetbalvideo’s helemaal af. Eén video vindt ze leuk. Daarna ziet ze meer voetbalvideo’s. Wat is de beste uitleg over hoe dit komt?",
       "options": [
         {
           "id": "opt_watch_like",
@@ -403,7 +403,7 @@
         },
         {
           "optionId": "B",
-          "text": "Of de afbeelding op veel websites voorkomt; dan zal hij wel vrij te gebruiken zijn.",
+          "text": "Of de afbeelding op veel websites voorkomt; dan is hij vrij te gebruiken.",
           "score": 0,
           "isCorrect": false
         },

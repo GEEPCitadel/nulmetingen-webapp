@@ -415,6 +415,212 @@ const createPdfDocument = (lines: string[]) => {
   return pdf;
 };
 
+type StudentPdfAssignment = {
+  itemId: string;
+  questionNumber: number | undefined;
+  points: number;
+};
+
+type StudentResultPdfData = {
+  assessmentTitle: string;
+  dateLabel: string;
+  classLabel: string;
+  selfAssessmentScore: number | null;
+  totalScore: number;
+  maxScore: number;
+  percentage: number;
+  comparison: string;
+  coreGoalScores: GoalScore[];
+  subgoalScores: GoalScore[];
+  subgoalAssignments: Map<string, StudentPdfAssignment[]>;
+  whutsuppFeedback: string[];
+};
+
+const createStudentResultPdf = ({
+  assessmentTitle,
+  dateLabel,
+  classLabel,
+  selfAssessmentScore,
+  totalScore,
+  maxScore,
+  percentage,
+  comparison,
+  coreGoalScores,
+  subgoalScores,
+  subgoalAssignments,
+  whutsuppFeedback,
+}: StudentResultPdfData) => {
+  const pages: string[] = [];
+  let pageCommands: string[] = [];
+  let pageNumber = 0;
+  let y = 0;
+
+  const startPage = () => {
+    pageNumber += 1;
+    y = 706;
+    pageCommands = [
+      "q",
+      "0.98 0.98 0.94 rg",
+      "0 0 595 842 re f",
+      "0.00 0.60 0.57 rg",
+      "0 754 595 88 re f",
+      "0.78 0.83 0.00 rg",
+      "0 746 595 8 re f",
+      "Q",
+      "BT /F2 24 Tf 1 1 1 rg 48 798 Td (Nulmeting Digitale Geletterdheid) Tj ET",
+      "BT /F1 10 Tf 1 1 1 rg 48 778 Td (Jouw persoonlijke scoreoverzicht) Tj ET",
+    ];
+  };
+
+  const finishPage = () => {
+    pageCommands.push(
+      "0.78 0.83 0.00 RG 48 46 m 547 46 l S",
+      "BT /F1 9 Tf 0.19 0.24 0.28 rg 48 30 Td (Citadel College - nulmeting Digitale Geletterdheid) Tj ET",
+      `BT /F1 9 Tf 0.19 0.24 0.28 rg 495 30 Td (Pagina ${pageNumber}) Tj ET`,
+    );
+    pages.push(pageCommands.join("\n"));
+  };
+
+  const ensureSpace = (height: number) => {
+    if (y - height < 70) {
+      finishPage();
+      startPage();
+    }
+  };
+
+  const addText = (
+    text: string,
+    x: number,
+    size: number,
+    font: "F1" | "F2" = "F1",
+    color = "0.10 0.16 0.23",
+  ) => {
+    pageCommands.push(
+      `BT /${font} ${size} Tf ${color} rg ${x} ${y} Td (${escapePdfText(text)}) Tj ET`,
+    );
+  };
+
+  const addParagraph = (text: string, maxLength = 78, size = 10, color = "0.10 0.16 0.23") => {
+    const lines = wrapPdfLine(text, maxLength);
+    ensureSpace(lines.length * (size + 5) + 8);
+    lines.forEach((line) => {
+      addText(line, 48, size, "F1", color);
+      y -= size + 5;
+    });
+    y -= 6;
+  };
+
+  const addSection = (title: string) => {
+    ensureSpace(34);
+    pageCommands.push("0.00 0.60 0.57 rg", `48 ${y - 5} 6 22 re f`);
+    addText(title, 66, 15, "F2", "0.00 0.38 0.36");
+    y -= 31;
+  };
+
+  const addScoreCard = () => {
+    ensureSpace(102);
+    pageCommands.push(
+      "0.89 0.96 0.94 rg",
+      `48 ${y - 86} 499 78 re f`,
+      "0.00 0.60 0.57 RG",
+      `48 ${y - 86} 499 78 re S`,
+    );
+    addText(`${percentage}%`, 68, 31, "F2", "0.00 0.48 0.45");
+    const scoreY = y;
+    y -= 30;
+    addText("jouw score op de nulmeting", 170, 12, "F2", "0.10 0.16 0.23");
+    y -= 19;
+    addText(`${totalScore} van ${maxScore} punten`, 170, 11, "F1", "0.10 0.16 0.23");
+    y = scoreY - 100;
+  };
+
+  const addGoalRow = (title: string, description: string, goal: GoalScore) => {
+    const descriptionLines = wrapPdfLine(description, 58);
+    const rowHeight = 26 + descriptionLines.length * 13;
+    ensureSpace(rowHeight + 10);
+    const rowTop = y;
+    pageCommands.push("0.94 0.97 0.96 rg", `48 ${y - rowHeight} 499 ${rowHeight - 4} re f`);
+    addText(title, 60, 11, "F2", "0.10 0.16 0.23");
+    addText(`${goal.percentage}%`, 478, 13, "F2", "0.00 0.48 0.45");
+    y = rowTop - 15;
+    addText(`${goal.score}/${goal.maxScore} punten`, 478, 8, "F1", "0.19 0.24 0.28");
+    descriptionLines.forEach((line) => {
+      addText(line, 60, 9, "F1", "0.19 0.24 0.28");
+      y -= 12;
+    });
+    y -= 12;
+  };
+
+  startPage();
+  addSection("Jouw resultaat");
+  addScoreCard();
+  addSection("Over deze uitslag");
+  addParagraph(`Nulmeting: ${assessmentTitle}`);
+  addParagraph(`Datum: ${dateLabel} | Klas of klascode: ${classLabel}`);
+  addParagraph(
+    selfAssessmentScore === null
+      ? "Zelfinschatting: niet opgeslagen."
+      : `Zelfinschatting vooraf: ${selfAssessmentScore}%.`,
+  );
+  addParagraph(comparison);
+  addParagraph("Dit is geen cijfer. De nulmeting geeft een eerste beeld van onderdelen van digitale geletterdheid.", 78, 9, "0.19 0.24 0.28");
+
+  addSection("Score per kerndoel");
+  coreGoalScores.forEach((goal) => {
+    addGoalRow(`Kerndoel ${goal.goalId}`, coreGoalText(goal), goal);
+  });
+
+  if (subgoalScores.length > 0) {
+    addSection("Detail per subdoel");
+    addParagraph("Dit overzicht is gebaseerd op een beperkt aantal vragen of taken. Zie het als een eerste aanwijzing.", 78, 9, "0.19 0.24 0.28");
+    subgoalScores.forEach((goal) => {
+      const assignments = subgoalAssignments.get(goal.goalId) ?? [];
+      const questions = assignments.length === 0
+        ? ""
+        : `Vragen: ${assignments.map((assignment) => `vraag ${assignment.questionNumber ?? "?"}`).join(", ")}.`;
+      addGoalRow(goal.goalId, `${goal.label}${questions ? ` ${questions}` : ""}`, goal);
+    });
+  }
+
+  if (whutsuppFeedback.length > 0) {
+    addSection("Online gedrag");
+    whutsuppFeedback.forEach((feedback) => addParagraph(feedback));
+  }
+
+  finishPage();
+
+  const fontRegularObjectNumber = 3;
+  const fontBoldObjectNumber = 4;
+  const pageObjectNumbers = pages.map((_, index) => 5 + index * 2);
+  const contentObjectNumbers = pages.map((_, index) => 6 + index * 2);
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    `<< /Type /Pages /Kids [${pageObjectNumbers.map((number) => `${number} 0 R`).join(" ")}] /Count ${pages.length} >>`,
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
+    ...pages.flatMap((stream, index) => [
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontRegularObjectNumber} 0 R /F2 ${fontBoldObjectNumber} 0 R >> >> /Contents ${contentObjectNumbers[index]} 0 R >>`,
+      `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
+    ]),
+  ];
+
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xrefOffset = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n`;
+  pdf += "0000000000 65535 f \n";
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n`;
+  pdf += `startxref\n${xrefOffset}\n%%EOF`;
+  return pdf;
+};
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, "&amp;")
@@ -8234,39 +8440,22 @@ const ResultScreen = ({
       ?.scoringSummary?.feedback ?? [];
 
   const exportPdf = () => {
-    const lines = [
-      "Scoreoverzicht nulmeting Digitale Geletterdheid",
-      "",
-      `Nulmeting: ${assessment.title}`,
-      `Datum: ${dateLabel}`,
-      `Klas of klascode: ${classLabel}`,
-      selfAssessmentScore === null
-        ? "Zelfinschatting: niet opgeslagen"
-        : `Zelfinschatting: ${selfAssessmentScore}%`,
-      `Score op de nulmeting: ${result.percentage}%`,
-      totalScoreExplanation,
-      `Vergelijking: ${comparison}`,
-      resultDisclaimer,
-      "",
-      "Score per kerndoel",
-      ...coreGoalScores.map((goal) => coreGoalText(goal)),
-      "",
-      "Detail per subdoel",
-      subgoalWarning,
-      ...subgoalScores.flatMap((goal) => [
-        `${goal.goalId} - ${goal.label}: ${goal.score}/${goal.maxScore} punten (${goal.percentage}%)`,
-        ...(subgoalAssignments.get(goal.goalId) ?? []).map((assignment) =>
-          `  ${assignmentText(assignment.questionNumber, assignment.points)}`,
-        ),
-      ]),
-      ...(whutsuppFeedback.length > 0
-        ? ["", "Online gedrag", ...whutsuppFeedback]
-        : []),
-    ];
-
     downloadFile(
       `${exportBaseName}.pdf`,
-      createPdfDocument(lines),
+      createStudentResultPdf({
+        assessmentTitle: assessment.title,
+        dateLabel,
+        classLabel,
+        selfAssessmentScore,
+        totalScore: result.totalScore,
+        maxScore: result.maxScore,
+        percentage: result.percentage,
+        comparison,
+        coreGoalScores,
+        subgoalScores,
+        subgoalAssignments,
+        whutsuppFeedback,
+      }),
       "application/pdf",
     );
   };
