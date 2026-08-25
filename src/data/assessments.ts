@@ -2574,7 +2574,7 @@ const versionSpecs: VersionSpec[] = [
 ];
 
 const v3FileInstruction =
-  "Kun jij je bestanden netjes ordenen?\nWerk in het venster dat je hieronder ziet.\nVoer de taken hieronder uit en klik daarna op Volgende.\nAls je meerdere bestanden tegelijk moet verplaatsen, selecteer je ze eerst allemaal en sleep je daarna één van de geselecteerde bestanden naar de doelmap.";
+  "Werk in de Verkenner hieronder.\nVoer de opdrachten uit en klik daarna op Volgende.";
 
 const v3MailConfig = ({
   to,
@@ -3377,7 +3377,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       id: "lj1v-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
       instruction:
-        `${v3FileInstruction}\n1. Maak in OneDrive de map Biologie.\n2. Zoek de drie projectbestanden: concept_dieren.docx, foto_kat.jpg en bron_dieren.pdf.\n3. Verplaats de drie projectbestanden naar Biologie. Selecteer ze eerst alle drie en sleep daarna één van de geselecteerde bestanden naar de map Biologie.\n4. Hernoem concept_dieren.docx in Biologie naar Verslag_Dieren.docx.`,
+        `${v3FileInstruction}\nMaak in OneDrive de map Biologie.\nZoek de bestanden concept_dieren.docx, foto_kat.jpg en bron_dieren.pdf.\nVerplaats de drie bestanden naar Biologie.\nHernoem concept_dieren.docx in Biologie naar Verslag_Dieren.docx.`,
       startFolders: [
         "Thuis/OneDrive/Engels",
         "Thuis/OneDrive/Maatschappij",
@@ -3439,7 +3439,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       id: "lj1v-pt2-mail",
       title: "E-mail opstellen",
       instruction:
-        "Gebruik het venster hieronder om op de juiste manier een e-mail te sturen aan je mentor.\nZorg dat je mentor door deze e-mail het verslag voor Nederlands krijgt.",
+        "Gebruik het venster hieronder om op de juiste manier een e-mail te sturen aan je mentor.\nZorg dat je mentor door deze e-mail het verslag voor Nederlands krijgt.\nJe bent klaar met deze opdracht als je ziet dat jouw e-mail is verzonden.",
       kerndoel: "21A",
       config: v3MailConfig({
         to: "mentor@school.nl",

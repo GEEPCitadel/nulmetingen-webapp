@@ -3439,7 +3439,6 @@ const MailTaskView = ({
     updateDraft((current) => ({ ...current, sent: true, deleted: false }));
     setSendMenuOpen(false);
     setSendPrompt(null);
-    setNotice("E-mail verzonden.");
     return true;
   };
 
