@@ -4360,7 +4360,7 @@ body {
 .task-nav {
   margin-top: 24px;
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr auto auto auto auto;
   align-items: center;
   gap: 10px;
   padding: 4px 0 0;
@@ -4385,6 +4385,23 @@ body {
   border-color: var(--c-ink-soft);
   color: var(--c-ink);
 }
+.task-nav-previous {
+  appearance: none;
+  min-height: 44px;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  padding: 10px 18px;
+  background: #fff;
+  color: var(--c-ink-soft);
+  font-family: var(--font-display);
+  font-weight: 800;
+  cursor: pointer;
+}
+.task-nav-previous:hover:not(:disabled) {
+  border-color: var(--c-ink-soft);
+  color: var(--c-ink);
+}
+.task-nav-previous:disabled { opacity: .45; cursor: not-allowed; }
 .task-nav-primary {
   appearance: none;
   background: var(--t-action, var(--p4-teal, #009991));
@@ -4771,7 +4788,7 @@ body {
   }
 
   .task-nav {
-    grid-template-columns: 1fr auto auto auto;
+    grid-template-columns: 1fr auto auto auto auto;
     gap: 10px;
     padding: 12px 14px;
   }
@@ -6101,7 +6118,7 @@ body {
 
 [data-screen="assessment"] .task-nav {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr auto auto auto auto;
   align-items: center;
   gap: 12px;
 }
@@ -6139,7 +6156,7 @@ body {
 
 [data-screen="assessment"] .task-nav {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr auto auto auto auto;
   align-items: center;
   gap: 16px;
 }
@@ -6355,6 +6372,11 @@ body {
     border-radius: 10px;
   }
 }
+[data-screen="assessment"] .task-nav-previous {
+  min-height: 48px;
+  border-radius: 12px;
+  padding: 12px 22px;
+}
 
 @media (max-width: 700px) {
   .admin-topbar,
@@ -6370,4 +6392,193 @@ body {
   .finish-question-row > span:last-child { display: none; }
   .finish-assessment-actions { align-items: stretch; flex-direction: column; }
   .finish-assessment-actions > button { width: 100%; }
+}
+
+/* Ingebouwde PT4-tabel: directe filter-/sorteerhandelingen zonder externe software. */
+.embedded-spreadsheet-task {
+  min-width: 0;
+}
+
+.spreadsheet-scenario-header {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border-left: 5px solid var(--t-action, #009991);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--t-action, #009991) 9%, white);
+}
+
+.spreadsheet-scenario-header span {
+  color: var(--c-ink-soft);
+  font-size: .86rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.spreadsheet-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.spreadsheet-controls fieldset {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.spreadsheet-controls fieldset:last-of-type {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.spreadsheet-controls legend {
+  padding: 0 6px;
+  font-family: var(--font-display);
+  font-weight: 900;
+}
+
+.spreadsheet-controls label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: var(--c-ink-soft);
+  font-size: .9rem;
+  font-weight: 750;
+}
+
+.spreadsheet-controls select,
+.spreadsheet-controls input {
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: #fff;
+  color: var(--c-ink);
+  font: inherit;
+}
+
+.spreadsheet-control-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.spreadsheet-result-summary {
+  color: var(--c-ink-soft);
+  font-weight: 750;
+}
+
+.spreadsheet-table-scroll {
+  max-height: 430px;
+  overflow: auto;
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.embedded-spreadsheet-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.embedded-spreadsheet-table th,
+.embedded-spreadsheet-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--c-line) 75%, transparent);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.embedded-spreadsheet-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--t-action, #009991) 14%, white);
+  font-family: var(--font-display);
+}
+
+.embedded-spreadsheet-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--t-action, #009991) 3%, white);
+}
+
+@media (max-width: 900px) {
+  .spreadsheet-controls,
+  .spreadsheet-controls fieldset,
+  .spreadsheet-controls fieldset:last-of-type {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comparison-bar-chart {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 18px;
+  background: #fff;
+}
+
+.comparison-chart-axis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-left: 92px;
+  color: var(--c-ink-soft);
+  font-size: .82rem;
+}
+
+.comparison-chart-axis span:nth-child(2) { text-align: center; }
+.comparison-chart-axis span:last-child { text-align: right; }
+
+.comparison-chart-bars {
+  display: grid;
+  gap: 16px;
+}
+
+.comparison-chart-row {
+  display: grid;
+  grid-template-columns: 76px minmax(180px, 1fr) minmax(150px, auto);
+  gap: 12px;
+  align-items: center;
+}
+
+.comparison-chart-row small {
+  grid-column: 2 / -1;
+  color: var(--c-ink-soft);
+}
+
+.comparison-chart-track {
+  min-height: 30px;
+  border-left: 2px solid var(--c-ink-soft);
+  border-right: 1px solid var(--c-line);
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(25% - 1px),
+    color-mix(in srgb, var(--c-line) 70%, transparent) 25%
+  );
+}
+
+.comparison-chart-track span {
+  display: block;
+  min-width: 2px;
+  height: 30px;
+  border-radius: 0 7px 7px 0;
+  background: var(--t-action, #009991);
+}
+
+@media (max-width: 620px) {
+  .comparison-chart-axis { margin-left: 0; }
+  .comparison-chart-row { grid-template-columns: 1fr; }
+  .comparison-chart-row small { grid-column: auto; }
 }

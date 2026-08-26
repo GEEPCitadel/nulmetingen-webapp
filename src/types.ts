@@ -92,6 +92,16 @@ export interface MockupCard {
       aiDecision: string;
     };
   };
+  comparisonChart?: {
+    unit: string;
+    maxValue: number;
+    bars: Array<{
+      id: string;
+      label: string;
+      value: number;
+      detail?: string;
+    }>;
+  };
   footer?: string;
   mediaHint?: string;
   meta?: string[];
@@ -201,7 +211,94 @@ export interface DownloadQuestion {
 export interface ExcelDownloadTaskConfig {
   filename: string;
   sheetName: string;
-  questions: DownloadQuestion[];
+  questions?: DownloadQuestion[];
+  simulation?: SpreadsheetSimulationConfig;
+}
+
+export type SpreadsheetCellValue = string | number;
+export type SpreadsheetFilterOperator = "equals" | "greaterThan";
+export type SpreadsheetSortDirection = "ascending" | "descending";
+
+export interface SpreadsheetColumn {
+  key: string;
+  label: string;
+  dataType: "text" | "number";
+}
+
+export interface SpreadsheetFilterState {
+  column: string;
+  operator: SpreadsheetFilterOperator;
+  value: SpreadsheetCellValue;
+}
+
+export interface SpreadsheetSortState {
+  column: string;
+  direction: SpreadsheetSortDirection;
+}
+
+export interface SpreadsheetScenarioState {
+  id: string;
+  filter?: SpreadsheetFilterState;
+  sort?: SpreadsheetSortState;
+}
+
+export interface SpreadsheetActionLogEntry {
+  scenarioId: string;
+  actionType:
+    | "set_filter_column"
+    | "set_filter_operator"
+    | "set_filter_value"
+    | "set_sort_column"
+    | "set_sort_direction"
+    | "apply"
+    | "reset";
+  value?: string;
+  timestamp: string;
+}
+
+export type SpreadsheetScoringRule =
+  | {
+      id: string;
+      description: string;
+      points: number;
+      scenarioId: string;
+      kind: "filter";
+      expected: SpreadsheetFilterState;
+    }
+  | {
+      id: string;
+      description: string;
+      points: number;
+      scenarioId: string;
+      kind: "sort";
+      expected: SpreadsheetSortState;
+    }
+  | {
+      id: string;
+      description: string;
+      points: number;
+      scenarioId: string;
+      kind: "sortColumn";
+      expectedColumn: string;
+    }
+  | {
+      id: string;
+      description: string;
+      points: number;
+      scenarioId: string;
+      kind: "sortDirection";
+      expectedDirection: SpreadsheetSortDirection;
+    };
+
+export interface SpreadsheetSimulationConfig {
+  columns: SpreadsheetColumn[];
+  rows: Array<Record<string, SpreadsheetCellValue>>;
+  scenarios: Array<{
+    id: string;
+    prompt: string;
+    filterRequired: boolean;
+  }>;
+  rules: SpreadsheetScoringRule[];
 }
 
 export interface OfficeFormatTaskConfig {
@@ -625,6 +722,14 @@ export interface SourceEvaluationTaskConfig {
 
 export interface AssessmentItem {
   id: string;
+  /** Stable content revision of this item/task. */
+  itemVersion?: string;
+  /** Stable revision of the scoring rules applied to this item/task. */
+  scoringVersion?: string;
+  /** Build in which this exact item/task definition is distributed. */
+  assessmentBuildVersion?: string;
+  /** Historical ids that must be resolved to this item. */
+  legacyItemIds?: string[];
   type: AssessmentItemType;
   title: string;
   instruction: string;
@@ -636,7 +741,6 @@ export interface AssessmentItem {
   kerndoel: string;
   subgoal?: string;
   primarySubgoal?: string;
-  itemVersion?: string;
   learnerQuestionNumber?: number;
   internalSlot?: string;
   allowUnknown?: boolean;
@@ -682,6 +786,9 @@ export interface AssessmentSection {
 
 export interface AssessmentVersion {
   id: AssessmentVersionId;
+  assessmentBuildVersion: string;
+  assessmentContentHash: string;
+  contentHashAlgorithm: "sha256";
   title: string;
   level: string;
   maxScore: number;
@@ -722,7 +829,10 @@ export interface Result {
   score: number;
   maxScore: number;
   primarySubgoal?: string;
-  itemVersion?: string;
+  itemVersion: string;
+  scoringVersion: string;
+  assessmentBuildVersion: string;
+  assessmentContentHash: string;
   learnerQuestionNumber?: number;
   internalSlot?: string;
   taskResults?: Array<{
@@ -758,7 +868,10 @@ export interface EventLog {
   score?: number;
   maxScore?: number;
   primarySubgoal?: string;
-  itemVersion?: string;
+  itemVersion: string;
+  scoringVersion: string;
+  assessmentBuildVersion: string;
+  assessmentContentHash: string;
   learnerQuestionNumber?: number;
   internalSlot?: string;
   taskResults?: Array<{
@@ -788,6 +901,9 @@ export interface AssessmentSession {
   accessCode: string;
   versionId: AssessmentVersionId;
   instrumentId: AssessmentVersionId;
+  assessmentBuildVersion: string;
+  assessmentContentHash: string;
+  contentHashAlgorithm: "sha256";
   metadata: SessionMetadata;
   startedAt: string;
   currentStepIndex: number;
@@ -819,6 +935,8 @@ export interface GoalScore {
   score: number;
   maxScore: number;
   percentage: number;
+  itemCount: number;
+  reportingMode: "percentage" | "signal";
 }
 
 export interface AssessmentResult {

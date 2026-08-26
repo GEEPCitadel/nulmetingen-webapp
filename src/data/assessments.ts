@@ -13,12 +13,14 @@ import type {
   ProgrammingBlockDefinition,
   Pt1Node,
   Pt1Simulation,
+  SpreadsheetSimulationConfig,
   TeamsTaskConfig,
   ThemeDefinition,
   WhutsuppFlow,
   WhutsuppVariant,
 } from "../types";
 import selectedResponseSource from "../../nulmetingen_selected_response_herontwerp_v3.json";
+import assessmentBuildMetaSource from "./assessment-build-meta.json";
 import whutsuppPt8FlowSource from "./whutsupp_pt8_flow.json";
 import { teddyWorlds } from "./pt7-teddy";
 
@@ -140,7 +142,8 @@ type ExcelTaskSpec = {
   instruction: string;
   filename: string;
   sheetName: string;
-  questions: Array<{ id: string; prompt: string; answer: string; points: number }>;
+  questions?: Array<{ id: string; prompt: string; answer: string; points: number }>;
+  simulation?: SpreadsheetSimulationConfig;
 };
 
 type TeamsTaskSpec = {
@@ -172,6 +175,7 @@ type SocialTaskSpec = {
 
 type SelectedResponseSpec = {
   id: string;
+  legacyItemIds?: string[];
   title: string;
   kerndoel: string;
   subgoal?: string;
@@ -277,10 +281,23 @@ type SelectedResponseStimulus =
       linkLabel?: string;
       linkUrl?: string;
       attachments?: string[];
+    }
+  | {
+      kind: "comparison-bar-chart";
+      title: string;
+      unit: string;
+      maxValue: number;
+      bars: Array<{
+        id: string;
+        label: string;
+        value: number;
+        detail?: string;
+      }>;
     };
 
 type SelectedResponseJsonItem = {
   id: string;
+  legacyItemIds?: string[];
   replaces?: string;
   title: string;
   target?: AssessmentVersionId;
@@ -498,6 +515,20 @@ const mockupForStimulus = (stimulus?: SelectedResponseStimulus): MockupCard | un
     return undefined;
   }
 
+  if (stimulus.kind === "comparison-bar-chart") {
+    return {
+      badge: "Grafiek",
+      title: stimulus.title,
+      content: [],
+      comparisonChart: {
+        unit: stimulus.unit,
+        maxValue: stimulus.maxValue,
+        bars: stimulus.bars,
+      },
+      mediaHint: "Vergelijkende staafgrafiek",
+    };
+  }
+
   if (stimulus.kind === "email-link") {
     return {
       badge: "E-mail",
@@ -632,6 +663,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
 
       return {
         id: item.id,
+        legacyItemIds: item.legacyItemIds,
         title: normalizeStudentFacingText(item.title),
         kerndoel: rootGoalFrom(item.kerndoel ?? item.primarySubgoal ?? item.subgoal),
         subgoal: subgoalCodeFrom(item.primarySubgoal ?? item.subgoal),
@@ -693,6 +725,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
 
       return {
         id: item.id,
+        legacyItemIds: item.legacyItemIds,
         title: normalizeStudentFacingText(item.title),
         kerndoel: rootGoalFrom(item.kerndoel ?? item.primarySubgoal ?? item.subgoal),
         subgoal: subgoalCodeFrom(item.primarySubgoal ?? item.subgoal),
@@ -780,6 +813,7 @@ const getSelectedResponseSpecs = (versionId: AssessmentVersionId): SelectedRespo
 
     return {
       id: item.id,
+      legacyItemIds: item.legacyItemIds,
       title: normalizeStudentFacingText(item.title),
       kerndoel: rootGoalFrom(item.kerndoel ?? item.subgoal),
       subgoal: subgoalCodeFrom(item.subgoal),
@@ -914,13 +948,16 @@ const excelTaskItem = (spec: ExcelTaskSpec): AssessmentItem => ({
   type: "excel_download_task",
   title: spec.title,
   instruction: spec.instruction,
-  points: spec.questions.reduce((sum, question) => sum + question.points, 0),
+  points: spec.simulation
+    ? spec.simulation.rules.reduce((sum, rule) => sum + rule.points, 0)
+    : (spec.questions ?? []).reduce((sum, question) => sum + question.points, 0),
   skillDomain: "21C Data",
   kerndoel: "21C, 21A",
   excelTask: {
     filename: spec.filename,
     sheetName: spec.sheetName,
     questions: spec.questions,
+    simulation: spec.simulation,
   },
 });
 
@@ -971,6 +1008,7 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
   if (spec.sortTask) {
     return {
       id: spec.id,
+      legacyItemIds: spec.legacyItemIds,
       type: "social_action_simulation",
       title: spec.title,
       instruction: spec.question,
@@ -1028,6 +1066,7 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
   if (spec.compoundTask) {
     return {
       id: spec.id,
+      legacyItemIds: spec.legacyItemIds,
       type: "social_action_simulation",
       title: spec.title,
       instruction: spec.question,
@@ -1090,6 +1129,7 @@ const selectedResponseItem = (spec: SelectedResponseSpec): AssessmentItem => {
 
   return {
     id: spec.id,
+    legacyItemIds: spec.legacyItemIds,
     type: "multiple_choice",
     title: spec.title,
     instruction: spec.question,
@@ -1167,13 +1207,13 @@ const makeSections = (spec: VersionSpec): AssessmentSection[] => [
   },
   {
     id: "pt7",
-    title: "PT7 - Blokprogrammeren",
+    title: "Blokprogrammeren",
     items: [blockTaskItem(spec.pt7)],
   },
   {
     id: "pt8",
     title: "PT8 - Online gedrag",
-    items: [socialTaskItem({ ...spec.pt8, whutsuppVariant: whutsuppVariantFor(spec.id) })],
+    items: [socialTaskItem(spec.pt8)],
   },
   {
     id: "sr",
@@ -1183,7 +1223,9 @@ const makeSections = (spec: VersionSpec): AssessmentSection[] => [
   },
 ];
 
-const buildAssessment = (spec: VersionSpec): AssessmentVersion => {
+const buildAssessment = (
+  spec: VersionSpec,
+): Omit<AssessmentVersion, "assessmentBuildVersion" | "assessmentContentHash" | "contentHashAlgorithm"> => {
   const sections = makeSections(spec);
   const maxScore = sections.reduce(
     (sectionSum, section) =>
@@ -1381,6 +1423,142 @@ const fakeTeamsInstruction =
 const excelInstruction = (filename: string) =>
   `Download ${filename}. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.`;
 
+const embeddedSpreadsheetInstruction =
+  "Werk in de tabel hieronder. Stel per deelopdracht het gevraagde filter en de sortering in en klik op Toepassen. Je antwoord wordt beoordeeld op de handelingen in de tabel; je hoeft geen eindcode over te typen.";
+
+const embeddedSpreadsheetTasks: Record<AssessmentVersionId, SpreadsheetSimulationConfig> = {
+  "lj1-vmbo": {
+    columns: [
+      { key: "code", label: "Code", dataType: "text" },
+      { key: "artist", label: "Artiest", dataType: "text" },
+      { key: "year", label: "Jaar", dataType: "number" },
+      { key: "genre", label: "Muziekstijl", dataType: "text" },
+    ],
+    rows: [
+      { code: "L09", artist: "Zoë", year: 2028, genre: "pop" },
+      { code: "L12", artist: "Roxy", year: 2010, genre: "pop" },
+      { code: "L04", artist: "Antoon", year: 2022, genre: "rap" },
+      { code: "L11", artist: "Bilal", year: 2024, genre: "rap" },
+      { code: "L20", artist: "Nova", year: 2011, genre: "rap" },
+      { code: "L21", artist: "Milo", year: 2012, genre: "pop" },
+      { code: "L27", artist: "Sara", year: 2018, genre: "dance" },
+      { code: "L34", artist: "Yara", year: 2025, genre: "dance" },
+      { code: "L37", artist: "Finn", year: 2011, genre: "pop" },
+      { code: "L42", artist: "Luna", year: 2016, genre: "pop" },
+      { code: "L48", artist: "Tess", year: 2022, genre: "dance" },
+      { code: "L50", artist: "Sem", year: 2024, genre: "pop" },
+    ],
+    scenarios: [
+      {
+        id: "pop-oldest",
+        prompt: "Filter op Muziekstijl = pop. Sorteer daarna op Jaar van laag naar hoog.",
+        filterRequired: true,
+      },
+    ],
+    rules: [
+      { id: "filter-pop", description: "filtert Muziekstijl op pop.", points: 1, scenarioId: "pop-oldest", kind: "filter", expected: { column: "genre", operator: "equals", value: "pop" } },
+      { id: "sort-year-ascending", description: "sorteert Jaar van laag naar hoog.", points: 1, scenarioId: "pop-oldest", kind: "sort", expected: { column: "year", direction: "ascending" } },
+    ],
+  },
+  "lj1-hv": {
+    columns: [
+      { key: "code", label: "Code", dataType: "text" },
+      { key: "title", label: "Titel", dataType: "text" },
+      { key: "year", label: "Jaar", dataType: "number" },
+      { key: "subject", label: "Vak", dataType: "text" },
+    ],
+    rows: [
+      { code: "B07", title: "Moleculen", year: 2028, subject: "scheikunde" },
+      { code: "B06", title: "Plantenleven", year: 2010, subject: "biologie" },
+      { code: "B12", title: "Rivieren", year: 2024, subject: "aardrijkskunde" },
+      { code: "B20", title: "Cellen", year: 2011, subject: "biologie" },
+      { code: "B21", title: "Reacties", year: 2013, subject: "scheikunde" },
+      { code: "B22", title: "Klimaat", year: 2014, subject: "aardrijkskunde" },
+      { code: "B23", title: "Krachten", year: 2015, subject: "natuurkunde" },
+      { code: "B24", title: "Erfelijkheid", year: 2015, subject: "biologie" },
+      { code: "B30", title: "Landschappen", year: 2022, subject: "aardrijkskunde" },
+      { code: "B32", title: "Ecologie", year: 2023, subject: "biologie" },
+      { code: "B35", title: "Elektriciteit", year: 2027, subject: "natuurkunde" },
+      { code: "B40", title: "Organen", year: 2019, subject: "biologie" },
+    ],
+    scenarios: [
+      { id: "newest-book", prompt: "Sorteer op Jaar van nieuw naar oud.", filterRequired: false },
+      { id: "oldest-biology", prompt: "Filter op Vak = biologie. Sorteer daarna op Jaar van oud naar nieuw.", filterRequired: true },
+    ],
+    rules: [
+      { id: "sort-column-year", description: "kiest Jaar als sorteerkolom.", points: 1, scenarioId: "newest-book", kind: "sortColumn", expectedColumn: "year" },
+      { id: "sort-direction-newest", description: "sorteert van nieuw naar oud.", points: 1, scenarioId: "newest-book", kind: "sortDirection", expectedDirection: "descending" },
+      { id: "filter-biology", description: "filtert Vak op biologie.", points: 1, scenarioId: "oldest-biology", kind: "filter", expected: { column: "subject", operator: "equals", value: "biologie" } },
+      { id: "sort-oldest-biology", description: "sorteert Jaar van oud naar nieuw.", points: 1, scenarioId: "oldest-biology", kind: "sort", expected: { column: "year", direction: "ascending" } },
+    ],
+  },
+  "lj3-vmbo": {
+    columns: [
+      { key: "code", label: "Code", dataType: "text" },
+      { key: "year", label: "Jaar", dataType: "number" },
+      { key: "category", label: "Categorie", dataType: "text" },
+      { key: "amount", label: "Bedrag", dataType: "number" },
+    ],
+    rows: [
+      { code: "W02", year: 2028, category: "elektronica", amount: 89 },
+      { code: "W06", year: 2024, category: "elektronica", amount: 999 },
+      { code: "W07", year: 2027, category: "kleding", amount: 75 },
+      { code: "W12", year: 2025, category: "boeken", amount: 67 },
+      { code: "W20", year: 2010, category: "kleding", amount: 20 },
+      { code: "W21", year: 2012, category: "elektronica", amount: 57 },
+      { code: "W23", year: 2013, category: "sport", amount: 131 },
+      { code: "W24", year: 2014, category: "school", amount: 168 },
+      { code: "W26", year: 2017, category: "elektronica", amount: 242 },
+      { code: "W34", year: 2024, category: "school", amount: 278 },
+      { code: "W37", year: 2027, category: "boeken", amount: 129 },
+      { code: "W48", year: 2020, category: "sport", amount: 276 },
+    ],
+    scenarios: [
+      { id: "newest-electronics", prompt: "Filter op Categorie = elektronica. Sorteer daarna op Jaar van nieuw naar oud.", filterRequired: true },
+      { id: "largest-over-sixty", prompt: "Filter op Bedrag > 60. Sorteer daarna op Bedrag van hoog naar laag.", filterRequired: true },
+    ],
+    rules: [
+      { id: "filter-electronics", description: "filtert Categorie op elektronica.", points: 1, scenarioId: "newest-electronics", kind: "filter", expected: { column: "category", operator: "equals", value: "elektronica" } },
+      { id: "sort-newest-electronics", description: "sorteert Jaar van nieuw naar oud.", points: 1, scenarioId: "newest-electronics", kind: "sort", expected: { column: "year", direction: "descending" } },
+      { id: "filter-amount", description: "filtert Bedrag op meer dan 60.", points: 1, scenarioId: "largest-over-sixty", kind: "filter", expected: { column: "amount", operator: "greaterThan", value: 60 } },
+      { id: "sort-largest-amount", description: "sorteert Bedrag van hoog naar laag.", points: 1, scenarioId: "largest-over-sixty", kind: "sort", expected: { column: "amount", direction: "descending" } },
+    ],
+  },
+  "lj3-hv": {
+    columns: [
+      { key: "code", label: "Code", dataType: "text" },
+      { key: "year", label: "Jaar", dataType: "number" },
+      { key: "housing", label: "Woningtype", dataType: "text" },
+      { key: "usage", label: "Verbruik", dataType: "number" },
+      { key: "cost", label: "Kosten", dataType: "number" },
+    ],
+    rows: [
+      { code: "E13", year: 2024, housing: "A", usage: 1600, cost: 999 },
+      { code: "E02", year: 2028, housing: "B", usage: 1180, cost: 520 },
+      { code: "E06", year: 2025, housing: "A", usage: 1400, cost: 610 },
+      { code: "E20", year: 2011, housing: "A", usage: 850, cost: 300 },
+      { code: "E21", year: 2011, housing: "B", usage: 923, cost: 341 },
+      { code: "E22", year: 2013, housing: "C", usage: 996, cost: 382 },
+      { code: "E23", year: 2014, housing: "D", usage: 1069, cost: 423 },
+      { code: "E25", year: 2015, housing: "B", usage: 1215, cost: 505 },
+      { code: "E28", year: 2019, housing: "A", usage: 1434, cost: 628 },
+      { code: "E35", year: 2026, housing: "D", usage: 1045, cost: 555 },
+      { code: "E45", year: 2018, housing: "B", usage: 875, cost: 605 },
+      { code: "E70", year: 2027, housing: "C", usage: 900, cost: 550 },
+    ],
+    scenarios: [
+      { id: "highest-cost-over-500", prompt: "Filter op Kosten > 500. Sorteer daarna op Kosten van hoog naar laag.", filterRequired: true },
+      { id: "newest-type-b", prompt: "Filter op Woningtype = B. Sorteer daarna op Jaar van nieuw naar oud.", filterRequired: true },
+    ],
+    rules: [
+      { id: "filter-cost", description: "filtert Kosten op meer dan 500.", points: 1, scenarioId: "highest-cost-over-500", kind: "filter", expected: { column: "cost", operator: "greaterThan", value: 500 } },
+      { id: "sort-highest-cost", description: "sorteert Kosten van hoog naar laag.", points: 1, scenarioId: "highest-cost-over-500", kind: "sort", expected: { column: "cost", direction: "descending" } },
+      { id: "filter-type-b", description: "filtert Woningtype op B.", points: 1, scenarioId: "newest-type-b", kind: "filter", expected: { column: "housing", operator: "equals", value: "B" } },
+      { id: "sort-newest-type-b", description: "sorteert Jaar van nieuw naar oud.", points: 1, scenarioId: "newest-type-b", kind: "sort", expected: { column: "year", direction: "descending" } },
+    ],
+  },
+};
+
 const createFakeTeamsConfig = (): TeamsTaskConfig => ({
   scenario:
     "Deel alleen het venster met het filmfragment. Gebruik computergeluid, maar deel niet je hele scherm.",
@@ -1459,19 +1637,11 @@ const versionSpecs: VersionSpec[] = [
     },
     pt4: {
       id: "lj1v-pt4-excel",
-      title: "PT4 - Excel/data sorteren en filteren",
-      instruction: excelInstruction("LJ1_VMBO_Liedjes.xlsx"),
+      title: "PT4 - Tabelgegevens filteren en sorteren",
+      instruction: embeddedSpreadsheetInstruction,
       filename: "LJ1_VMBO_Liedjes.xlsx",
       sheetName: "Liedjes",
-      questions: [
-        {
-          id: "b",
-          prompt:
-            "Filter op Muziekstijl = pop. Sorteer daarna op Jaar, van laag naar hoog. Welke code staat bovenaan?",
-          answer: "L12",
-          points: 2,
-        },
-      ],
+      simulation: embeddedSpreadsheetTasks["lj1-vmbo"],
     },
     pt6: {
       id: "lj1v-pt6-meeting",
@@ -1483,7 +1653,7 @@ const versionSpecs: VersionSpec[] = [
     },
     pt7: {
       id: "lj1v-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro:
         "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
       instruction:
@@ -1710,25 +1880,11 @@ const versionSpecs: VersionSpec[] = [
     },
     pt4: {
       id: "lj1h-pt4-excel",
-      title: "PT4 - Excel/data sorteren en filteren",
-      instruction: excelInstruction("LJ1_HV_Bibliotheek.xlsx"),
+      title: "PT4 - Tabelgegevens filteren en sorteren",
+      instruction: embeddedSpreadsheetInstruction,
       filename: "LJ1_HV_Bibliotheek.xlsx",
       sheetName: "Boeken",
-      questions: [
-        {
-          id: "a",
-          prompt: "Sorteer op Jaar, van nieuw naar oud. Welke code staat bovenaan?",
-          answer: "B07",
-          points: 2,
-        },
-        {
-          id: "b",
-          prompt:
-            "Filter op Vak = biologie. Sorteer daarna op Jaar, van oud naar nieuw. Welke code staat bovenaan?",
-          answer: "B06",
-          points: 2,
-        },
-      ],
+      simulation: embeddedSpreadsheetTasks["lj1-hv"],
     },
     pt6: {
       id: "lj1h-pt6-meeting",
@@ -1740,7 +1896,7 @@ const versionSpecs: VersionSpec[] = [
     },
     pt7: {
       id: "lj1h-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro:
         "Dit is Bizzy, een robot die kan bewegen, draaien en praten. Programmeer Bizzy door blokken op het werkvlak te slepen. Klik op ▶ om je programma uit te voeren.",
       instruction:
@@ -2023,26 +2179,11 @@ const versionSpecs: VersionSpec[] = [
     },
     pt4: {
       id: "lj3v-pt4-excel",
-      title: "PT4 - Excel/data sorteren en filteren",
-      instruction: excelInstruction("LJ3_VMBO_Bestellingen.xlsx"),
+      title: "PT4 - Tabelgegevens filteren en sorteren",
+      instruction: embeddedSpreadsheetInstruction,
       filename: "LJ3_VMBO_Bestellingen.xlsx",
       sheetName: "Bestellingen",
-      questions: [
-        {
-          id: "a",
-          prompt:
-            "Filter op Categorie = elektronica. Sorteer daarna op Jaar, van nieuw naar oud. Welke code staat bovenaan?",
-          answer: "W02",
-          points: 2,
-        },
-        {
-          id: "b",
-          prompt:
-            "Filter op Bedrag > 60. Sorteer daarna op Bedrag, van hoog naar laag. Welke code staat bovenaan?",
-          answer: "W06",
-          points: 2,
-        },
-      ],
+      simulation: embeddedSpreadsheetTasks["lj3-vmbo"],
     },
     pt6: {
       id: "lj3v-pt6-meeting",
@@ -2054,7 +2195,7 @@ const versionSpecs: VersionSpec[] = [
     },
     pt7: {
       id: "lj3v-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro:
         "Dit is een micro:bit-achtig apparaat met een klein scherm en twee knoppen (A en B). Programmeer een teller die op het scherm verschijnt. Klik op ▶ om je programma uit te voeren; klik daarna op A of B om de knoppen te testen.",
       instruction:
@@ -2360,26 +2501,11 @@ const versionSpecs: VersionSpec[] = [
     },
     pt4: {
       id: "lj3h-pt4-excel",
-      title: "PT4 - Excel/data sorteren en filteren",
-      instruction: excelInstruction("LJ3_HV_OpenData.xlsx"),
+      title: "PT4 - Tabelgegevens filteren en sorteren",
+      instruction: embeddedSpreadsheetInstruction,
       filename: "LJ3_HV_OpenData.xlsx",
       sheetName: "Energie",
-      questions: [
-        {
-          id: "a",
-          prompt:
-            "Filter op Kosten > 500. Sorteer daarna op Kosten, van hoog naar laag. Welke code staat bovenaan?",
-          answer: "E13",
-          points: 2,
-        },
-        {
-          id: "b",
-          prompt:
-            "Filter op Woningtype = B. Sorteer daarna op Jaar, van nieuw naar oud. Welke code staat bovenaan?",
-          answer: "E02",
-          points: 2,
-        },
-      ],
+      simulation: embeddedSpreadsheetTasks["lj3-hv"],
     },
     pt6: {
       id: "lj3h-pt6-meeting",
@@ -2391,7 +2517,7 @@ const versionSpecs: VersionSpec[] = [
     },
     pt7: {
       id: "lj3h-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro:
         "Een sensor meet temperatuur en raamstand. Op het scherm verschijnt waarschuwing of ok. Programmeer de logica met blokken; klik op ▶ om te testen met de schuifregelaars voor temperatuur en raamstand.",
       instruction:
@@ -2711,20 +2837,18 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
       learner: "Sanne",
       toEmail: "sanne@leerling.citadelcollege.nl",
       date: "Vandaag 15:42",
-      fromEmail:
-        "streamflix-wachtwoord-herstel-klantenservice-48392@account-blokkade-waarschuwing.example",
-      subject: "LAATSTE WAARSCHUWING: herstel uw wachtwoord",
+      fromEmail: "service@streamflix-account.example",
+      subject: "Controleer de beveiliging van uw account",
       passwordRequest:
-        "Er is een probleem met uw StreamFlix-wachtwoord. Herstel het wachtwoord via de knop hieronder.",
+        "Log via de knop hieronder in en bevestig uw huidige wachtwoord om de controle af te ronden.",
       pressure:
-        "U heeft nog 15 minuten. Daarna wordt uw account direct geblokkeerd.",
-      linkUrl:
-        "https://streamflix-wachtwoord-herstel-klantenservice-48392.example/account/nu",
+        "Doe dit vandaag. Anders kan bij de volgende aanmelding extra controle nodig zijn.",
+      linkUrl: "https://streamflix-account.example/controle",
       actionOptions: [
-        { id: "official-route", label: "Zelf de StreamFlix-app of de bekende website openen en daar het account controleren." },
-        { id: "click-button", label: "Op de knop klikken, omdat het account anders wordt geblokkeerd.", riskFlag: "clicked_phishing_link" },
-        { id: "reply-sender", label: "De mail beantwoorden en vragen of het bericht echt is.", errorCategory: "replies_to_possible_phisher" },
-        { id: "forward-friend", label: "De mail doorsturen naar een vriend en vragen om de link te testen.", riskFlag: "spreads_possible_phishing" },
+        { id: "official-route", label: "Zelf de bekende StreamFlix-app of streamflix.example openen en daar de accountmelding controleren." },
+        { id: "click-button", label: "De knop openen en stoppen wanneer de pagina om onverwachte gegevens vraagt.", riskFlag: "clicked_phishing_link" },
+        { id: "search-sender", label: "Het afzenderadres opzoeken en de knop gebruiken als anderen het adres niet verdacht noemen.", errorCategory: "search_result_confused_with_verification" },
+        { id: "reply-sender", label: "De mail beantwoorden zonder een wachtwoord te sturen en om bevestiging vragen.", errorCategory: "replies_to_possible_phisher" },
       ],
     },
     "lj1-hv": {
@@ -2732,20 +2856,18 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
       learner: "Noor",
       toEmail: "noor@leerling.citadelcollege.nl",
       date: "Vandaag 10:02",
-      fromEmail:
-        "streamflix-klanten-accountcontrole-72@beveiligde-streaming-helpdesk.example",
-      subject: "Actie nodig: uw wachtwoord verloopt vandaag",
+      fromEmail: "accountmelding@streamflix-service.example",
+      subject: "Melding over uw StreamFlix-account",
       passwordRequest:
-        "Wij hebben uw wachtwoord uit veiligheid tijdelijk ongeldig gemaakt. Stel via de knop hieronder een nieuw wachtwoord in.",
+        "Bevestig via de knop uw huidige wachtwoord en kies daarna of u het wilt wijzigen.",
       pressure:
-        "Rond dit binnen 30 minuten af. Anders verliest u vandaag de toegang tot uw account.",
-      linkUrl:
-        "https://streamflix.herstel-account-klantenservice.example/veilig-inloggen",
+        "Controleer dit voor morgen 12.00 uur om een tijdelijke toegangsbeperking te voorkomen.",
+      linkUrl: "https://streamflix.service-login.example/account",
       actionOptions: [
-        { id: "official-route", label: "Zelf de officiële StreamFlix-app of het bekende webadres openen en de accountstatus controleren." },
-        { id: "trust-name", label: "De knop gebruiken, omdat de afzendernaam StreamFlix Klantenservice is.", errorCategory: "display_name_confused_with_trust" },
-        { id: "hover-then-click", label: "Eerst het linkadres bekijken en daarna klikken als de pagina professioneel oogt.", riskFlag: "clicked_phishing_link" },
-        { id: "reply-sender", label: "Via een antwoord op deze mail om uitleg vragen.", errorCategory: "replies_to_possible_phisher" },
+        { id: "official-route", label: "Zelf de bekende StreamFlix-app of streamflix.example openen en daar beveiligingsmeldingen bekijken." },
+        { id: "trust-name", label: "De knop gebruiken nadat de afzendernaam en het StreamFlix-logo met eerdere mails zijn vergeleken.", errorCategory: "display_name_confused_with_trust" },
+        { id: "hover-then-click", label: "Het linkadres bekijken en daarna doorgaan als de geopende pagina professioneel is vormgegeven.", riskFlag: "clicked_phishing_link" },
+        { id: "reply-sender", label: "Via een antwoord op deze mail vragen welke aanmelding is gevonden.", errorCategory: "replies_to_possible_phisher" },
       ],
     },
     "lj3-vmbo": {
@@ -2753,20 +2875,18 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
       learner: "Jayden",
       toEmail: "jayden@leerling.citadelcollege.nl",
       date: "Gisteren 19:48",
-      fromEmail:
-        "controle-streamflix-gebruikersaccount-83017@streaming-account-hulpcentrum.example",
-      subject: "Uw StreamFlix-account wordt tijdelijk beperkt",
+      fromEmail: "security@streamflix-meldingen.example",
+      subject: "Nieuwe aanmelding controleren",
       passwordRequest:
-        "Onze automatische controle vraagt om bevestiging. Vul via de knop uw huidige wachtwoord in en kies daarna een nieuw wachtwoord.",
+        "Open de sessiecontrole via de knop en vul uw huidige wachtwoord in om de aanmelding te bevestigen.",
       pressure:
-        "Bevestig binnen 45 minuten. Daarna worden alle profielen op uw account geblokkeerd.",
-      linkUrl:
-        "https://streamflix-login.streaming-beveiliging-accountcheck.example/wachtwoord",
+        "Als er binnen 24 uur geen bevestiging komt, wordt deze sessie tijdelijk beperkt.",
+      linkUrl: "https://login.streamflix-account.example/sessie",
       actionOptions: [
-        { id: "official-route", label: "Niet op de link klikken en zelf via de officiële app of website controleren of er echt een melding is." },
-        { id: "use-link", label: "De link openen en alleen doorgaan als er een slotje in de adresbalk staat.", riskFlag: "clicked_phishing_link" },
-        { id: "reply-sender", label: "De afzender vragen waarom het huidige wachtwoord nodig is.", errorCategory: "replies_to_possible_phisher" },
-        { id: "wait-for-block", label: "Niets controleren en afwachten of het account werkelijk wordt geblokkeerd.", errorCategory: "passive_no_verification" },
+        { id: "official-route", label: "Zelf via de bekende app of streamflix.example naar actieve sessies gaan en de melding daar controleren." },
+        { id: "use-link", label: "De link openen en doorgaan als de verbinding versleuteld is en de pagina de juiste huisstijl heeft.", riskFlag: "clicked_phishing_link" },
+        { id: "search-address", label: "Het linkadres in een zoekmachine controleren en het daarna gebruiken als er geen waarschuwingen verschijnen.", errorCategory: "search_result_confused_with_verification" },
+        { id: "reply-sender", label: "De afzender vragen vanaf welk apparaat de aanmelding kwam.", errorCategory: "replies_to_possible_phisher" },
       ],
     },
     "lj3-hv": {
@@ -2774,45 +2894,35 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
       learner: "Mila",
       toEmail: "mila@leerling.citadelcollege.nl",
       date: "Vandaag 21:06",
-      fromEmail:
-        "security-noreply-streamflix-session-9914@account-streamflix-notices.example",
-      subject: "Beveiligingsmelding bij uw StreamFlix-account",
+      fromEmail: "security@streamflix.com.accountcontrole.example",
+      subject: "Controle van een actieve sessie",
       passwordRequest:
-        "Er is een afwijkende aanmelding gevonden. Valideer de sessie en vernieuw uw wachtwoord via onderstaande knop.",
+        "Valideer de genoemde sessie via de knop met uw huidige wachtwoord; daarna kunt u de sessie sluiten.",
       pressure:
-        "Voorkom automatische blokkering: bevestig uw gegevens binnen 20 minuten.",
-      linkUrl:
-        "https://streamflix.com.account-herstel-beveiliging.example/session/verify",
+        "Controleer de melding vanavond. Onbevestigde sessies kunnen daarna worden afgesloten.",
+      linkUrl: "https://streamflix.com.accountcontrole.example/session",
       actionOptions: [
-        { id: "official-route", label: "Zelf naar de bekende StreamFlix-app of website gaan, actieve sessies controleren en zo nodig daar het wachtwoord wijzigen." },
-        { id: "trust-subdomain", label: "De link gebruiken, omdat het adres begint met streamflix.com en een beveiligde verbinding kan tonen.", errorCategory: "subdomain_confused_with_domain" },
-        { id: "reply-sender", label: "De mail beantwoorden en om technische details van de afwijkende aanmelding vragen.", errorCategory: "replies_to_possible_phisher" },
-        { id: "reuse-link-later", label: "De link bewaren en later gebruiken als de StreamFlix-app niet meer werkt.", riskFlag: "clicked_phishing_link" },
+        { id: "official-route", label: "Zelf streamflix.example openen, actieve sessies controleren en vanuit die omgeving zo nodig het wachtwoord wijzigen." },
+        { id: "trust-subdomain", label: "De link gebruiken nadat is vastgesteld dat streamflix.com vooraan in het adres staat.", errorCategory: "subdomain_confused_with_domain" },
+        { id: "copy-link", label: "Het adres naar een nieuw browsertabblad kopiëren en doorgaan als de browser geen waarschuwing geeft.", riskFlag: "clicked_phishing_link" },
+        { id: "reply-sender", label: "De mail beantwoorden en om het tijdstip en apparaat van de sessie vragen.", errorCategory: "replies_to_possible_phisher" },
       ],
     },
   };
 
   const variant = variants[versionId];
-  const correctSignalIds = [
-    "sender-email",
-    "urgent-subject",
-    "generic-greeting",
-    "password-request",
-    "time-pressure",
-    "suspicious-link",
-  ];
   const markerOptions: Option[] = [
-    { id: "urgent-subject", label: "Onderwerp met waarschuwing of dreiging" },
+    { id: "account-subject", label: "Onderwerp over een accountcontrole", errorCategory: "subject_confused_with_evidence" },
     { id: "sender-name", label: "Afzendernaam StreamFlix Klantenservice", errorCategory: "display_name_confused_with_evidence" },
-    { id: "sender-email", label: "Lang en vreemd afzenderadres" },
+    { id: "sender-email", label: "Domein van het afzenderadres wijkt af van streamflix.example" },
     { id: "recipient-email", label: "Eigen schoolmailadres bij Aan", errorCategory: "recipient_confused_with_evidence" },
     { id: "message-date", label: "Datum en tijd van de mail", errorCategory: "timestamp_confused_with_evidence" },
-    { id: "generic-greeting", label: "Onpersoonlijke aanhef Geachte klant" },
-    { id: "password-request", label: "Verzoek om het wachtwoord via de knop te herstellen" },
-    { id: "time-pressure", label: "Korte deadline en dreiging met blokkeren" },
+    { id: "personal-greeting", label: "Aanhef met de voornaam", errorCategory: "greeting_confused_with_evidence" },
+    { id: "password-request", label: "Verzoek om het huidige wachtwoord via de mailknop in te vullen" },
+    { id: "time-pressure", label: "Tijdsdruk met een mogelijke toegangsbeperking" },
     { id: "polite-closing", label: "Beleefde afsluiting", errorCategory: "politeness_confused_with_evidence" },
     { id: "team-name", label: "Ondertekening Team StreamFlix", errorCategory: "brand_name_confused_with_evidence" },
-    { id: "suspicious-link", label: "Vreemd doeladres achter de knop" },
+    { id: "suspicious-link", label: "Werkelijke domein van de link wijkt af van streamflix.example" },
   ];
 
   return {
@@ -2825,7 +2935,7 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
         {
           id: "streamflix-phishing-mail",
           title: "StreamFlix: wachtwoord herstellen",
-          instruction: `${variant.learner} ontvangt deze mail. De mail lijkt van StreamFlix te komen.`,
+          instruction: `${variant.learner} gebruikt StreamFlix normaal via de app of via streamflix.example en ontvangt deze mail.`,
           emailStimulus: {
             fromName: "StreamFlix Klantenservice",
             fromEmail: variant.fromEmail,
@@ -2833,7 +2943,7 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
             date: variant.date,
             subject: variant.subject,
             body: [
-              "Geachte klant,",
+              `Hallo ${variant.learner},`,
               variant.passwordRequest,
               variant.pressure,
               "Met vriendelijke groet,",
@@ -2842,12 +2952,12 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
             linkLabel: "Wachtwoord nu herstellen",
             linkUrl: variant.linkUrl,
             selectableParts: [
-              { id: "urgent-subject", target: "subject" },
+              { id: "account-subject", target: "subject" },
               { id: "sender-name", target: "fromName" },
               { id: "sender-email", target: "fromEmail" },
               { id: "recipient-email", target: "toEmail" },
               { id: "message-date", target: "date" },
-              { id: "generic-greeting", target: "body:0" },
+              { id: "personal-greeting", target: "body:0" },
               { id: "password-request", target: "body:1" },
               { id: "time-pressure", target: "body:2" },
               { id: "polite-closing", target: "body:3" },
@@ -2860,7 +2970,7 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
               id: "signals",
               title: "1. Markeer twee onderdelen waaraan je kunt zien dat deze mail niet betrouwbaar is.",
               instruction:
-                "Klik rechtstreeks in de mail. Beweeg je muis over de knop om het echte linkadres te bekijken. Er staan ook onderdelen in die geen bewijs zijn.",
+                "Klik rechtstreeks in de mail. Het werkelijke linkadres staat bij de knop. Er staan ook geloofwaardige onderdelen in die op zichzelf geen bewijs zijn.",
               inputType: "emailMarkers",
               maxSelections: 2,
               options: markerOptions,
@@ -2878,22 +2988,22 @@ const v3Pt3 = (versionId: AssessmentVersionId): SecurityTaskSpec => {
       ],
       rules: [
         {
-          id: "first-phishing-signal",
-          description: "markeert minimaal één geldig phishingsignaal in de mail.",
+          id: "origin-signal",
+          description: "herkent een afwijking in afzender- of linkdomein.",
           points: 1,
           groupId: "signals",
           kind: "minCorrect",
           minCorrect: 1,
-          correctOptionIds: correctSignalIds,
+          correctOptionIds: ["sender-email", "suspicious-link"],
         },
         {
-          id: "second-phishing-signal",
-          description: "markeert twee geldige phishingsignalen in de mail.",
+          id: "request-signal",
+          description: "herkent een riskant verzoek of drukmiddel in de inhoud.",
           points: 1,
           groupId: "signals",
           kind: "minCorrect",
-          minCorrect: 2,
-          correctOptionIds: correctSignalIds,
+          minCorrect: 1,
+          correctOptionIds: ["password-request", "time-pressure"],
         },
         {
           id: "safe-official-route",
@@ -3070,6 +3180,273 @@ const v3Pt8 = (versionId: AssessmentVersionId): SocialTaskSpec => {
     },
   };
 
+  // Prioriteit 4: PT8 is bewust geen anker. De vier varianten lopen inhoudelijk
+  // op van concrete toestemming naar verificatie, herstel en systeemcontext.
+  specs["lj1-vmbo"] = {
+    id: "pt8-lj1v-photo-consent-v5",
+    title: "PT8 - Online gedrag: foto delen",
+    instruction: "Bekijk de situatie en kies op ieder scherm de beste reactie.",
+    kerndoel: "23B",
+    config: {
+      screens: [
+        {
+          id: "risk",
+          title: "Foto in de klassenapp",
+          instruction: "Wat is het belangrijkste aandachtspunt?",
+          body: "In de klassenapp wil iemand een foto van drie herkenbare klasgenoten plaatsen. Eén klasgenoot twijfelt en heeft nog geen toestemming gegeven.",
+          groups: [{ id: "risk", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "consent-missing", label: "Van een herkenbare klasgenoot ontbreekt toestemming om de foto te delen." },
+            { id: "closed-group-ok", label: "Een klassenapp is klein genoeg om toestemming later te regelen." },
+            { id: "majority-decides", label: "De voorkeur van de meeste leerlingen bepaalt of de foto gedeeld kan worden." },
+            { id: "caption-solves", label: "Een vriendelijke tekst bij de foto voorkomt problemen met toestemming." },
+          ] }],
+        },
+        {
+          id: "no-spread",
+          title: "Eerste handeling",
+          instruction: "Wat doe je met de foto zolang niet duidelijk is of iedereen akkoord is?",
+          groups: [{ id: "no-spread", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "do-not-share", label: "De foto niet plaatsen of doorsturen." },
+            { id: "send-friend", label: "De foto naar één vriend sturen om diens mening te vragen." },
+            { id: "post-delete-later", label: "De foto plaatsen en weghalen wanneer iemand bezwaar maakt." },
+            { id: "wait-majority", label: "Eerst tellen hoeveel leerlingen de foto graag willen zien." },
+          ] }],
+        },
+        {
+          id: "consent",
+          title: "Toestemming",
+          instruction: "Hoe controleer je of delen in orde is?",
+          groups: [{ id: "consent", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "ask-each-person", label: "Iedere herkenbare persoon afzonderlijk vragen of delen goed is." },
+            { id: "ask-group-admin", label: "De beheerder van de klassenapp om toestemming vragen." },
+            { id: "use-silence", label: "In de groep aankondigen dat stilte als instemming wordt gezien." },
+            { id: "ask-photographer", label: "De maker van de foto laten beslissen voor de mensen die erop staan." },
+          ] }],
+        },
+        {
+          id: "help",
+          title: "Hulp vragen",
+          instruction: "Wanneer is hulp van een mentor of andere vertrouwde volwassene passend?",
+          groups: [{ id: "help", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "pressure-or-harm", label: "Wanneer de druk om te delen doorgaat of iemand last krijgt van de situatie." },
+            { id: "wait-for-request", label: "Wanneer de klasgenoot die twijfelt later zelf expliciet om hulp vraagt." },
+            { id: "solve-in-chat", label: "Wanneer een stemming in de groepschat geen duidelijke winnaar oplevert." },
+            { id: "after-wide-spread", label: "Wanneer de foto al buiten de klas terechtgekomen is." },
+          ] }],
+        },
+      ],
+      rules: [
+        { id: "risk", description: "herkent ontbrekende toestemming.", points: 1, groupId: "risk", kind: "singleCorrect", correctOptionIds: ["consent-missing"] },
+        { id: "no-spread", description: "voorkomt verspreiding zolang toestemming ontbreekt.", points: 1, groupId: "no-spread", kind: "singleCorrect", correctOptionIds: ["do-not-share"] },
+        { id: "consent", description: "vraagt betrokkenen afzonderlijk om toestemming.", points: 1, groupId: "consent", kind: "singleCorrect", correctOptionIds: ["ask-each-person"] },
+        { id: "help", description: "herkent wanneer vertrouwde hulp passend is.", points: 1, groupId: "help", kind: "singleCorrect", correctOptionIds: ["pressure-or-harm"] },
+      ],
+      scoreCaps: [
+        { id: "harmful-share-cap", maxScore: 2, optionIds: ["send-friend", "post-delete-later"] },
+        { id: "delayed-help-cap", maxScore: 3, optionIds: ["after-wide-spread"] },
+      ],
+    },
+  };
+
+  specs["lj1-hv"] = {
+    id: "pt8-lj1h-private-screenshot-v5",
+    title: "PT8 - Online gedrag: privébericht doorsturen",
+    instruction: "Beoordeel het verzoek, voorkom verspreiding en kies passende steun.",
+    kerndoel: "23B",
+    config: {
+      screens: [
+        {
+          id: "risk",
+          title: "Screenshot uit een privéchat",
+          instruction: "Wat maakt doorsturen hier riskant?",
+          body: "Een klasgenoot vraagt jou een screenshot uit een privéchat door te sturen naar de klasgroep. In de screenshot vertelt Noor iets persoonlijks. Noor weet niets van het verzoek.",
+          groups: [{ id: "risk", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "private-without-consent", label: "Het bericht bevat persoonlijke informatie en Noor gaf geen toestemming." },
+            { id: "recipient-may-share", label: "De ontvanger van een privébericht mag bepalen in welke groep het verdergaat." },
+            { id: "remove-name-enough", label: "Het weglaten van Noors naam maakt de rest van de screenshot geschikt om te delen." },
+            { id: "class-context", label: "De klascontext maakt het bericht relevant genoeg voor de hele groep." },
+          ] }],
+        },
+        {
+          id: "no-spread",
+          title: "Omgaan met het verzoek",
+          instruction: "Wat antwoord je op het verzoek om door te sturen?",
+          groups: [{ id: "no-spread", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "refuse-forward", label: "Ik stuur de screenshot niet door." },
+            { id: "smaller-group", label: "Ik stuur hem naar een kleinere groep die Noor goed kent." },
+            { id: "ask-reactions", label: "Ik plaats eerst een beschrijving en kijk hoe de groep reageert." },
+            { id: "temporary-share", label: "Ik deel hem als tijdelijk bericht zodat hij later verdwijnt." },
+          ] }],
+        },
+        {
+          id: "support",
+          title: "Steun aan Noor",
+          instruction: "Welke steun past als Noor hoort wat er is gebeurd?",
+          groups: [{ id: "support", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "ask-noor-support", label: "Noor vragen welke hulp of steun zij prettig vindt." },
+            { id: "decide-for-noor", label: "Zelf beslissen wie er namens Noor in de klasgroep reageert." },
+            { id: "advise-ignore", label: "Noor aanraden niet te reageren zodat het onderwerp sneller verdwijnt." },
+            { id: "explain-joke", label: "Noor uitleggen dat klasgenoten het waarschijnlijk niet zwaar bedoelen." },
+          ] }],
+        },
+        {
+          id: "help",
+          title: "Hulp inschakelen",
+          instruction: "Wanneer schakel je een mentor, ouder of andere verantwoordelijke volwassene in?",
+          groups: [{ id: "help", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "pressure-continues", label: "Als de druk, ruzie of verdere verspreiding doorgaat." },
+            { id: "after-class-vote", label: "Als een stemming in de klasgroep uitwijst dat veel leerlingen het erg vinden." },
+            { id: "after-delete-fails", label: "Als verwijderen van de screenshot op je eigen telefoon niet helpt." },
+            { id: "when-sender-agrees", label: "Als de oorspronkelijke afzender instemt met het betrekken van een volwassene." },
+          ] }],
+        },
+      ],
+      rules: [
+        { id: "risk", description: "herkent persoonlijke informatie zonder toestemming.", points: 1, groupId: "risk", kind: "singleCorrect", correctOptionIds: ["private-without-consent"] },
+        { id: "no-spread", description: "weigert verdere verspreiding.", points: 1, groupId: "no-spread", kind: "singleCorrect", correctOptionIds: ["refuse-forward"] },
+        { id: "support", description: "sluit steun aan op de behoefte van de betrokkene.", points: 1, groupId: "support", kind: "singleCorrect", correctOptionIds: ["ask-noor-support"] },
+        { id: "help", description: "schakelt passende hulp in bij aanhoudende druk of schade.", points: 1, groupId: "help", kind: "singleCorrect", correctOptionIds: ["pressure-continues"] },
+      ],
+      scoreCaps: [
+        { id: "harmful-forward-cap", maxScore: 2, optionIds: ["smaller-group", "temporary-share"] },
+        { id: "dismissal-cap", maxScore: 3, optionIds: ["explain-joke"] },
+      ],
+    },
+  };
+
+  specs["lj3-vmbo"] = {
+    id: "pt8-lj3v-impersonation-v5",
+    title: "PT8 - Online gedrag: nepaccount",
+    instruction: "Beoordeel identiteitsmisbruik en kies veilige, niet-escalerende vervolgstappen.",
+    kerndoel: "23B",
+    config: {
+      screens: [
+        {
+          id: "risk",
+          title: "Account met jouw naam en foto",
+          instruction: "Welk probleem speelt hier?",
+          body: "Een onbekend account gebruikt jouw naam en profielfoto en stuurt rare berichten naar leerlingen van school. Je weet niet wie het account beheert.",
+          groups: [{ id: "risk", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "identity-misuse", label: "Iemand doet zich digitaal als jou voor en kan anderen misleiden." },
+            { id: "duplicate-profile", label: "Twee accounts met dezelfde foto zorgen vooral voor verwarring in de zoekresultaten." },
+            { id: "school-joke", label: "Een account onder een bekende naam is aannemelijk bedoeld als grap binnen school." },
+            { id: "profile-ownership", label: "Wie een openbare profielfoto vindt, kan die gebruiken voor een nieuw profiel." },
+          ] }],
+        },
+        {
+          id: "no-escalation",
+          title: "Niet escaleren",
+          instruction: "Welke eerste reactie voorkomt dat de situatie groter wordt?",
+          groups: [{ id: "no-escalation", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "no-public-reply", label: "Niet via een openbaar bericht reageren op het nepaccount." },
+            { id: "name-suspect", label: "In de klassenapp noemen wie volgens jou achter het account zit." },
+            { id: "counter-account", label: "Een tweede account maken om de berichten van het nepaccount tegen te spreken." },
+            { id: "ask-follow", label: "Klasgenoten vragen het account te volgen om de activiteit zichtbaar te houden." },
+          ] }],
+        },
+        {
+          id: "report",
+          title: "Melden",
+          instruction: "Welke actie gebruikt de bedoelde route voor identiteitsmisbruik?",
+          groups: [{ id: "report", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "platform-report", label: "Het account via de meldfunctie van het platform rapporteren." },
+            { id: "mass-message", label: "Een waarschuwing met screenshots naar alle contacten sturen." },
+            { id: "direct-demand", label: "Het account een privébericht sturen met de eis zichzelf bekend te maken." },
+            { id: "public-poll", label: "Een openbare poll maken over wie het account beheert." },
+          ] }],
+        },
+        {
+          id: "secure",
+          title: "Eigen account controleren",
+          instruction: "Welke aanvullende handeling verkleint risico voor je eigen account?",
+          groups: [{ id: "secure", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "privacy-check", label: "De beveiligings- en privacyinstellingen van je eigen account controleren." },
+            { id: "delete-real-account", label: "Je echte account verwijderen zodat het nepaccount minder opvalt." },
+            { id: "publish-personal-proof", label: "Extra persoonsgegevens publiceren om te bewijzen welk account echt is." },
+            { id: "share-password-friend", label: "Een vriend toegang geven tot je account zodat die kan meekijken." },
+          ] }],
+        },
+      ],
+      rules: [
+        { id: "risk", description: "herkent digitaal identiteitsmisbruik.", points: 1, groupId: "risk", kind: "singleCorrect", correctOptionIds: ["identity-misuse"] },
+        { id: "no-escalation", description: "voorkomt openbare escalatie.", points: 1, groupId: "no-escalation", kind: "singleCorrect", correctOptionIds: ["no-public-reply"] },
+        { id: "report", description: "gebruikt de platformmelding.", points: 1, groupId: "report", kind: "singleCorrect", correctOptionIds: ["platform-report"] },
+        { id: "secure", description: "controleert de beveiliging en privacy van het eigen account.", points: 1, groupId: "secure", kind: "singleCorrect", correctOptionIds: ["privacy-check"] },
+      ],
+      scoreCaps: [
+        { id: "retaliation-cap", maxScore: 2, optionIds: ["name-suspect", "counter-account", "public-poll"] },
+        { id: "unsafe-proof-cap", maxScore: 2, optionIds: ["mass-message", "publish-personal-proof", "share-password-friend"] },
+      ],
+    },
+  };
+
+  specs["lj3-hv"] = {
+    id: "pt8-lj3h-manipulated-school-post-v5",
+    title: "PT8 - Online gedrag: gemanipuleerd schoolbericht",
+    instruction: "Weeg signalen, voorkom verspreiding, verifieer en herstel de informatie in de groep.",
+    kerndoel: "23B",
+    config: {
+      screens: [
+        {
+          id: "signals",
+          title: "Screenshot van een schoolbericht",
+          instruction: "Kies de twee gegevens die echt reden geven om de herkomst te controleren.",
+          body: "In een groepschat verschijnt een screenshot: ‘Vanaf morgen zijn telefoons verboden. Wie protesteert, krijgt straf.’ De opmaak lijkt op die van school, maar het bericht staat niet in de schoolapp. Het delende account heeft geen verifieerbare naam.",
+          groups: [{ id: "signals", title: "Kies twee signalen", inputType: "multi", maxSelections: 2, options: [
+            { id: "outside-official-channel", label: "Het bericht ontbreekt in de officiële schoolapp en schoolmail." },
+            { id: "unverified-account", label: "Het delende account is niet aan een verifieerbare afzender te koppelen." },
+            { id: "school-like-layout", label: "De opmaak gebruikt kleuren en woorden die op schoolcommunicatie lijken." },
+            { id: "concrete-rule", label: "Het bericht noemt een concrete regel die de volgende dag zou ingaan." },
+            { id: "many-replies", label: "Meerdere leerlingen reageren snel op het bericht." },
+          ] }],
+        },
+        {
+          id: "no-spread",
+          title: "Verspreiding",
+          instruction: "Wat doe je terwijl de herkomst nog niet is gecontroleerd?",
+          groups: [{ id: "no-spread", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "hold-message", label: "Het screenshot niet verder doorsturen." },
+            { id: "forward-with-warning", label: "Het screenshot doorsturen met de waarschuwing dat het mogelijk niet klopt." },
+            { id: "forward-to-other-class", label: "Het screenshot naar een andere klas sturen om te vragen of zij het herkennen." },
+            { id: "edit-question-mark", label: "Een vraagteken op de afbeelding zetten en die versie delen." },
+          ] }],
+        },
+        {
+          id: "verify",
+          title: "Verifiëren",
+          instruction: "Welke bron geeft de beste controle van dit specifieke schoolbericht?",
+          groups: [{ id: "verify", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "official-school-channel", label: "De officiële schoolapp, schoolmail of een verantwoordelijke medewerker." },
+            { id: "group-majority", label: "De mening van de meeste leerlingen die al in de groepschat reageren." },
+            { id: "image-search", label: "Een zoekmachine die vergelijkbare screenshots op internet toont." },
+            { id: "account-history", label: "Eerdere berichten van hetzelfde anonieme account." },
+          ] }],
+        },
+        {
+          id: "repair",
+          title: "Herstellen",
+          instruction: "De school bevestigt dat het screenshot nep is. Wat is een passende herstelactie?",
+          groups: [{ id: "repair", title: "Kies één antwoord", inputType: "single", options: [
+            { id: "share-official-correction", label: "De officiële correctie in dezelfde groepschat delen." },
+            { id: "mock-creator", label: "De vermoedelijke maker in de groep belachelijk maken." },
+            { id: "keep-example", label: "Het nepbericht bewaren om het later als voorbeeld opnieuw te plaatsen." },
+            { id: "make-parody", label: "Een overdreven versie maken zodat anderen begrijpen dat het bericht nep was." },
+          ] }],
+        },
+      ],
+      rules: [
+        { id: "risk", description: "herkent twee onafhankelijke herkomstsignalen.", points: 1, groupId: "signals", kind: "minCorrect", minCorrect: 2, correctOptionIds: ["outside-official-channel", "unverified-account"] },
+        { id: "no-spread", description: "voorkomt verspreiding tijdens verificatie.", points: 1, groupId: "no-spread", kind: "singleCorrect", correctOptionIds: ["hold-message"] },
+        { id: "verify", description: "controleert via het verantwoordelijke officiële kanaal.", points: 1, groupId: "verify", kind: "singleCorrect", correctOptionIds: ["official-school-channel"] },
+        { id: "repair", description: "corrigeert de informatie via dezelfde groepscontext.", points: 1, groupId: "repair", kind: "singleCorrect", correctOptionIds: ["share-official-correction"] },
+      ],
+      scoreCaps: [
+        { id: "spread-cap", maxScore: 2, optionIds: ["forward-with-warning", "forward-to-other-class", "edit-question-mark"] },
+        { id: "retaliation-cap", maxScore: 2, optionIds: ["mock-creator", "make-parody"] },
+      ],
+    },
+  };
+
   return specs[versionId];
 };
 
@@ -3077,7 +3454,7 @@ const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
   const specs: Record<AssessmentVersionId, BlockTaskSpec> = {
     "lj1-vmbo": {
       id: "lj1v-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro: "Programmeer Bizzy door blokken op het werkvlak te slepen.",
       instruction: "Programmeer Bizzy zodat hij eerst 2 stappen vooruit gaat, daarna naar rechts draait, daarna \"Klaar\" zegt.",
       config: {
@@ -3094,7 +3471,7 @@ const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
     },
     "lj1-hv": {
       id: "lj1h-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro: "Programmeer Bizzy door blokken op het werkvlak te slepen.",
       instruction: "Programmeer Bizzy zodat hij 4 keer hetzelfde patroon uitvoert: 1 stap vooruit en daarna rechts draaien. Aan het einde zegt Bizzy \"Vierkant\".",
       config: {
@@ -3111,7 +3488,7 @@ const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
     },
     "lj3-vmbo": {
       id: "lj3v-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro: "Programmeer een eenvoudige wachtrij met een teller.",
       instruction: "Elke klik op knop A verhoogt de teller met 1. Als de teller 5 of hoger is, zegt Bizzy \"Vol\". Anders zegt Bizzy \"Nog plek\".",
       config: {
@@ -3128,7 +3505,7 @@ const v3Pt7 = (versionId: AssessmentVersionId): BlockTaskSpec => {
     },
     "lj3-hv": {
       id: "lj3h-pt7-programming",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro: "Programmeer een waarschuwing met temperatuur en raamstand.",
       instruction: "Als temperatuur > 25 én raamOpen = ja, toont Bizzy \"Koelen\". Als dat niet zo is, toont Bizzy \"Oké\".",
       config: {
@@ -3151,7 +3528,7 @@ const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
   const specs: Record<AssessmentVersionId, BlockTaskSpec> = {
     "lj1-vmbo": {
       id: "lj1v-pt7-programming-debug-v1",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro: "Kijk naar DOEL. Er zijn 2 fouten. Tik ze aan. Maak de code goed. Klik Afspelen.",
       instruction: "Blokprogrammeren",
       config: {
@@ -3193,7 +3570,7 @@ const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
     },
     "lj1-hv": {
       id: "lj1h-pt7-programming-debug-v1",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro: "Bizzy moet een vierkant lopen. Er zijn 2 fouten in de code. Wijs ze aan, verbeter ze en test.",
       instruction: "Blokprogrammeren",
       config: {
@@ -3213,7 +3590,7 @@ const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
     },
     "lj3-vmbo": {
       id: "lj3v-pt7-programming-debug-v1",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro: "Bij elke klik op A komt er 1 bij. Bij 1 t/m 4: Nog plek. Bij 5 of meer: Vol. Er zijn 2 fouten. Wijs ze aan, verbeter ze en test.",
       instruction: "Blokprogrammeren",
       config: {
@@ -3233,7 +3610,7 @@ const v3Pt7Debug = (versionId: AssessmentVersionId): BlockTaskSpec => {
     },
     "lj3-hv": {
       id: "lj3h-pt7-programming-debug-v1",
-      title: "PT7 - Blokprogrammeren",
+      title: "Blokprogrammeren",
       intro: "Toon alleen \"Koelen\" als het warm is en het raam open staat. Er zijn 2 fouten in de code. Wijs ze aan, verbeter ze en test.",
       instruction: "Blokprogrammeren",
       config: {
@@ -3292,7 +3669,7 @@ const teddyIfCat = teddyBlock(
 
 const v3Pt7Teddy = (versionId: AssessmentVersionId): BlockTaskSpec => {
   const common = {
-    title: "PT7 - Blokprogrammeren",
+    title: "Blokprogrammeren",
     instruction: "Blokprogrammeren",
   };
   const specs: Record<AssessmentVersionId, BlockTaskSpec> = {
@@ -3377,7 +3754,7 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
       id: "lj1v-pt1-files",
       title: "PT1 - Bestanden en mappen beheren",
       instruction:
-        `${v3FileInstruction}\nMaak in OneDrive de map Biologie.\nZoek de bestanden concept_dieren.docx, foto_kat.jpg en bron_dieren.pdf.\nVerplaats deze drie bestanden naar de map Biologie.\nVerander de naam van 'concept_dieren.docx' in 'verslag_dieren.docx'.`,
+        `${v3FileInstruction}\nMaak in OneDrive een nieuwe map aan met de naam 'Biologie'.\nVerplaats de bestanden concept_dieren.docx, foto_kat.jpg en bron_dieren.pdf naar de map Biologie.\nVerander de naam van 'concept_dieren.docx' in 'verslag_dieren.docx'.`,
       startFolders: [
         "Thuis/OneDrive/Engels",
         "Thuis/OneDrive/Maatschappij",
@@ -3504,9 +3881,37 @@ const withV3PerformanceTasks = (spec: VersionSpec): VersionSpec => {
   };
 };
 
+type AssessmentBuildMeta = {
+  assessmentBuildVersion: string;
+  contentHashAlgorithm: "sha256";
+  assessmentContentHashes: Record<AssessmentVersionId, string>;
+};
+
+const assessmentBuildMeta = assessmentBuildMetaSource as AssessmentBuildMeta;
+
+const defaultScoringVersion = (item: AssessmentItem) =>
+  `auto-${item.type.replace(/_/g, "-")}-v1`;
+
+const attachProvenance = (assessment: Omit<AssessmentVersion, "assessmentBuildVersion" | "assessmentContentHash" | "contentHashAlgorithm">): AssessmentVersion => ({
+  ...assessment,
+  assessmentBuildVersion: assessmentBuildMeta.assessmentBuildVersion,
+  assessmentContentHash: assessmentBuildMeta.assessmentContentHashes[assessment.id],
+  contentHashAlgorithm: assessmentBuildMeta.contentHashAlgorithm,
+  sections: assessment.sections.map((section) => ({
+    ...section,
+    items: section.items.map((item) => ({
+      ...item,
+      itemVersion: item.itemVersion ?? `${item.id}-v1`,
+      scoringVersion: item.scoringVersion ?? defaultScoringVersion(item),
+      assessmentBuildVersion: assessmentBuildMeta.assessmentBuildVersion,
+    })),
+  })),
+});
+
 export const assessments: AssessmentVersion[] = versionSpecs
   .map(withV3PerformanceTasks)
-  .map(buildAssessment);
+  .map(buildAssessment)
+  .map((assessment) => attachProvenance(assessment));
 
 export const assessmentMap: Record<AssessmentVersionId, AssessmentVersion> =
   assessments.reduce(

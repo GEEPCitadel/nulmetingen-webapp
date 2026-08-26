@@ -1,5 +1,11 @@
 {
   "schemaVersion": "dg-nulmetingen-v3.7",
+  "assessmentBuildVersion": "dg-pilot-2026.08.25.3",
+  "versionInheritance": {
+    "itemVersion": "expliciet itemVersion of <item-id>-v1 bij constructie",
+    "scoringVersion": "auto-<app-itemtype>-v1 bij constructie",
+    "assessmentBuildVersion": "geerfd door ieder geconstrueerd item en iedere taak"
+  },
   "status": "werkversie voor Codex-implementatie, pilotafname en interne review; vraag 9/SR2 vervangen door 21D/AI-vraag v5; vraag 16/SR9 hersteld als 23B foto-/toestemmingsvraag",
   "source": "nulmetingen_dg_herontwerp_v3_5_codex.md en expliciete gebruikersinstructies van 2026-08-24",
   "selectedResponseItems": [
@@ -122,14 +128,14 @@
         },
         {
           "id": "B",
-          "text": "Steeds alle apps afsluiten; dan komt er weer genoeg opslag vrij.",
+          "text": "Apps één voor één afsluiten; dat maakt volgens hem dezelfde ruimte vrij als apps verwijderen.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "Een gratis schoonmaak-app uit een advertentie installeren en toegang geven tot alle bestanden.",
+          "text": "Een gratis schoonmaak-app uit een advertentie installeren en toegang geven tot bestanden.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -218,6 +224,7 @@
     },
     {
       "id": "lj1v-sr5-algorithm",
+      "itemVersion": "recommendations-v2",
       "targetGroup": "lj1-vmbo",
       "subgoal": "21B",
       "title": "Aanbevelingen",
@@ -234,21 +241,21 @@
         },
         {
           "id": "opt_same_school",
-          "text": "De app laat alle leerlingen na schooltijd dezelfde voetbalvideo’s zien.",
+          "text": "De app kiest vooral voetbalvideo’s die op dat moment populair zijn bij jongeren.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "opt_creator_controls",
-          "text": "De maker van één video bepaalt precies wat Luna daarna ziet.",
+          "text": "De maker van de laatste video stelt in welke voetbalvideo daarna wordt aanbevolen.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "opt_battery",
-          "text": "De batterij van Luna’s telefoon bepaalt welke video’s ze ziet.",
+          "text": "De herhaling is waarschijnlijk toeval; wat Luna eerder keek speelt daarbij weinig mee.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -270,7 +277,7 @@
         "unknownExclusive": true
       },
       "anchorStatus": "replaceable",
-      "validityNote": "Meet basisbegrip van aanbevelingssystemen in eenvoudige taal. Correct: apps kunnen signalen zoals kijken en leuk vinden gebruiken voor nieuwe aanbevelingen.",
+      "validityNote": "Meet basisbegrip van aanbevelingssystemen met plausibele misvattingen over algemene populariteit, makerskeuzes en toeval.",
       "pilotReviewStatus": "V3.6-review: vervangen volgens aangeleverde v3.6 SR21B-bijlage."
     },
     {
@@ -291,21 +298,21 @@
         },
         {
           "id": "B",
-          "text": "Ja, want 8 stemmen is altijd genoeg.",
+          "text": "Ja, want 8 stemmen is in deze groep het grootste genoemde aantal.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "Dat klopt alleen als de poll digitaal is ingevuld.",
+          "text": "Dat is aannemelijker wanneer leerlingen de poll via de schoolapp invullen.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Dat kun je nooit met een poll onderzoeken.",
+          "text": "Een poll uit meerdere klassen zou waarschijnlijk dezelfde uitkomst geven.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -330,7 +337,8 @@
       "validityNote": "Meet beperkte generaliseerbaarheid van data en voorkomt dat de leerling een klasresultaat automatisch naar de hele school uitbreidt."
     },
     {
-      "id": "lj1v-sr7-ai-check",
+      "id": "lj1v-sr7-online-personal-data",
+      "legacyItemIds": ["lj1v-sr7-ai-check"],
       "replaces": "lj1v-sr7-ai-startpunt",
       "targetGroup": "lj1-vmbo",
       "kerndoel": "23",
@@ -338,11 +346,11 @@
       "title": "Online game en persoonsgegevens",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
+      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?",
       "options": [
         {
           "optionId": "A",
-          "text": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+          "text": "Je deelt je voornaam en leeftijd, maar houdt je buurt geheim.",
           "score": 0,
           "isCorrect": false
         },
@@ -354,7 +362,7 @@
         },
         {
           "optionId": "C",
-          "text": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+          "text": "Je deelt de gevraagde persoonsgegevens niet.",
           "correct": true,
           "score": 1,
           "isCorrect": true
@@ -457,13 +465,13 @@
         },
         {
           "optionId": "B",
-          "text": "De foto alleen in de klassenapp zetten; dan is toestemming niet nodig.",
+          "text": "De foto in de klassenapp zetten, omdat die groep uit bekenden bestaat.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "C",
-          "text": "De namen weglaten; dan mag je de foto altijd delen.",
+          "text": "De namen weglaten, omdat de foto dan minder persoonlijk lijkt.",
           "score": 0,
           "isCorrect": false
         },
@@ -494,6 +502,7 @@
     },
     {
       "id": "lj1v-sr10-platform-risk",
+      "itemVersion": "platform-dependence-v2",
       "targetGroup": "lj1-vmbo",
       "kerndoel": "23",
       "subgoal": "23C",
@@ -511,19 +520,19 @@
         },
         {
           "optionId": "B",
-          "text": "De app ziet er tijdelijk minder mooi uit.",
+          "text": "De roosterfunctie blijft waarschijnlijk werken, omdat die in een apart tabblad staat.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "C",
-          "text": "Leerlingen moeten misschien wennen aan een nieuw icoon.",
+          "text": "De storing raakt vooral nieuwe berichten; eerder geplaatste informatie blijft op veel toestellen bereikbaar.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "D",
-          "text": "Leerlingen krijgen dan automatisch minder huiswerk.",
+          "text": "De informatie staat ook op iedere telefoon, waardoor leerlingen weinig van de storing merken.",
           "score": 0,
           "isCorrect": false
         },
@@ -544,7 +553,7 @@
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Meet basisbegrip van afhankelijkheid van één digitaal systeem."
+      "validityNote": "Meet basisbegrip van een centraal storingsrisico; afleiders representeren plausibele misvattingen over losse tabbladen, lokale kopieën en eerder geladen informatie."
     },
     {
       "id": "lj1h-sr1-pw-passphrase",
@@ -715,37 +724,46 @@
     },
     {
       "id": "lj1h-sr4-search-query",
+      "itemVersion": "source-results-v1",
       "targetGroup": "lj1-hv",
       "subgoal": "21B",
-      "title": "Gerichte zoekopdracht",
+      "title": "Zoekresultaten beoordelen",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je zoekt betrouwbare informatie over hoeveel jongeren in Nederland e-bikes gebruiken. Welke zoekopdracht helpt het best?",
+      "question": "Je zoekt cijfers over e-bikegebruik onder jongeren in Nederland. Welk zoekresultaat is het beste startpunt om te openen en daarna op methode, datum en bron te controleren?",
       "options": [
         {
           "id": "A",
-          "text": "onderzoek jongeren e-bike gebruik Nederland",
+          "label": "Landelijke Mobiliteitsmonitor 2025",
+          "sourceType": "Overheidsstatistiek",
+          "text": "Resultaten uit een landelijk onderzoek onder 8.200 jongeren, met publicatiedatum en uitleg over de steekproef.",
           "isCorrect": true,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "B",
-          "text": "e-bike jongeren kopen Nederland",
+          "label": "E-bikeShop: bijna iedere tiener wil elektrisch",
+          "sourceType": "Webwinkelblog",
+          "text": "Een verkoopartikel met een opvallend percentage, zonder uitleg over deelnemers of onderzoeksmethode.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "jongeren fietsen school Nederland",
+          "label": "Poll van klas 1H over fietsen naar school",
+          "sourceType": "Schoolpoll",
+          "text": "Een recente stemming onder 27 leerlingen van één klas over hun eigen reis naar school.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "elektrische fiets ervaring jongeren",
+          "label": "Ervaringen met mijn eerste e-bike",
+          "sourceType": "Jongerenforum",
+          "text": "Persoonlijke verhalen van forumleden, zonder aantallen voor Nederland als geheel.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -767,7 +785,11 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "validityNote": "A bevat onderzoek, doelgroep, onderwerp en land."
+      "validityNote": "Meet bronselectie na een zoekactie zonder te suggereren dat een zoekterm betrouwbaarheid garandeert; betrouwbaarheid moet na openen nog worden gecontroleerd.",
+      "ui": {
+        "renderAsSourceCards": true,
+        "pinUnknownOptionLast": true
+      }
     },
     {
       "id": "lj1h-sr5-feed-sample",
@@ -801,7 +823,7 @@
         },
         {
           "id": "opt_neutral_platform",
-          "text": "Dat het platform altijd neutraal laat zien wat mensen denken.",
+          "text": "Dat het platform meestal een neutraal beeld laat zien van wat mensen denken.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -844,21 +866,21 @@
         },
         {
           "id": "B",
-          "text": "Eén klas is altijd genoeg om iets over heel Nederland te zeggen.",
+          "text": "Eén klas geeft waarschijnlijk een bruikbaar beeld van leerlingen in Nederland.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "De dataset is automatisch fout.",
+          "text": "De dataset is onbetrouwbaar doordat de antwoorden uit dezelfde klas komen.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Meer data maakt nooit verschil.",
+          "text": "Meer antwoorden uit diezelfde klas lossen het belangrijkste probleem op.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -883,18 +905,19 @@
       "validityNote": "Meet dataconclusie en generaliseerbaarheid."
     },
     {
-      "id": "lj1h-sr7-ai-startpunt",
+      "id": "lj1h-sr7-online-personal-data",
+      "legacyItemIds": ["lj1h-sr7-ai-startpunt"],
       "targetGroup": "lj1-hv",
       "kerndoel": "23",
       "subgoal": "23B",
       "title": "Online game en persoonsgegevens",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
+      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?",
       "options": [
         {
           "optionId": "A",
-          "text": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+          "text": "Je deelt je voornaam en leeftijd, maar houdt je buurt geheim.",
           "score": 0,
           "isCorrect": false
         },
@@ -906,7 +929,7 @@
         },
         {
           "optionId": "C",
-          "text": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+          "text": "Je deelt de gevraagde persoonsgegevens niet.",
           "correct": true,
           "score": 1,
           "isCorrect": true
@@ -967,7 +990,7 @@
         },
         {
           "optionId": "D",
-          "text": "Of alleen je klas de presentatie ziet. Dan gelden er geen regels.",
+          "text": "Of de presentatie binnen de klas blijft; dan is toestemming van de maker minder belangrijk.",
           "score": 0,
           "isCorrect": false
         },
@@ -1010,7 +1033,7 @@
         },
         {
           "optionId": "B",
-          "text": "Je deelt de foto alleen in een besloten groep.",
+          "text": "Je deelt de foto in een besloten groep waar beide klasgenoten lid van zijn.",
           "score": 0,
           "isCorrect": false
         },
@@ -1047,6 +1070,7 @@
     },
     {
       "id": "lj1h-sr10-platform-risk",
+      "itemVersion": "platform-dependence-v2",
       "replaces": "lj1h-sr10-ad-profile",
       "targetGroup": "lj1-hv",
       "kerndoel": "23",
@@ -1065,19 +1089,19 @@
         },
         {
           "optionId": "B",
-          "text": "Leerlingen hoeven minder verschillende apps te openen.",
+          "text": "De onderdelen blijven waarschijnlijk los van elkaar werken, omdat ze verschillende menu’s hebben.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "C",
-          "text": "Docenten kunnen berichten op één plek zetten.",
+          "text": "Leerlingen kunnen de laatst bekeken informatie meestal volledig uit hun toestel terughalen.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "D",
-          "text": "De app kan dezelfde kleur gebruiken voor alle klassen.",
+          "text": "Een grote leverancier kan een storing doorgaans zo snel oplossen dat school er weinig van merkt.",
           "score": 0,
           "isCorrect": false
         },
@@ -1098,7 +1122,7 @@
         "unknownScoresZero": true,
         "unknownExclusive": true
       },
-      "validityNote": "Leerlingen onderscheiden risico van voordeel."
+      "validityNote": "Meet systeemafhankelijkheid met plausibele misvattingen over technische scheiding, lokale beschikbaarheid en hersteltijd."
     },
     {
       "id": "lj3v-sr1-cijfermail",
@@ -1132,7 +1156,7 @@
         },
         {
           "id": "B",
-          "text": "Ik gebruik de knop, want cijfers bekijken vraagt altijd om inloggen.",
+          "text": "Ik gebruik de knop, omdat inloggen gebruikelijk is bij het bekijken van cijfers.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false,
@@ -1384,6 +1408,7 @@
     },
     {
       "id": "lj3v-sr5-sponsored",
+      "itemVersion": "recommendations-ads-v2",
       "targetGroup": "lj3-vmbo",
       "subgoal": "21B",
       "title": "Sponsoring herkennen",
@@ -1400,21 +1425,21 @@
         },
         {
           "id": "opt_private_messages",
-          "text": "De reclame bewijst dat Milan privéberichten over games heeft gestuurd.",
+          "text": "De app gebruikt waarschijnlijk woorden uit Milans privéberichten om de reclame te kiezen.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "opt_school_wifi",
-          "text": "Iedereen die dezelfde schoolwifi gebruikt, krijgt automatisch dezelfde reclame.",
+          "text": "De reclame wordt vooral afgestemd op het schoolnetwerk dat Milan gebruikt.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "opt_game_makers_control",
-          "text": "De makers van de game bepalen precies welke video’s Milan ziet.",
+          "text": "De gamemaker koppelt gamevideo’s rechtstreeks aan advertenties, los van Milans kijkgedrag.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -1436,7 +1461,7 @@
         "unknownExclusive": true
       },
       "anchorStatus": "replaceable",
-      "validityNote": "Meet aanbevelingen en gerichte reclame via online gedrag. Niet bedoeld als bewijs dat privéberichten zijn gelezen.",
+      "validityNote": "Meet aanbevelingen en gerichte reclame via online gedrag met plausibele misvattingen over privéberichten, netwerkkeuze en vaste sponsoring.",
       "pilotReviewStatus": "V3.6-review: vervangen volgens aangeleverde v3.6 SR21B-bijlage."
     },
     {
@@ -1464,14 +1489,14 @@
         },
         {
           "id": "C",
-          "text": "Dat klopt alleen als de poll op een telefoon is ingevuld.",
+          "text": "De conclusie wordt overtuigender wanneer de poll via de officiële schoolapp is ingevuld.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Dat kun je nooit onderzoeken met een poll.",
+          "text": "Een online poll onder meer leerlingen zou deze conclusie waarschijnlijk bevestigen.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -1496,7 +1521,8 @@
       "validityNote": "Meet verhouding tussen data en conclusie."
     },
     {
-      "id": "lj3v-sr7-ai-factcheck",
+      "id": "lj3v-sr7-online-personal-data",
+      "legacyItemIds": ["lj3v-sr7-ai-factcheck"],
       "replaces": "lj3v-sr7-ai-bias",
       "targetGroup": "lj3-vmbo",
       "kerndoel": "23",
@@ -1504,11 +1530,11 @@
       "title": "Online game en persoonsgegevens",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
+      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?",
       "options": [
         {
           "optionId": "A",
-          "text": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+          "text": "Je deelt je voornaam en leeftijd, maar houdt je buurt geheim.",
           "score": 0,
           "isCorrect": false
         },
@@ -1520,7 +1546,7 @@
         },
         {
           "optionId": "C",
-          "text": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+          "text": "Je deelt de gevraagde persoonsgegevens niet.",
           "correct": true,
           "score": 1,
           "isCorrect": true
@@ -1570,7 +1596,7 @@
         },
         {
           "optionId": "B",
-          "text": "Het materiaal kort gebruiken. Korte stukjes mogen altijd online.",
+          "text": "Een kort fragment gebruiken, omdat zulke fragmenten vaak als toegestaan worden gezien.",
           "score": 0,
           "isCorrect": false
         },
@@ -1607,31 +1633,33 @@
     },
     {
       "id": "lj3v-sr9-photo-shared",
+      "itemVersion": "separate-actions-v1",
       "replaces": "lj3v-sr9-fake-account",
       "targetGroup": "lj3-vmbo",
       "kerndoel": "23",
       "subgoal": "23B",
       "title": "Ongewenst gedeelde foto",
-      "itemType": "single-choice",
-      "selectionLimit": 1,
-      "question": "In een groepsapp deelt iemand zonder toestemming een foto van een klasgenoot. De klasgenoot staat er ongemakkelijk op. Wat is de beste reactie?",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "In een groepsapp deelt iemand zonder toestemming een foto van een klasgenoot. De klasgenoot staat er ongemakkelijk op. Welke twee acties zijn passend?",
       "options": [
         {
           "optionId": "A",
-          "text": "Niet verder delen en hulp inschakelen of vragen om de foto te verwijderen.",
+          "text": "De foto niet verder delen.",
           "correct": true,
           "score": 1,
           "isCorrect": true
         },
         {
           "optionId": "B",
-          "text": "De foto alleen doorsturen naar vrienden die je vertrouwt.",
-          "score": 0,
-          "isCorrect": false
+          "text": "De afzender vragen de foto te verwijderen.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "C",
-          "text": "De foto bewaren, want misschien heb je later bewijs nodig.",
+          "text": "De foto doorsturen naar vrienden die de klasgenoot goed kennen.",
           "score": 0,
           "isCorrect": false
         },
@@ -1650,15 +1678,19 @@
           "isHarmful": false
         }
       ],
-      "correctAnswer": "A",
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
       "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
-        "rule": "exact-choice",
+        "rule": "partial-select",
         "unknownScoresZero": true,
-        "unknownExclusive": true
+        "unknownExclusive": true,
+        "partialCredit": 0.5
       },
-      "validityNote": "Meet handelen wanneer ongewenst delen al heeft plaatsgevonden. Let op schoolafspraak rond bewijs veiligstellen."
+      "validityNote": "Meet twee afzonderlijke acties wanneer ongewenst delen al heeft plaatsgevonden; iedere juiste actie levert een afzonderlijke helft van het punt op."
     },
     {
       "id": "lj3v-sr10-digital-access",
@@ -1680,7 +1712,7 @@
         },
         {
           "optionId": "B",
-          "text": "Iedereen krijgt automatisch dezelfde kans, want het formulier is voor iedereen gelijk.",
+          "text": "Het formulier geeft vergelijkbare kansen, omdat iedere leerling dezelfde stappen doorloopt.",
           "score": 0,
           "isCorrect": false
         },
@@ -1692,7 +1724,7 @@
         },
         {
           "optionId": "D",
-          "text": "Online solliciteren is altijd sneller en eerlijker.",
+          "text": "Online solliciteren verloopt meestal sneller en daardoor eerlijker.",
           "score": 0,
           "isCorrect": false
         },
@@ -1907,7 +1939,7 @@
         },
         {
           "id": "E",
-          "text": "Alle meldingen aanzetten.",
+          "text": "Apps toestemming geven om op de achtergrond actief te blijven.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -2057,12 +2089,33 @@
     },
     {
       "id": "lj3h-sr6-graph-scale",
+      "itemVersion": "normalized-graph-v1",
       "targetGroup": "lj3-hv",
       "subgoal": "21C",
       "title": "Klachten naar verhouding",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Een grafiek vergelijkt klachten over twee apps. App A: 20 klachten bij 1.000 gebruikers. App B: 50 klachten bij 10.000 gebruikers. Welke conclusie past het best bij deze data?",
+      "question": "De grafiek vergelijkt het aantal klachten per 1.000 gebruikers. Welke conclusie wordt door de grafiek ondersteund?",
+      "stimulus": {
+        "kind": "comparison-bar-chart",
+        "title": "Klachten per 1.000 gebruikers",
+        "unit": "klachten per 1.000 gebruikers",
+        "maxValue": 20,
+        "bars": [
+          {
+            "id": "app-a",
+            "label": "App A",
+            "value": 20,
+            "detail": "20 klachten bij 1.000 gebruikers"
+          },
+          {
+            "id": "app-b",
+            "label": "App B",
+            "value": 5,
+            "detail": "50 klachten bij 10.000 gebruikers"
+          }
+        ]
+      },
       "options": [
         {
           "id": "A",
@@ -2073,21 +2126,21 @@
         },
         {
           "id": "B",
-          "text": "App B heeft naar verhouding meer klachten, want 50 is meer dan 20.",
+          "text": "App B heeft naar verhouding meer klachten, omdat het totale aantal klachten daar hoger is.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "C",
-          "text": "De apps hebben evenveel klachten, want beide apps hebben klachten.",
+          "text": "De apps verschillen weinig, omdat beide aantallen binnen dezelfde schaal vallen.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
         },
         {
           "id": "D",
-          "text": "Je kunt nooit naar verhouding kijken bij gebruikersaantallen.",
+          "text": "De balken zijn nog niet vergelijkbaar, omdat de apps verschillende aantallen gebruikers hebben.",
           "isCorrect": false,
           "isHarmful": false,
           "isUnknownOption": false
@@ -2109,10 +2162,11 @@
         "unknownExclusive": true
       },
       "anchorStatus": "concept-anchor",
-      "validityNote": "Meet dataconclusie met verhouding; pilot moet controleren of rekenbelasting passend is."
+      "validityNote": "Meet interpretatie van een genormaliseerde grafiek. De verhouding is zichtbaar als klachten per 1.000 gebruikers, zodat hoofdrekenen niet de primaire opgave vormt; resterende taal- en rekenbelasting moet in de pilot worden gevolgd."
     },
     {
-      "id": "lj3h-sr7-ai-source-check",
+      "id": "lj3h-sr7-online-personal-data",
+      "legacyItemIds": ["lj3h-sr7-ai-source-check"],
       "replaces": "lj3h-sr7-ai-privacy",
       "targetGroup": "lj3-hv",
       "kerndoel": "23",
@@ -2120,11 +2174,11 @@
       "title": "Online game en persoonsgegevens",
       "itemType": "single-choice",
       "selectionLimit": 1,
-      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?",
+      "question": "Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?",
       "options": [
         {
           "optionId": "A",
-          "text": "Je geeft alleen je voornaam en leeftijd, maar niet je adres.",
+          "text": "Je deelt je voornaam en leeftijd, maar houdt je buurt geheim.",
           "score": 0,
           "isCorrect": false
         },
@@ -2136,7 +2190,7 @@
         },
         {
           "optionId": "C",
-          "text": "Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen.",
+          "text": "Je deelt de gevraagde persoonsgegevens niet.",
           "correct": true,
           "score": 1,
           "isCorrect": true
@@ -2191,13 +2245,13 @@
         },
         {
           "optionId": "C",
-          "text": "Of je de kleuren sterk verandert; dan is het automatisch eigen werk.",
+          "text": "Of je de kleuren sterk verandert; dan lijkt het voldoende op nieuw werk.",
           "score": 0,
           "isCorrect": false
         },
         {
           "optionId": "D",
-          "text": "Of je de poster alleen in een groepsapp deelt; dan gelden geen regels.",
+          "text": "Of je de poster in een kleine groepsapp deelt; dat lijkt minder op openbaar publiceren.",
           "score": 0,
           "isCorrect": false
         },
@@ -2222,26 +2276,28 @@
     },
     {
       "id": "lj3h-sr9-private-photo",
+      "itemVersion": "separate-actions-v1",
       "targetGroup": "lj3-hv",
       "kerndoel": "23",
       "subgoal": "23B",
       "title": "Privéfoto in besloten groep",
-      "itemType": "single-choice",
-      "selectionLimit": 1,
-      "question": "Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Wat is de beste eerste reactie?",
+      "itemType": "multiple-select",
+      "selectionLimit": 2,
+      "question": "Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Welke twee acties zijn passend?",
       "options": [
         {
           "optionId": "A",
-          "text": "Niet verder delen en via een veilige route hulp inschakelen of rapporteren.",
+          "text": "De foto niet verder delen.",
           "correct": true,
           "score": 1,
           "isCorrect": true
         },
         {
           "optionId": "B",
-          "text": "De foto bewaren om later te bewijzen dat je hem gezien hebt.",
-          "score": 0,
-          "isCorrect": false
+          "text": "De foto via de veilige meldroute van het platform rapporteren.",
+          "correct": true,
+          "score": 1,
+          "isCorrect": true
         },
         {
           "optionId": "C",
@@ -2264,18 +2320,23 @@
           "isHarmful": false
         }
       ],
-      "correctAnswer": "A",
+      "correctAnswer": [
+        "A",
+        "B"
+      ],
       "harmfulAnswers": [],
       "scoring": {
         "maxPoints": 1,
-        "rule": "exact-choice",
+        "rule": "partial-select",
         "unknownScoresZero": true,
-        "unknownExclusive": true
+        "unknownExclusive": true,
+        "partialCredit": 0.5
       },
-      "validityNote": "Meet verantwoord handelen bij schade, groepsdruk en privacy."
+      "validityNote": "Meet niet verspreiden en veilig rapporteren als afzonderlijk beoordeelde handelingen."
     },
     {
       "id": "lj3h-sr10-platform-dependence",
+      "itemVersion": "platform-dependence-v2",
       "replaces": "lj3h-sr10-regulation",
       "targetGroup": "lj3-hv",
       "kerndoel": "23",
@@ -2297,15 +2358,15 @@
         },
         {
           "optionId": "C",
-          "text": "Een storing kan alleen de berichten raken; rooster en huiswerk blijven altijd beschikbaar."
+          "text": "Een storing raakt vermoedelijk eerst de berichten, terwijl rooster en huiswerk beschikbaar blijven."
         },
         {
           "optionId": "D",
-          "text": "Een centraal platform maakt de informatie automatisch veilig tegen misbruik."
+          "text": "Een centraal platform vergroot vooral het risico dat verschillende vakken tegenstrijdige gegevens bewaren."
         },
         {
           "optionId": "E",
-          "text": "Als een platform veel gebruikt wordt, worden problemen vanzelf sneller opgelost."
+          "text": "Een veelgebruikt platform kan roostergegevens van verschillende scholen door elkaar halen."
         },
         {
           "optionId": "F",

@@ -1,0 +1,606 @@
+{
+  "schemaVersion": "dg-assessment-blueprint-v1",
+  "blueprintVersion": "2026.08.25.2",
+  "officialReference": {
+    "title": "Definitieve conceptkerndoelen digitale geletterdheid — voortgezet onderwijs",
+    "publisher": "SLO",
+    "edition": "derde druk 2026",
+    "url": "https://www.slo.nl/publish/pages/23189/kerndoelen-voortgezet-onderwijs-slo-2026-derde-druk.pdf",
+    "statusUrl": "https://www.slo.nl/thema/meer/actualisatie-kerndoelen-examenprogramma/actualisatie-kerndoelen/definitieve-conceptkerndoelen-digitale/",
+    "statusVerifiedOn": "2026-08-25",
+    "status": "Definitieve conceptkerndoelen voor de onderbouw van het voortgezet onderwijs; op de vaststellingsdatum van deze matrix nog niet wettelijk van kracht.",
+    "wordingNote": "De bulletteksten hieronder zijn compacte parafrases. De genummerde positie verwijst naar de officiële volgorde in de SLO-publicatie."
+  },
+  "reportingPolicy": {
+    "totalScoreTerm": "itemsetscore",
+    "profileTerm": "profielindex",
+    "scaleEvidence": false,
+    "interpretation": "De itemsetscore is het percentage behaalde punten op precies deze ongelijk gewogen itemset. Het profiel per kerndoel en subdoel is leidend. De score is geen schaal voor een algemeen latent niveau digitale geletterdheid en varianten zijn niet zonder meer onderling vergelijkbaar.",
+    "singleItemRule": "Een subdoel waaraan precies één item of taak bijdraagt, krijgt geen percentage-subscore. Rapporteer uitsluitend een itemsignaal met het behaalde aantal punten en de melding dat geen beheersingsuitspraak mogelijk is."
+  },
+  "weightingRationale": {
+    "prioritySubgoals": [
+      "21A",
+      "23A",
+      "23B"
+    ],
+    "rationale": [
+      "De nulmeting moet direct bruikbare aanwijzingen opleveren over handelingen die leerlingen vaak op school uitvoeren: bestanden beheren, communiceren en werken met gangbare toepassingen.",
+      "Veiligheid, privacy en verantwoord online handelen zijn randvoorwaarden voor deelname aan vrijwel alle andere digitale schoolactiviteiten; gemiste risico's kunnen bovendien direct schade veroorzaken.",
+      "De zwaartepunten zijn een bewuste diagnostische keuze van deze pilot en geen uitspraak dat SLO deze subdoelen zwaarder weegt dan andere subdoelen.",
+      "De extra punten komen vooral uit automatisch beoordeelde praktijktaken met meerdere observeerbare stappen. Daardoor beschrijft de itemsetscore prestaties op deze selectie, niet de volledige breedte van de kerndoelen."
+    ]
+  },
+  "lj3VmboReference": {
+    "referenceUse": "Voor lj3-vmbo gebruikt de school de conceptkerndoelen voor de onderbouw van het vo als inhoudelijke schoolreferentie aan het einde van of tijdens de onderbouw.",
+    "limitations": "Dit is geen afzonderlijke landelijke leerjaar-3-norm, geen wettelijke cesuur en geen bewijs dat alle leerlingen deze doelen op hetzelfde moment moeten beheersen. Interpretatie gebeurt binnen het curriculum, de aangeboden leerkansen en de gekozen afnameperiode van de school.",
+    "comparisonRule": "Vergelijk lj3-vmbo alleen beschrijvend binnen dezelfde assessmentvariant en inhoudsbuild. Gebruik de uitkomst niet als genormeerde vergelijking met lj1, havo/vwo of een landelijke populatie."
+  },
+  "coverageLevels": {
+    "sampled": "De actieve itemset vraagt rechtstreeks gedrag of kennis die bij deze bullet past, maar de dekking blijft beperkt tot de genoemde contexten.",
+    "partial": "De actieve itemset raakt een smaller aspect of een vereenvoudigde context; de volledige bullet wordt niet bemonsterd.",
+    "not_sampled": "Geen actief item levert rechtstreeks scorebewijs voor deze bullet."
+  },
+  "subgoals": [
+    {
+      "id": "21A",
+      "label": "De leerling zet digitale systemen functioneel in.",
+      "bullets": [
+        {
+          "id": "21A-1",
+          "officialPosition": 1,
+          "paraphrase": "Technische voorwaarden beschrijven waaronder digitale systemen en netwerken samenwerken.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "De praktijktaken toetsen gebruik, niet het beschrijven van technische systeem- of netwerkvoorwaarden."
+        },
+        {
+          "id": "21A-2",
+          "officialPosition": 2,
+          "paraphrase": "De werking van internet en slimme apparaten beschrijven.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Telefoononderhoud vraagt een handelingskeuze en geen uitleg van internet of slimme apparaten."
+        },
+        {
+          "id": "21A-3",
+          "officialPosition": 3,
+          "paraphrase": "Geavanceerde softwaremogelijkheden inzetten voor communicatie, samenwerking en het maken, bewerken of delen van bestanden.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "section:pt1",
+            "section:pt2"
+          ],
+          "note": "Bestandsbeheer en e-mail worden rechtstreeks uitgevoerd, maar samenwerking, delen en geavanceerdere functies zijn nauwelijks vertegenwoordigd."
+        },
+        {
+          "id": "21A-4",
+          "officialPosition": 4,
+          "paraphrase": "Herkennen welke digitale systemen organisaties gebruiken voor taken en problemen.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "De itemset vraagt geen systematische herkenning van organisatiesystemen."
+        },
+        {
+          "id": "21A-5",
+          "officialPosition": 5,
+          "paraphrase": "Nieuwe technologie volgen en de mogelijkheden en beperkingen ervan verkennen.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "De telefoonvraag gaat over onderhoud van een bestaand apparaat en is geen bemonstering van technologische ontwikkelingen."
+        }
+      ]
+    },
+    {
+      "id": "21B",
+      "label": "De leerling navigeert doelgericht in het digitale media- en informatielandschap.",
+      "bullets": [
+        {
+          "id": "21B-1",
+          "officialPosition": 1,
+          "paraphrase": "Zoekhulpmiddelen, zoekopdrachten en zoekstrategieën doelgericht combineren.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Geen variant laat de leerling zelf zoektermen formuleren of meerdere zoekstrategieën combineren."
+        },
+        {
+          "id": "21B-2",
+          "officialPosition": 2,
+          "paraphrase": "De betrouwbaarheid en bruikbaarheid van informatie beoordelen met aandacht voor bronnen, hulpmiddelen en media.",
+          "coverage": "sampled",
+          "evidenceSelectors": [
+            "sr:4"
+          ],
+          "note": "Alle varianten toetsen een bronkeuze of verificatie. lj1-hv beoordeelt bronkaarten en maakt expliciet dat methode, datum en bron na openen nog gecontroleerd moeten worden; één beslissing dekt niet het volledige beoordelingsproces."
+        },
+        {
+          "id": "21B-3",
+          "officialPosition": 3,
+          "paraphrase": "Reflecteren op de geschiktheid van gebruikte zoekstrategieën, hulpmiddelen en zoekopdrachten.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Een beste antwoord kiezen is geen reflectie op een zelf uitgevoerde zoekstrategie."
+        },
+        {
+          "id": "21B-4",
+          "officialPosition": 4,
+          "paraphrase": "Uitleggen hoe sociale media werken en aandacht vasthouden of beïnvloeden.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "sr:5"
+          ],
+          "note": "De varianten raken aanbevelingen, de niet-representatieve feed, sponsoring of een filterbubbel, telkens in één context."
+        },
+        {
+          "id": "21B-5",
+          "officialPosition": 5,
+          "paraphrase": "Reflecteren op de invloed van eigen kennis, opvattingen en voorkeuren bij het interpreteren van media-informatie.",
+          "coverage": "not_sampled",
+          "variantCoverage": {
+            "lj3-hv": "partial"
+          },
+          "evidenceSelectors": [
+            "sr:5"
+          ],
+          "note": "Alleen de filterbubbelvraag in lj3-hv raakt voorkeurgestuurde selectie; persoonlijke reflectie wordt niet gevraagd."
+        },
+        {
+          "id": "21B-hv-1",
+          "officialPosition": "hv-1",
+          "appliesTo": [
+            "lj1-hv",
+            "lj3-hv"
+          ],
+          "paraphrase": "Voor een vakgebied specifieke zoekstrategieën, hulpmiddelen en zoekopdrachten inzetten.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Er is geen taak waarin een vakspecifieke zoekaanpak wordt uitgevoerd."
+        }
+      ]
+    },
+    {
+      "id": "21C",
+      "label": "De leerling verkent het gebruik van data en dataverwerking.",
+      "bullets": [
+        {
+          "id": "21C-1",
+          "officialPosition": 1,
+          "paraphrase": "Beredeneren dat een dataset slechts een beperkte weergave van de werkelijkheid biedt.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "sr:6"
+          ],
+          "note": "De items behandelen een kleine of gekleurde steekproef, percentages of grafische schaal, steeds via één keuzevraag."
+        },
+        {
+          "id": "21C-2",
+          "officialPosition": 2,
+          "paraphrase": "Met een dataset onderzoek doen voor een vraag, opdracht of probleem.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "section:pt4"
+          ],
+          "note": "Leerlingen sorteren en filteren een aangeleverde spreadsheet; een eigen onderzoeksvraag en bredere analyse ontbreken."
+        },
+        {
+          "id": "21C-3",
+          "officialPosition": 3,
+          "paraphrase": "Beschrijven hoe bedrijven, instellingen en overheden data gebruiken.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Geen actief item vraagt deze beschrijving."
+        },
+        {
+          "id": "21C-4",
+          "officialPosition": 4,
+          "paraphrase": "Beschrijven welke mogelijkheden ontstaan doordat werkzaamheden steeds meer datagestuurd worden.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "De ingebouwde spreadsheettaak meet filteren en sorteren via gelogde handelingen, niet de gevolgen van datagestuurd werken."
+        },
+        {
+          "id": "21C-5",
+          "officialPosition": 5,
+          "paraphrase": "Reflecteren op nieuwe vormen van dataverwerking die door AI mogelijk worden.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "De AI-items zijn gericht op 21D en vragen niet naar nieuwe vormen van dataverwerking."
+        },
+        {
+          "id": "21C-hv-1",
+          "officialPosition": "hv-1",
+          "appliesTo": [
+            "lj1-hv",
+            "lj3-hv"
+          ],
+          "paraphrase": "Open data gebruiken voor een probleem of onderzoeksvraag.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Een aangeleverd spreadsheetbestand is niet genoeg om gebruik van open data aan te tonen."
+        }
+      ]
+    },
+    {
+      "id": "21D",
+      "label": "De leerling verkent mogelijkheden en beperkingen van AI.",
+      "bullets": [
+        {
+          "id": "21D-1",
+          "officialPosition": 1,
+          "paraphrase": "De invloed van kenmerken en kwaliteit van data op de werking van AI uitleggen.",
+          "coverage": "not_sampled",
+          "variantCoverage": {
+            "lj3-vmbo": "sampled",
+            "lj3-hv": "sampled"
+          },
+          "evidenceSelectors": [
+            "sr:2"
+          ],
+          "note": "De leerjaar-3-varianten behandelen historische trainingsdata en vertekening; de leerjaar-1-varianten niet."
+        },
+        {
+          "id": "21D-2",
+          "officialPosition": 2,
+          "paraphrase": "Veelvoorkomende AI-systemen en toepassingen bij organisaties herkennen.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "StageMatch vormt alleen de context; herkenning van meerdere toepassingen wordt niet getoetst."
+        },
+        {
+          "id": "21D-3",
+          "officialPosition": 3,
+          "paraphrase": "Regelgestuurde systemen onderscheiden van statistische AI-systemen.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Dit onderscheid komt niet voor in de actieve itemset."
+        },
+        {
+          "id": "21D-4",
+          "officialPosition": 4,
+          "paraphrase": "Doelgericht, verantwoord en kritisch met AI-systemen omgaan.",
+          "coverage": "sampled",
+          "evidenceSelectors": [
+            "sr:2"
+          ],
+          "note": "Leerjaar 1 sorteert zorgvuldige AI-handelingen; leerjaar 3 beoordeelt trainings- en evaluatiekeuzes."
+        },
+        {
+          "id": "21D-5",
+          "officialPosition": 5,
+          "paraphrase": "Experimenteren met het trainen van een AI-systeem.",
+          "coverage": "not_sampled",
+          "variantCoverage": {
+            "lj3-vmbo": "partial",
+            "lj3-hv": "partial"
+          },
+          "evidenceSelectors": [
+            "sr:2"
+          ],
+          "note": "Leerjaar 3 redeneert over trainingskeuzes, maar traint niet zelf interactief een systeem."
+        },
+        {
+          "id": "21D-hv-1",
+          "officialPosition": "hv-1",
+          "appliesTo": [
+            "lj1-hv",
+            "lj3-hv"
+          ],
+          "paraphrase": "Machine learning en expertsystemen beschrijven, inclusief gangbare trainingswijzen.",
+          "coverage": "not_sampled",
+          "variantCoverage": {
+            "lj3-hv": "partial"
+          },
+          "evidenceSelectors": [
+            "sr:2"
+          ],
+          "note": "lj3-hv raakt leren uit historische voorbeelden, maar vraagt geen brede beschrijving of vergelijking met expertsystemen."
+        },
+        {
+          "id": "21D-hv-2",
+          "officialPosition": "hv-2",
+          "appliesTo": [
+            "lj1-hv",
+            "lj3-hv"
+          ],
+          "paraphrase": "Reflecteren op mogelijkheden en beperkingen van AI in verschillende contexten.",
+          "coverage": "not_sampled",
+          "variantCoverage": {
+            "lj3-hv": "partial"
+          },
+          "evidenceSelectors": [
+            "sr:2"
+          ],
+          "note": "Eén selectiesituatie biedt slechts een smalle context en geen expliciete persoonlijke reflectie."
+        }
+      ]
+    },
+    {
+      "id": "22A",
+      "label": "De leerling gebruikt passende werkwijzen bij het creëren en gebruiken van digitale producten.",
+      "bullets": [
+        {
+          "id": "22A-1",
+          "officialPosition": 1,
+          "paraphrase": "Experimenteren met het ontwikkelen en aanpassen van een softwarematige uiting.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "De huidige auteursrechtvraag laat geen product ontwikkelen of aanpassen."
+        },
+        {
+          "id": "22A-2",
+          "officialPosition": 2,
+          "paraphrase": "Een digitaal product ontwikkelen en delen om te informeren, overtuigen of beïnvloeden.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Er is geen actieve productcreatietaak onder 22A."
+        },
+        {
+          "id": "22A-3",
+          "officialPosition": 3,
+          "paraphrase": "Met computationele denkstrategieën afwegen of het doel van een digitaal product is bereikt.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "De itemset vraagt deze afweging niet."
+        },
+        {
+          "id": "22A-4",
+          "officialPosition": 4,
+          "paraphrase": "Iteratief ontwerpen en realiseren volgens ontwerpeisen en op het proces reflecteren.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Een iteratief ontwerpproces wordt niet uitgevoerd."
+        },
+        {
+          "id": "22A-5",
+          "officialPosition": 5,
+          "paraphrase": "Bij creatie rekening houden met auteursrecht, licenties, bronvermelding en naamsvermelding.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "sr:8"
+          ],
+          "note": "Eén keuzevraag toetst een auteursrecht- of bronbeslissing, niet het toepassen daarvan tijdens een echt creatieproces."
+        },
+        {
+          "id": "22A-hv-1",
+          "officialPosition": "hv-1",
+          "appliesTo": [
+            "lj1-hv",
+            "lj3-hv"
+          ],
+          "paraphrase": "Met computationele denkstrategieën een probleem uit een ander vak oplossen.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Geen actieve taak combineert computationeel denken met een probleem uit een ander vak."
+        }
+      ]
+    },
+    {
+      "id": "22B",
+      "label": "De leerling programmeert met computationele denkstrategieën.",
+      "bullets": [
+        {
+          "id": "22B-1",
+          "officialPosition": 1,
+          "paraphrase": "De taak en het doel van een computerprogramma beschrijven.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Het doel wordt aan de leerling gegeven en hoeft niet te worden beschreven."
+        },
+        {
+          "id": "22B-2",
+          "officialPosition": 2,
+          "paraphrase": "Een algoritme ontwerpen en schematisch weergeven.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "section:pt7"
+          ],
+          "note": "De leerling leest en repareert een bestaand blokprogramma; zelf ontwerpen vanaf een open probleem wordt niet gevraagd."
+        },
+        {
+          "id": "22B-3",
+          "officialPosition": 3,
+          "paraphrase": "Programmeersconcepten gebruiken, waaronder gebeurtenissen, datastructuren en combinaties van logische operatoren.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "section:pt7"
+          ],
+          "note": "De varianten gebruiken een beperkte selectie van volgorde, herhaling, condities, gebeurtenissen of logica; niet alle genoemde concepten."
+        },
+        {
+          "id": "22B-4",
+          "officialPosition": 4,
+          "paraphrase": "Een eigen of andermans programma documenteren, testen en bijstellen.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "section:pt7"
+          ],
+          "note": "Testen en bijstellen worden geobserveerd; documenteren niet."
+        },
+        {
+          "id": "22B-5",
+          "officialPosition": 5,
+          "paraphrase": "Een probleem zo formuleren dat programmeren als oplossing kan worden ingezet.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Het programmeerprobleem is al volledig geformuleerd."
+        }
+      ]
+    },
+    {
+      "id": "23A",
+      "label": "De leerling gaat veilig om met systemen, data en privacy.",
+      "bullets": [
+        {
+          "id": "23A-1",
+          "officialPosition": 1,
+          "paraphrase": "Rechten en plichten rond persoonsgegevens, data en privacy beschrijven.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Toestemming en veilig handelen komen aan bod, maar juridische rechten en plichten worden niet beschreven."
+        },
+        {
+          "id": "23A-2",
+          "officialPosition": 2,
+          "paraphrase": "Veiligheidsrisico's herkennen in systemen van bedrijven, instellingen en overheden.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "section:pt3",
+            "section:pt6"
+          ],
+          "note": "Phishing en onbedoeld schermdelen worden herkend in concrete situaties; de systeemscope blijft beperkt."
+        },
+        {
+          "id": "23A-3",
+          "officialPosition": 3,
+          "paraphrase": "Zich beschermen tegen zwakke plekken in digitale systemen en netwerken.",
+          "coverage": "sampled",
+          "evidenceSelectors": [
+            "section:pt3",
+            "section:pt6",
+            "sr:1"
+          ],
+          "note": "Sterke wachtwoorden, phishingreacties en veilig schermdelen leveren direct handelingsbewijs in drie veelvoorkomende contexten."
+        },
+        {
+          "id": "23A-4",
+          "officialPosition": 4,
+          "paraphrase": "Herkennen hoe anderen omgaan met privacy en beveiliging van verzamelde en opgeslagen data.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "sr:7"
+          ],
+          "note": "De gamevraag raakt het verstrekken van persoonsgegevens. Dit item is momenteel primair als 23B getagd en telt daarom nog niet mee in de 23A-subscore."
+        },
+        {
+          "id": "23A-5",
+          "officialPosition": 5,
+          "paraphrase": "Omgaan met ongepaste inhoud, ongepast gedrag en veiligheidsrisico's in digitale omgevingen.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "section:pt8",
+            "sr:9"
+          ],
+          "note": "De niveaugebonden PT8-scenario's en fotovraag meten veilig reageren op schadelijk of ongewenst delen; beide zijn primair als 23B getagd."
+        },
+        {
+          "id": "23A-hv-1",
+          "officialPosition": "hv-1",
+          "appliesTo": [
+            "lj1-hv",
+            "lj3-hv"
+          ],
+          "paraphrase": "Veelvoorkomende malware en andere digitale bedreigingen herkennen en ernaar handelen.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "section:pt3"
+          ],
+          "note": "Phishing wordt bemonsterd; malware en een bredere reeks bedreigingen niet."
+        }
+      ]
+    },
+    {
+      "id": "23B",
+      "label": "De leerling maakt weloverwogen keuzes bij digitaal mediagebruik.",
+      "bullets": [
+        {
+          "id": "23B-1",
+          "officialPosition": 1,
+          "paraphrase": "Respectvol en verantwoordelijk online communiceren en handelen.",
+          "coverage": "sampled",
+          "evidenceSelectors": [
+            "section:pt8",
+            "sr:9"
+          ],
+          "note": "De scenario's vragen rechtstreeks om niet doorsturen, hulp inschakelen en respectvol herstelgedrag."
+        },
+        {
+          "id": "23B-2",
+          "officialPosition": 2,
+          "paraphrase": "De invloed van media en technologie op eigen denken, gedrag en interacties evalueren.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "sr:5"
+          ],
+          "note": "De items over aanbevelingen, feeds, sponsoring en filterbubbels raken beïnvloeding, maar zijn primair als 21B getagd en vragen geen brede evaluatie."
+        },
+        {
+          "id": "23B-3",
+          "officialPosition": 3,
+          "paraphrase": "Rekening houden met lichamelijke en mentale gezondheid van zichzelf en anderen.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Gezondheidseffecten van digitaal gebruik worden niet rechtstreeks bemonsterd."
+        },
+        {
+          "id": "23B-4",
+          "officialPosition": 4,
+          "paraphrase": "De rol van online identiteit voor relaties met anderen verkennen.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "section:pt8",
+            "sr:7"
+          ],
+          "note": "Persoonsgegevens en relaties in een groepschat worden geraakt, maar online identiteit wordt niet expliciet onderzocht."
+        },
+        {
+          "id": "23B-5",
+          "officialPosition": 5,
+          "paraphrase": "Interesses in digitale technologie en media verbinden aan studie- en beroepskeuzes.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Er is geen loopbaan- of studiekeuze-item."
+        }
+      ]
+    },
+    {
+      "id": "23C",
+      "label": "De leerling analyseert de wisselwerking tussen technologie, media en samenleving.",
+      "bullets": [
+        {
+          "id": "23C-1",
+          "officialPosition": 1,
+          "paraphrase": "Digitale technologie en media gebruiken voor maatschappelijke betrokkenheid.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "De itemset laat geen maatschappelijke participatie uitvoeren."
+        },
+        {
+          "id": "23C-2",
+          "officialPosition": 2,
+          "paraphrase": "Beredeneren hoe sturing en regulering menselijke en democratische waarden kunnen beschermen.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Regulering en democratische waarden komen niet rechtstreeks voor."
+        },
+        {
+          "id": "23C-3",
+          "officialPosition": 3,
+          "paraphrase": "Kansen en risico's van technologie beredeneren vanuit ethische, sociale, economische en ecologische perspectieven.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "sr:10"
+          ],
+          "note": "Elke variant biedt één smalle sociale of continuïteitscontext; de vier perspectieven worden niet gezamenlijk afgewogen."
+        },
+        {
+          "id": "23C-4",
+          "officialPosition": 4,
+          "paraphrase": "Afhankelijkheid van samenlevingen en grote technologiebedrijven analyseren.",
+          "coverage": "partial",
+          "evidenceSelectors": [
+            "sr:10"
+          ],
+          "note": "De vragen raken afhankelijkheid van één schoolplatform of digitale toegang, maar niet de bredere machtspositie van grote technologiebedrijven."
+        },
+        {
+          "id": "23C-5",
+          "officialPosition": 5,
+          "paraphrase": "Ethische dilemma's bij toekomstige digitale toepassingen herkennen.",
+          "coverage": "not_sampled",
+          "evidenceSelectors": [],
+          "note": "Geen actief item behandelt een toekomstig digitaal dilemma."
+        }
+      ]
+    }
+  ]
+}

@@ -5,13 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run verify:content-sync && tsc -b && vite build",
     "preview": "vite preview",
     "verify:anchors": "node scripts/verify-anchors.js",
-    "verify:sr-sync": "node scripts/verify-sr-markdown-sync.js",
+    "verify:sr-sync": "npm run verify:content-sync",
+    "verify:content-sync": "node scripts/verify-sr-markdown-sync.js",
+    "verify:traversal": "node scripts/verify-assessment-traversal.js",
+    "assessment:generate": "node scripts/assessment-artifacts.js",
     "verify:whutsupp-pt8": "node scripts/verify-whutsupp-pt8.js",
     "test:pt7": "node --test --experimental-strip-types scripts/pt7.test.ts",
-    "report:questions": "node scripts/generate-question-overview.js",
+    "test:priority4": "node --test scripts/priority4.test.cjs",
+    "report:questions": "npm run assessment:generate",
     "report:kd-coverage": "node scripts/kd-coverage.js"
   },
   "dependencies": {

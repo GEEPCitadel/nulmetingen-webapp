@@ -1,4 +1,6 @@
 {
+  "deprecated": true,
+  "deprecationNotice": "VEROUDERD - niet gebruiken als actuele bron; niet opnieuw gegenereerd uit assessment-build dg-pilot-2026.08.25.1",
   "schemaVersion": "dg-nulmetingen-v4",
   "generatedFrom": "actieve repo/data",
   "generatedAt": "2026-06-09T15:22:06.158Z",

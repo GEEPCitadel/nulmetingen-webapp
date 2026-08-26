@@ -2,12 +2,17 @@
 
 Status: Codex-bruikbare verbeterde pilotversie. Niet presenteren als gevalideerd meetinstrument.
 
+Bronketenstatus: inhoudelijke source direction, niet de actuele runtime-export. De canonieke actuele inhoudsbron is `src/data/assessments.ts#assessments`; verwachte assessment-build `dg-pilot-2026.08.25.3`, build-inhoudshash `09fc01f801f440515804723497832569bd2aca2168d489b404c056b386882c37`.
+
 ## 1. Wat is verbeterd in v3.7
-- PT3 is voor alle vier niveaus omgebouwd tot een interactieve StreamFlix-phishingmail: de leerling markeert twee onderdelen in de mail en kiest daarna één veilige vervolgactie uit vier antwoordopties.
-- De aanklikbare mail bevat zowel geldige phishingsignalen als afleiders. Iedere combinatie van twee geldige signalen is correct; het doeladres van de knop verschijnt bij hover, toetsenbordfocus of selectie en de knop navigeert nooit naar een website.
-- De vier phishing-/linkcontrole-items zijn aangescherpt met minder sturende vraagteksten, realistischere e-mailmock-ups en plausibele afleiders.
+- PT3 gebruikt minder opvallende StreamFlix-mails en kent de twee signaalpunten alleen toe aan twee onafhankelijke dimensies: één afwijking in afzender/linkherkomst en één riskant verzoek of drukmiddel. Twee signalen uit dezelfde dimensie leveren dus niet automatisch twee punten op.
+- PT4 draait volledig in de webapp als compacte spreadsheetomgeving. Filter- en sorteerhandelingen plus een tijdgestempeld actielog vervangen de afhankelijkheid van externe spreadsheetsoftware en een overgetypte eindcode.
+- PT8 is expliciet geen anker. De vier varianten lopen inhoudelijk op van concrete toestemming en niet delen naar steun, identiteitsmisbruik, kanaalverificatie en herstel van gemanipuleerde informatie.
+- `lj1h-sr4-search-query` laat bronkaarten beoordelen en stelt niet dat een goede zoekterm betrouwbaarheid garandeert. `lj3h-sr6-graph-scale` toont daadwerkelijk een genormaliseerde grafiek.
+- Afleiders bij aanbevelingen, platformafhankelijkheid en andere SR-items zijn herschreven als plausibele misconcepties. Absolute woorden die het correcte antwoord konden verraden zijn uit vrijwel alle onjuiste opties verwijderd.
+- Samengestelde correcte antwoorden zijn waar nodig opgesplitst: de fotovragen in leerjaar 3 beoordelen niet verder delen en verwijderen/melden als afzonderlijke selecties.
 - De vier leerlingvragen 9 zijn in de pilotwerkversie vervangen door AI/21D-items met itemversie `vraag9-ai-21d-v5`; leerjaar 1 gebruikt actiekaartjes en leerjaar 3 een trainingsdatadashboard.
-- De vraagteksten, stimuli, antwoordopties, correcte antwoorden, scoring en metadata in deze Markdown-specificatie zijn gesynchroniseerd met `nulmetingen_selected_response_herontwerp_v3.json`.
+- De itemidentiteiten en versiegrenzen in deze source direction worden door `verify:content-sync` tegen actieve JSON en appitems gecontroleerd; exacte actuele leerlingtekst en scoring staan in de reproduceerbaar gegenereerde overzichten.
 - De mailstimuli tonen URL-achtige tekst alleen als niet-klikbare linkweergave.
 - De v3.4-verbeteringen blijven gehandhaafd: aangescherpte afleiders, eenduidige scoring, geen omgekeerde PT8-vraagvorm en aangevulde PT-acceptatiecriteria.
 
@@ -17,11 +22,12 @@ Status: Codex-bruikbare verbeterde pilotversie. Niet presenteren als gevalideerd
 - Leerling ziet direct na afname wel een persoonlijk resultaat en kan client-side een PDF downloaden.
 - Individuele antwoorden, scores, zelfinschatting en PDF worden niet permanent opgeslagen.
 - Permanente opslag bestaat uitsluitend uit aggregatiecounters.
-- Totaalscore blijft zichtbaar als duidelijk vergelijkingspunt tegenover de zelfinschatting.
-- Totaalscore wordt altijd aangevuld met SR/PT-splitsing, kerndoelscores en subdoeldetails.
+- De itemsetscore blijft zichtbaar als compacte, secundaire beschrijving van de prestaties op precies deze selectie vragen en taken. Zij is geen algemene schaal voor digitale geletterdheid.
+- De itemsetscore wordt altijd aangevuld met SR/PT-splitsing, kerndoelscores en subdoeldetails; het profiel is leidend.
+- Een subdoel waaraan precies één item of taak bijdraagt, wordt gerapporteerd als itemsignaal met punten en zonder percentage-subscore.
 - Zelfinschatting blijft één niet-scorende schaalvraag van 0 tot 100.
 - Multiple-select-items gebruiken partial scoring en schadelijke caps.
-- PT8 gebruikt vier schermen met categorie-scoring en geen simpele “kies twee”-logica.
+- PT8 gebruikt vier inhoudelijk oplopende schermen met categorie-scoring en is geen invariantiestudie of ankerfamilie.
 - Gebruik geen normatieve labels zoals onvoldoende, voldoende, goed, gevorderd, beheerst, geslaagd of gezakt.
 
 ## 3. Scorearchitectuur
@@ -31,7 +37,7 @@ Status: Codex-bruikbare verbeterde pilotversie. Niet presenteren als gevalideerd
 | Performance tasks | 26* |
 | Totaal | 37* |
 
-\* Dit is de beoogde standaardverhouding. In de actieve variant `lj1-vmbo` is PT4 al eerder op 2 punten gezet; daardoor bedraagt die variant momenteel 35 punten (SR 11 + PT 24). Deze bestaande afwijking valt buiten de wijziging aan vraag 9 en wordt meegenomen in de latere totaalanalyse van scoreverhoudingen.
+\* Dit is de beoogde standaardverhouding. In de actieve variant `lj1-vmbo` heeft PT4 twee afzonderlijk gescoorde handelingen; daardoor bedraagt die variant 35 punten (SR 11 + PT 24). De overige varianten hebben vier PT4-criteria en komen uit op 37 punten.
 
 PT-punten: PT1 4, PT2 4, PT3 3, PT4 4, PT6 3, PT7 4, PT8 4. PT5 blijft ongebruikt voor compatibiliteit met bestaande taaknummering.
 
@@ -63,7 +69,7 @@ Correct = 1 punt. Incorrect = 0. `Ik weet het niet.` = 0 en apart tellen als unk
 - Deploy nooit een item waarin de opdracht `kies N` zegt terwijl er meer dan N verdedigbare correcte acties zijn.
 
 ### 6.3 PT8 categorie-scoring
-PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en levert maximaal 1 punt op: risico herkennen, niet verspreiden/escaleren, hulp/melding/verificatie, respectvolle steun/herstelactie. Schadelijk delen, wraakacties of onveilig bewijs delen beperken de totaalscore volgens caps.
+PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en levert maximaal 1 punt op. De categorieën worden per niveau concreter of complexer ingevuld: risico/toestemming, niet verspreiden of escaleren, hulp/melding/verificatie en steun/beveiliging/herstel. Schadelijk delen, wraakacties of onveilig bewijs delen beperken de itemsetscore volgens caps. PT8 is bewust geen anker: verschillen tussen varianten mogen niet als meetinvariantie worden geïnterpreteerd.
 
 ## 7. Selected-response-items v3.5
 
@@ -160,15 +166,15 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Sterkere vraagvorm: leerlingen beoordelen een conclusie op basis van beperkte data.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj1v-sr7-ai-check` — 23B
+#### `lj1v-sr7-online-personal-data` — 23B
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
+- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?
 - Antwoordopties:
-  - A. Je geeft alleen je voornaam en leeftijd, maar niet je adres.
+  - A. Je deelt je voornaam en leeftijd, maar houdt je buurt geheim.
   - B. Je vraagt waarom die persoon dat wil weten en beslist daarna.
-  - C. Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. *(correct)*
+  - C. Je deelt de gevraagde persoonsgegevens niet. *(correct)*
   - D. Je geeft de gegevens als jullie al een tijdje samen spelen.
   - E. Ik weet het niet.
 - Onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
@@ -269,15 +275,15 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Je zoekt betrouwbare informatie over hoeveel jongeren in Nederland e-bikes gebruiken. Welke zoekopdracht is het meest geschikt als eerste stap?
+- Vraag: Je zoekt cijfers over e-bikegebruik onder jongeren in Nederland. Welk zoekresultaat is het beste startpunt om te openen en daarna op methode, datum en bron te controleren?
 - Antwoordopties:
-  - A. onderzoek cijfers jongeren e-bike gebruik Nederland *(correct)*
-  - B. e-bike jongeren kopen goedkoop Nederland
-  - C. jongeren fietsen school ervaring
-  - D. waarom e-bikes slecht zijn voor jongeren
+  - A. **Landelijke Mobiliteitsmonitor 2025** — overheidsstatistiek; landelijk onderzoek onder 8.200 jongeren, met publicatiedatum en steekproefuitleg. *(correct)*
+  - B. **E-bikeShop: bijna iedere tiener wil elektrisch** — webwinkelblog; opvallend percentage zonder methode of deelnemers.
+  - C. **Poll van klas 1H over fietsen naar school** — schoolpoll onder 27 leerlingen uit één klas.
+  - D. **Ervaringen met mijn eerste e-bike** — jongerenforum met persoonlijke verhalen zonder landelijke aantallen.
   - E. Ik weet het niet.
-- Onderbouwing: Sterker doordat de correcte zoekopdracht cijfers/onderzoek/doelgroep/land bevat; afleiders zoeken naar koopintentie, ervaringen of gekleurde informatie.
-- V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
+- Onderbouwing: Meet een eerste bronselectie na een zoekactie. De formulering maakt expliciet dat ook het beste resultaat na openen nog op methode, datum en bron moet worden gecontroleerd; geen zoekterm of resultaatkaart garandeert betrouwbaarheid.
+- Prioriteit-4-review: bronkaarten maken bronsoort, omvang en transparantie zichtbaar. Bevestigen met cognitieve interviews en pilotdata.
 
 #### `lj1h-sr5-feed-sample` — 21B
 - Vraagtype: single
@@ -307,15 +313,15 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Meet beperkte generaliseerbaarheid van data.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj1h-sr7-ai-startpunt` — 23B
+#### `lj1h-sr7-online-personal-data` — 23B
 - Vraagtype: single
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
+- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?
 - Antwoordopties:
-  - A. Je geeft alleen je voornaam en leeftijd, maar niet je adres.
+  - A. Je deelt je voornaam en leeftijd, maar houdt je buurt geheim.
   - B. Je vraagt waarom die persoon dat wil weten en beslist daarna.
-  - C. Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. *(correct)*
+  - C. Je deelt de gevraagde persoonsgegevens niet. *(correct)*
   - D. Je geeft de gegevens als jullie al een tijdje samen spelen.
   - E. Ik weet het niet.
 - Onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
@@ -469,15 +475,15 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Onderbouwing: Meet verhouding tussen data en toegestane conclusie.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
-#### `lj3v-sr7-ai-factcheck` — 23B
+#### `lj3v-sr7-online-personal-data` — 23B
 - Vraagtype: single
 - Anchorstatus: replaceable
 - Max. punten: 1
-- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
+- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?
 - Antwoordopties:
-  - A. Je geeft alleen je voornaam en leeftijd, maar niet je adres.
+  - A. Je deelt je voornaam en leeftijd, maar houdt je buurt geheim.
   - B. Je vraagt waarom die persoon dat wil weten en beslist daarna.
-  - C. Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. *(correct)*
+  - C. Je deelt de gevraagde persoonsgegevens niet. *(correct)*
   - D. Je geeft de gegevens als jullie al een tijdje samen spelen.
   - E. Ik weet het niet.
 - Onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
@@ -500,13 +506,14 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Vraagtype: multiple
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Iemand maakt een account aan met jouw naam en foto. Kies twee goede eerste acties.
+- Vraag: In een groepsapp deelt iemand zonder toestemming een foto van een klasgenoot. De klasgenoot staat er ongemakkelijk op. Welke twee acties zijn passend?
 - Antwoordopties:
-  - A. Het account rapporteren bij het platform. *(correct)*
-  - B. Bewijs veiligstellen volgens schoolafspraak, zonder zelf terug te posten of verder te verspreiden. *(correct)*
-  - C. Zelf ook een nepaccount van die persoon maken.
-  - D. Iedereen vragen het account te volgen om te kijken wat er gebeurt.
-  - E. Je echte account verwijderen zonder iets te melden.
+  - A. De foto niet verder delen. *(correct)*
+  - B. De afzender vragen de foto te verwijderen. *(correct)*
+  - C. De foto doorsturen naar vrienden die de klasgenoot goed kennen.
+  - D. Een grapje maken, zodat het minder serieus voelt.
+  - E. Ik weet het niet.
+- Onderbouwing: Niet verspreiden en de afzender om verwijderen vragen zijn afzonderlijke acties; iedere juiste selectie levert 0,5 punt op.
   - F. Ik weet het niet.
 - Onderbouwing: Meet adequaat reageren op identiteitsmisbruik. Bewijs bewaren is veilig geformuleerd en gekoppeld aan niet verder verspreiden.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
@@ -620,27 +627,28 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 
 #### `lj3h-sr6-graph-scale` — 21C
 - Vraagtype: single
-- Anchorstatus: replaceable
+- Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Twee apps krijgen klachten. App A: 20 klachten bij 1.000 gebruikers. App B: 50 klachten bij 10.000 gebruikers. Welke conclusie past het best?
+- Stimulus: een staafgrafiek met een gemeenschappelijke schaal van 0 tot 20 klachten per 1.000 gebruikers. App A staat op 20; App B op 5. Bij de balken blijven de ruwe aantallen zichtbaar: 20/1.000 en 50/10.000.
+- Vraag: De grafiek vergelijkt het aantal klachten per 1.000 gebruikers. Welke conclusie wordt door de grafiek ondersteund?
 - Antwoordopties:
   - A. App A heeft naar verhouding meer klachten dan App B. *(correct)*
-  - B. App B heeft het grootste probleem, want 50 klachten is meer dan 20.
-  - C. Je kunt pas vergelijken als beide apps exact evenveel gebruikers hebben.
-  - D. Je kunt alleen vergelijken door het aantal klachten op te tellen.
+  - B. App B heeft naar verhouding meer klachten, omdat het totale aantal klachten daar hoger is.
+  - C. De apps verschillen weinig, omdat beide aantallen binnen dezelfde schaal vallen.
+  - D. De balken zijn nog niet vergelijkbaar, omdat de apps verschillende aantallen gebruikers hebben.
   - E. Ik weet het niet.
-- Onderbouwing: Afleider D is verbeterd; het item meet nu scherper verhouding-denken in plaats van een zwakke “minder dan 100”-redenering.
-- V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
+- Onderbouwing: De verhouding is zichtbaar genormaliseerd, zodat het lezen en interpreteren van de grafiek primair is en hoofdrekenen niet de hele opgave bepaalt.
+- Prioriteit-4-review: volg resterende taal- en rekenbelasting in de pilot en vergelijk zo mogelijk antwoordpatronen met een versie waarin de normalisatie niet vooraf is gegeven.
 
-#### `lj3h-sr7-ai-source-check` — 23B
+#### `lj3h-sr7-online-personal-data` — 23B
 - Vraagtype: single
 - Anchorstatus: replaceable
 - Max. punten: 1
-- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
+- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?
 - Antwoordopties:
-  - A. Je geeft alleen je voornaam en leeftijd, maar niet je adres.
+  - A. Je deelt je voornaam en leeftijd, maar houdt je buurt geheim.
   - B. Je vraagt waarom die persoon dat wil weten en beslist daarna.
-  - C. Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. *(correct)*
+  - C. Je deelt de gevraagde persoonsgegevens niet. *(correct)*
   - D. Je geeft de gegevens als jullie al een tijdje samen spelen.
   - E. Ik weet het niet.
 - Onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
@@ -660,16 +668,17 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
 #### `lj3h-sr9-private-photo` — 23B
-- Vraagtype: single
+- Vraagtype: multiple
 - Anchorstatus: concept-anchor
 - Max. punten: 1
-- Vraag: Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Wat is de beste eerste reactie?
+- Vraag: Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Welke twee acties zijn passend?
 - Antwoordopties:
-  - A. Niet verder delen en via een veilige route hulp inschakelen of rapporteren. *(correct)*
-  - B. De foto alleen bewaren, zodat je later kunt bewijzen dat je hem gezien hebt.
-  - C. Doorsturen naar een kleiner groepje dat je vertrouwt.
-  - D. Een grap maken zodat de spanning in de groep daalt.
+  - A. De foto niet verder delen. *(correct)*
+  - B. De foto via de veilige meldroute van het platform rapporteren. *(correct)*
+  - C. De foto doorsturen naar een kleiner groepje dat je vertrouwt.
+  - D. Reageren met een grap, zodat de spanning daalt.
   - E. Ik weet het niet.
+- Onderbouwing: Niet verspreiden en veilig rapporteren worden afzonderlijk beoordeeld; iedere juiste selectie levert 0,5 punt op.
 - Onderbouwing: Correcte optie is kernachtiger en vermijdt “of” als slordige combinatie; afleiders representeren echte onveilige reacties.
 - V3.4-review: kern-DG relevant, vraagstam logisch, afleiders niet absurd, scoring eenduidig. Bevestigen met pilotdata.
 
@@ -696,7 +705,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | lj1-vmbo | `lj1v-sr4-official-source` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr5-algorithm` | 21B | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr6-data-poll` | 21C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
-| lj1-vmbo | `lj1v-sr7-ai-check` | 21D | behouden na review | sterk genoeg voor pilot na v3.4-review |
+| lj1-vmbo | `lj1v-sr7-online-personal-data` | 23B | id gemigreerd; alias `lj1v-sr7-ai-check` blijft beschikbaar | inhoud ongewijzigd; pilotwerkversie |
 | lj1-vmbo | `lj1v-sr8-image-rights` | 22A | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr9-photo-consent` | 23B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-vmbo | `lj1v-sr10-platform-risk` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
@@ -706,7 +715,7 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | lj1-hv | `lj1h-sr4-search-query` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr5-feed-sample` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr6-sample` | 21C | behouden na review | sterk genoeg voor pilot na v3.4-review |
-| lj1-hv | `lj1h-sr7-ai-startpunt` | 21D | behouden na review | sterk genoeg voor pilot na v3.4-review |
+| lj1-hv | `lj1h-sr7-online-personal-data` | 23B | id gemigreerd; alias `lj1h-sr7-ai-startpunt` blijft beschikbaar | inhoud ongewijzigd; pilotwerkversie |
 | lj1-hv | `lj1h-sr8-image-source` | 22A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr9-threat-message` | 23B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj1-hv | `lj1h-sr10-ad-profile` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
@@ -716,19 +725,19 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 | lj3-vmbo | `lj3v-sr4-health-source` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr5-sponsored` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-vmbo | `lj3v-sr6-percent` | 21C | behouden na review | sterk genoeg voor pilot na v3.4-review |
-| lj3-vmbo | `lj3v-sr7-ai-bias` | 21D | behouden na review | sterk genoeg voor pilot na v3.4-review |
+| lj3-vmbo | `lj3v-sr7-online-personal-data` | 23B | id gemigreerd; alias `lj3v-sr7-ai-factcheck` blijft beschikbaar | inhoud ongewijzigd; pilotwerkversie |
 | lj3-vmbo | `lj3v-sr8-music-rights` | 22A | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
-| lj3-vmbo | `lj3v-sr9-fake-account` | 23B | behouden na review | sterk genoeg voor pilot na v3.4-review |
+| lj3-vmbo | `lj3v-sr9-photo-shared` | 23B | opgesplitst in twee losse acties | pilotreview nodig op partial scoring en afleiderverdeling |
 | lj3-vmbo | `lj3v-sr10-digital-chances` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 | lj3-hv | `lj3h-sr1-accountmail` | 23A | Phishing-/linkcontrole-item aangescherpt in v3.7 | pilotreview nodig op bekende diensten, visueel vertrouwen en replyen |
 | lj3-hv | `lj3h-vraag9-ai-stage-training-v5` | 21D | volledig herschreven op expliciete gebruikersinstructie | pilotreview nodig op patroon/causaliteit en modeltoetsing |
 | lj3-hv | `lj3h-sr3-phone-actions` | 21A | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-hv | `lj3h-sr4-triangulation` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
 | lj3-hv | `lj3h-sr5-filterbubble` | 21B | behouden na review | sterk genoeg voor pilot na v3.4-review |
-| lj3-hv | `lj3h-sr6-graph-scale` | 21C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
-| lj3-hv | `lj3h-sr7-ai-privacy` | 21D | behouden na review | sterk genoeg voor pilot na v3.4-review |
+| lj3-hv | `lj3h-sr6-graph-scale` | 21C | genormaliseerde grafiek toegevoegd | pilotreview nodig op taal- en rekenbelasting |
+| lj3-hv | `lj3h-sr7-online-personal-data` | 23B | id gemigreerd; alias `lj3h-sr7-ai-source-check` blijft beschikbaar | inhoud ongewijzigd; pilotwerkversie |
 | lj3-hv | `lj3h-sr8-remix-rights` | 22A | behouden na review | sterk genoeg voor pilot na v3.4-review |
-| lj3-hv | `lj3h-sr9-private-photo` | 23B | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
+| lj3-hv | `lj3h-sr9-private-photo` | 23B | opgesplitst in twee losse acties | pilotreview nodig op partial scoring en afleiderverdeling |
 | lj3-hv | `lj3h-sr10-regulation` | 23C | aangescherpt in v3.4 | sterk genoeg voor pilot na v3.4-review |
 
 ## 9. Performance tasks v3.4
@@ -778,37 +787,36 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Max. punten: 3
 - Doel: Meet of leerlingen phishingsignalen rechtstreeks in een e-mail herkennen en daarna via een veilige, zelf gekozen route controleren wat er aan de hand is.
 - Scoring:
-  - 1 punt: minimaal één geldig phishingsignaal gemarkeerd
-  - 1 punt: twee geldige phishingsignalen gemarkeerd
+  - 1 punt: één herkomstsignaal gemarkeerd: een afwijking in het afzenderadres of linkdomein
+  - 1 punt: één onafhankelijk inhoudssignaal gemarkeerd: het verzoek om een wachtwoord of de uitgeoefende tijdsdruk
   - 1 punt: in de ABCD-vervolgvraag gekozen voor controle via de zelf geopende officiële StreamFlix-app of bekende website
 - Gedeelde stimuluskenmerken:
   - Fictieve dienst: StreamFlix.
-  - Onpersoonlijke aanhef: `Geachte klant`.
-  - Verzoek om een wachtwoord via een knop te herstellen of te vernieuwen.
-  - Korte deadline en dreiging met blokkeren of beperken van het account.
-  - Zeer lang, vreemd afzenderadres op een gereserveerd `.example`-domein.
-  - De linktekst luidt `Wachtwoord nu herstellen`; het afwijkende doeladres verschijnt alleen bij hover, toetsenbordfocus of selectie.
+  - Een geloofwaardige onderwerpregel, gepersonaliseerde of zakelijke aanhef en verzorgde ondertekening kunnen als afleider voorkomen.
+  - De mail bevat een verzoek om accountgegevens en milde maar duidelijke tijdsdruk; de formulering vermijdt karikaturale hoofdletters, extreme dreiging en opzichtig lange nepadressen.
+  - De linktekst klinkt functioneel; het afwijkende doeladres verschijnt alleen bij hover, toetsenbordfocus of selectie.
   - De link is een niet-navigerende knop en kan geen echte website openen.
 - Interactie eerste deelvraag:
   - Vraag: `Markeer twee onderdelen waaraan je kunt zien dat deze mail niet betrouwbaar is.`
   - De leerling klikt rechtstreeks op onderdelen van de e-mail en kan maximaal twee onderdelen selecteren.
   - Een selectie krijgt een duidelijke blauwe omlijning en een vinkje; opnieuw klikken maakt de selectie ongedaan.
-  - Geldige signalen: urgent of dreigend onderwerp, vreemd afzenderadres, onpersoonlijke aanhef, wachtwoordverzoek via de knop, tijdsdruk/blokkadedreiging en het vreemde doeladres achter de knop.
-  - Afleiders: de herkenbare afzendernaam, het eigen ontvangeradres, datum/tijd, beleefde afsluiting en de ondertekening `Team StreamFlix`.
-  - Iedere combinatie van twee geldige signalen levert de volledige 2 punten voor dit deel op. Eén geldig signaal levert 1 punt op. Een afleider levert geen punt op.
+  - Herkomstsignalen: afwijkend afzenderdomein en afwijkend doeladres achter de knop.
+  - Inhoudssignalen: het verzoek om het wachtwoord in te voeren en de tijdsdruk of dreiging met beperking.
+  - Afleiders: een geloofwaardige afzendernaam, ontvanger, datum/tijd, onderwerp, aanhef, beleefde afsluiting en ondertekening.
+  - Eén signaal uit elke dimensie levert de volledige 2 punten voor dit deel op. Twee signalen uit dezelfde dimensie leveren samen 1 punt; daarmee zijn de twee signaalpunten aantoonbaar onafhankelijker.
 - Interactie tweede deelvraag:
   - Vraag: `Wat kan [naam] nu het best doen?`
   - Vraagtype: single choice met precies vier opties, in de UI aangeduid met A, B, C en D.
   - Optievolgorde wordt per sessie gerandomiseerd en de getoonde volgorde wordt gelogd.
   - Correcte handeling: niet via de mailknop handelen, maar zelf de officiële StreamFlix-app of het bekende webadres openen en daar het account controleren.
 - Varianten:
-  - lj1-vmbo: zeer expliciete laatste waarschuwing, blokkade na 15 minuten en een opvallend lang hersteladres.
-  - lj1-hv: wachtwoord verloopt vandaag, blokkade na 30 minuten en een schoolachtig opgebouwde maar fictieve herstelhost.
-  - lj3-vmbo: automatische accountcontrole, verzoek om het huidige wachtwoord en een misleidend StreamFlix-subdomein.
-  - lj3-hv: afwijkende aanmelding, sessievalidatie en een URL waarin `streamflix.com` slechts vóór het werkelijke fictieve domein staat.
+  - lj1-vmbo: herkenbare accountmelding met milde tijdsdruk en een afwijkend maar leesbaar afzender- en linkdomein.
+  - lj1-hv: een verzorgde verificatiemail waarin de zichtbare merknaam en werkelijke domeinen niet samenvallen.
+  - lj3-vmbo: accountcontrole met een plausibel beveiligingsverhaal, verzoek om het huidige wachtwoord en een afwijkend subdomein.
+  - lj3-hv: sessievalidatie na een aanmelding, met een geloofwaardige mailopmaak en een URL waarin de merknaam niet het registrabele domein is.
 - Acceptatiecriteria:
   - Alle vier varianten gebruiken dezelfde interactielogica en blijven afzonderlijk selecteerbaar en volledig doorloopbaar.
-  - Er zijn minimaal vier verdedigbare phishingsignalen en minimaal drie aanklikbare afleiders; maximaal twee onderdelen kunnen tegelijk zijn geselecteerd.
+  - Er zijn minimaal twee herkomstsignalen, minimaal twee inhoudssignalen en minimaal drie aanklikbare afleiders; maximaal twee onderdelen kunnen tegelijk zijn geselecteerd.
   - De linkpreview werkt met muis, toetsenbord en aanraking, maar veroorzaakt nooit navigatie.
   - De ABCD-opties worden per sessie gerandomiseerd en de getoonde optievolgorde wordt gelogd.
   - Correcte antwoorden en de classificatie van signalen/afleiders zijn niet zichtbaar in de leerling-UI.
@@ -820,18 +828,19 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 - Max. punten: 4
 - Doel: Meet praktische dataverwerking in spreadsheetachtige omgeving.
 - Scoring:
-  - 1 punt: juiste dataset geopend
-  - 1 punt: juist filter toegepast
-  - 1 punt: juiste sortering of vergelijking
-  - 1 punt: juiste eindcode/conclusie
+  - Per scenario 1 punt voor het juiste filtercriterium, indien een filter wordt gevraagd.
+  - Per scenario 1 punt voor de juiste sorteerkolom en 1 punt voor de juiste sorteerrichting, indien beide afzonderlijk worden beoordeeld.
+  - `lj1-vmbo` heeft één scenario met twee criteria (2 punten); de overige varianten hebben twee scenario's met samen vier criteria (4 punten).
 - Varianten:
-  - lj1-vmbo: Filter een kleine tabel op klas/activiteit en geef de code van de juiste rij.
-  - lj1-hv: Filter en sorteer een tabel met twee criteria; geef de juiste code.
-  - lj3-vmbo: Filter stage-/activiteitendata op criteria en interpreteer welke optie past.
-  - lj3-hv: Filter, sorteer en vergelijk relatieve waarden in een dataset; geef juiste code/conclusie.
+  - lj1-vmbo: filter liedjes op genre `Pop` en sorteer op jaar, oplopend.
+  - lj1-hv: sorteer bibliotheekboeken op jaar, aflopend; filter daarna op vak `Biologie` en sorteer die selectie op jaar, oplopend.
+  - lj3-vmbo: filter bestellingen op categorie `Elektronica` en sorteer op jaar, aflopend; filter daarna bedragen boven 60 en sorteer op bedrag, aflopend.
+  - lj3-hv: filter energiedata op kosten boven 500 en sorteer op kosten, aflopend; filter daarna woningtype `B` en sorteer op jaar, aflopend.
 - Acceptatiecriteria:
   - Dataset bevat voldoende rijen om filteren/sorteren noodzakelijk te maken.
-  - Scoring kan onderscheid maken tussen filterfout, sorteerfout en interpretatiefout waar technisch mogelijk.
+  - De spreadsheetomgeving is ingebouwd in de taak, toont de resulterende rijen en logt toepassen/resetten met tijdstip, scenario, filter en sortering.
+  - Scoring beoordeelt de ingestelde filter- en sorteerhandeling rechtstreeks en kan filterfout, verkeerde sorteerkolom en verkeerde sorteerrichting onderscheiden.
+  - Er is geen externe download nodig en geen eindcode die door een typefout fout kan worden gerekend.
   - Rapporteer als data/spreadsheetvaardigheid, niet als zuiver databegrip.
   - Het item moet aantonen dat filteren/sorteren nodig is; een leerling mag het antwoord niet kunnen raden uit de eerste zichtbare rijen.
 
@@ -876,38 +885,39 @@ PT8 bestaat per leerling uit vier schermen. Elk scherm meet één categorie en l
 ### `pt8-online-behaviour` — Online gedrag en verantwoord handelen
 - Subdoel: 23B
 - Max. punten: 4
-- Doel: Meet online gedrag via realistische, niet-expliciete beslisscenario’s. V3.4 gebruikt alleen positief geformuleerde handelings- of beoordelingsvragen, geen omgekeerde “welke actie moet je vermijden”-schermen, en categorie-scoring om meerdere veilige gedragsdimensies eerlijk te meten.
+- Doel: Meet online gedrag via realistische, niet-expliciete beslisscenario’s. De vier varianten zijn bewust geen ankerfamilie: de inhoudelijke complexiteit loopt per niveau op. Alle schermen gebruiken positief geformuleerde handelings- of beoordelingsvragen en categorie-scoring.
 - Scoring:
   - 1 punt: risico of grens correct herkennen
   - 1 punt: niet delen, liken, doorsturen of escaleren
   - 1 punt: passende hulp-, meld- of verificatieroute kiezen
   - 1 punt: veilige en respectvolle follow-up kiezen
-- PT8-varianten zijn volledig gespecificeerd in de JSON. Samenvatting:
-  - lj1-vmbo: WhatsApp: foto van klasgenoten — In WhatsApp wil iemand een foto van drie klasgenoten in de klassenapp zetten. Eén klasgenoot wil eerst weten welke foto het is. De leerling kiest toestemming vragen, niet delen zolang niet iedereen akkoord is, en verwijderen als iemand geen toestemming geeft.
-  - lj1-hv: Challenge: locatie en rooster delen — In een groepschat gaat een challenge rond: “Laat zien waar je bent: stuur je rooster en zet je live locatie aan.” Een paar leerlingen zetten druk om mee te doen.
-  - lj3-vmbo: Nepaccount met naam en foto — Er verschijnt een account met de naam en foto van een leerling. Het account plaatst vervelende reacties. De leerling zegt dat hij dit account niet heeft gemaakt.
-  - lj3-hv: Gemanipuleerde clip via anoniem account — Een korte clip over een docent of leerling gaat rond via een anoniem account. De clip lijkt echt, maar context ontbreekt en beeld en geluid lopen net niet gelijk.
-- PT8 v3.4-regel: alle schermen vragen naar een veilige beoordeling of handeling; geen omgekeerde prompt waarin een slechte actie als antwoord gekozen moet worden.
+- PT8-varianten zijn volledig gespecificeerd in de canonieke appitems. Samenvatting van de oplopende complexiteit:
+  - lj1-vmbo (`pt8-lj1v-photo-consent-v5`): foto van herkenbare klasgenoten; ontbrekende toestemming herkennen, niet verspreiden, iedere betrokkene vragen en bij druk of schade hulp inschakelen.
+  - lj1-hv (`pt8-lj1h-private-screenshot-v5`): persoonlijke informatie in een screenshot uit een privéchat; niet doorsturen, steun afstemmen op de betrokkene en bij aanhoudende druk hulp inschakelen.
+  - lj3-vmbo (`pt8-lj3v-impersonation-v5`): nepaccount met naam en foto; identiteitsmisbruik herkennen, openbare escalatie vermijden, platformmelding gebruiken en het eigen account beveiligen.
+  - lj3-hv (`pt8-lj3h-manipulated-school-post-v5`): gemanipuleerd schoolbericht; twee onafhankelijke herkomstsignalen wegen, verspreiding stoppen, via een officieel kanaal verifiëren en een bevestigde correctie in dezelfde groepscontext delen.
+- Prioriteit-4-regel: alle schermen vragen naar een veilige beoordeling of handeling; geen omgekeerde prompt waarin een slechte actie als antwoord gekozen moet worden. De vier varianten mogen niet als meetinvariant of rechtstreeks vergelijkbaar anker worden behandeld.
 - Acceptatiecriteria:
   - Elke variant heeft precies 4 schermen en precies één scorecategorie per scherm.
-  - Geen scherm mag meer dan één correcte optie vereisen.
+  - Een scherm vraagt hoogstens twee selecties; alleen `lj3-hv` gebruikt dit voor twee afzonderlijke herkomstsignalen binnen één categorie.
   - Harmful-share, retaliation en unsafe-evidence flags activeren de juiste caps.
   - Alle scenario’s moeten zonder expliciete of schokkende inhoud kunnen worden getoond.
   - Geen PT8-scherm gebruikt een omgekeerde vraagvorm waarbij de leerling een slechte actie als “te vermijden” moet kiezen.
   - Elke correcte PT8-optie beschrijft een veilige beoordeling of veilige handeling die de leerling wél kan uitvoeren.
 
 ## 10. Aggregatiecounters
-Codex moet aggregaten bijwerken per assessment/class/cohort/grade/track/window. Minimaal: pogingen, afgeronde pogingen, som zelfinschatting, bandverdeling zelfinschatting, som totaalscore, SR-score, PT-score, kerndoelscores, subdoelscores, item-correct/unknown/distractor counters, PT-errorcategorieën en PT8-harmful flags.
+Codex moet aggregaten bijwerken per assessment/class/cohort/grade/track/window. Minimaal: pogingen, afgeronde pogingen, som zelfinschatting, bandverdeling zelfinschatting, som itemsetscore, SR-score, PT-score, kerndoelscores, subdoelscores, item-correct/unknown/distractor counters, PT-errorcategorieën en PT8-harmful flags. Enkel-itemsubdoelen blijven daarbij itemsignalen zonder percentagegemiddelde.
 
 ## 11. Codex-acceptatiecriteria
 - JSON valideert met een standaard JSON-parser.
 - Alle vier assessmentIds hebben exact 10 SR-items.
 - Alle SR-items hebben een exclusieve optie “Ik weet het niet.” met score 0.
 - Geen item vereist internet, echte accounts, echte uploads of echte externe rapportage.
-- Vraag 9 telt 2 punten, waardoor het SR-deel 11 punten omvat. De beoogde totaalscore is 37 (SR 11 + PT 26); de actieve variant `lj1-vmbo` komt door de al bestaande PT4-afwijking uit op 35 (SR 11 + PT 24). De verhouding tussen onderdelen wordt later afzonderlijk verantwoord.
+- Vraag 9 telt 2 punten, waardoor het SR-deel 11 punten omvat. De beoogde itemsetscore heeft een maximum van 37 punten (SR 11 + PT 26); de actieve variant `lj1-vmbo` komt door de al bestaande PT4-afwijking uit op 35 (SR 11 + PT 24). De verhouding tussen onderdelen wordt in de toetsmatrijs verantwoord.
 - Leerlingfeedback kan worden getoond zonder persistente individuele pogingrij.
 - Permanente opslag bevat uitsluitend aggregate counters per classId/cohort/gradeLevel/track/assessmentWindow.
 - PT8 heeft per variant 4 schermen, 4 categorieën en caps op schadelijke acties.
+- PT8 is expliciet geen anker; de inhoudelijke complexiteit en gevraagde afwegingen lopen op per doelgroep.
 - PT7 voldoet per niveau aan levelMinimums.
 - Resultaatpagina bevat verplichte caveat en gebruikt geen verboden normatieve labels.
 - V3.5: De vier HTTPS-/slotje-items hebben een visuele stimulus-specificatie en noemen `slotje` of `https://` niet in de vraagtekst zelf.
@@ -917,25 +927,26 @@ Codex moet aggregaten bijwerken per assessment/class/cohort/grade/track/window. 
 - V3.6: De vier HTTPS-/slotje-items zijn vervangen door een phishing-/mailstimulusfamilie met niet-interactieve e-mailmock-ups.
 - V3.6-historie: de SR-score was toen 10 punten per nulmeting. Dit is door vraag 9 v5 gewijzigd naar 11 punten.
 - V3.7: De phishing-/linkcontrole-items zijn opnieuw aangescherpt omdat eerdere versies te veel last hadden van sturende vraagstelling, te duidelijke neplinks en te zwakke afleiders. De nieuwe items gebruiken korte handelingsvragen zonder woorden als phishing, verdacht, slotje of https in de vraagtekst. De afleiders zijn realistischer gemaakt: vertrouwen op de afzendernaam, schoolachtige domeinen, personalisatie, bekende diensten, professioneel uiterlijk of antwoorden op de afzender. De correcte handeling blijft steeds: niet via de mailknop inloggen, maar zelf naar de bekende schoolomgeving, roosterapp of officiële schoolomgeving gaan.
+- Prioriteit 4: PT3 scoort de twee signaalpunten via onafhankelijke herkomst- en verzoek/drukdimensies; PT4 gebruikt de ingebouwde spreadsheetomgeving en een actielog; PT8 is geen anker en loopt inhoudelijk op; SR-afleiders, bronkaarten, grafiekstimulus en samengestelde antwoorden zijn volgens bovenstaande specificaties herzien.
 - Vraag 9 v5-sync: Markdown en actieve JSON gebruiken dezelfde vier AI/21D-item-id's en dezelfde maximumscore van 2 punten.
 
 ## 12. Pilotanalyse en revisieregels
 - Minimum vóór claims: voer minimaal één pilotronde uit per doelgroep voordat items worden frozen.
-- Analyseer correctRate, unknownRate, distractor distribution, PT-errorcategorieën, SR/PT-relatie, zelfinschatting-totaalscoreverschil en fairness per leerweg.
+- Analyseer correctRate, unknownRate, distractor distribution, PT-errorcategorieën, SR/PT-relatie, het beschrijvende verschil tussen zelfinschatting en itemsetscore, en fairness per leerweg.
 - Revisietriggers: correctRate >90%, correctRate <25%, unknownRate >30%, harmfulOptionRate >10%, of grote trackverschillen.
-- Cognitieve interviews aanbevolen voor PT8 alle varianten, PT7 leerjaar 3, AI/privacy, HTTPS/phishing en data/verhouding.
+- Cognitieve interviews aanbevolen voor PT8 alle varianten, PT7 leerjaar 3, AI/privacy, phishing en data/verhouding. Onderzoek bij `lj3h-sr6-graph-scale` afzonderlijk resterende rekenbelasting en bij PT3 of de twee signaaldimensies empirisch voldoende onafhankelijk functioneren.
 
 ## 13. Toegestane en verboden claims
 ### Toegestaan
 - De meting geeft per klas, leerjaar en cohort een formatief-diagnostisch beeld van geselecteerde onderdelen van digitale geletterdheid.
 - De resultaten kunnen worden gebruikt om onderwijsaccenten en vervolgactiviteiten te bepalen.
-- De zelfinschatting kan worden vergeleken met de behaalde totaalscore als reflectiesignaal.
+- De zelfinschatting kan beschrijvend worden vergeleken met de behaalde itemsetscore als reflectiesignaal; beide zijn niet gekalibreerd op dezelfde schaal.
 ### Verboden
 - Dit is een gevalideerd meetinstrument.
 - Deze leerling beheerst digitale geletterdheid wel/niet.
 - Deze leerling is individueel gegroeid.
 - Een hogere score bewijst causaal dat het curriculum effect heeft gehad.
-- De totaalscore is een volledig oordeel over digitale geletterdheid.
+- De itemsetscore is een volledig oordeel over digitale geletterdheid.
 
 ## 14. Implementatieopdracht aan Codex
 Implementeer deze v3.5 als vervanging van v3.4. Gebruik de JSON als machineleesbare bron en dit Markdown-document als inhoudelijke specificatie. Verwerk de v3.5-wijziging in de JSON door bij de vier HTTPS-/slotje-items een stimulusobject voor de adresbalk/linkweergave op te nemen en de vraagtekst vrij te houden van `slotje` en `https://`. Alle leerlingteksten moeten Nederlands zijn, inclusief diakrieten. Verwijder of verberg correcte antwoorden, rationales, flags, caps en interne metadata in de leerlinginterface.

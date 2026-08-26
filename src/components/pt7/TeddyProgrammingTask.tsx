@@ -52,12 +52,16 @@ export const TeddyProgrammingTask = ({
   onSubmit,
   onSkip,
   onExit,
+  onPrevious,
+  previousDisabled,
 }: {
   item: AssessmentItem;
   questionNumber: number;
   onSubmit: (answer: SelectedAnswer, shownOptionOrder: string[]) => void;
   onSkip: () => void;
   onExit: () => void;
+  onPrevious: () => void;
+  previousDisabled: boolean;
 }) => {
   const task = item.blockTask;
   const world = task?.teddyWorld;
@@ -271,7 +275,7 @@ export const TeddyProgrammingTask = ({
     <section className="task-panel pt7-task-panel teddy-task-panel">
       <div className="teddy-task-shell">
         <header className="teddy-task-header">
-          <div><span className="teddy-kicker">Opdracht {questionNumber} · PT7</span><h2>Teddy zoekt zijn bot</h2><p>{task.intro}</p></div>
+          <div><span className="teddy-kicker">Opdracht {questionNumber}</span><h2>Teddy zoekt zijn bot</h2><p>{task.intro}</p></div>
           <button className={`teddy-play ${isRunning ? "is-running" : ""}`} type="button" onClick={play} disabled={isRunning || program.length <= 1}>
             <span aria-hidden="true">{isRunning ? "●" : "▶"}</span>{isRunning ? "Bezig…" : "Afspelen"}
           </button>
@@ -320,6 +324,7 @@ export const TeddyProgrammingTask = ({
 
       <div className="task-nav">
         <span className="task-nav-spacer" aria-hidden="true" />
+        <button className="task-nav-previous" type="button" onClick={onPrevious} disabled={previousDisabled}>← Vorige vraag</button>
         <button className="task-nav-exit" type="button" onClick={onExit}>Afsluiten</button>
         <button className="task-nav-skip" type="button" onClick={onSkip}>Ik weet het niet</button>
         <button className="task-nav-primary" type="button" onClick={submit}><span>Volgende</span><span className="arrow-circle" aria-hidden="true">→</span></button>

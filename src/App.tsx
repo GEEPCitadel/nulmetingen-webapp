@@ -1,5 +1,5 @@
 import type { CSSProperties, DragEvent, ReactNode } from "react";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { createContext, Fragment, useContext, useEffect, useRef, useState } from "react";
 import {
   assessmentMap,
   defaultCodeMappings,
@@ -50,6 +50,9 @@ import type {
   ProgrammingBlockDefinition,
   SelectedAnswer,
   SessionMetadata,
+  SpreadsheetActionLogEntry,
+  SpreadsheetCellValue,
+  SpreadsheetScenarioState,
   StepDescriptor,
   ThemeDefinition,
   WhutsuppChoice,
@@ -241,6 +244,11 @@ type AnalysisResponse = {
 // P1 (rainbow on cream) is used for the entry / admin / fallback screens.
 const defaultTheme = themes.rainbowCream;
 const UNKNOWN_OPTION_LABEL = "Ik weet het niet.";
+
+const PreviousQuestionContext = createContext<{
+  onPrevious: () => void;
+  disabled: boolean;
+} | null>(null);
 const selectedIdsFromAnswer = (answer?: SelectedAnswer) =>
   Array.isArray(answer)
     ? answer.map(String)
@@ -528,7 +536,7 @@ const createStudentResultPdf = ({
     addText(`${percentage}%`, 68, 31, "F2", "0.00 0.48 0.45");
     const scoreY = y;
     y -= 30;
-    addText("jouw score op de nulmeting", 170, 12, "F2", "0.10 0.16 0.23");
+    addText("jouw itemsetscore", 170, 12, "F2", "0.10 0.16 0.23");
     y -= 19;
     addText(`${totalScore} van ${maxScore} punten`, 170, 11, "F1", "0.10 0.16 0.23");
     y = scoreY - 100;
@@ -541,9 +549,21 @@ const createStudentResultPdf = ({
     const rowTop = y;
     pageCommands.push("0.94 0.97 0.96 rg", `48 ${y - rowHeight} 499 ${rowHeight - 4} re f`);
     addText(title, 60, 11, "F2", "0.10 0.16 0.23");
-    addText(`${goal.percentage}%`, 478, 13, "F2", "0.00 0.48 0.45");
+    addText(
+      goal.reportingMode === "signal" ? "itemsignaal" : `${goal.percentage}%`,
+      goal.reportingMode === "signal" ? 455 : 478,
+      goal.reportingMode === "signal" ? 10 : 13,
+      "F2",
+      "0.00 0.48 0.45",
+    );
     y = rowTop - 15;
-    addText(`${goal.score}/${goal.maxScore} punten`, 478, 8, "F1", "0.19 0.24 0.28");
+    addText(
+      `${goal.score}/${goal.maxScore} punten`,
+      goal.reportingMode === "signal" ? 467 : 478,
+      8,
+      "F1",
+      "0.19 0.24 0.28",
+    );
     descriptionLines.forEach((line) => {
       addText(line, 60, 9, "F1", "0.19 0.24 0.28");
       y -= 12;
@@ -578,7 +598,10 @@ const createStudentResultPdf = ({
       const questions = assignments.length === 0
         ? ""
         : `Vragen: ${assignments.map((assignment) => `vraag ${assignment.questionNumber ?? "?"}`).join(", ")}.`;
-      addGoalRow(goal.goalId, `${goal.label}${questions ? ` ${questions}` : ""}`, goal);
+      const signalNote = goal.reportingMode === "signal"
+        ? " Signaal op één item of taak; geen beheersingspercentage."
+        : "";
+      addGoalRow(goal.goalId, `${goal.label}${questions ? ` ${questions}` : ""}${signalNote}`, goal);
     });
   }
 
@@ -779,9 +802,16 @@ const App = () => {
       }
 
       if (data.session) {
-        setSession(data.session);
-        setLearnerCodeError("");
-        return;
+        const resumedAssessment = assessmentMap[data.session.versionId];
+        if (
+          resumedAssessment &&
+          data.session.assessmentBuildVersion === resumedAssessment.assessmentBuildVersion &&
+          data.session.assessmentContentHash === resumedAssessment.assessmentContentHash
+        ) {
+          setSession(data.session);
+          setLearnerCodeError("");
+          return;
+        }
       }
 
       const assessment = assessmentMap[data.student.versionId];
@@ -943,6 +973,10 @@ const App = () => {
         itemId: item.id,
         timestamp: log.timestamp,
         actionType: log.actionType,
+        itemVersion: item.itemVersion ?? `${item.id}-v1`,
+        scoringVersion: item.scoringVersion ?? `auto-${item.type.replace(/_/g, "-")}-v1`,
+        assessmentBuildVersion: current.assessmentBuildVersion,
+        assessmentContentHash: current.assessmentContentHash,
         sourcePath: log.sourcePath,
         targetPath: log.targetPath,
         oldName: log.oldName,
@@ -1893,7 +1927,7 @@ const AdminScreen = ({
       "Gestarte afnames": row.startedCount,
       "Afgeronde afnames": row.completedCount,
       "Afronding": formatMetric(row.completionPercentage),
-      "Gemiddelde totaalscore": formatMetric(row.averageTotalScore),
+      "Gemiddelde itemsetscore": formatMetric(row.averageTotalScore),
       "Gemiddelde meerkeuzescore": formatMetric(row.averageSrScore),
       "Gemiddelde taakscore": formatMetric(row.averagePtScore),
       "Gemiddelde zelfinschatting": formatMetric(row.averageSelfAssessment),
@@ -1959,7 +1993,7 @@ const AdminScreen = ({
       "Gestarte afnames": analysis?.overview.startedCount ?? 0,
       "Afgeronde afnames": analysis?.overview.completedCount ?? 0,
       "Afronding": formatMetric(analysis?.overview.completionPercentage ?? 0),
-      "Gemiddelde totaalscore": formatMetric(analysis?.overview.averageTotalScore),
+      "Gemiddelde itemsetscore": formatMetric(analysis?.overview.averageTotalScore),
       "Gemiddelde zelfinschatting": formatMetric(analysis?.overview.averageSelfAssessment),
     }]), "Samenvatting");
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byClass ?? [])), "Per klas");
@@ -1988,7 +2022,7 @@ const AdminScreen = ({
       "Gestarte afnames": analysis?.overview.startedCount ?? 0,
       "Afgeronde afnames": analysis?.overview.completedCount ?? 0,
       "Afronding": formatMetric(analysis?.overview.completionPercentage ?? 0),
-      "Gemiddelde totaalscore": formatMetric(analysis?.overview.averageTotalScore),
+      "Gemiddelde itemsetscore": formatMetric(analysis?.overview.averageTotalScore),
     }])}<h2>Analyse per klas</h2>${renderRows(classRows)}${growthSection}<h2>Itemanalyse</h2>${renderRows(itemRows)}</body></html>`;
     downloadFile(`${analysisBaseName()}.doc`, html, "application/msword");
   };
@@ -2002,11 +2036,11 @@ const AdminScreen = ({
       `Gestarte afnames: ${analysis?.overview.startedCount ?? 0}`,
       `Afgeronde afnames: ${analysis?.overview.completedCount ?? 0}`,
       `Afronding: ${formatMetric(analysis?.overview.completionPercentage ?? 0)}`,
-      `Gemiddelde totaalscore: ${formatMetric(analysis?.overview.averageTotalScore)}`,
+      `Gemiddelde itemsetscore: ${formatMetric(analysis?.overview.averageTotalScore)}`,
       "",
       "Analyse per klas",
       ...getGroupAnalysisExportRows(analysis?.byClass ?? []).map((row) =>
-        `${row.Klas} | ${row.Leerjaar} | ${row.Niveau} | afgerond: ${row["Afgeronde afnames"]} | score: ${row["Gemiddelde totaalscore"]}`,
+        `${row.Klas} | ${row.Leerjaar} | ${row.Niveau} | afgerond: ${row["Afgeronde afnames"]} | itemsetscore: ${row["Gemiddelde itemsetscore"]}`,
       ),
       "",
       "Groei per meetmoment (ankerblok)",
@@ -2360,7 +2394,7 @@ const AdminScreen = ({
             ["Gestarte afnames", analysis?.overview.startedCount ?? 0, ""],
             ["Afgeronde afnames", analysis?.overview.completedCount ?? 0, ""],
             ["Afrondingspercentage", analysis?.overview.completionPercentage ?? 0, "%"],
-            ["Gem. totaalscore", analysis?.overview.averageTotalScore ?? null, "%"],
+            ["Gem. itemsetscore", analysis?.overview.averageTotalScore ?? null, "%"],
             ["Gem. SR-score", analysis?.overview.averageSrScore ?? null, "%"],
             ["Gem. PT-score", analysis?.overview.averagePtScore ?? null, "%"],
             ["Gem. zelfinschatting", analysis?.overview.averageSelfAssessment ?? null, "%"],
@@ -2448,7 +2482,7 @@ const AdminScreen = ({
                     <span>Leerjaar</span>
                     <span>Niveau</span>
                     <span>Aantal afgerond</span>
-                    <span>Gemiddelde totaalscore</span>
+                    <span>Gemiddelde itemsetscore</span>
                     <span>Gemiddelde meerkeuzescore</span>
                     <span>Gemiddelde taakscore</span>
                     <span>Zelfinschatting</span>
@@ -3203,14 +3237,6 @@ const AssessmentScreen = ({
           {questionNumber != null ? (
             <span className="q-question-num">Vraag {questionNumber} / {questionCount}</span>
           ) : null}
-          <button
-            className="q-previous-btn"
-            type="button"
-            onClick={onPrevious}
-            disabled={stepIndex === 0}
-          >
-            ← Vorige
-          </button>
           {isApplicationTask ? (
             <button className="q-recover-task-btn" type="button" onClick={handleResetApplicationTask}>
               ↺ Herstel antwoord
@@ -3219,6 +3245,7 @@ const AssessmentScreen = ({
           <button className="q-pauze-btn" type="button" onClick={onReset}>Pauze</button>
         </div>
 
+      <PreviousQuestionContext.Provider value={{ onPrevious, disabled: stepIndex === 0 }}>
       <Fragment key={`${step.key}-${taskResetVersion}`}>
       {item.type === "self_assessment" ? (
         <SelfAssessmentView
@@ -3227,6 +3254,8 @@ const AssessmentScreen = ({
           questionNumber={questionNumber ?? 1}
           initialValue={session.results.find((entry) => entry.itemId === item.id)?.selectedAnswer}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
+          onExit={onExit}
         />
       ) : null}
 
@@ -3322,6 +3351,8 @@ const AssessmentScreen = ({
               shownOptionOrder,
             })}
             onSkip={() => onSkipPerformanceTask(section, item)}
+            onPrevious={onPrevious}
+            previousDisabled={stepIndex === 0}
             onExit={onExit}
           />
         ) : (
@@ -3369,10 +3400,12 @@ const AssessmentScreen = ({
           presentedOrder={getPresentedOrder(session, section.id, item.id)}
           initialAnswer={session.results.find((entry) => entry.itemId === item.id)?.selectedAnswer}
           onSubmit={onSubmitAnswer}
+          onSkip={() => onSkipPerformanceTask(section, item)}
           onExit={onExit}
         />
       ) : null}
       </Fragment>
+      </PreviousQuestionContext.Provider>
       </div>
     </div>
   );
@@ -3384,12 +3417,16 @@ const SelfAssessmentView = ({
   questionNumber,
   initialValue,
   onSubmit,
+  onSkip,
+  onExit,
 }: {
   section: AssessmentSection;
   item: AssessmentItem;
   questionNumber: number;
   initialValue?: SelectedAnswer;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
+  onExit: () => void;
 }) => {
   const [value, setValue] = useState(() =>
     typeof initialValue === "number" ? initialValue : 50,
@@ -3432,22 +3469,20 @@ const SelfAssessmentView = ({
         </div>
         <div className="slider-value">{value}</div>
       </div>
-      <div className="actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            onSubmit({
-              section,
-              item,
-              selectedAnswer: value,
-              shownOptionOrder: [],
-            })
-          }
-        >
-          Verder
-        </button>
-      </div>
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel="Volgende vraag"
+        onPrimary={() =>
+          onSubmit({
+            section,
+            item,
+            selectedAnswer: value,
+            shownOptionOrder: [],
+          })
+        }
+        onSkip={onSkip}
+        onExit={onExit}
+      />
     </section>
   );
 };
@@ -4129,28 +4164,39 @@ const TaskNavFooter = ({
   onSkip?: () => void;
   onExit: () => void;
   primaryDisabled?: boolean;
-}) => (
-  <div className="task-nav">
-    <span className="task-nav-spacer" aria-hidden="true" />
-    <button className="task-nav-exit" type="button" onClick={onExit}>
-      Afsluiten
-    </button>
-    {onSkip ? (
-      <button className="task-nav-skip" type="button" onClick={onSkip}>
-        Ik weet het niet
+}) => {
+  const previous = useContext(PreviousQuestionContext);
+  return (
+    <div className="task-nav">
+      <span className="task-nav-spacer" aria-hidden="true" />
+      <button
+        className="task-nav-previous"
+        type="button"
+        onClick={previous?.onPrevious}
+        disabled={!previous || previous.disabled}
+      >
+        ← Vorige vraag
       </button>
-    ) : null}
-    <button
-      className="task-nav-primary"
-      type="button"
-      onClick={onPrimary}
-      disabled={primaryDisabled}
-    >
-      <span>{primaryLabel}</span>
-      <span className="arrow-circle" aria-hidden="true">→</span>
-    </button>
-  </div>
-);
+      <button className="task-nav-exit" type="button" onClick={onExit}>
+        Afsluiten
+      </button>
+      {onSkip ? (
+        <button className="task-nav-skip" type="button" onClick={onSkip}>
+          Ik weet het niet
+        </button>
+      ) : null}
+      <button
+        className="task-nav-primary"
+        type="button"
+        onClick={onPrimary}
+        disabled={primaryDisabled}
+      >
+        <span>{primaryLabel}</span>
+        <span className="arrow-circle" aria-hidden="true">→</span>
+      </button>
+    </div>
+  );
+};
 
 const splitMessageLines = (text?: string) =>
   (text ?? "")
@@ -5052,6 +5098,19 @@ const ExcelDownloadTaskView = ({
     return null;
   }
 
+  if (task.simulation) {
+    return (
+      <EmbeddedSpreadsheetTaskView
+        section={section}
+        item={item}
+        questionNumber={questionNumber}
+        onSubmit={onSubmit}
+        onSkip={onSkip}
+        onExit={onExit}
+      />
+    );
+  }
+
   return (
     <section className="panel stack-lg">
       <QuestionHeader
@@ -5074,7 +5133,7 @@ const ExcelDownloadTaskView = ({
       </div>
 
       <div className="excel-question-stack">
-        {task.questions.map((question) => (
+        {(task.questions ?? []).map((question) => (
           <label className="field" key={question.id}>
             <span>{question.prompt}</span>
             <input
@@ -5099,6 +5158,280 @@ const ExcelDownloadTaskView = ({
             shownOptionOrder: [],
           })
         }
+        onSkip={onSkip}
+        onExit={onExit}
+      />
+    </section>
+  );
+};
+
+type SpreadsheetDraft = {
+  filterColumn: string;
+  filterOperator: "" | "equals" | "greaterThan";
+  filterValue: string;
+  sortColumn: string;
+  sortDirection: "" | "ascending" | "descending";
+};
+
+const emptySpreadsheetDraft = (): SpreadsheetDraft => ({
+  filterColumn: "",
+  filterOperator: "",
+  filterValue: "",
+  sortColumn: "",
+  sortDirection: "",
+});
+
+const EmbeddedSpreadsheetTaskView = ({
+  section,
+  item,
+  questionNumber,
+  onSubmit,
+  onSkip,
+  onExit,
+}: {
+  section: AssessmentSection;
+  item: AssessmentItem;
+  questionNumber: number;
+  onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
+  onExit: () => void;
+}) => {
+  const simulation = item.excelTask?.simulation;
+  const [activeScenarioIndex, setActiveScenarioIndex] = useState(0);
+  const [drafts, setDrafts] = useState<Record<string, SpreadsheetDraft>>({});
+  const [appliedStates, setAppliedStates] = useState<Record<string, SpreadsheetScenarioState>>({});
+  const [actionLog, setActionLog] = useState<SpreadsheetActionLogEntry[]>([]);
+
+  if (!simulation) {
+    return null;
+  }
+
+  const scenario = simulation.scenarios[activeScenarioIndex];
+  const draft = drafts[scenario.id] ?? emptySpreadsheetDraft();
+  const applied = appliedStates[scenario.id];
+  const filterColumn = simulation.columns.find((column) => column.key === draft.filterColumn);
+  const textFilterValues = filterColumn?.dataType === "text"
+    ? Array.from(new Set(simulation.rows.map((row) => String(row[filterColumn.key])))).sort((a, b) => a.localeCompare(b, "nl"))
+    : [];
+  const canApply = Boolean(
+    draft.sortColumn &&
+      draft.sortDirection &&
+      (!scenario.filterRequired || (draft.filterColumn && draft.filterOperator && draft.filterValue.trim())),
+  );
+  const logAction = (actionType: SpreadsheetActionLogEntry["actionType"], value?: string) => {
+    setActionLog((current) => [
+      ...current,
+      { scenarioId: scenario.id, actionType, value, timestamp: new Date().toISOString() },
+    ]);
+  };
+  const updateDraft = (patch: Partial<SpreadsheetDraft>) => {
+    setDrafts((current) => ({
+      ...current,
+      [scenario.id]: { ...(current[scenario.id] ?? emptySpreadsheetDraft()), ...patch },
+    }));
+  };
+  const normalizeFilterValue = (value: string): SpreadsheetCellValue =>
+    filterColumn?.dataType === "number" ? Number(value) : value;
+  const applyDraft = () => {
+    if (!canApply) {
+      return;
+    }
+    const nextState: SpreadsheetScenarioState = {
+      id: scenario.id,
+      sort: {
+        column: draft.sortColumn,
+        direction: draft.sortDirection as "ascending" | "descending",
+      },
+      ...(scenario.filterRequired
+        ? {
+            filter: {
+              column: draft.filterColumn,
+              operator: draft.filterOperator as "equals" | "greaterThan",
+              value: normalizeFilterValue(draft.filterValue),
+            },
+          }
+        : {}),
+    };
+    setAppliedStates((current) => ({ ...current, [scenario.id]: nextState }));
+    logAction("apply", JSON.stringify(nextState));
+  };
+  const resetScenario = () => {
+    updateDraft(emptySpreadsheetDraft());
+    setAppliedStates((current) => {
+      const next = { ...current };
+      delete next[scenario.id];
+      return next;
+    });
+    logAction("reset");
+  };
+  const visibleRows = (() => {
+    let rows = [...simulation.rows];
+    if (applied?.filter) {
+      const expectedValue = applied.filter.value;
+      rows = rows.filter((row) => {
+        const value = row[applied.filter!.column];
+        return applied.filter!.operator === "greaterThan"
+          ? Number(value) > Number(expectedValue)
+          : String(value).trim().toLocaleLowerCase("nl-NL") ===
+              String(expectedValue).trim().toLocaleLowerCase("nl-NL");
+      });
+    }
+    if (applied?.sort) {
+      rows.sort((left, right) => {
+        const leftValue = left[applied.sort!.column];
+        const rightValue = right[applied.sort!.column];
+        const comparison = typeof leftValue === "number" && typeof rightValue === "number"
+          ? leftValue - rightValue
+          : String(leftValue).localeCompare(String(rightValue), "nl", { numeric: true });
+        return applied.sort!.direction === "descending" ? -comparison : comparison;
+      });
+    }
+    return rows;
+  })();
+  const isLastScenario = activeScenarioIndex === simulation.scenarios.length - 1;
+  const submit = () =>
+    onSubmit({
+      section,
+      item,
+      selectedAnswer: {
+        scenarioStates: simulation.scenarios
+          .map((entry) => appliedStates[entry.id])
+          .filter(Boolean),
+        actionLog,
+      },
+      shownOptionOrder: [],
+    });
+
+  return (
+    <section className="panel stack-lg embedded-spreadsheet-task">
+      <QuestionHeader
+        questionNumber={questionNumber}
+        title={item.title}
+        instruction={item.instruction}
+      />
+
+      <div className="spreadsheet-scenario-header">
+        <span>Deelopdracht {activeScenarioIndex + 1} van {simulation.scenarios.length}</span>
+        <strong>{scenario.prompt}</strong>
+      </div>
+
+      <div className="spreadsheet-controls" aria-label="Filter- en sorteerinstellingen">
+        {scenario.filterRequired ? (
+          <fieldset>
+            <legend>Filter</legend>
+            <label>
+              <span>Kolom</span>
+              <select
+                value={draft.filterColumn}
+                onChange={(event) => {
+                  updateDraft({ filterColumn: event.target.value, filterValue: "" });
+                  logAction("set_filter_column", event.target.value);
+                }}
+              >
+                <option value="">Kies een kolom</option>
+                {simulation.columns.map((column) => <option key={column.key} value={column.key}>{column.label}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>Voorwaarde</span>
+              <select
+                value={draft.filterOperator}
+                onChange={(event) => {
+                  const value = event.target.value as SpreadsheetDraft["filterOperator"];
+                  updateDraft({ filterOperator: value });
+                  logAction("set_filter_operator", value);
+                }}
+              >
+                <option value="">Kies een voorwaarde</option>
+                <option value="equals">is gelijk aan</option>
+                <option value="greaterThan">is groter dan</option>
+              </select>
+            </label>
+            <label>
+              <span>Waarde</span>
+              {filterColumn?.dataType === "text" ? (
+                <select
+                  value={draft.filterValue}
+                  onChange={(event) => {
+                    updateDraft({ filterValue: event.target.value });
+                    logAction("set_filter_value", event.target.value);
+                  }}
+                >
+                  <option value="">Kies een waarde</option>
+                  {textFilterValues.map((value) => <option key={value} value={value}>{value}</option>)}
+                </select>
+              ) : (
+                <input
+                  type="number"
+                  value={draft.filterValue}
+                  onChange={(event) => {
+                    updateDraft({ filterValue: event.target.value });
+                    logAction("set_filter_value", event.target.value);
+                  }}
+                  placeholder="Getal"
+                />
+              )}
+            </label>
+          </fieldset>
+        ) : null}
+        <fieldset>
+          <legend>Sorteren</legend>
+          <label>
+            <span>Kolom</span>
+            <select
+              value={draft.sortColumn}
+              onChange={(event) => {
+                updateDraft({ sortColumn: event.target.value });
+                logAction("set_sort_column", event.target.value);
+              }}
+            >
+              <option value="">Kies een kolom</option>
+              {simulation.columns.map((column) => <option key={column.key} value={column.key}>{column.label}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Richting</span>
+            <select
+              value={draft.sortDirection}
+              onChange={(event) => {
+                const value = event.target.value as SpreadsheetDraft["sortDirection"];
+                updateDraft({ sortDirection: value });
+                logAction("set_sort_direction", value);
+              }}
+            >
+              <option value="">Kies een richting</option>
+              <option value="ascending">Laag naar hoog / A naar Z</option>
+              <option value="descending">Hoog naar laag / Z naar A</option>
+            </select>
+          </label>
+        </fieldset>
+        <div className="spreadsheet-control-actions">
+          <button className="primary-button" type="button" onClick={applyDraft} disabled={!canApply}>Toepassen</button>
+          <button className="secondary-button" type="button" onClick={resetScenario}>Opnieuw instellen</button>
+        </div>
+      </div>
+
+      <div className="spreadsheet-result-summary" aria-live="polite">
+        {applied ? `${visibleRows.length} rijen zichtbaar na toepassen.` : "De tabel toont de oorspronkelijke volgorde."}
+      </div>
+      <div className="spreadsheet-table-scroll" tabIndex={0} aria-label={`${item.excelTask?.sheetName} tabel`}>
+        <table className="embedded-spreadsheet-table">
+          <thead><tr>{simulation.columns.map((column) => <th key={column.key}>{column.label}</th>)}</tr></thead>
+          <tbody>
+            {visibleRows.map((row, index) => (
+              <tr key={`${String(row.code ?? "row")}-${index}`}>
+                {simulation.columns.map((column) => <td key={column.key}>{row[column.key]}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <TaskNavFooter
+        questionNumber={questionNumber}
+        primaryLabel={isLastScenario ? "Volgende" : "Volgende deelopdracht"}
+        onPrimary={isLastScenario ? submit : () => setActiveScenarioIndex((current) => current + 1)}
+        primaryDisabled={!applied}
         onSkip={onSkip}
         onExit={onExit}
       />
@@ -6836,7 +7169,7 @@ const BlockProgrammingTaskView = ({
 
           <div className={`bizzy-stage device-stage-${task.device ?? "bizzy"} ${isRunning ? "is-running" : ""}`}>
             <div className="lab-backdrop" aria-hidden="true">
-              <span className="lab-screen">PT7</span>
+              <span className="lab-screen">BIZZY</span>
               <span className="lab-light lab-light-one" />
               <span className="lab-light lab-light-two" />
               <span className="lab-target">DOEL</span>
@@ -7171,6 +7504,7 @@ const ChoiceItemView = ({
   presentedOrder,
   initialAnswer,
   onSubmit,
+  onSkip,
   onExit,
 }: {
   section: AssessmentSection;
@@ -7179,6 +7513,7 @@ const ChoiceItemView = ({
   presentedOrder: string[];
   initialAnswer?: SelectedAnswer;
   onSubmit: (payload: SubmitAnswerPayload) => void;
+  onSkip: () => void;
   onExit: () => void;
 }) => {
   const options = item.options ?? [];
@@ -7232,6 +7567,8 @@ const ChoiceItemView = ({
     });
   };
 
+  const previous = useContext(PreviousQuestionContext);
+
   return (
     <section className="panel stack-md">
       <QuestionHeader
@@ -7268,8 +7605,19 @@ const ChoiceItemView = ({
       </div>
 
       <div className="q-mc-footer">
+        <button
+          className="task-nav-previous"
+          type="button"
+          onClick={previous?.onPrevious}
+          disabled={!previous || previous.disabled}
+        >
+          ← Vorige vraag
+        </button>
         <button className="task-nav-exit" type="button" onClick={onExit}>
           Afsluiten
+        </button>
+        <button className="task-nav-skip" type="button" onClick={onSkip}>
+          Ik weet het niet
         </button>
         <button
           className="primary-button q-next-btn"
@@ -7365,6 +7713,7 @@ const MockupCardView = ({ item }: { item: AssessmentItem }) => {
   const isAddressBar = item.mockup.mediaHint === "Niet-interactieve adresbalk";
   const isEmailLink = item.mockup.mediaHint === "Niet-interactieve linkweergave";
   const isEmailMessage = item.mockup.mediaHint === "Niet-interactieve e-mailmock-up";
+  const comparisonChart = item.mockup.comparisonChart;
   const address = item.mockup.content[0];
 
   return (
@@ -7376,7 +7725,27 @@ const MockupCardView = ({ item }: { item: AssessmentItem }) => {
       {item.mockup.subtitle && !isEmailLink && !isEmailMessage ? (
         <p className="mockup-subtitle">{item.mockup.subtitle}</p>
       ) : null}
-      {isEmailMessage ? (
+      {comparisonChart ? (
+        <figure className="comparison-bar-chart" aria-label={`${item.mockup.title}, ${comparisonChart.unit}`}>
+          <div className="comparison-chart-axis" aria-hidden="true">
+            <span>0</span>
+            <span>{comparisonChart.maxValue / 2}</span>
+            <span>{comparisonChart.maxValue}</span>
+          </div>
+          <div className="comparison-chart-bars">
+            {comparisonChart.bars.map((bar) => (
+              <div className="comparison-chart-row" key={bar.id}>
+                <strong>{bar.label}</strong>
+                <div className="comparison-chart-track">
+                  <span style={{ width: `${Math.max(0, Math.min(100, (bar.value / comparisonChart.maxValue) * 100))}%` }} />
+                </div>
+                <span>{bar.value} {comparisonChart.unit}</span>
+                {bar.detail ? <small>{bar.detail}</small> : null}
+              </div>
+            ))}
+          </div>
+        </figure>
+      ) : isEmailMessage ? (
         <div className="stimulus-email-message" aria-label="E-mailbericht">
           <div className="stimulus-email-meta">
             {item.mockup.subtitle ? <span>{item.mockup.subtitle}</span> : null}
@@ -8276,7 +8645,7 @@ const LegacyResultScreen = ({
       `Leerlingcode: ${displayCode}`,
       `Versie: ${assessment.title}`,
       `Afgerond op: ${session.completedAt ?? ""}`,
-      `Totaalscore: ${result.totalScore} van ${result.maxScore} punten (${result.percentage}%)`,
+      `Itemsetscore: ${result.totalScore} van ${result.maxScore} punten (${result.percentage}%)`,
       selfAssessmentScore === null ? "" : `Zelfinschatting: ${selfAssessmentScore} van 100`,
       selfAssessmentDifference === null
         ? ""
@@ -8306,7 +8675,7 @@ const LegacyResultScreen = ({
           <div className="inner">
             <div className="pct">
               {result.percentage}%
-              <small>jouw score</small>
+              <small>itemsetscore</small>
             </div>
           </div>
         </div>
@@ -8383,16 +8752,16 @@ const comparisonText = (scorePercent: number, selfPercent: number | null) => {
     return "Je inschatting vooraf is niet opgeslagen.";
   }
   if (Math.abs(scorePercent - selfPercent) < 10) {
-    return "Je inschatting en je score liggen dicht bij elkaar.";
+    return "Je inschatting en je itemsetscore liggen dicht bij elkaar.";
   }
   if (selfPercent > scorePercent + 10) {
-    return "Je schatte jezelf hoger in dan je score op deze nulmeting.";
+    return "Je schatte jezelf hoger in dan je itemsetscore op deze nulmeting.";
   }
-  return "Je score op deze nulmeting was hoger dan je eigen inschatting.";
+  return "Je itemsetscore op deze nulmeting was hoger dan je eigen inschatting.";
 };
 
 const totalScoreExplanation =
-  "Je score is het percentage punten dat je op deze nulmeting hebt behaald. Dit is geen cijfer en geen volledig oordeel over wat jij digitaal kunt.";
+  "De itemsetscore is het percentage punten dat je op precies deze selectie vragen en taken hebt behaald. Het profiel per onderdeel is leidend; dit is geen algemene schaal voor digitale geletterdheid.";
 const resultDisclaimer =
   "Dit is geen cijfer. Deze nulmeting geeft een eerste beeld van onderdelen van digitale geletterdheid.";
 
@@ -8510,7 +8879,7 @@ const ResultScreen = ({
           <div className="inner">
             <div className="pct">
               {result.percentage}%
-              <small>nulmeting</small>
+              <small>itemsetscore</small>
             </div>
           </div>
         </div>
@@ -8524,7 +8893,7 @@ const ResultScreen = ({
               ? "Jouw inschatting vooraf: niet opgeslagen"
               : `Jouw inschatting vooraf: ${selfAssessmentScore}%`}
           </p>
-          <p className="intro">Jouw score op de nulmeting: {result.percentage}%</p>
+          <p className="intro">Jouw itemsetscore: {result.percentage}%</p>
           <p className="meta">{comparison}</p>
           <p className="meta">{totalScoreExplanation}</p>
           <p className="meta">{resultDisclaimer}</p>
@@ -8571,7 +8940,9 @@ const ResultScreen = ({
                   </ul>
                 </div>
                 <div className="goal-score-value">
-                  <span>{goal.percentage}%</span>
+                  <span>
+                    {goal.reportingMode === "signal" ? "Itemsignaal" : `${goal.percentage}%`}
+                  </span>
                   <small>
                     {goal.score}/{goal.maxScore}
                   </small>

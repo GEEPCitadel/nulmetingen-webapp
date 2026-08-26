@@ -128,6 +128,9 @@ export const createSession = (
   accessCode,
   versionId: assessment.id,
   instrumentId: assessment.id,
+  assessmentBuildVersion: assessment.assessmentBuildVersion,
+  assessmentContentHash: assessment.assessmentContentHash,
+  contentHashAlgorithm: assessment.contentHashAlgorithm,
   metadata: metadata ?? {
     anonymousAttemptId: crypto.randomUUID(),
     anonymousCode: `sessie-${new Date().toISOString().slice(0, 10)}`,
@@ -385,6 +388,50 @@ const scoreMailTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => 
 
 const scoreExcelDownloadTask = (item: AssessmentItem, selectedAnswer: SelectedAnswer) => {
   const state = answerRecord(selectedAnswer);
+  const simulation = item.excelTask?.simulation;
+  if (simulation) {
+    const scenarioStates = Array.isArray(state.scenarioStates)
+      ? state.scenarioStates.filter(
+          (entry): entry is Record<string, unknown> =>
+            Boolean(entry && typeof entry === "object" && !Array.isArray(entry)),
+        )
+      : [];
+    const scenarioStateFor = (scenarioId: string) =>
+      scenarioStates.find((entry) => String(entry.id ?? "") === scenarioId);
+    const normalizedCellValue = (value: unknown) =>
+      typeof value === "number" ? String(value) : String(value ?? "").trim().toLocaleLowerCase("nl-NL");
+    const taskResults = simulation.rules.map((rule) => {
+      const scenarioState = scenarioStateFor(rule.scenarioId);
+      const filter = answerRecord(scenarioState?.filter as SelectedAnswer);
+      const sort = answerRecord(scenarioState?.sort as SelectedAnswer);
+      const correct =
+        rule.kind === "filter"
+          ? String(filter.column ?? "") === rule.expected.column &&
+            String(filter.operator ?? "") === rule.expected.operator &&
+            normalizedCellValue(filter.value) === normalizedCellValue(rule.expected.value)
+          : rule.kind === "sort"
+            ? String(sort.column ?? "") === rule.expected.column &&
+              String(sort.direction ?? "") === rule.expected.direction
+            : rule.kind === "sortColumn"
+              ? String(sort.column ?? "") === rule.expectedColumn
+              : String(sort.direction ?? "") === rule.expectedDirection;
+
+      return {
+        taskId: rule.id,
+        description: rule.description,
+        correct,
+        points: correct ? rule.points : 0,
+      };
+    });
+    const score = taskResults.reduce((sum, result) => sum + result.points, 0);
+
+    return {
+      isCorrect: taskResults.length > 0 && taskResults.every((result) => result.correct),
+      score,
+      taskResults,
+    };
+  }
+
   const answers = answerRecord(state.answers as SelectedAnswer);
   const questions = item.excelTask?.questions ?? [];
   const taskResults = questions.map((question) => ({
@@ -1197,7 +1244,10 @@ export const submitItemAnswer = ({
     score: scored.score,
     maxScore: item.points,
     primarySubgoal: item.primarySubgoal ?? item.subgoal,
-    itemVersion: item.itemVersion,
+    itemVersion: item.itemVersion ?? `${item.id}-v1`,
+    scoringVersion: item.scoringVersion ?? `auto-${item.type.replace(/_/g, "-")}-v1`,
+    assessmentBuildVersion: session.assessmentBuildVersion,
+    assessmentContentHash: session.assessmentContentHash,
     learnerQuestionNumber: item.learnerQuestionNumber,
     internalSlot: item.internalSlot,
     taskResults: scored.taskResults,
@@ -1224,7 +1274,10 @@ export const submitItemAnswer = ({
     score: scored.score,
     maxScore: item.points,
     primarySubgoal: item.primarySubgoal ?? item.subgoal,
-    itemVersion: item.itemVersion,
+    itemVersion: item.itemVersion ?? `${item.id}-v1`,
+    scoringVersion: item.scoringVersion ?? `auto-${item.type.replace(/_/g, "-")}-v1`,
+    assessmentBuildVersion: session.assessmentBuildVersion,
+    assessmentContentHash: session.assessmentContentHash,
     learnerQuestionNumber: item.learnerQuestionNumber,
     internalSlot: item.internalSlot,
     taskResults: scored.taskResults,
@@ -1285,7 +1338,10 @@ export const calculateResult = (
   const totalScore = blockScores.reduce((sum, block) => sum + block.score, 0);
   const maxScore = blockScores.reduce((sum, block) => sum + block.maxScore, 0);
   const domainMap = new Map<string, { score: number; maxScore: number }>();
-  const goalMap = new Map<string, { score: number; maxScore: number; level: "kerndoel" | "subgoal" }>();
+  const goalMap = new Map<
+    string,
+    { score: number; maxScore: number; level: "kerndoel" | "subgoal"; itemKeys: Set<string> }
+  >();
 
   assessment.sections.forEach((section) => {
     section.items
@@ -1305,11 +1361,18 @@ export const calculateResult = (
         const goals = assessmentGoalIds(item);
         [...goals.roots, ...goals.subgoals].forEach((goalId) => {
           const level = goalId.length === 2 ? "kerndoel" : "subgoal";
-          const currentGoal = goalMap.get(goalId) ?? { score: 0, maxScore: 0, level };
+          const currentGoal = goalMap.get(goalId) ?? {
+            score: 0,
+            maxScore: 0,
+            level,
+            itemKeys: new Set<string>(),
+          };
+          currentGoal.itemKeys.add(`${section.id}:${item.id}`);
           goalMap.set(goalId, {
             level,
             score: currentGoal.score + (itemResult?.score ?? 0),
             maxScore: currentGoal.maxScore + item.points,
+            itemKeys: currentGoal.itemKeys,
           });
         });
       });
@@ -1332,6 +1395,7 @@ export const calculateResult = (
       .filter((goalId) => goalMap.has(goalId))
       .map((goalId) => {
         const score = goalMap.get(goalId)!;
+        const itemCount = score.itemKeys.size;
         return {
           goalId,
           label: sloLabels[goalId] ?? goalId,
@@ -1339,6 +1403,9 @@ export const calculateResult = (
           score: score.score,
           maxScore: score.maxScore,
           percentage: score.maxScore === 0 ? 0 : Math.round((score.score / score.maxScore) * 100),
+          itemCount,
+          reportingMode:
+            score.level === "subgoal" && itemCount === 1 ? "signal" : "percentage",
         };
       }),
   };

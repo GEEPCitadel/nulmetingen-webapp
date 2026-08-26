@@ -1,1831 +1,1066 @@
-# Overzicht vragen, antwoordmogelijkheden en PT-taken
+# Actuele nulmetingen Digitale Geletterdheid — gegenereerd overzicht
 
-Bron: `nulmetingen_selected_response_herontwerp_v3.json`
-Schema/status: `dg-nulmetingen-v3.7` - werkversie voor Codex-implementatie, pilotafname en interne review; v3.7 phishing-/linkcontrole-items aangescherpt
+<!-- GENERATED FILE: scripts/assessment-artifacts.js; build=dg-pilot-2026.08.25.3; hash=09fc01f801f440515804723497832569bd2aca2168d489b404c056b386882c37 -->
 
-PT-bron: `src/data/assessments.ts`
+> Dit interne overzicht bevat antwoord- en scoringsinformatie en is niet bestemd voor leerlingen.
 
-Doel: intern analysebestand voor beoordeling van kerndoeldekking en mogelijke item- en taakaanpassingen.
-Let op: dit bestand bevat interne scoringsinformatie, correcte antwoorden en scoringsregels. Niet gebruiken als leerlingmateriaal.
+## Bron- en versiestatus
 
-## Kerndoeldekking selected-response
+- Canonieke actuele inhoudsbron: `src/data/assessments.ts#assessments`.
+- Assessment-buildversie: `dg-pilot-2026.08.25.3`.
+- Build-inhoudshash (SHA-256): `09fc01f801f440515804723497832569bd2aca2168d489b404c056b386882c37`.
+- Inhoudelijke richting/source Markdown: `nulmetingen_dg_herontwerp_v3_5_codex.md`.
+- Actieve selected-response-JSON: `nulmetingen_selected_response_herontwerp_v3.json`.
+- Status: formatieve pilotwerkversie; niet presenteren als gevalideerd meetinstrument.
 
-- Leerjaar 1 VMBO (lj1-vmbo): 21A: 1 | 21B: 2 | 21C: 1 | 22A: 1 | 23A: 2 | 23B: 2 | 23C: 1
-- Leerjaar 1 HAVO/VWO (lj1-hv): 21A: 1 | 21B: 2 | 21C: 1 | 22A: 1 | 23A: 2 | 23B: 2 | 23C: 1
-- Leerjaar 3 VMBO (lj3-vmbo): 21A: 1 | 21B: 2 | 21C: 1 | 22A: 1 | 23A: 2 | 23B: 2 | 23C: 1
-- Leerjaar 3 HAVO/VWO (lj3-hv): 21A: 1 | 21B: 2 | 21C: 1 | 22A: 1 | 23A: 2 | 23B: 2 | 23C: 1
+## ID-migraties
 
-Totaal aantal selected-response-items: 40
-Totaal aantal performance tasks: 28
+| historische item-id | actuele item-id |
+| --- | --- |
+| `lj1v-sr7-ai-check` | `lj1v-sr7-online-personal-data` |
+| `lj1h-sr7-ai-startpunt` | `lj1h-sr7-online-personal-data` |
+| `lj3v-sr7-ai-factcheck` | `lj3v-sr7-online-personal-data` |
+| `lj3h-sr7-ai-source-check` | `lj3h-sr7-online-personal-data` |
 
-## Leerjaar 1 VMBO (lj1-vmbo)
+## Leerjaar 1 VMBO (`lj1-vmbo`)
 
-### Performance tasks
+- Assessment-buildversie: `dg-pilot-2026.08.25.3`
+- Assessment-inhoudshash (SHA-256): `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Maximumscore: 35
+- Aantal items/taken: 18
 
-#### PT 1: PT1 - Bestanden en mappen beheren (lj1v-pt1-files)
+### 1. Zelfinschatting (`self-assessment`)
 
-- Sectie: PT1 - Bestanden en mappen (pt1)
-- Item-id: lj1v-pt1-files
-- Type: file_task_simulation
+- Sectie: `zelfinschatting` — Zelfinschatting
+- Type: `self_assessment`
+- Itemversie: `self-assessment-v1`
+- Scoringversie: `auto-self-assessment-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: niet-scorend
+- Maximumscore: 0
+- Historische id-alias(sen): geen
+- Leerlingtekst: Hoe digitaal geletterd schat je jezelf in? Schuif het bolletje naar jouw keuze. 0 betekent: ik schat mezelf helemaal niet digitaal geletterd in. 100 betekent: ik schat mezelf heel digitaal geletterd in.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 2. PT1 - Bestanden en mappen beheren (`lj1v-pt1-files`)
+
+- Sectie: `pt1` — PT1 - Bestanden en mappen
+- Type: `file_task_simulation`
+- Itemversie: `lj1v-pt1-files-v1`
+- Scoringversie: `auto-file-task-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
 - Kerndoel/subdoel: 21A
-- Punten: 4
-- Vaardigheidsdomein: 21A Digitale systemen
-- Instructie: Kun jij je bestanden netjes ordenen? Voer de taken hieronder uit en klik daarna op 'Volgende'. Werk in OneDrive. Maak daarin de map Biologie. Verplaats de drie projectbestanden naar Biologie. Hernoem concept_dieren.docx naar project_dieren_verslag.docx.
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Werk in het venster hieronder. Voer de opdrachten uit en klik daarna op Volgende. Maak in OneDrive een nieuwe map aan met de naam 'Biologie'. Verplaats de bestanden concept_dieren.docx, foto_kat.jpg en bron_dieren.pdf naar de map Biologie. Verander de naam van 'concept_dieren.docx' in 'verslag_dieren.docx'.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Opdrachten:
-- main (1 pt): map Biologie correct.
-  - Verwacht pad: Thuis/OneDrive/Biologie
-- files (1 pt): projectbestanden correct geplaatst.
-  - Verwachte paden: Thuis/OneDrive/Biologie/bron_dieren.pdf; Thuis/OneDrive/Biologie/foto_kat.jpg
-- rename (1 pt): verslag correct hernoemd en geplaatst.
-  - Verwacht pad: Thuis/OneDrive/Biologie/project_dieren_verslag.docx
-  - Verboden paden: Thuis/OneDrive/concept_dieren.docx; Thuis/OneDrive/Biologie/concept_dieren.docx
-- subjects (1 pt): bestaande vakmappen blijven beschikbaar.
-  - Verwachte paden: Thuis/OneDrive/Engels; Thuis/OneDrive/Maatschappij; Thuis/OneDrive/Mentorles; Thuis/OneDrive/Nederlands; Thuis/OneDrive/Wiskunde
+### 3. E-mail opstellen (`lj1v-pt2-mail`)
 
-#### PT 2: E-mail opstellen (lj1v-pt2-mail)
-
-- Sectie: PT2 - Mail opstellen (pt2)
-- Item-id: lj1v-pt2-mail
-- Type: outlook_mail_simulation
+- Sectie: `pt2` — PT2 - Mail opstellen
+- Type: `outlook_mail_simulation`
+- Itemversie: `lj1v-pt2-mail-v1`
+- Scoringversie: `auto-outlook-mail-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
 - Kerndoel/subdoel: 21A
-- Punten: 4
-- Vaardigheidsdomein: 21A Digitale systemen / 23B Digitaal burgerschap
-- Instructie: Stuur een verslag van Nederlands via e-mail naar je mentor. 1. Kies de juiste ontvanger in het juiste veld. 2. Gebruik het juiste onderwerp: Verslag Nederlands. 3. Voeg de juiste bijlage toe. 4. Verzend de e-mail.
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Gebruik het venster hieronder om op de juiste manier een e-mail te sturen aan je mentor. Zorg dat je mentor door deze e-mail het verslag voor Nederlands krijgt. Je bent klaar met deze opdracht als je ziet dat jouw e-mail is verzonden.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Beschikbare opties:
-- Knoppen: Verzenden, BCC tonen, Bestand bijvoegen, Hyperlink invoegen, Prioriteit, Concept opslaan, Verwijderen
-- Contacten: docent@school.nl, groepsgenoot1@school.nl, groepsgenoot2@school.nl, klasgroep@school.nl, mentor@school.nl, projectgenoot@school.nl, stagebegeleider@bedrijf.nl
-- Bestanden: Aantekeningen.docx, Foto_vakantie.jpg, Rooster.pdf, Verslag_Nederlands.docx
+### 4. PT3 - Phishingmail beoordelen (`lj1v-pt3-security`)
 
-Scoringsregels:
-- to: juiste ontvanger. (1 pt) | condities=to includes mentor@school.nl
-- to includes mentor@school.nl
-- sent: mail is verzonden. (1 pt) | condities=sent true
-- sent true
-- subject: juist onderwerp. (1 pt) | condities=subject equals Verslag Nederlands
-- subject equals Verslag Nederlands
-- attachment-sent: juiste bijlage en verzonden. (1 pt) | condities=attachments includes Verslag_Nederlands.docx
-- attachments includes Verslag_Nederlands.docx
-
-#### PT 3: PT3 - Bericht beoordelen (lj1v-pt3-security)
-
-- Sectie: PT3 - Account, apparaat en verbinding beveiligen (pt3)
-- Item-id: lj1v-pt3-security
-- Type: account_security_simulation
+- Sectie: `pt3` — PT3 - Account, apparaat en verbinding beveiligen
+- Type: `account_security_simulation`
+- Itemversie: `lj1v-pt3-security-v1`
+- Scoringversie: `auto-account-security-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
 - Kerndoel/subdoel: 23A
-- Punten: 3
-- Vaardigheidsdomein: 23A Veiligheid en privacy
-- Instructie: Bekijk de e-mail en kies je antwoorden.
+- Maximumscore: 3
+- Historische id-alias(sen): geen
+- Leerlingtekst: Onderzoek de StreamFlix-mail en beantwoord beide vragen.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Schermen en antwoordmogelijkheden:
-- Mail over je rooster (rooster-mail)
-  - Instructie: Sanne krijgt deze mail op haar schoolaccount. Ze twijfelt wat ze ermee moet doen.
-  - E-mail: Nieuw rooster staat klaar
-    - Van: Rooster service <r0st3r-88xq91@mx7-info-update.net>
-    - Tekst: Hallo leerling,
-    - Tekst: Je nieuwe rooster staat klaar. Log vandaag nog in om te voorkomen dat je lessen mist.
-    - Tekst: Gebruik de knop hieronder om je rooster direct te openen.
-  - Groep signals (multi): Wat valt op aan deze mail?
-    - Opties: Het afzenderadres lijkt niet van school te zijn.; De mail vraagt om via een link in te loggen.; De mail zet druk met 'vandaag nog'.; Er staat een roosterlink in de mail.; De mail begint met 'Hallo leerling'.
-  - Groep actions (multi): Wat is een goede volgende stap?
-    - Opties: Niet op de link klikken.; Rooster openen via de schoolapp of bekende schoolsite.; De mail laten controleren door mentor of docent.; De link openen omdat het over school gaat.; De mail doorsturen naar de klas.
+### 5. PT4 - Tabelgegevens filteren en sorteren (`lj1v-pt4-excel`)
 
-Scoringsregels:
-- signals: herkent minimaal twee signalen in de mail. (1 pt) | groep=signals | type=minCorrect | correct=Het afzenderadres lijkt niet van school te zijn., De mail vraagt om via een link in te loggen., De mail zet druk met 'vandaag nog'. | minCorrect=2
-- safe-route: kiest een bekende officiele route. (1 pt) | groep=actions | type=allSelected | correct=Niet op de link klikken., Rooster openen via de schoolapp of bekende schoolsite.
-- no-spread: kiest geen onveilige vervolgactie. (1 pt) | groep=actions | type=noForbidden | verboden=De link openen omdat het over school gaat., De mail doorsturen naar de klas.
-
-#### PT 4: PT4 - Excel/data sorteren en filteren (lj1v-pt4-excel)
-
-- Sectie: PT4 - Excel/data sorteren en filteren (pt4)
-- Item-id: lj1v-pt4-excel
-- Type: excel_download_task
+- Sectie: `pt4` — PT4 - Excel/data sorteren en filteren
+- Type: `excel_download_task`
+- Itemversie: `lj1v-pt4-excel-v1`
+- Scoringversie: `auto-excel-download-task-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
 - Kerndoel/subdoel: 21C, 21A
-- Punten: 4
-- Vaardigheidsdomein: 21C Data
-- Instructie: Download LJ1_VMBO_Liedjes.xlsx. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.
+- Maximumscore: 2
+- Historische id-alias(sen): geen
+- Leerlingtekst: Werk in de tabel hieronder. Stel per deelopdracht het gevraagde filter en de sortering in en klik op Toepassen. Je antwoord wordt beoordeeld op de handelingen in de tabel; je hoeft geen eindcode over te typen.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Bestand: LJ1_VMBO_Liedjes.xlsx
-Werkblad: Liedjes
+### 6. Schermdelen in videogesprek (`lj1vmbo-pt6-screen-share`)
 
-Vragen en correcte antwoorden:
-- a (2 pt): Sorteer op Jaar, van nieuw naar oud. Welke code staat bovenaan?
-  - Correct antwoord/code: L09
-- b (2 pt): Filter op Genre = pop. Sorteer daarna op Jaar, van oud naar nieuw. Welke code staat bovenaan?
-  - Correct antwoord/code: L12
-
-#### PT 5: Schermdelen in een online les (lj1vmbo-pt6-screen-share)
-
-- Sectie: PT6 - Videovergadering en schermdelen (pt6)
-- Item-id: lj1vmbo-pt6-screen-share
-- Type: teams_share_simulation
+- Sectie: `pt6` — PT6 - Videovergadering en schermdelen
+- Type: `teams_share_simulation`
+- Itemversie: `lj1vmbo-pt6-screen-share-v1`
+- Scoringversie: `auto-teams-share-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
 - Kerndoel/subdoel: 23A
-- Punten: 3
-- Vaardigheidsdomein: 21A Digitale systemen / 23B Digitaal burgerschap
-- Instructie: Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.
+- Maximumscore: 3
+- Historische id-alias(sen): geen
+- Leerlingtekst: Leerling Mark Canbers zit in een online gesprek met zijn docent. Mark wil de docent een filmfragment laten zien en horen. Mark wil niet dat de docent zijn andere vensters kan zien.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Scenario: Deel alleen het venster met het filmfragment. Gebruik computergeluid, maar deel niet je hele scherm.
-Knoppen: Camera, Microfoon, Chat, Deelnemers, Delen, Meer
-Deelopties: Hele scherm, Venster
-Vensters: Videospeler - filmfragment, Browser - rooster, Word - verslag, Excel - cijfers, Chat - klasgroep
-Correct venster: Videospeler - filmfragment
+### 7. Blokprogrammeren (`lj1v-pt7-programming-teddy-v1`)
 
-Scoringsregels:
-- window-not-screen: deelt een venster in plaats van het hele scherm. (1 pt) | condities=notWholeScreen
-- correct-window: kiest het juiste venster met het filmfragment. (1 pt) | condities=mediaPlayerSelected
-- sound: computergeluid staat aan. (1 pt) | condities=computerSoundOn
-
-#### PT 6: PT7 - Blokprogrammeren (lj1v-pt7-programming)
-
-- Sectie: PT7 - Blokprogrammeren (pt7)
-- Item-id: lj1v-pt7-programming
-- Type: block_programming_task
+- Sectie: `pt7` — Blokprogrammeren
+- Type: `block_programming_task`
+- Itemversie: `lj1v-pt7-programming-teddy-v1-v1`
+- Scoringversie: `auto-block-programming-task-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
 - Kerndoel/subdoel: 22B
-- Punten: 4
-- Vaardigheidsdomein: 22B Programmeren
-- Instructie: Programmeer Bizzy zodat hij eerst 2 stappen vooruit gaat, daarna naar rechts draait, daarna "Klaar" zegt.
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Blokprogrammeren
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Programmeertaak:
-- Intro: Programmeer Bizzy door blokken op het werkvlak te slepen.
-- Device: bizzy
-- Beschikbare blokken:
-  - bij start (gebeurtenissen; container)
-  - als Bizzy wordt aangeraakt (gebeurtenissen; kritieke afleider)
-  - 2 stappen vooruit (beweging)
-  - 1 stap vooruit (beweging)
-  - 2 stappen achteruit (beweging; kritieke afleider)
-  - draai naar rechts (beweging)
-  - draai naar links (beweging; kritieke afleider)
-  - zeg "Klaar" (uiterlijk)
-  - zeg "Hoi" (uiterlijk)
-  - wacht 1 seconde (besturing)
-  - herhaal 2 keer (besturing; container)
-- Correct programma:
-  - bij start
-  - 2 stappen vooruit
-  - draai naar rechts
-  - zeg "Klaar"
+### 8. PT8 - Online gedrag: foto delen (`pt8-lj1v-photo-consent-v5`)
 
-Scoringsregels:
-- start: juiste start/gebeurtenisblok. (1 pt) | eerste blok=bij start
-- move: beweging vooruit correct. (1 pt) | vereist=2 stappen vooruit
-- turn: draai naar rechts correct. (1 pt) | vereist=draai naar rechts
-- say: boodschap Klaar na de bewegingen. (1 pt) | volgorde=2 stappen vooruit -> draai naar rechts -> zeg "Klaar"
+- Sectie: `pt8` — PT8 - Online gedrag
+- Type: `social_action_simulation`
+- Itemversie: `pt8-lj1v-photo-consent-v5-v1`
+- Scoringversie: `auto-social-action-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Bekijk de situatie en kies op ieder scherm de beste reactie.
+- Antwoordmogelijkheden/taakconfiguratie: risk: consent-missing: Van een herkenbare klasgenoot ontbreekt toestemming om de foto te delen. · closed-group-ok: Een klassenapp is klein genoeg om toestemming later te regelen. · majority-decides: De voorkeur van de meeste leerlingen bepaalt of de foto gedeeld kan worden. · caption-solves: Een vriendelijke tekst bij de foto voorkomt problemen met toestemming. / no-spread: do-not-share: De foto niet plaatsen of doorsturen. · send-friend: De foto naar één vriend sturen om diens mening te vragen. · post-delete-later: De foto plaatsen en weghalen wanneer iemand bezwaar maakt. · wait-majority: Eerst tellen hoeveel leerlingen de foto graag willen zien. / consent: ask-each-person: Iedere herkenbare persoon afzonderlijk vragen of delen goed is. · ask-group-admin: De beheerder van de klassenapp om toestemming vragen. · use-silence: In de groep aankondigen dat stilte als instemming wordt gezien. · ask-photographer: De maker van de foto laten beslissen voor de mensen die erop staan. / help: pressure-or-harm: Wanneer de druk om te delen doorgaat of iemand last krijgt van de situatie. · wait-for-request: Wanneer de klasgenoot die twijfelt later zelf expliciet om hulp vraagt. · solve-in-chat: Wanneer een stemming in de groepschat geen duidelijke winnaar oplevert. · after-wide-spread: Wanneer de foto al buiten de klas terechtgekomen is.
 
-#### PT 7: Whutsupp: video in de groepschat (pt8-whutsupp-sam-video)
+### 9. Sterk wachtwoord kiezen (`lj1v-sr1-pw-passphrase`)
 
-- Sectie: PT8 - Online gedrag (pt8)
-- Item-id: pt8-whutsupp-sam-video
-- Type: social_action_simulation
-- Kerndoel/subdoel: 23B / 23B
-- Punten: 4
-- Vaardigheidsdomein: 23B Digitaal burgerschap
-- Instructie: Je zit in de Whutsupp-groep van je klas. Er komt een video van Sam in de chat. Kies wat jij doet.
-
-Schermen en antwoordmogelijkheden:
-- Whutsupp: foto van klasgenoten (screen1)
-  - Instructie: Wat is nu de beste eerste reactie van jou?
-  - Context: In Whutsupp wil iemand een foto van drie klasgenoten in de klassenapp zetten. Een klasgenoot schrijft: "Wacht, ik wil eerst weten welke foto dit is." Een paar leerlingen reageren dat het snel gedeeld moet worden.
-  - Groep screen1 (single): Kies de beste reactie
-    - Opties: Niet plaatsen of doorsturen zolang niet iedereen akkoord is.; Eerst kijken hoeveel anderen de foto willen zien voordat je beslist.; De foto naar een goede vriend sturen om te vragen of hij leuk is.; De foto alvast plaatsen en zeggen dat het als grap bedoeld is.; Ik weet het niet.
-- Toestemming vragen (screen2)
-  - Instructie: Wat kun je het beste tegen de plaatser zeggen?
-  - Groep screen2 (single): Kies de beste reactie
-    - Opties: Vraag eerst aan iedereen die herkenbaar op de foto staat of delen goed is.; Stuur hem alleen naar een kleinere groep.; Plaats hem alvast en verwijder hem pas als iemand klaagt.; Snijd de foto bij en deel hem dan alsnog.; Ik weet het niet.
-- Als iemand nee zegt (screen3)
-  - Instructie: Wat is een goede reactie als iemand geen toestemming geeft?
-  - Groep screen3 (single): Kies de beste reactie
-    - Opties: De foto niet delen en verwijderen als hij al klaarstaat.; Zeggen dat diegene zich niet moet aanstellen.; Een andere versie van de foto maken zodat hij minder herkenbaar is.; De foto alleen naar mensen sturen die de klasgenoot niet kennen.; Ik weet het niet.
-- Veilige vervolgstap (screen4)
-  - Instructie: Wanneer is hulp van een mentor of andere volwassene verstandig?
-  - Groep screen4 (single): Kies de beste reactie
-    - Opties: Als er druk blijft om de foto toch te delen of iemand er last van heeft.; Alleen als de foto meer dan honderd keer bekeken is.; Alleen als jij zelf op de foto staat.; Nooit, want wat in een groepschat gebeurt moet in de groepschat blijven.; Ik weet het niet.
-
-Scoringsregels:
-- screen1: deelt niet zonder toestemming. (1 pt) | groep=screen1 | type=singleCorrect | correct=s1-no-share-no-react
-- screen2: vraagt toestemming aan herkenbare personen. (1 pt) | groep=screen2 | type=singleCorrect | correct=s2-remove-and-stop
-- screen3: respecteert geen toestemming. (1 pt) | groep=screen3 | type=singleCorrect | correct=s3-support-sam
-- screen4: herkent wanneer hulp of melding nodig is. (1 pt) | groep=screen4 | type=singleCorrect | correct=s4-if-continues-or-harms
-
-Scorecaps:
-- harmful-share-cap: max 2 bij s1-send-one-friend, s2-send-to-others
-- escalation-as-joke-cap: max 2 bij s1-joke-back, s2-make-sticker, s3-more-videos
-- victim-blaming-cap: max 3 bij s3-dont-exaggerate, s3-leave-chat
-- rejects-help-cap: max 3 bij s4-never-private-chat
-
-Whutsupp-variant: Leerjaar 1 vmbo (lj1-vmbo)
-Taalniveau: very_low
-Groep: Klas 1B zonder docent
-
-Beslismomenten en antwoordmogelijkheden:
-- n1 / risk_boundary: Wat doe jij eerst?
-  - Bericht Noah: Haha kijk Sam 😂
-  - Bericht Noah: [videoCard: samStumbleVideo]
-  - Bericht Mila: Ik stuur hem ook naar de andere klas.
-  - Bericht Sam: Stop pls.
-  - n1_safe_boundary: Ik stuur: ‘Niet doorsturen. Sam wil dit niet.’ (correct; weet ik niet; score=1)
-  - n1_ridicule: Ik zet 😂 maar stuur niet door. (niet correct; weet ik niet; score=0; flags=ridicule_reaction)
-  - n1_forward_friend: Ik stuur de video alleen naar mijn beste vriend. (niet correct; weet ik niet; score=0; flags=harmful_share)
-  - n1_wait: Ik wacht wat de rest doet. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_remove: Ik stuur: ‘Stop. Haal weg.’ (veilig herstel; flags=recovery_safe)
-    - recovery_wait: Ik wacht weer af. (niet veilig; flags=passive)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n2 / no_spread: Wat stuur je nu?
-  - Bericht Noah: Rustig, het is maar een grap.
-  - Bericht Mila: Doorsturen?
-  - Bericht Sam: Nee. Haal weg.
-  - n2_safe_no_spread: Ik stuur: ‘Haal weg en stuur niet door.’ (correct; weet ik niet; score=1)
-  - n2_sticker: Ik stuur: ‘Maak er dan een sticker van.’ (niet correct; weet ik niet; score=0; flags=harmful_share, ridicule_reaction)
-  - n2_only_known: Ik stuur: ‘Alleen naar mensen die Sam goed kennen.’ (niet correct; weet ik niet; score=0; flags=harmful_share)
-  - n2_teacher_later: Ik wacht tot een docent er iets van zegt. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_remove: Ik stuur: ‘Stop. Haal weg.’ (veilig herstel; flags=recovery_safe)
-    - recovery_wait: Ik wacht weer af. (niet veilig; flags=passive)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n3 / support_target: Wat stuur je naar Sam?
-  - Bericht Sam: Ik vind dit echt vervelend.
-  - n3_safe_support: Ik stuur Sam: ‘Ik stuur niks door. Wil je dat ik met je meega naar de mentor?’ (correct; weet ik niet; score=1)
-  - n3_minimize: Ik stuur: ‘Trek je er niks van aan.’ (niet correct; weet ik niet; score=0; flags=victim_blaming_or_minimizing)
-  - n3_leave_chat: Ik stuur: ‘Ga gewoon uit de groep.’ (niet correct; weet ik niet; score=0; flags=victim_blaming_or_minimizing)
-  - n3_ask_more: Ik vraag of Sam nog meer filmpjes heeft. (niet correct; weet ik niet; score=0; flags=ridicule_reaction)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_remove: Ik stuur: ‘Stop. Haal weg.’ (veilig herstel; flags=recovery_safe)
-    - recovery_wait: Ik wacht weer af. (niet veilig; flags=passive)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n4 / help_report: Wat doe je nu?
-  - Bericht Elin: Hij staat nu ook in een andere groep.
-  - Bericht Sam: Ze blijven hem sturen. Ik wil dit echt niet.
-  - n4_safe_help_report: Ik deel de video niet en vraag hulp bij een mentor, ouder of andere volwassene. (correct; weet ik niet; score=1)
-  - n4_unsafe_evidence: Ik stuur de video naar de mentor in de groepschat, zodat iedereen bewijs ziet. (niet correct; weet ik niet; score=0; flags=unsafe_evidence_share)
-  - n4_retaliate: Ik maak een grap terug over Noah. (niet correct; weet ik niet; score=0; flags=retaliation)
-  - n4_wait: Ik wacht tot het vanzelf stopt. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_remove: Ik stuur: ‘Stop. Haal weg.’ (veilig herstel; flags=recovery_safe)
-    - recovery_wait: Ik wacht weer af. (niet veilig; flags=passive)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-
-### Selected-response vragen
-
-### Vraag 1: Sterk wachtwoord kiezen (lj1v-sr1-pw-passphrase)
-
-- Kerndoel/subdoel:  / 23A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Welk wachtwoord is het veiligst?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | MijnKleineKatSlaaptOnderDeBank | ja |  |
-| B | Nora2012SchoolLent | nee |  |
-| C | !@#$%^&* | nee |  |
-| D | Qwerty12345! | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: A is lang en niet gebaseerd op duidelijke persoonlijke gegevens of toetsenbordpatronen. De afleiders representeren herkenbare misconcepties: naam/jaar/schoolcontext, symbolen zonder echte sterkte en bekend toetsenbordpatroon.
-
-### Vraag 2: Mail over je rooster (lj1v-sr2-rooster-mail)
-
-- Kerndoel/subdoel:  / 23A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Stimulus: e-mailbericht
-  - Van: Roosterhulp <roosterhulp@schoolrooster-info.nl>
-  - Aan: sanne@leerling.citadelcollege.nl
-  - Onderwerp: Je rooster voor morgen
-  - Tekst: Hallo,
-  - Tekst: Je rooster voor morgen is aangepast. Bekijk je rooster via de knop hieronder.
-  - Link: Bekijk rooster (https://schoolrooster-info.nl/citadel)
-- Vraag: Wat kun je nu het best doen?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Mijn rooster openen via de roosterapp van school. | ja |  |
-| B | De knop gebruiken, want het gaat alleen om mijn rooster. | nee |  |
-| C | De mail beantwoorden en vragen of het klopt. | nee |  |
-| D | Eerst kijken of de pagina er netjes uitziet. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet basiskeuze voor veilige route bij een mail over rooster: zelf via de roosterapp van school controleren in plaats van vertrouwen op knop, afzenderreactie of uiterlijk.
-- Reviewstatus: V3.7-review: roosterlinkmail aangescherpt naar gewone handelingskeuze met plausibele afleiders.
-
-### Vraag 3: Opslag bijna vol (lj1v-sr3-phone)
-
-- Kerndoel/subdoel:  / 21A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Youssef krijgt vaak de melding: “Opslag bijna vol.” Apps openen traag. Hij wil geen foto’s, berichten of accounts kwijt. Wat is de beste eerste stap?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | In de instellingen kijken wat veel ruimte gebruikt en oude downloads of ongebruikte apps verwijderen. | ja |  |
-| B | Steeds alle apps afsluiten; dan komt er weer genoeg opslag vrij. | nee |  |
-| C | Een gratis schoonmaak-app uit een advertentie installeren en toegang geven tot alle bestanden. | nee |  |
-| D | De helderheid lager zetten en meldingen uitzetten. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Maakt het DG-construct scherper: praktisch systeemonderhoud bij opslag/traagheid, niet algemeen telefoonadvies.
-
-### Vraag 4: School morgen dicht? (lj1v-sr4-official-source)
-
-- Kerndoel/subdoel:  / 21B
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: In Whutsupp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Checken of hetzelfde bericht in de schoolapp, schoolmail of op de schoolsite staat. | ja |  |
-| B | Aan de klasgenoot vragen waar hij het vandaan heeft; als hij “van iemand van school” zegt, stuur je het door. | nee |  |
-| C | Kijken of het screenshot een logo en datum heeft; als dat klopt, is het betrouwbaar genoeg. | nee |  |
-| D | Wachten tot veel leerlingen het bericht delen; dan zal het waarschijnlijk waar zijn. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet broncontrole in een herkenbare schoolcontext.
-
-### Vraag 5: Aanbevelingen (lj1v-sr5-algorithm)
-
-- Kerndoel/subdoel:  / 21B
-- Vraagtype: single choice
-- Correct antwoord: opt_watch_like
-- Weet-ik-niet-optie: unknown
-- Schadelijke afleider(s): geen
-- Vraag: Luna kijkt drie voetbalvideo’s helemaal af. Eén video vindt ze leuk. Daarna ziet ze meer voetbalvideo’s. Wat is de beste uitleg?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| opt_watch_like | De app gebruikt wat Luna kijkt en leuk vindt om nieuwe video’s te kiezen. | ja |  |
-| opt_same_school | De app laat alle leerlingen na schooltijd dezelfde voetbalvideo’s zien. | nee |  |
-| opt_creator_controls | De maker van één video bepaalt precies wat Luna daarna ziet. | nee |  |
-| opt_battery | De batterij van Luna’s telefoon bepaalt welke video’s ze ziet. | nee |  |
-| unknown | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet basisbegrip van aanbevelingssystemen in eenvoudige taal. Correct: apps kunnen signalen zoals kijken en leuk vinden gebruiken voor nieuwe aanbevelingen.
-- Reviewstatus: V3.6-review: vervangen volgens aangeleverde v3.6 SR21B-bijlage.
-
-### Vraag 6: Kleine poll (lj1v-sr6-data-poll)
-
-- Kerndoel/subdoel:  / 21C
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: In een poll stemmen 8 van de 25 leerlingen uit jouw klas op voetbal. Iemand zegt: “Voetbal is dus de populairste sport van de hele school.” Wat is de beste reactie?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Dat kun je niet zomaar zeggen, want de poll komt maar uit één klas. | ja |  |
-| B | Ja, want 8 stemmen is altijd genoeg. | nee |  |
-| C | Dat klopt alleen als de poll digitaal is ingevuld. | nee |  |
-| D | Dat kun je nooit met een poll onderzoeken. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet beperkte generaliseerbaarheid van data en voorkomt dat de leerling een klasresultaat automatisch naar de hele school uitbreidt.
-
-### Vraag 7: Online game en persoonsgegevens (lj1v-sr7-ai-check)
-
-- Kerndoel/subdoel: 23 / 23B
-- Vraagtype: single choice
-- Correct antwoord: C
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Je geeft alleen je voornaam en leeftijd, maar niet je adres. | nee |  |
-| B | Je vraagt waarom die persoon dat wil weten en beslist daarna. | nee |  |
-| C | Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. | ja |  |
-| D | Je geeft de gegevens als jullie al een tijdje samen spelen. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
-
-### Vraag 8: Afbeelding gebruiken (lj1v-sr8-image-rights)
-
-- Kerndoel/subdoel: 22 / 22A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je vindt een afbeelding voor een schoolposter die ook online komt. Wat controleer je eerst?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Of je de afbeelding mag gebruiken, of je hem mag aanpassen en welke maker of bron je moet noemen. | ja |  |
-| B | Of de afbeelding op veel websites voorkomt; dan zal hij wel vrij te gebruiken zijn. | nee |  |
-| C | Of je de afbeelding kleiner kunt maken; dan valt gebruik minder op. | nee |  |
-| D | Of je de afbeelding een beetje verandert; dan hoef je geen bron te noemen. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Maakt online publicatie expliciet en gebruikt eenvoudige maar realistische misvattingen.
-
-### Vraag 9: Foto delen (lj1v-sr9-photo-consent)
-
-- Kerndoel/subdoel: 23 / 23B
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: In Whutsupp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Vragen of iedereen op de foto dat goed vindt. | ja |  |
-| B | De foto alleen in de klassenapp zetten; dan is toestemming niet nodig. | nee |  |
-| C | De namen weglaten; dan mag je de foto altijd delen. | nee |  |
-| D | De foto plaatsen en verwijderen als iemand klaagt. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Basisitem voor toestemming bij herkenbare personen, met korte taal.
-
-### Vraag 10: Eén schoolapp (lj1v-sr10-platform-risk)
-
-- Kerndoel/subdoel: 23 / 23C
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: De school gebruikt één app voor rooster, huiswerk en berichten. Wat is het grootste risico als die app een storing heeft?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Veel leerlingen kunnen tegelijk hun rooster, huiswerk en berichten niet zien. | ja |  |
-| B | De app ziet er tijdelijk minder mooi uit. | nee |  |
-| C | Leerlingen moeten misschien wennen aan een nieuw icoon. | nee |  |
-| D | Leerlingen krijgen dan automatisch minder huiswerk. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet basisbegrip van afhankelijkheid van één digitaal systeem.
-
-## Leerjaar 1 HAVO/VWO (lj1-hv)
-
-### Performance tasks
-
-#### PT 1: PT1 - Bestanden en mappen beheren (lj1h-pt1-files)
-
-- Sectie: PT1 - Bestanden en mappen (pt1)
-- Item-id: lj1h-pt1-files
-- Type: file_task_simulation
-- Kerndoel/subdoel: 21A
-- Punten: 4
-- Vaardigheidsdomein: 21A Digitale systemen
-- Instructie: Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Volgende. Werk in OneDrive. Maak de hoofdmap Project Water. Maak daarin Bronnen, Afbeeldingen en Verslag. Verplaats de vier bestanden naar de juiste map. Hernoem concept_verslag.docx naar project_water_verslag.docx en presentatie_water.pptx naar project_water_presentatie.pptx.
-
-Opdrachten:
-- main (1 pt): hoofdmap Project Water correct.
-  - Verwacht pad: Thuis/OneDrive/Project Water
-- subfolders (1 pt): submappen correct.
-  - Verwachte paden: Thuis/OneDrive/Project Water/Bronnen; Thuis/OneDrive/Project Water/Afbeeldingen; Thuis/OneDrive/Project Water/Verslag
-- placed (1 pt): bestanden per type correct geplaatst.
-  - Verwachte paden: Thuis/OneDrive/Project Water/Bronnen/bron_water.pdf; Thuis/OneDrive/Project Water/Afbeeldingen/waterfoto.png
-- rename (1 pt): twee bestanden correct hernoemd en geplaatst.
-  - Verwachte paden: Thuis/OneDrive/Project Water/Verslag/project_water_verslag.docx; Thuis/OneDrive/Project Water/Verslag/project_water_presentatie.pptx
-  - Verboden paden: Thuis/OneDrive/concept_verslag.docx; Thuis/OneDrive/presentatie_water.pptx
-
-#### PT 2: E-mail opstellen (lj1h-pt2-mail)
-
-- Sectie: PT2 - Mail opstellen (pt2)
-- Item-id: lj1h-pt2-mail
-- Type: outlook_mail_simulation
-- Kerndoel/subdoel: 21A
-- Punten: 4
-- Vaardigheidsdomein: 21A Digitale systemen / 23B Digitaal burgerschap
-- Instructie: Stuur een verslag van Nederlands via e-mail naar je mentor. 1. Kies de juiste ontvanger in het juiste veld. 2. Gebruik het juiste onderwerp: Project Water verslag. 3. Voeg de juiste bijlage toe. 4. Verzend de e-mail.
-
-Beschikbare opties:
-- Knoppen: Verzenden, BCC tonen, Bestand bijvoegen, Hyperlink invoegen, Prioriteit, Concept opslaan, Verwijderen
-- Contacten: docent@school.nl, groepsgenoot1@school.nl, groepsgenoot2@school.nl, klasgroep@school.nl, mentor@school.nl, projectgenoot@school.nl, stagebegeleider@bedrijf.nl
-- Bestanden: Bron_water.pdf, Foto_projectdag.jpg, Project_Water_verslag.docx, Rooster.pdf
-
-Scoringsregels:
-- to: juiste ontvanger. (1 pt) | condities=to includes mentor@school.nl
-- to includes mentor@school.nl
-- sent: mail is verzonden. (1 pt) | condities=sent true
-- sent true
-- subject: juist onderwerp. (1 pt) | condities=subject equals Project Water verslag
-- subject equals Project Water verslag
-- attachment-sent: juiste bijlage en verzonden. (1 pt) | condities=attachments includes Project_Water_verslag.docx
-- attachments includes Project_Water_verslag.docx
-
-#### PT 3: PT3 - Bericht beoordelen (lj1h-pt3-security)
-
-- Sectie: PT3 - Account, apparaat en verbinding beveiligen (pt3)
-- Item-id: lj1h-pt3-security
-- Type: account_security_simulation
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1v-sr1-pw-passphrase-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
 - Kerndoel/subdoel: 23A
-- Punten: 3
-- Vaardigheidsdomein: 23A Veiligheid en privacy
-- Instructie: Bekijk de e-mail en kies je antwoorden.
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Welk wachtwoord is het veiligst?
+- Antwoordmogelijkheden/taakconfiguratie: A: MijnKleineKatSlaaptOnderDeBank · B: Nora2012SchoolLent · C: !@#$%^&* · D: Qwerty12345! · E: Ik weet het niet.
 
-Schermen en antwoordmogelijkheden:
-- Mail over accountcontrole (code-mail)
-  - Instructie: Noor krijgt deze mail op haar schoolaccount. Ze vertrouwt de mail niet helemaal.
-  - E-mail: Controleer je schoolaccount
-    - Van: ICT controle <ict-472kq9-check@safe-login-mailer.info>
-    - Tekst: Beste leerling,
-    - Tekst: Wij controleren alle accounts. Stuur je tijdelijke inlogcode terug zodat je account actief blijft.
-    - Tekst: Reageer binnen 30 minuten.
-  - Groep signals (multi): Wat maakt deze mail onbetrouwbaar?
-    - Opties: Het afzenderadres is geen duidelijk schooladres.; De mail vraagt om een persoonlijke inlogcode.; De mail gebruikt tijdsdruk.; Er staat 'Beste leerling' in plaats van een naam.; De mail gaat over school.
-  - Groep actions (multi): Wat doet Noor?
-    - Opties: Geen code delen.; Account of melding controleren via de normale schoolroute.; De mail melden of aan ICT/docent laten zien.; De code terugsturen zodat het account actief blijft.; De link openen en daar de code invullen.
+### 10. AI zorgvuldig gebruiken (`lj1v-vraag9-ai-acties-v5`)
 
-Scoringsregels:
-- signals: herkent minimaal twee signalen in de mail. (1 pt) | groep=signals | type=minCorrect | correct=Het afzenderadres is geen duidelijk schooladres., De mail vraagt om een persoonlijke inlogcode., De mail gebruikt tijdsdruk., Er staat 'Beste leerling' in plaats van een naam. | minCorrect=2
-- safe-actions: kiest veilige vervolgstappen. (1 pt) | groep=actions | type=allSelected | correct=Geen code delen., Account of melding controleren via de normale schoolroute.
-- no-code: deelt de code niet via mail of link. (1 pt) | groep=actions | type=noForbidden | verboden=De code terugsturen zodat het account actief blijft., De link openen en daar de code invullen.
+- Sectie: `sr` — Meerkeuze
+- Type: `social_action_simulation`
+- Itemversie: `vraag9-ai-21d-v5`
+- Scoringversie: `auto-social-action-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 21D
+- Maximumscore: 2
+- Historische id-alias(sen): geen
+- Leerlingtekst: Sorteer vier acties bij het gebruiken van AI.
+- Antwoordmogelijkheden/taakconfiguratie: ai-actions: careful: Verstandig · not-careful: Niet verstandig
 
-#### PT 4: PT4 - Excel/data sorteren en filteren (lj1h-pt4-excel)
+### 11. Opslag bijna vol (`lj1v-sr3-phone`)
 
-- Sectie: PT4 - Excel/data sorteren en filteren (pt4)
-- Item-id: lj1h-pt4-excel
-- Type: excel_download_task
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1v-sr3-phone-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Youssef krijgt vaak de melding: “Opslag bijna vol.” Apps openen traag. Hij wil geen foto’s, berichten of accounts kwijt. Wat is de beste eerste stap?
+- Antwoordmogelijkheden/taakconfiguratie: A: In de instellingen kijken wat veel ruimte gebruikt en oude downloads of ongebruikte apps verwijderen. · B: Apps één voor één afsluiten; dat maakt volgens hem dezelfde ruimte vrij als apps verwijderen. · C: Een gratis schoonmaak-app uit een advertentie installeren en toegang geven tot bestanden. · D: De helderheid lager zetten en meldingen uitzetten. · E: Ik weet het niet.
+
+### 12. School morgen dicht? (`lj1v-sr4-official-source`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1v-sr4-official-source-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 21B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: In WhatsApp staat: “Morgen geen school door storm. Stuur door!” Je ziet geen bericht van school zelf. Wat doe je voordat je het bericht doorstuurt?
+- Antwoordmogelijkheden/taakconfiguratie: A: Checken of hetzelfde bericht in de schoolapp, schoolmail of op de schoolsite staat. · B: Aan de klasgenoot vragen waar hij het vandaan heeft; als hij “van iemand van school” zegt, stuur je het door. · C: Kijken of het screenshot een logo en datum heeft; als dat klopt, is het betrouwbaar. · D: Wachten tot veel leerlingen het bericht delen; dan zal het waarschijnlijk waar zijn. · E: Ik weet het niet.
+
+### 13. Aanbevelingen (`lj1v-sr5-algorithm`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `recommendations-v2`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 21B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Luna kijkt drie voetbalvideo’s helemaal af. Eén video vindt ze leuk. Daarna ziet ze meer voetbalvideo’s. Wat is de beste uitleg over hoe dit komt?
+- Antwoordmogelijkheden/taakconfiguratie: opt_watch_like: De app gebruikt wat Luna kijkt en leuk vindt om nieuwe video’s te kiezen. · opt_same_school: De app kiest vooral voetbalvideo’s die op dat moment populair zijn bij jongeren. · opt_creator_controls: De maker van de laatste video stelt in welke voetbalvideo daarna wordt aanbevolen. · opt_battery: De herhaling is waarschijnlijk toeval; wat Luna eerder keek speelt daarbij weinig mee. · unknown: Ik weet het niet.
+
+### 14. Kleine poll (`lj1v-sr6-data-poll`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1v-sr6-data-poll-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 21C
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: In een poll stemmen 8 van de 25 leerlingen uit jouw klas op voetbal. Iemand zegt: “Voetbal is dus de populairste sport van de hele school.” Wat is de beste reactie?
+- Antwoordmogelijkheden/taakconfiguratie: A: Dat kun je niet zomaar zeggen, want de poll komt maar uit één klas. · B: Ja, want 8 stemmen is in deze groep het grootste genoemde aantal. · C: Dat is aannemelijker wanneer leerlingen de poll via de schoolapp invullen. · D: Een poll uit meerdere klassen zou waarschijnlijk dezelfde uitkomst geven. · E: Ik weet het niet.
+
+### 15. Online game en persoonsgegevens (`lj1v-sr7-online-personal-data`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1v-sr7-online-personal-data-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 1
+- Historische id-alias(sen): `lj1v-sr7-ai-check`
+- Leerlingtekst: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?
+- Antwoordmogelijkheden/taakconfiguratie: A: Je deelt je voornaam en leeftijd, maar houdt je buurt geheim. · B: Je vraagt waarom die persoon dat wil weten en beslist daarna. · C: Je deelt de gevraagde persoonsgegevens niet. · D: Je geeft de gegevens als jullie al een tijdje samen spelen. · E: Ik weet het niet.
+
+### 16. Afbeelding gebruiken (`lj1v-sr8-image-rights`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1v-sr8-image-rights-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 22A
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Je vindt een afbeelding voor een schoolposter die ook online komt. Wat controleer je eerst?
+- Antwoordmogelijkheden/taakconfiguratie: A: Of je de afbeelding mag gebruiken, of je hem mag aanpassen en welke maker of bron je moet noemen. · B: Of de afbeelding op veel websites voorkomt; dan is hij vrij te gebruiken. · C: Of je de afbeelding kleiner kunt maken; dan valt gebruik minder op. · D: Of je de afbeelding een beetje verandert; dan hoef je geen bron te noemen. · E: Ik weet het niet.
+
+### 17. Foto delen (`lj1v-sr9-photo-consent`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1v-sr9-photo-consent-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: In WhatsApp wil je een foto van drie klasgenoten in de klassenapp zetten. Wat doe je eerst?
+- Antwoordmogelijkheden/taakconfiguratie: A: Vragen of iedereen op de foto dat goed vindt. · B: De foto in de klassenapp zetten, omdat die groep uit bekenden bestaat. · C: De namen weglaten, omdat de foto dan minder persoonlijk lijkt. · D: De foto plaatsen en verwijderen als iemand klaagt. · E: Ik weet het niet.
+
+### 18. Eén schoolapp (`lj1v-sr10-platform-risk`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `platform-dependence-v2`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089`
+- Kerndoel/subdoel: 23C
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: De school gebruikt één app voor rooster, huiswerk en berichten. Wat is het grootste risico als die app een storing heeft?
+- Antwoordmogelijkheden/taakconfiguratie: A: Veel leerlingen kunnen tegelijk hun rooster, huiswerk en berichten niet zien. · B: De roosterfunctie blijft waarschijnlijk werken, omdat die in een apart tabblad staat. · C: De storing raakt vooral nieuwe berichten; eerder geplaatste informatie blijft op veel toestellen bereikbaar. · D: De informatie staat ook op iedere telefoon, waardoor leerlingen weinig van de storing merken. · E: Ik weet het niet.
+
+## Leerjaar 1 HAVO/VWO (`lj1-hv`)
+
+- Assessment-buildversie: `dg-pilot-2026.08.25.3`
+- Assessment-inhoudshash (SHA-256): `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Maximumscore: 37
+- Aantal items/taken: 18
+
+### 1. Zelfinschatting (`self-assessment`)
+
+- Sectie: `zelfinschatting` — Zelfinschatting
+- Type: `self_assessment`
+- Itemversie: `self-assessment-v1`
+- Scoringversie: `auto-self-assessment-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: niet-scorend
+- Maximumscore: 0
+- Historische id-alias(sen): geen
+- Leerlingtekst: Hoe digitaal geletterd schat je jezelf in? Schuif het bolletje naar jouw keuze. 0 betekent: ik schat mezelf helemaal niet digitaal geletterd in. 100 betekent: ik schat mezelf heel digitaal geletterd in.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 2. PT1 - Bestanden en mappen beheren (`lj1h-pt1-files`)
+
+- Sectie: `pt1` — PT1 - Bestanden en mappen
+- Type: `file_task_simulation`
+- Itemversie: `lj1h-pt1-files-v1`
+- Scoringversie: `auto-file-task-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Werk in het venster hieronder. Voer de opdrachten uit en klik daarna op Volgende. Werk in OneDrive. Maak de hoofdmap Project Water. Maak daarin Bronnen, Afbeeldingen en Verslag. Verplaats de vier bestanden naar de juiste map. Hernoem concept_verslag.docx naar project_water_verslag.docx en presentatie_water.pptx naar project_water_presentatie.pptx.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 3. E-mail opstellen (`lj1h-pt2-mail`)
+
+- Sectie: `pt2` — PT2 - Mail opstellen
+- Type: `outlook_mail_simulation`
+- Itemversie: `lj1h-pt2-mail-v1`
+- Scoringversie: `auto-outlook-mail-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Stuur een verslag van Nederlands via e-mail naar je mentor. 1. Kies de juiste ontvanger in het juiste veld. 2. Gebruik het juiste onderwerp: Project Water verslag. 3. Voeg de juiste bijlage toe. 4. Verzend de e-mail.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 4. PT3 - Phishingmail beoordelen (`lj1h-pt3-security`)
+
+- Sectie: `pt3` — PT3 - Account, apparaat en verbinding beveiligen
+- Type: `account_security_simulation`
+- Itemversie: `lj1h-pt3-security-v1`
+- Scoringversie: `auto-account-security-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 23A
+- Maximumscore: 3
+- Historische id-alias(sen): geen
+- Leerlingtekst: Onderzoek de StreamFlix-mail en beantwoord beide vragen.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 5. PT4 - Tabelgegevens filteren en sorteren (`lj1h-pt4-excel`)
+
+- Sectie: `pt4` — PT4 - Excel/data sorteren en filteren
+- Type: `excel_download_task`
+- Itemversie: `lj1h-pt4-excel-v1`
+- Scoringversie: `auto-excel-download-task-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
 - Kerndoel/subdoel: 21C, 21A
-- Punten: 4
-- Vaardigheidsdomein: 21C Data
-- Instructie: Download LJ1_HV_Bibliotheek.xlsx. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Werk in de tabel hieronder. Stel per deelopdracht het gevraagde filter en de sortering in en klik op Toepassen. Je antwoord wordt beoordeeld op de handelingen in de tabel; je hoeft geen eindcode over te typen.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Bestand: LJ1_HV_Bibliotheek.xlsx
-Werkblad: Boeken
+### 6. Schermdelen in videogesprek (`lj1hv-pt6-screen-share`)
 
-Vragen en correcte antwoorden:
-- a (2 pt): Sorteer op Jaar, van nieuw naar oud. Welke code staat bovenaan?
-  - Correct antwoord/code: B07
-- b (2 pt): Filter op Vak = biologie. Sorteer daarna op Jaar, van oud naar nieuw. Welke code staat bovenaan?
-  - Correct antwoord/code: B06
-
-#### PT 5: Schermdelen in een online les (lj1hv-pt6-screen-share)
-
-- Sectie: PT6 - Videovergadering en schermdelen (pt6)
-- Item-id: lj1hv-pt6-screen-share
-- Type: teams_share_simulation
+- Sectie: `pt6` — PT6 - Videovergadering en schermdelen
+- Type: `teams_share_simulation`
+- Itemversie: `lj1hv-pt6-screen-share-v1`
+- Scoringversie: `auto-teams-share-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
 - Kerndoel/subdoel: 23A
-- Punten: 3
-- Vaardigheidsdomein: 21A Digitale systemen / 23B Digitaal burgerschap
-- Instructie: Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.
+- Maximumscore: 3
+- Historische id-alias(sen): geen
+- Leerlingtekst: Leerling Mark Canbers zit in een online gesprek met zijn docent. Mark wil de docent een filmfragment laten zien en horen. Mark wil niet dat de docent zijn andere vensters kan zien.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Scenario: Deel alleen het venster met het filmfragment. Gebruik computergeluid, maar deel niet je hele scherm.
-Knoppen: Camera, Microfoon, Chat, Deelnemers, Delen, Meer
-Deelopties: Hele scherm, Venster
-Vensters: Videospeler - filmfragment, Browser - rooster, Word - verslag, Excel - cijfers, Chat - klasgroep
-Correct venster: Videospeler - filmfragment
+### 7. Blokprogrammeren (`lj1h-pt7-programming-teddy-v1`)
 
-Scoringsregels:
-- window-not-screen: deelt een venster in plaats van het hele scherm. (1 pt) | condities=notWholeScreen
-- correct-window: kiest het juiste venster met het filmfragment. (1 pt) | condities=mediaPlayerSelected
-- sound: computergeluid staat aan. (1 pt) | condities=computerSoundOn
-
-#### PT 6: PT7 - Blokprogrammeren (lj1h-pt7-programming)
-
-- Sectie: PT7 - Blokprogrammeren (pt7)
-- Item-id: lj1h-pt7-programming
-- Type: block_programming_task
+- Sectie: `pt7` — Blokprogrammeren
+- Type: `block_programming_task`
+- Itemversie: `lj1h-pt7-programming-teddy-v1-v1`
+- Scoringversie: `auto-block-programming-task-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
 - Kerndoel/subdoel: 22B
-- Punten: 4
-- Vaardigheidsdomein: 22B Programmeren
-- Instructie: Programmeer Bizzy zodat hij 4 keer hetzelfde patroon uitvoert: 1 stap vooruit en daarna rechts draaien. Aan het einde zegt Bizzy "Vierkant".
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Blokprogrammeren
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Programmeertaak:
-- Intro: Programmeer Bizzy door blokken op het werkvlak te slepen.
-- Device: bizzy
-- Beschikbare blokken:
-  - bij start (gebeurtenissen; container)
-  - als Bizzy wordt aangeraakt (gebeurtenissen; kritieke afleider)
-  - herhaal 4 keer (besturing; container)
-  - herhaal 3 keer (besturing; container; kritieke afleider)
-  - herhaal 5 keer (besturing; container; kritieke afleider)
-  - 1 stap vooruit (beweging)
-  - 2 stappen vooruit (beweging)
-  - links draaien (beweging; kritieke afleider)
-  - rechts draaien (beweging)
-  - zeg "Vierkant" (uiterlijk)
-  - zeg "Klaar" (uiterlijk)
-  - wacht 1 seconde (besturing)
-- Correct programma:
-  - bij start
-  - herhaal 4 keer
-  - 1 stap vooruit
-  - rechts draaien
-  - zeg "Vierkant"
+### 8. PT8 - Online gedrag: privébericht doorsturen (`pt8-lj1h-private-screenshot-v5`)
 
-Scoringsregels:
-- repeat: gebruikt herhaalblok of correcte equivalente structuur. (1 pt) | vereist=herhaal 4 keer
-- pattern: patroon vooruit + rechts draaien correct. (1 pt) | genest=herhaal 4 keer > 1 stap vooruit; herhaal 4 keer > rechts draaien
-- repeat-four: herhaling 4 keer correct. (1 pt) | vereist=herhaal 4 keer
-- message: eindboodschap na de herhaling. (1 pt) | volgorde=herhaal 4 keer -> zeg "Vierkant"
+- Sectie: `pt8` — PT8 - Online gedrag
+- Type: `social_action_simulation`
+- Itemversie: `pt8-lj1h-private-screenshot-v5-v1`
+- Scoringversie: `auto-social-action-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Beoordeel het verzoek, voorkom verspreiding en kies passende steun.
+- Antwoordmogelijkheden/taakconfiguratie: risk: private-without-consent: Het bericht bevat persoonlijke informatie en Noor gaf geen toestemming. · recipient-may-share: De ontvanger van een privébericht mag bepalen in welke groep het verdergaat. · remove-name-enough: Het weglaten van Noors naam maakt de rest van de screenshot geschikt om te delen. · class-context: De klascontext maakt het bericht relevant genoeg voor de hele groep. / no-spread: refuse-forward: Ik stuur de screenshot niet door. · smaller-group: Ik stuur hem naar een kleinere groep die Noor goed kent. · ask-reactions: Ik plaats eerst een beschrijving en kijk hoe de groep reageert. · temporary-share: Ik deel hem als tijdelijk bericht zodat hij later verdwijnt. / support: ask-noor-support: Noor vragen welke hulp of steun zij prettig vindt. · decide-for-noor: Zelf beslissen wie er namens Noor in de klasgroep reageert. · advise-ignore: Noor aanraden niet te reageren zodat het onderwerp sneller verdwijnt. · explain-joke: Noor uitleggen dat klasgenoten het waarschijnlijk niet zwaar bedoelen. / help: pressure-continues: Als de druk, ruzie of verdere verspreiding doorgaat. · after-class-vote: Als een stemming in de klasgroep uitwijst dat veel leerlingen het erg vinden. · after-delete-fails: Als verwijderen van de screenshot op je eigen telefoon niet helpt. · when-sender-agrees: Als de oorspronkelijke afzender instemt met het betrekken van een volwassene.
 
-#### PT 7: Whutsupp: video in de groepschat (pt8-whutsupp-sam-video)
+### 9. Sterk wachtwoord kiezen (`lj1h-sr1-pw-passphrase`)
 
-- Sectie: PT8 - Online gedrag (pt8)
-- Item-id: pt8-whutsupp-sam-video
-- Type: social_action_simulation
-- Kerndoel/subdoel: 23B / 23B
-- Punten: 4
-- Vaardigheidsdomein: 23B Digitaal burgerschap
-- Instructie: Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.
-
-Schermen en antwoordmogelijkheden:
-- Deelverzoek in privéchat (judgement)
-  - Instructie: Je krijgt van een klasgenoot een privébericht: "Stuur deze screenshot van onze chat even door naar de groep, dan ziet iedereen wat Noor zei." In de screenshot staat iets persoonlijks over Noor. Noor weet niet dat dit wordt doorgestuurd.
-  - Groep judgement (single): Wat is de beste beoordeling?
-    - Opties: Niet doorsturen, want er staat persoonlijke informatie in en Noor gaf geen toestemming.; Doorsturen mag, want jij hebt de screenshot gekregen.; Doorsturen mag als je Noors naam weglaat.; Doorsturen mag als het alleen naar de klasgroep gaat.
-- Vervolgactie (followup)
-  - Instructie: Welke vervolgstappen zijn verstandig? Kies alle goede acties.
-  - Groep followup (multi): Vervolgstappen
-    - Opties: Uitleggen dat je dit niet doorstuurt.; Noor waarschuwen of vragen of zij hulp wil.; Een mentor/ouder/verantwoordelijke volwassene inschakelen als er druk of ruzie ontstaat.; De screenshot bewerken en dan alsnog delen.; De screenshot naar een kleinere groep sturen.
-
-Scoringsregels:
-- risk: herkent het probleem of risico. (1 pt) | groep=judgement | type=singleCorrect | correct=Niet doorsturen, want er staat persoonlijke informatie in en Noor gaf geen toestemming.
-- no-spread: voorkomt verdere verspreiding of escalatie. (1 pt) | groep=followup | type=allSelected | correct=Uitleggen dat je dit niet doorstuurt.
-- help: schakelt passende hulp of melding in. (1 pt) | groep=followup | type=minCorrect | correct=Noor waarschuwen of vragen of zij hulp wil., Een mentor/ouder/verantwoordelijke volwassene inschakelen als er druk of ruzie ontstaat. | minCorrect=1
-- followup: veilige vervolgstap zonder schadelijke deelactie. (1 pt) | groep=followup | type=allSelected | correct=Uitleggen dat je dit niet doorstuurt. | verboden=De screenshot bewerken en dan alsnog delen., De screenshot naar een kleinere groep sturen.
-
-Scorecaps:
-- harmful-cap: max 2 bij De screenshot bewerken en dan alsnog delen., De screenshot naar een kleinere groep sturen.
-
-Whutsupp-variant: Leerjaar 1 havo/vwo (lj1-hv)
-Taalniveau: low
-Groep: Klas 1H2 zonder docent
-
-Beslismomenten en antwoordmogelijkheden:
-- n1 / risk_boundary: Wat doe jij eerst?
-  - Bericht Noah: Haha kijk Sam 😂
-  - Bericht Noah: [videoCard: samStumbleVideo]
-  - Bericht Mila: Ik stuur hem ook naar de andere klas.
-  - Bericht Sam: Stop pls.
-  - n1_safe_boundary: Ik stuur: ‘Niet doorsturen. Sam wil dit niet.’ (correct; weet ik niet; score=1)
-  - n1_ridicule: Ik zet 😂 maar stuur niet door. (niet correct; weet ik niet; score=0; flags=ridicule_reaction)
-  - n1_forward_friend: Ik stuur de video alleen naar mijn beste vriend. (niet correct; weet ik niet; score=0; flags=harmful_share)
-  - n1_wait: Ik wacht wat de rest doet. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_support: Ik stuur: ‘Haal weg. Sam wil dit niet.’ (veilig herstel; flags=recovery_safe)
-    - recovery_private_only: Ik stuur alleen privé naar Sam: ‘Ik kan er niks aan doen.’ (niet veilig; flags=passive)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n2 / no_spread: Wat stuur je nu?
-  - Bericht Noah: Rustig, het is maar een grap.
-  - Bericht Mila: Doorsturen?
-  - Bericht Sam: Nee. Haal weg.
-  - n2_safe_no_spread: Ik stuur: ‘Haal weg en stuur niet door.’ (correct; weet ik niet; score=1)
-  - n2_sticker: Ik stuur: ‘Maak er dan een sticker van.’ (niet correct; weet ik niet; score=0; flags=harmful_share, ridicule_reaction)
-  - n2_only_known: Ik stuur: ‘Alleen naar mensen die Sam goed kennen.’ (niet correct; weet ik niet; score=0; flags=harmful_share)
-  - n2_teacher_later: Ik wacht tot een docent er iets van zegt. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_support: Ik stuur: ‘Haal weg. Sam wil dit niet.’ (veilig herstel; flags=recovery_safe)
-    - recovery_private_only: Ik stuur alleen privé naar Sam: ‘Ik kan er niks aan doen.’ (niet veilig; flags=passive)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n3 / support_target: Wat stuur je naar Sam?
-  - Bericht Sam: Ik vind dit echt vervelend.
-  - n3_safe_support: Ik stuur Sam: ‘Ik stuur niks door. Wil je dat ik met je meega naar de mentor?’ (correct; weet ik niet; score=1)
-  - n3_minimize: Ik stuur: ‘Trek je er niks van aan.’ (niet correct; weet ik niet; score=0; flags=victim_blaming_or_minimizing)
-  - n3_leave_chat: Ik stuur: ‘Ga gewoon uit de groep.’ (niet correct; weet ik niet; score=0; flags=victim_blaming_or_minimizing)
-  - n3_ask_more: Ik vraag of Sam nog meer filmpjes heeft. (niet correct; weet ik niet; score=0; flags=ridicule_reaction)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_support: Ik stuur: ‘Haal weg. Sam wil dit niet.’ (veilig herstel; flags=recovery_safe)
-    - recovery_private_only: Ik stuur alleen privé naar Sam: ‘Ik kan er niks aan doen.’ (niet veilig; flags=passive)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n4 / help_report: Wat doe je nu?
-  - Bericht Elin: Hij staat nu ook in een andere groep.
-  - Bericht Sam: Ze blijven hem sturen. Ik wil dit echt niet.
-  - n4_safe_help_report: Ik deel de video niet en vraag hulp bij een mentor, ouder of andere volwassene. (correct; weet ik niet; score=1)
-  - n4_unsafe_evidence: Ik stuur de video naar de mentor in de groepschat, zodat iedereen bewijs ziet. (niet correct; weet ik niet; score=0; flags=unsafe_evidence_share)
-  - n4_retaliate: Ik maak een grap terug over Noah. (niet correct; weet ik niet; score=0; flags=retaliation)
-  - n4_wait: Ik wacht tot het vanzelf stopt. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_support: Ik stuur: ‘Haal weg. Sam wil dit niet.’ (veilig herstel; flags=recovery_safe)
-    - recovery_private_only: Ik stuur alleen privé naar Sam: ‘Ik kan er niks aan doen.’ (niet veilig; flags=passive)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-
-### Selected-response vragen
-
-### Vraag 1: Sterk wachtwoord kiezen (lj1h-sr1-pw-passphrase)
-
-- Kerndoel/subdoel:  / 23A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Welk wachtwoord is het veiligst?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | DeBlauweTreinStaatNaastDeSporthal | ja |  |
-| B | Daan2012SchoolLent | nee |  |
-| C | !@#$%^&* | nee |  |
-| D | !Qw@#Er$% | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Lange wachtwoordzin zonder voorspelbare persoonlijke gegevens is sterker dan kortere patronen of symbolenreeksen.
-
-### Vraag 2: Mail over roosterwijziging (lj1h-sr2-rooster-mail)
-
-- Kerndoel/subdoel:  / 23A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Stimulus: e-mailbericht
-  - Van: Leerlingportaal <bericht@leerlingportaal-citadel.nl>
-  - Aan: sanne@leerling.citadelcollege.nl
-  - Onderwerp: Roosterwijziging deze week
-  - Tekst: Hallo Sanne,
-  - Tekst: Er is een roosterwijziging voor deze week. Log in om te bekijken om welke les het gaat.
-  - Link: Roosterwijziging bekijken (https://leerlingportaal-citadel.nl/rooster)
-- Vraag: Welke keuze is het verstandigst?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Zelf naar de bekende schoolomgeving gaan en daar kijken. | ja |  |
-| B | De knop gebruiken, omdat mijn naam in de mail staat. | nee |  |
-| C | De knop gebruiken, omdat de link op school lijkt. | nee |  |
-| D | De mail beantwoorden en vragen welke les is veranderd. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet keuze voor bekende schoolomgeving bij een gepersonaliseerde roosterwijzigingsmail met schoolachtig domein.
-- Reviewstatus: V3.7-review: roosterwijzigingsmail aangescherpt met personalisatie en schoolachtig domein.
-
-### Vraag 3: Trage telefoon (lj1h-sr3-phone-actions)
-
-- Kerndoel/subdoel:  / 21A
-- Vraagtype: multiple select
-- Correct antwoord: A, B
-- Weet-ik-niet-optie: F
-- Schadelijke afleider(s): geen
-- Vraag: Youssefs telefoon is traag en loopt soms vast. Welke twee acties kunnen meestal helpen?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Ongebruikte apps en grote bestanden opruimen. | ja |  |
-| B | Beschikbare updates via de instellingen installeren. | ja |  |
-| C | De helderheid van het scherm lager zetten. | nee |  |
-| D | Het toetsenbordgeluid uitzetten. | nee |  |
-| E | Het wachtwoord van de telefoon veranderen. | nee |  |
-| F | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Heldere functionele systeemhandelingen; C is plausibel bij batterijproblemen maar niet bij traagheid.
-
-### Vraag 4: Gerichte zoekopdracht (lj1h-sr4-search-query)
-
-- Kerndoel/subdoel:  / 21B
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je zoekt betrouwbare informatie over hoeveel jongeren in Nederland e-bikes gebruiken. Welke zoekopdracht helpt het best?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | onderzoek jongeren e-bike gebruik Nederland | ja |  |
-| B | e-bike jongeren kopen Nederland | nee |  |
-| C | jongeren fietsen school Nederland | nee |  |
-| D | elektrische fiets ervaring jongeren | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: A bevat onderzoek, doelgroep, onderwerp en land.
-
-### Vraag 5: Feed is geen steekproef (lj1h-sr5-feed-sample)
-
-- Kerndoel/subdoel:  / 21B
-- Vraagtype: single choice
-- Correct antwoord: opt_not_everyone_feed
-- Weet-ik-niet-optie: unknown
-- Schadelijke afleider(s): geen
-- Vraag: Noah kijkt een paar video’s waarin mensen zeggen dat huiswerk afgeschaft moet worden. Daarna ziet hij vooral video’s met dezelfde mening. Wat kan hij het best concluderen?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| opt_not_everyone_feed | Niet meteen dat bijna iedereen dit vindt; zijn feed kan door eerder kijkgedrag zijn beïnvloed. | ja |  |
-| opt_most_students | Dat de meeste leerlingen in Nederland tegen huiswerk zijn. | nee |  |
-| opt_no_other_opinions | Dat video’s met een andere mening waarschijnlijk niet bestaan. | nee |  |
-| opt_neutral_platform | Dat het platform altijd neutraal laat zien wat mensen denken. | nee |  |
-| unknown | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet dat een persoonlijke feed geen representatieve steekproef is en door eerder gedrag beïnvloed kan zijn.
-- Reviewstatus: V3.6-review: vervangen volgens aangeleverde v3.6 SR21B-bijlage.
-
-### Vraag 6: Steekproef (lj1h-sr6-sample)
-
-- Kerndoel/subdoel:  / 21C
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Een dataset bevat alleen antwoorden van leerlingen uit één klas. Waar moet je voor oppassen?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Je kunt niet zomaar zeggen dat dit voor alle leerlingen geldt. | ja |  |
-| B | Eén klas is altijd genoeg om iets over heel Nederland te zeggen. | nee |  |
-| C | De dataset is automatisch fout. | nee |  |
-| D | Meer data maakt nooit verschil. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet dataconclusie en generaliseerbaarheid.
-
-### Vraag 7: Online game en persoonsgegevens (lj1h-sr7-ai-startpunt)
-
-- Kerndoel/subdoel: 23 / 23B
-- Vraagtype: single choice
-- Correct antwoord: C
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Je geeft alleen je voornaam en leeftijd, maar niet je adres. | nee |  |
-| B | Je vraagt waarom die persoon dat wil weten en beslist daarna. | nee |  |
-| C | Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. | ja |  |
-| D | Je geeft de gegevens als jullie al een tijdje samen spelen. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
-
-### Vraag 8: Foto in online leeromgeving (lj1h-sr8-image-source)
-
-- Kerndoel/subdoel: 22 / 22A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je gebruikt een foto in een presentatie. De presentatie komt in de online leeromgeving. Wat controleer je eerst?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Of je de foto mag gebruiken en welke maker of bron je moet noemen. | ja |  |
-| B | Of de foto op veel websites staat. Dan zal hij wel vrij zijn. | nee |  |
-| C | Of je de foto bijsnijdt. Dan hoef je de maker niet te noemen. | nee |  |
-| D | Of alleen je klas de presentatie ziet. Dan gelden er geen regels. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Heldere publicatiecontext en realistische afleiders.
-
-### Vraag 9: Foto delen bij twijfel (lj1h-sr9-photo-share)
-
-- Kerndoel/subdoel: 23 / 23B
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je hebt een grappige foto van twee klasgenoten. Eén van hen twijfelt of de foto gedeeld mag worden. Wat doe je?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Je deelt de foto niet totdat iedereen akkoord is. | ja |  |
-| B | Je deelt de foto alleen in een besloten groep. | nee |  |
-| C | Je deelt de foto zonder namen erbij. | nee |  |
-| D | Je deelt de foto en zet erbij dat het een grap is. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Twijfel maakt het scenario realistischer.
-
-### Vraag 10: Eén app voor schoolzaken (lj1h-sr10-platform-risk)
-
-- Kerndoel/subdoel: 23 / 23C
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Een school gebruikt één app voor rooster, huiswerk en berichten. Wat is een belangrijk risico?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Als de app niet werkt, valt veel schoolinformatie tegelijk weg. | ja |  |
-| B | Leerlingen hoeven minder verschillende apps te openen. | nee |  |
-| C | Docenten kunnen berichten op één plek zetten. | nee |  |
-| D | De app kan dezelfde kleur gebruiken voor alle klassen. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Leerlingen onderscheiden risico van voordeel.
-
-## Leerjaar 3 VMBO (lj3-vmbo)
-
-### Performance tasks
-
-#### PT 1: PT1 - Bestanden en mappen beheren (lj3v-pt1-files)
-
-- Sectie: PT1 - Bestanden en mappen (pt1)
-- Item-id: lj3v-pt1-files
-- Type: file_task_simulation
-- Kerndoel/subdoel: 21A
-- Punten: 4
-- Vaardigheidsdomein: 21A Digitale systemen
-- Instructie: Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Volgende. Werk in OneDrive in de map Stageproject. Maak de mappen Actueel en Oud. Zet de nieuwste versie van het stageverslag in Actueel, zet oudere versies in Oud en hernoem stageverslag_v3.docx naar stageverslag_2026_definitief.docx.
-
-Opdrachten:
-- folders (1 pt): mappen Actueel en Oud correct.
-  - Verwachte paden: Thuis/OneDrive/Stageproject/Actueel; Thuis/OneDrive/Stageproject/Oud
-- newest (1 pt): nieuwste versie herkend en correct geplaatst.
-  - Verwacht pad: Thuis/OneDrive/Stageproject/Actueel/stageverslag_2026_definitief.docx
-- archive (1 pt): oudere versies correct gearchiveerd.
-  - Verwachte paden: Thuis/OneDrive/Stageproject/Oud/stageverslag_v1.docx; Thuis/OneDrive/Stageproject/Oud/stageverslag_v2.docx
-- name (1 pt): juiste definitieve bestandsnaam.
-  - Verwacht pad: Thuis/OneDrive/Stageproject/Actueel/stageverslag_2026_definitief.docx
-  - Verboden paden: Thuis/OneDrive/Stageproject/stageverslag_v3.docx
-
-#### PT 2: E-mail opstellen (lj3v-pt2-mail)
-
-- Sectie: PT2 - Mail opstellen (pt2)
-- Item-id: lj3v-pt2-mail
-- Type: outlook_mail_simulation
-- Kerndoel/subdoel: 21A
-- Punten: 4
-- Vaardigheidsdomein: 21A Digitale systemen / 23B Digitaal burgerschap
-- Instructie: Stuur een e-mail aan je stagebegeleider. 1. Kies de stagebegeleider als ontvanger in Aan. 2. Zet je mentor in Cc en gebruik geen Bcc. 3. Gebruik het juiste onderwerp: Stageverslag definitieve versie. 4. Voeg de juiste bijlage toe. 5. Verzend de e-mail.
-
-Beschikbare opties:
-- Knoppen: Verzenden, BCC tonen, Bestand bijvoegen, Hyperlink invoegen, Prioriteit, Concept opslaan, Verwijderen
-- Contacten: docent@school.nl, groepsgenoot1@school.nl, groepsgenoot2@school.nl, klasgroep@school.nl, mentor@school.nl, projectgenoot@school.nl, stagebegeleider@bedrijf.nl
-- Bestanden: Beoordeling_stage.pdf, Planning_stage.xlsx, Stageverslag_v2.docx, Stageverslag_v3_definitief.docx
-
-Scoringsregels:
-- to: juiste ontvanger. (1 pt) | condities=to includes stagebegeleider@bedrijf.nl
-- to includes stagebegeleider@bedrijf.nl
-- cc-bcc: juiste cc en bcc waar nodig. (1 pt) | condities=cc allInclude mentor@school.nl; bcc noneInclude mentor@school.nl, docent@school.nl, klasgroep@school.nl
-- cc allInclude mentor@school.nl
-- bcc noneInclude mentor@school.nl, docent@school.nl, klasgroep@school.nl
-- subject: juist onderwerp. (1 pt) | condities=subject equals Stageverslag definitieve versie
-- subject equals Stageverslag definitieve versie
-- attachment-sent: juiste bijlage en verzonden. (1 pt) | condities=attachments includes Stageverslag_v3_definitief.docx; sent true
-- attachments includes Stageverslag_v3_definitief.docx
-- sent true
-
-#### PT 3: PT3 - Bericht beoordelen (lj3v-pt3-security)
-
-- Sectie: PT3 - Account, apparaat en verbinding beveiligen (pt3)
-- Item-id: lj3v-pt3-security
-- Type: account_security_simulation
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1h-sr1-pw-passphrase-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
 - Kerndoel/subdoel: 23A
-- Punten: 3
-- Vaardigheidsdomein: 23A Veiligheid en privacy
-- Instructie: Bekijk de e-mail en kies je antwoorden.
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Welk wachtwoord is het veiligst?
+- Antwoordmogelijkheden/taakconfiguratie: A: DeBlauweTreinStaatNaastDeSporthal · B: Daan2012SchoolLent · C: !@#$%^&* · D: !Qw@#Er$% · E: Ik weet het niet.
 
-Schermen en antwoordmogelijkheden:
-- Mail met bestand (attachment-mail)
-  - Instructie: Jayden krijgt deze mail vlak voor een toetsweek.
-  - E-mail: Cijferlijst controleren
-    - Van: Cijfersysteem <c1jf3r-upd8-771@doc-viewer-login.com>
-    - Tekst: Hallo,
-    - Tekst: Er is een fout gevonden in je cijferlijst. Open de bijlage en schakel bewerken in om de nieuwe cijfers te bekijken.
-    - Tekst: Controleer dit voor morgen.
-  - Groep signals (multi): Welke signalen vragen om extra controle?
-    - Opties: Het afzenderadres hoort niet duidelijk bij school.; De bijlage is een macrobestand.; De mail vraagt om bewerken of macro's in te schakelen.; De mail zet druk met een korte deadline.; De mail gaat over cijfers.
-  - Groep actions (multi): Wat is veilig om te doen?
-    - Opties: Bijlage niet openen of macro's niet inschakelen.; Cijfers controleren via het normale schoolportaal.; De mail melden of laten controleren.; Bijlage openen en bewerken inschakelen.; Inloggen via de link in de mail.
+### 10. AI zorgvuldig gebruiken (`lj1h-vraag9-ai-acties-v5`)
 
-Scoringsregels:
-- signals: herkent minimaal twee signalen in de mail. (1 pt) | groep=signals | type=minCorrect | correct=Het afzenderadres hoort niet duidelijk bij school., De bijlage is een macrobestand., De mail vraagt om bewerken of macro's in te schakelen., De mail zet druk met een korte deadline. | minCorrect=2
-- safe-actions: kiest veilige controle- en meldactie. (1 pt) | groep=actions | type=allSelected | correct=Bijlage niet openen of macro's niet inschakelen., Cijfers controleren via het normale schoolportaal.
-- no-danger: kiest geen risicovolle actie. (1 pt) | groep=actions | type=noForbidden | verboden=Bijlage openen en bewerken inschakelen., Inloggen via de link in de mail.
+- Sectie: `sr` — Meerkeuze
+- Type: `social_action_simulation`
+- Itemversie: `vraag9-ai-21d-v5`
+- Scoringversie: `auto-social-action-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 21D
+- Maximumscore: 2
+- Historische id-alias(sen): geen
+- Leerlingtekst: Sorteer de acties bij zorgvuldig gebruik van AI.
+- Antwoordmogelijkheden/taakconfiguratie: ai-actions: careful: Verstandig · not-careful: Niet verstandig
 
-#### PT 4: PT4 - Excel/data sorteren en filteren (lj3v-pt4-excel)
+### 11. Trage telefoon (`lj1h-sr3-phone-actions`)
 
-- Sectie: PT4 - Excel/data sorteren en filteren (pt4)
-- Item-id: lj3v-pt4-excel
-- Type: excel_download_task
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1h-sr3-phone-actions-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Youssefs telefoon is traag en loopt soms vast. Welke twee acties kunnen meestal helpen?
+- Antwoordmogelijkheden/taakconfiguratie: A: Ongebruikte apps en grote bestanden opruimen. · B: Beschikbare updates via de instellingen installeren. · C: De helderheid van het scherm lager zetten. · D: Het toetsenbordgeluid uitzetten. · E: Het wachtwoord van de telefoon veranderen. · F: Ik weet het niet.
+
+### 12. Zoekresultaten beoordelen (`lj1h-sr4-search-query`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `source-results-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 21B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Je zoekt cijfers over e-bikegebruik onder jongeren in Nederland. Welk zoekresultaat is het beste startpunt om te openen en daarna op methode, datum en bron te controleren?
+- Antwoordmogelijkheden/taakconfiguratie: A: Landelijke Mobiliteitsmonitor 2025 · B: E-bikeShop: bijna iedere tiener wil elektrisch · C: Poll van klas 1H over fietsen naar school · D: Ervaringen met mijn eerste e-bike · E: Ik weet het niet.
+
+### 13. Feed is geen steekproef (`lj1h-sr5-feed-sample`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1h-sr5-feed-sample-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 21B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Noah kijkt een paar video’s waarin mensen zeggen dat huiswerk afgeschaft moet worden. Daarna ziet hij vooral video’s met dezelfde mening. Wat kan hij het best concluderen?
+- Antwoordmogelijkheden/taakconfiguratie: opt_not_everyone_feed: Niet meteen dat bijna iedereen dit vindt; zijn feed kan door eerder kijkgedrag zijn beïnvloed. · opt_most_students: Dat de meeste leerlingen in Nederland tegen huiswerk zijn. · opt_no_other_opinions: Dat video’s met een andere mening waarschijnlijk niet bestaan. · opt_neutral_platform: Dat het platform meestal een neutraal beeld laat zien van wat mensen denken. · unknown: Ik weet het niet.
+
+### 14. Steekproef (`lj1h-sr6-sample`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1h-sr6-sample-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 21C
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Een dataset bevat alleen antwoorden van leerlingen uit één klas. Waar moet je voor oppassen?
+- Antwoordmogelijkheden/taakconfiguratie: A: Je kunt niet zomaar zeggen dat dit voor alle leerlingen geldt. · B: Eén klas geeft waarschijnlijk een bruikbaar beeld van leerlingen in Nederland. · C: De dataset is onbetrouwbaar doordat de antwoorden uit dezelfde klas komen. · D: Meer antwoorden uit diezelfde klas lossen het belangrijkste probleem op. · E: Ik weet het niet.
+
+### 15. Online game en persoonsgegevens (`lj1h-sr7-online-personal-data`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1h-sr7-online-personal-data-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 1
+- Historische id-alias(sen): `lj1h-sr7-ai-startpunt`
+- Leerlingtekst: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?
+- Antwoordmogelijkheden/taakconfiguratie: A: Je deelt je voornaam en leeftijd, maar houdt je buurt geheim. · B: Je vraagt waarom die persoon dat wil weten en beslist daarna. · C: Je deelt de gevraagde persoonsgegevens niet. · D: Je geeft de gegevens als jullie al een tijdje samen spelen. · E: Ik weet het niet.
+
+### 16. Foto in online leeromgeving (`lj1h-sr8-image-source`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1h-sr8-image-source-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 22A
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Je gebruikt een foto in een presentatie. De presentatie komt in de online leeromgeving. Wat controleer je eerst?
+- Antwoordmogelijkheden/taakconfiguratie: A: Of je de foto mag gebruiken en welke maker of bron je moet noemen. · B: Of de foto op veel websites staat. Dan zal hij wel vrij zijn. · C: Of je de foto bijsnijdt. Dan hoef je de maker niet te noemen. · D: Of de presentatie binnen de klas blijft; dan is toestemming van de maker minder belangrijk. · E: Ik weet het niet.
+
+### 17. Foto delen bij twijfel (`lj1h-sr9-photo-share`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj1h-sr9-photo-share-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Je hebt een grappige foto van twee klasgenoten. Eén van hen twijfelt of de foto gedeeld mag worden. Wat doe je?
+- Antwoordmogelijkheden/taakconfiguratie: A: Je deelt de foto niet totdat iedereen akkoord is. · B: Je deelt de foto in een besloten groep waar beide klasgenoten lid van zijn. · C: Je deelt de foto zonder namen erbij. · D: Je deelt de foto en zet erbij dat het een grap is. · E: Ik weet het niet.
+
+### 18. Eén app voor schoolzaken (`lj1h-sr10-platform-risk`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `platform-dependence-v2`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257`
+- Kerndoel/subdoel: 23C
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Een school gebruikt één app voor rooster, huiswerk en berichten. Wat is een belangrijk risico?
+- Antwoordmogelijkheden/taakconfiguratie: A: Als de app niet werkt, valt veel schoolinformatie tegelijk weg. · B: De onderdelen blijven waarschijnlijk los van elkaar werken, omdat ze verschillende menu’s hebben. · C: Leerlingen kunnen de laatst bekeken informatie meestal volledig uit hun toestel terughalen. · D: Een grote leverancier kan een storing doorgaans zo snel oplossen dat school er weinig van merkt. · E: Ik weet het niet.
+
+## Leerjaar 3 VMBO (`lj3-vmbo`)
+
+- Assessment-buildversie: `dg-pilot-2026.08.25.3`
+- Assessment-inhoudshash (SHA-256): `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Maximumscore: 37
+- Aantal items/taken: 18
+
+### 1. Zelfinschatting (`self-assessment`)
+
+- Sectie: `zelfinschatting` — Zelfinschatting
+- Type: `self_assessment`
+- Itemversie: `self-assessment-v1`
+- Scoringversie: `auto-self-assessment-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: niet-scorend
+- Maximumscore: 0
+- Historische id-alias(sen): geen
+- Leerlingtekst: Hoe digitaal geletterd schat je jezelf in? Schuif het bolletje naar jouw keuze. 0 betekent: ik schat mezelf helemaal niet digitaal geletterd in. 100 betekent: ik schat mezelf heel digitaal geletterd in.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 2. PT1 - Bestanden en mappen beheren (`lj3v-pt1-files`)
+
+- Sectie: `pt1` — PT1 - Bestanden en mappen
+- Type: `file_task_simulation`
+- Itemversie: `lj3v-pt1-files-v1`
+- Scoringversie: `auto-file-task-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Werk in het venster hieronder. Voer de opdrachten uit en klik daarna op Volgende. Werk in OneDrive in de map Stageproject. Maak de mappen Actueel en Oud. Zet de nieuwste versie van het stageverslag in Actueel, zet oudere versies in Oud en hernoem stageverslag_v3.docx naar stageverslag_2026_definitief.docx.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 3. E-mail opstellen (`lj3v-pt2-mail`)
+
+- Sectie: `pt2` — PT2 - Mail opstellen
+- Type: `outlook_mail_simulation`
+- Itemversie: `lj3v-pt2-mail-v1`
+- Scoringversie: `auto-outlook-mail-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Stuur een e-mail aan je stagebegeleider. 1. Kies de stagebegeleider als ontvanger in Aan. 2. Zet je mentor in Cc en gebruik geen Bcc. 3. Gebruik het juiste onderwerp: Stageverslag definitieve versie. 4. Voeg de juiste bijlage toe. 5. Verzend de e-mail.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 4. PT3 - Phishingmail beoordelen (`lj3v-pt3-security`)
+
+- Sectie: `pt3` — PT3 - Account, apparaat en verbinding beveiligen
+- Type: `account_security_simulation`
+- Itemversie: `lj3v-pt3-security-v1`
+- Scoringversie: `auto-account-security-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 23A
+- Maximumscore: 3
+- Historische id-alias(sen): geen
+- Leerlingtekst: Onderzoek de StreamFlix-mail en beantwoord beide vragen.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 5. PT4 - Tabelgegevens filteren en sorteren (`lj3v-pt4-excel`)
+
+- Sectie: `pt4` — PT4 - Excel/data sorteren en filteren
+- Type: `excel_download_task`
+- Itemversie: `lj3v-pt4-excel-v1`
+- Scoringversie: `auto-excel-download-task-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
 - Kerndoel/subdoel: 21C, 21A
-- Punten: 4
-- Vaardigheidsdomein: 21C Data
-- Instructie: Download LJ3_VMBO_Bestellingen.xlsx. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Werk in de tabel hieronder. Stel per deelopdracht het gevraagde filter en de sortering in en klik op Toepassen. Je antwoord wordt beoordeeld op de handelingen in de tabel; je hoeft geen eindcode over te typen.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Bestand: LJ3_VMBO_Bestellingen.xlsx
-Werkblad: Bestellingen
+### 6. Schermdelen in videogesprek (`lj3vmbo-pt6-screen-share`)
 
-Vragen en correcte antwoorden:
-- a (2 pt): Filter op Categorie = elektronica. Sorteer daarna op Jaar, van nieuw naar oud. Welke code staat bovenaan?
-  - Correct antwoord/code: W02
-- b (2 pt): Filter op Bedrag > 60. Sorteer daarna op Bedrag, van hoog naar laag. Welke code staat bovenaan?
-  - Correct antwoord/code: W06
-
-#### PT 5: Schermdelen in een online les (lj3vmbo-pt6-screen-share)
-
-- Sectie: PT6 - Videovergadering en schermdelen (pt6)
-- Item-id: lj3vmbo-pt6-screen-share
-- Type: teams_share_simulation
+- Sectie: `pt6` — PT6 - Videovergadering en schermdelen
+- Type: `teams_share_simulation`
+- Itemversie: `lj3vmbo-pt6-screen-share-v1`
+- Scoringversie: `auto-teams-share-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
 - Kerndoel/subdoel: 23A
-- Punten: 3
-- Vaardigheidsdomein: 21A Digitale systemen / 23B Digitaal burgerschap
-- Instructie: Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.
+- Maximumscore: 3
+- Historische id-alias(sen): geen
+- Leerlingtekst: Leerling Mark Canbers zit in een online gesprek met zijn docent. Mark wil de docent een filmfragment laten zien en horen. Mark wil niet dat de docent zijn andere vensters kan zien.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Scenario: Deel alleen het venster met het filmfragment. Gebruik computergeluid, maar deel niet je hele scherm.
-Knoppen: Camera, Microfoon, Chat, Deelnemers, Delen, Meer
-Deelopties: Hele scherm, Venster
-Vensters: Videospeler - filmfragment, Browser - rooster, Word - verslag, Excel - cijfers, Chat - klasgroep
-Correct venster: Videospeler - filmfragment
+### 7. Blokprogrammeren (`lj3v-pt7-programming-teddy-v1`)
 
-Scoringsregels:
-- window-not-screen: deelt een venster in plaats van het hele scherm. (1 pt) | condities=notWholeScreen
-- correct-window: kiest het juiste venster met het filmfragment. (1 pt) | condities=mediaPlayerSelected
-- sound: computergeluid staat aan. (1 pt) | condities=computerSoundOn
-
-#### PT 6: PT7 - Blokprogrammeren (lj3v-pt7-programming)
-
-- Sectie: PT7 - Blokprogrammeren (pt7)
-- Item-id: lj3v-pt7-programming
-- Type: block_programming_task
+- Sectie: `pt7` — Blokprogrammeren
+- Type: `block_programming_task`
+- Itemversie: `lj3v-pt7-programming-teddy-v1-v1`
+- Scoringversie: `auto-block-programming-task-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
 - Kerndoel/subdoel: 22B
-- Punten: 4
-- Vaardigheidsdomein: 22B Programmeren
-- Instructie: Elke klik op knop A verhoogt de teller met 1. Als de teller 5 of hoger is, zegt Bizzy "Vol". Anders zegt Bizzy "Nog plek".
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Blokprogrammeren
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Programmeertaak:
-- Intro: Programmeer een eenvoudige wachtrij met een teller.
-- Device: microbit
-- Beschikbare blokken:
-  - bij start (gebeurtenissen; container)
-  - zet teller op 0 (variabelen)
-  - zet teller op 5 (variabelen; kritieke afleider)
-  - als knop A wordt ingedrukt (gebeurtenissen; container)
-  - als knop B wordt ingedrukt (gebeurtenissen; container)
-  - verander teller met 1 (variabelen)
-  - verander teller met -1 (variabelen; kritieke afleider)
-  - als teller >= 5 dan (besturing; container)
-  - als teller > 10 dan (besturing; container; kritieke afleider)
-  - als teller < 5 dan (besturing; container)
-  - zeg "Vol" (uiterlijk)
-  - zeg "Nog plek" (uiterlijk)
-  - zeg "Leeg" (uiterlijk)
-  - anders (besturing; container)
-- Correct programma:
-  - bij start
-  - zet teller op 0
-  - als knop A wordt ingedrukt
-  - verander teller met 1
-  - als teller >= 5 dan
-  - zeg "Vol"
-  - anders
-  - zeg "Nog plek"
+### 8. PT8 - Online gedrag: nepaccount (`pt8-lj3v-impersonation-v5`)
 
-Scoringsregels:
-- variable: teller/variabele correct gebruikt. (1 pt) | vereist=zet teller op 0
-- button: knop A verhoogt teller met 1. (1 pt) | genest=als knop A wordt ingedrukt > verander teller met 1
-- condition: voorwaarde teller >= 5 correct. (1 pt) | vereist=als teller >= 5 dan
-- outcomes: juiste uitkomstteksten bij beide situaties. (1 pt) | vereist=zeg "Vol", zeg "Nog plek"
+- Sectie: `pt8` — PT8 - Online gedrag
+- Type: `social_action_simulation`
+- Itemversie: `pt8-lj3v-impersonation-v5-v1`
+- Scoringversie: `auto-social-action-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Beoordeel identiteitsmisbruik en kies veilige, niet-escalerende vervolgstappen.
+- Antwoordmogelijkheden/taakconfiguratie: risk: identity-misuse: Iemand doet zich digitaal als jou voor en kan anderen misleiden. · duplicate-profile: Twee accounts met dezelfde foto zorgen vooral voor verwarring in de zoekresultaten. · school-joke: Een account onder een bekende naam is aannemelijk bedoeld als grap binnen school. · profile-ownership: Wie een openbare profielfoto vindt, kan die gebruiken voor een nieuw profiel. / no-escalation: no-public-reply: Niet via een openbaar bericht reageren op het nepaccount. · name-suspect: In de klassenapp noemen wie volgens jou achter het account zit. · counter-account: Een tweede account maken om de berichten van het nepaccount tegen te spreken. · ask-follow: Klasgenoten vragen het account te volgen om de activiteit zichtbaar te houden. / report: platform-report: Het account via de meldfunctie van het platform rapporteren. · mass-message: Een waarschuwing met screenshots naar alle contacten sturen. · direct-demand: Het account een privébericht sturen met de eis zichzelf bekend te maken. · public-poll: Een openbare poll maken over wie het account beheert. / secure: privacy-check: De beveiligings- en privacyinstellingen van je eigen account controleren. · delete-real-account: Je echte account verwijderen zodat het nepaccount minder opvalt. · publish-personal-proof: Extra persoonsgegevens publiceren om te bewijzen welk account echt is. · share-password-friend: Een vriend toegang geven tot je account zodat die kan meekijken.
 
-#### PT 7: Whutsupp: video in de groepschat (pt8-whutsupp-sam-video)
+### 9. Mail over nieuw cijfer (`lj3v-sr1-cijfermail`)
 
-- Sectie: PT8 - Online gedrag (pt8)
-- Item-id: pt8-whutsupp-sam-video
-- Type: social_action_simulation
-- Kerndoel/subdoel: 23B / 23B
-- Punten: 4
-- Vaardigheidsdomein: 23B Digitaal burgerschap
-- Instructie: Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.
-
-Schermen en antwoordmogelijkheden:
-- Nepaccount met jouw foto (first)
-  - Instructie: Iemand maakt een account aan met jouw naam en profielfoto. Het account stuurt rare berichten naar leerlingen van school. Jij weet niet wie het heeft gedaan.
-  - Groep first (single): Wat is de beste eerste aanpak?
-    - Opties: Niet terugdreigen; het account rapporteren en hulp inschakelen.; Zelf een nepaccount maken om terug te pakken.; Iedereen vragen het account te volgen om bewijs te verzamelen.; Je echte account verwijderen en niemand iets vertellen.
-- Veilige stappen (steps)
-  - Instructie: Welke stappen zijn veilig? Kies alle goede acties.
-  - Groep steps (multi): Stappen
-    - Opties: Het account rapporteren bij het platform.; Een mentor/ouder/verantwoordelijke volwassene vragen om te helpen bewijs veilig vast te leggen zonder het te verspreiden.; Je eigen accountinstellingen en privacy controleren.; Screenshots in de klassenapp zetten zodat iedereen ziet dat het nep is.; De vermoedelijke dader online beschuldigen.
-
-Scoringsregels:
-- risk: herkent het probleem of risico. (1 pt) | groep=first | type=singleCorrect | correct=Niet terugdreigen; het account rapporteren en hulp inschakelen.
-- no-escalation: voorkomt verdere verspreiding of escalatie. (1 pt) | groep=first | type=noForbidden | verboden=Zelf een nepaccount maken om terug te pakken., Iedereen vragen het account te volgen om bewijs te verzamelen.
-- report-help: schakelt passende hulp of melding in. (1 pt) | groep=steps | type=minCorrect | correct=Het account rapporteren bij het platform. | minCorrect=1
-- safe-followup: veilige bewijs- of privacyactie. (1 pt) | groep=steps | type=minCorrect | correct=Een mentor/ouder/verantwoordelijke volwassene vragen om te helpen bewijs veilig vast te leggen zonder het te verspreiden., Je eigen accountinstellingen en privacy controleren. | minCorrect=1
-
-Scorecaps:
-- harmful-cap: max 2 bij Zelf een nepaccount maken om terug te pakken., Iedereen vragen het account te volgen om bewijs te verzamelen., Screenshots in de klassenapp zetten zodat iedereen ziet dat het nep is., De vermoedelijke dader online beschuldigen.
-
-Whutsupp-variant: Leerjaar 3 vmbo (lj3-vmbo)
-Taalniveau: medium
-Groep: Klas 3V2 zonder docent
-
-Beslismomenten en antwoordmogelijkheden:
-- n1 / risk_boundary: Wat doe jij eerst?
-  - Bericht Noah: Haha kijk Sam 😂
-  - Bericht Noah: [videoCard: samStumbleVideo]
-  - Bericht Jay: Maak er een sticker van.
-  - Bericht Mila: Ik stuur hem ook naar de andere klas.
-  - Bericht Sam: Stop. Ik wil dit niet online.
-  - n1_safe_boundary: Ik stuur: ‘Niet doorsturen. Sam zegt dat hij dit niet wil.’ (correct; weet ik niet; score=1)
-  - n1_ridicule: Ik reageer met 😂, maar stuur de video niet door. (niet correct; weet ik niet; score=0; flags=ridicule_reaction)
-  - n1_forward_friend: Ik stuur de video alleen privé door naar één vriend. (niet correct; weet ik niet; score=0; flags=harmful_share)
-  - n1_wait: Ik wacht af; misschien stopt het vanzelf. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_report: Ik stop met reageren, deel niets verder en vraag hulp via een veilige route. (veilig herstel; flags=recovery_safe)
-    - recovery_public_proof: Ik stuur de video in de groep als bewijs dat het echt gebeurt. (niet veilig; flags=unsafe_evidence_share)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n2 / no_spread: Welke reactie past nu het best?
-  - Bericht Noah: Rustig, dit is gewoon een grap.
-  - Bericht Mila: Zal ik hem in de parallelklas zetten?
-  - Bericht Sam: Nee. Haal de video weg.
-  - Bericht Jay: Als hij niet online wil, had hij maar niet moeten vallen.
-  - n2_safe_no_spread: Ik stuur: ‘Haal de video weg en stuur hem niet verder.’ (correct; weet ik niet; score=1)
-  - n2_sticker: Ik stel voor er een sticker of meme van te maken. (niet correct; weet ik niet; score=0; flags=harmful_share, ridicule_reaction)
-  - n2_only_known: Ik zeg dat doorsturen alleen mag naar mensen die Sam goed kennen. (niet correct; weet ik niet; score=0; flags=harmful_share)
-  - n2_teacher_later: Ik laat het staan tot school of een docent reageert. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_report: Ik stop met reageren, deel niets verder en vraag hulp via een veilige route. (veilig herstel; flags=recovery_safe)
-    - recovery_public_proof: Ik stuur de video in de groep als bewijs dat het echt gebeurt. (niet veilig; flags=unsafe_evidence_share)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n3 / support_target: Wat stuur je naar Sam?
-  - Bericht Sam: Ik vind dit echt vervelend. Ik wil niet dat iedereen dit ziet.
-  - Bericht Sam: Ik durf niks meer in de groep te zetten.
-  - n3_safe_support: Ik stuur Sam: ‘Ik deel niets. Wil je dat ik met je meega naar de mentor of help met melden?’ (correct; weet ik niet; score=1)
-  - n3_minimize: Ik stuur: ‘Laat maar, morgen is iedereen het vergeten.’ (niet correct; weet ik niet; score=0; flags=victim_blaming_or_minimizing)
-  - n3_leave_chat: Ik adviseer Sam om zelf uit de groepschat te gaan. (niet correct; weet ik niet; score=0; flags=victim_blaming_or_minimizing)
-  - n3_ask_more: Ik vraag Sam of er nog meer video’s zijn, zodat ik kan zien hoe erg het is. (niet correct; weet ik niet; score=0; flags=ridicule_reaction)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_report: Ik stop met reageren, deel niets verder en vraag hulp via een veilige route. (veilig herstel; flags=recovery_safe)
-    - recovery_public_proof: Ik stuur de video in de groep als bewijs dat het echt gebeurt. (niet veilig; flags=unsafe_evidence_share)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n4 / help_report: Wat doe je nu?
-  - Bericht Elin: De video staat nu ook in een andere groepschat.
-  - Bericht Sam: Ze blijven hem sturen. Ik wil dat dit stopt.
-  - Bericht Mila: Iemand wil hem straks op story zetten.
-  - n4_safe_help_report: Ik deel niets verder en vraag hulp bij mentor of ouder. Bewijs bewaar ik alleen volgens schoolafspraak. (correct; weet ik niet; score=1)
-  - n4_unsafe_evidence: Ik stuur de video in de klasgroep zodat iedereen ziet wat er gebeurt. (niet correct; weet ik niet; score=0; flags=unsafe_evidence_share)
-  - n4_retaliate: Ik maak een gênante post over Noah terug. (niet correct; weet ik niet; score=0; flags=retaliation)
-  - n4_wait: Ik doe niets; misschien zakt het vanzelf weg. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_report: Ik stop met reageren, deel niets verder en vraag hulp via een veilige route. (veilig herstel; flags=recovery_safe)
-    - recovery_public_proof: Ik stuur de video in de groep als bewijs dat het echt gebeurt. (niet veilig; flags=unsafe_evidence_share)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-
-### Selected-response vragen
-
-### Vraag 1: Mail over nieuw cijfer (lj3v-sr1-cijfermail)
-
-- Kerndoel/subdoel:  / 23A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Stimulus: e-mailbericht
-  - Van: Cijferportaal <noreply@cijferportaal-school.nl>
-  - Aan: sanne@leerling.citadelcollege.nl
-  - Onderwerp: Nieuw cijfer beschikbaar
-  - Tekst: Hallo Sanne,
-  - Tekst: Er staat een nieuw cijfer klaar. Log in om je cijfer te bekijken.
-  - Link: Bekijk cijfer (https://cijferportaal-school.nl/login)
-- Vraag: Wat doe je?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Ik open mijn cijfers via de normale schoolomgeving. | ja |  |
-| B | Ik gebruik de knop, want cijfers bekijken vraagt altijd om inloggen. | nee |  |
-| C | Ik gebruik de knop, omdat de mail van een cijferportaal lijkt te komen. | nee |  |
-| D | Ik zoek de naam van de site op en klik dan alsnog op de link. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet keuze voor normale schoolomgeving bij cijferlogincontext; afleiders richten op verwachte login, afzendernaamvertrouwen en zwakke verificatie.
-- Reviewstatus: V3.7-review: cijfermail aangescherpt naar logincontext met plausibele verificatiefout.
-
-### Vraag 2: Onverwachte inlogmelding (lj3v-sr2-mfa)
-
-- Kerndoel/subdoel:  / 23A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je krijgt een melding: “Wil je deze login goedkeuren?” Je probeert zelf niet in te loggen. Wat kies je?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Afwijzen en je account controleren via de officiële instellingen. | ja |  |
-| B | Goedkeuren om van de melding af te zijn. | nee |  |
-| C | Goedkeuren als de melding maar één keer komt. | nee |  |
-| D | Negeren en verder niets doen. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Sterke concrete securitysituatie.
-
-### Vraag 3: Telefoon versnellen (lj3v-sr3-phone-actions)
-
-- Kerndoel/subdoel:  / 21A
-- Vraagtype: multiple select
-- Correct antwoord: A, B, C
-- Weet-ik-niet-optie: G
-- Schadelijke afleider(s): geen
-- Vraag: Youssefs telefoon is oud, traag en loopt soms vast. Welke drie acties kunnen meestal helpen?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Oude of ongebruikte apps en bestanden opruimen. | ja |  |
-| B | Tijdelijke bestanden of cache opruimen via de instellingen. | ja |  |
-| C | Beschikbare systeemupdates via de instellingen installeren. | ja |  |
-| D | De helderheid van het scherm lager zetten. | nee |  |
-| E | Het toetsenbordgeluid uitzetten. | nee |  |
-| F | Een andere achtergrondfoto kiezen. | nee |  |
-| G | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Drie correcte functionele onderhoudsacties.
-
-### Vraag 4: Gezondheidsinformatie (lj3v-sr4-health-source)
-
-- Kerndoel/subdoel:  / 21B
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je zoekt basisinformatie over slaaptekort. Welke bron is het meest geschikt om als eerste te gebruiken?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Een publieke gezondheidsorganisatie of artsensite met uitleg, datum en bronvermelding. | ja |  |
-| B | Een webshop die slaapdrankjes verkoopt en klantreviews toont. | nee |  |
-| C | Een influencer die vertelt wat voor hem persoonlijk werkt. | nee |  |
-| D | Een forum met veel reacties van onbekende gebruikers. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Afleiders zijn nu plausibeler: commercieel belang, ervaring en forumwijsheid.
-
-### Vraag 5: Sponsoring herkennen (lj3v-sr5-sponsored)
-
-- Kerndoel/subdoel:  / 21B
-- Vraagtype: single choice
-- Correct antwoord: opt_behavior_ads
-- Weet-ik-niet-optie: unknown
-- Schadelijke afleider(s): geen
-- Vraag: Milan kijkt vaak gamevideo’s. Daarna ziet hij meer video’s over dezelfde game én reclame voor game-accessoires. Wat is de beste uitleg?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| opt_behavior_ads | Zijn kijkgedrag kan worden gebruikt voor aanbevelingen en soms ook voor gerichte reclame. | ja |  |
-| opt_private_messages | De reclame bewijst dat Milan privéberichten over games heeft gestuurd. | nee |  |
-| opt_school_wifi | Iedereen die dezelfde schoolwifi gebruikt, krijgt automatisch dezelfde reclame. | nee |  |
-| opt_game_makers_control | De makers van de game bepalen precies welke video’s Milan ziet. | nee |  |
-| unknown | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet aanbevelingen en gerichte reclame via online gedrag. Niet bedoeld als bewijs dat privéberichten zijn gelezen.
-- Reviewstatus: V3.6-review: vervangen volgens aangeleverde v3.6 SR21B-bijlage.
-
-### Vraag 6: Poll en conclusie (lj3v-sr6-percent)
-
-- Kerndoel/subdoel:  / 21C
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: In een online poll stemmen 12 leerlingen uit klas 3V2. Acht leerlingen kiezen voor “meer pauze”. Een leerling zegt: “De meeste leerlingen van de hele school willen dus meer pauze.” Wat is de beste reactie?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Dat kun je niet zomaar zeggen, want de poll gaat maar over 12 leerlingen uit één klas. | ja |  |
-| B | Dat klopt zeker, want acht stemmen is meer dan de helft. | nee |  |
-| C | Dat klopt alleen als de poll op een telefoon is ingevuld. | nee |  |
-| D | Dat kun je nooit onderzoeken met een poll. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet verhouding tussen data en conclusie.
-
-### Vraag 7: Online game en persoonsgegevens (lj3v-sr7-ai-factcheck)
-
-- Kerndoel/subdoel: 23 / 23B
-- Vraagtype: single choice
-- Correct antwoord: C
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Je geeft alleen je voornaam en leeftijd, maar niet je adres. | nee |  |
-| B | Je vraagt waarom die persoon dat wil weten en beslist daarna. | nee |  |
-| C | Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. | ja |  |
-| D | Je geeft de gegevens als jullie al een tijdje samen spelen. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
-
-### Vraag 8: Muziek of afbeelding online gebruiken (lj3v-sr8-media-rights)
-
-- Kerndoel/subdoel: 22 / 22A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je maakt een video voor school. Je wilt een bekend liedje of een afbeelding van internet gebruiken. De video komt online. Wat is het best?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Controleren of je het materiaal mag gebruiken of kiezen voor rechtenvrij materiaal. | ja |  |
-| B | Het materiaal kort gebruiken. Korte stukjes mogen altijd online. | nee |  |
-| C | De maker niet noemen. Dan valt het minder op. | nee |  |
-| D | Er een filter overheen zetten. Dan is het nieuw werk. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Sluit aan bij leerlingproducten: video, muziek, afbeeldingen en online publicatie.
-
-### Vraag 9: Ongewenst gedeelde foto (lj3v-sr9-photo-shared)
-
-- Kerndoel/subdoel: 23 / 23B
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: In een groepsapp deelt iemand zonder toestemming een foto van een klasgenoot. De klasgenoot staat er ongemakkelijk op. Wat is de beste reactie?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Niet verder delen en hulp inschakelen of vragen om de foto te verwijderen. | ja |  |
-| B | De foto alleen doorsturen naar vrienden die je vertrouwt. | nee |  |
-| C | De foto bewaren, want misschien heb je later bewijs nodig. | nee |  |
-| D | Een grapje maken, zodat het minder serieus voelt. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet handelen wanneer ongewenst delen al heeft plaatsgevonden. Let op schoolafspraak rond bewijs veiligstellen.
-
-### Vraag 10: Digitaal formulier en kansen (lj3v-sr10-digital-access)
-
-- Kerndoel/subdoel: 23 / 23C
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Een stagebedrijf laat leerlingen alleen reageren via een ingewikkeld online formulier. Wat kan een gevolg zijn?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Leerlingen met minder digitale vaardigheden kunnen moeilijker meedoen. | ja |  |
-| B | Iedereen krijgt automatisch dezelfde kans, want het formulier is voor iedereen gelijk. | nee |  |
-| C | Het bedrijf hoeft minder op privacy te letten omdat alles digitaal is. | nee |  |
-| D | Online solliciteren is altijd sneller en eerlijker. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet digitale ongelijkheid en toegang.
-
-## Leerjaar 3 HAVO/VWO (lj3-hv)
-
-### Performance tasks
-
-#### PT 1: PT1 - Bestanden en mappen beheren (lj3h-pt1-files)
-
-- Sectie: PT1 - Bestanden en mappen (pt1)
-- Item-id: lj3h-pt1-files
-- Type: file_task_simulation
-- Kerndoel/subdoel: 21A
-- Punten: 4
-- Vaardigheidsdomein: 21A Digitale systemen
-- Instructie: Gebruik de Verkenner hieronder. Voer de taak uit en klik daarna op Volgende. Werk in OneDrive in Project Onderzoek. Maak daarin de mappen Data, Bronnen, Beelden en Archief. Plaats bestanden op basis van type en versie. Zet alleen de definitieve versie in Project Onderzoek en archiveer de oude versie.
-
-Opdrachten:
-- structure (1 pt): mapstructuur correct.
-  - Verwachte paden: Thuis/OneDrive/Project Onderzoek/Data; Thuis/OneDrive/Project Onderzoek/Bronnen; Thuis/OneDrive/Project Onderzoek/Beelden; Thuis/OneDrive/Project Onderzoek/Archief
-- types (1 pt): data, bron en beeld correct geplaatst.
-  - Verwachte paden: Thuis/OneDrive/Project Onderzoek/Data/resultaten.csv; Thuis/OneDrive/Project Onderzoek/Bronnen/bron_artikel.pdf; Thuis/OneDrive/Project Onderzoek/Beelden/grafiek.png
-- versions (1 pt): oude versie correct gearchiveerd.
-  - Verwacht pad: Thuis/OneDrive/Project Onderzoek/Archief/onderzoek_v1.docx
-- final (1 pt): definitieve versie in hoofdmap behouden.
-  - Verwacht pad: Thuis/OneDrive/Project Onderzoek/onderzoek_definitief.docx
-  - Verboden paden: Thuis/OneDrive/Project Onderzoek/Archief/onderzoek_definitief.docx
-
-#### PT 2: E-mail opstellen (lj3h-pt2-mail)
-
-- Sectie: PT2 - Mail opstellen (pt2)
-- Item-id: lj3h-pt2-mail
-- Type: outlook_mail_simulation
-- Kerndoel/subdoel: 21A
-- Punten: 4
-- Vaardigheidsdomein: 21A Digitale systemen / 23B Digitaal burgerschap
-- Instructie: Stuur een projectmail naar je docent. 1. Kies de docent als ontvanger in Aan. 2. Zet beide groepsgenoten in Cc. 3. Gebruik het juiste onderwerp: Definitief onderzoeksverslag. 4. Voeg alleen de juiste bijlage toe. 5. Verzend de e-mail.
-
-Beschikbare opties:
-- Knoppen: Verzenden, BCC tonen, Bestand bijvoegen, Hyperlink invoegen, Prioriteit, Concept opslaan, Verwijderen
-- Contacten: docent@school.nl, groepsgenoot1@school.nl, groepsgenoot2@school.nl, klasgroep@school.nl, mentor@school.nl, projectgenoot@school.nl, stagebegeleider@bedrijf.nl
-- Bestanden: Bronnenlijst.pdf, Onderzoeksverslag_definitief.pdf, Onderzoeksverslag_oud.pdf, Resultaten.xlsx
-
-Scoringsregels:
-- to: juiste ontvanger. (1 pt) | condities=to includes docent@school.nl
-- to includes docent@school.nl
-- cc-bcc: juiste cc en bcc waar nodig. (1 pt) | condities=cc allInclude groepsgenoot1@school.nl, groepsgenoot2@school.nl
-- cc allInclude groepsgenoot1@school.nl, groepsgenoot2@school.nl
-- subject: juist onderwerp. (1 pt) | condities=subject equals Definitief onderzoeksverslag
-- subject equals Definitief onderzoeksverslag
-- attachment-sent: juiste bijlage en verzonden. (1 pt) | condities=attachments includes Onderzoeksverslag_definitief.pdf; attachments noneInclude Bronnenlijst.pdf, Onderzoeksverslag_oud.pdf, Resultaten.xlsx; sent true
-- attachments includes Onderzoeksverslag_definitief.pdf
-- attachments noneInclude Bronnenlijst.pdf, Onderzoeksverslag_oud.pdf, Resultaten.xlsx
-- sent true
-
-#### PT 3: PT3 - Bericht beoordelen (lj3h-pt3-security)
-
-- Sectie: PT3 - Account, apparaat en verbinding beveiligen (pt3)
-- Item-id: lj3h-pt3-security
-- Type: account_security_simulation
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3v-sr1-cijfermail-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
 - Kerndoel/subdoel: 23A
-- Punten: 3
-- Vaardigheidsdomein: 23A Veiligheid en privacy
-- Instructie: Bekijk de e-mail en kies je antwoorden.
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Wat doe je?
+- Antwoordmogelijkheden/taakconfiguratie: A: Ik open mijn cijfers via de normale schoolomgeving. · B: Ik gebruik de knop, omdat inloggen gebruikelijk is bij het bekijken van cijfers. · C: Ik gebruik de knop, omdat de mail van een cijferportaal lijkt te komen. · D: Ik zoek de naam van de site op en klik dan alsnog op de link. · E: Ik weet het niet.
 
-Schermen en antwoordmogelijkheden:
-- Mail over accountactiviteit (session-mail)
-  - Instructie: Mila krijgt deze mail nadat ze thuis heeft ingelogd op haar schoolaccount.
-  - E-mail: Onbekend apparaat gevonden
-    - Van: Account team <acc-veilig-90z1@verify-device-center.co>
-    - Tekst: Beste Mila,
-    - Tekst: Er is een onbekend apparaat gekoppeld. Voorkom afsluiting van je account door je wachtwoord via onderstaande knop te vernieuwen.
-    - Tekst: Gebruik dezelfde gegevens als je schoolaccount.
-  - Groep signals (multi): Welke signalen maken dat Mila voorzichtig moet zijn?
-    - Opties: Het domein van de afzender is geen herkenbaar schooldomein.; De link gebruikt een andere domeinnaam dan de schoolsite.; De mail dreigt met afsluiting van het account.; De mail vraagt om schoolgegevens in te vullen via een link.; De mail noemt Mila bij naam.
-  - Groep actions (multi): Wat is de beste aanpak?
-    - Opties: Niet via de link inloggen.; Zelf naar de officiele accountinstellingen gaan.; Actieve sessies en tweestapsverificatie controleren.; Wachtwoord invullen via de knop om afsluiting te voorkomen.; De mail negeren zonder verder te controleren.
+### 10. AI kiest een stagiair (`lj3v-vraag9-ai-stage-training-v5`)
 
-Scoringsregels:
-- signals: herkent minimaal drie signalen in de mail. (1 pt) | groep=signals | type=minCorrect | correct=Het domein van de afzender is geen herkenbaar schooldomein., De link gebruikt een andere domeinnaam dan de schoolsite., De mail dreigt met afsluiting van het account., De mail vraagt om schoolgegevens in te vullen via een link. | minCorrect=3
-- account-check: kiest controle via eigen accountinstellingen. (1 pt) | groep=actions | type=allSelected | correct=Niet via de link inloggen., Zelf naar de officiele accountinstellingen gaan., Actieve sessies en tweestapsverificatie controleren.
-- no-link: vermijdt link en passief negeren. (1 pt) | groep=actions | type=noForbidden | verboden=Wachtwoord invullen via de knop om afsluiting te voorkomen., De mail negeren zonder verder te controleren.
+- Sectie: `sr` — Meerkeuze
+- Type: `social_action_simulation`
+- Itemversie: `vraag9-ai-21d-v5`
+- Scoringversie: `auto-social-action-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 21D
+- Maximumscore: 2
+- Historische id-alias(sen): geen
+- Leerlingtekst: Bekijk hoe StageMatch met oude keuzes een nieuwe kandidaat beoordeelt.
+- Antwoordmogelijkheden/taakconfiguratie: learned_pattern: club_over_project: Programmeerclub telt zwaarder dan het schoolproject. · no_club_no_project: Zonder programmeerclub heeft iemand geen digitaal project. · cannot_use_numbers: De AI kan geen cijfers uit profielen gebruiken. · unknown: Ik weet het niet. / improve_training: varied_relevant_data: Train met verschillende kandidaten en relevante projectgegevens. · more_club_members: Voeg meer gekozen leden van de programmeerclub toe. · remove_project_scores: Verwijder de cijfers van alle schoolprojecten. · unknown: Ik weet het niet.
 
-#### PT 4: PT4 - Excel/data sorteren en filteren (lj3h-pt4-excel)
+### 11. Telefoon versnellen (`lj3v-sr3-phone-actions`)
 
-- Sectie: PT4 - Excel/data sorteren en filteren (pt4)
-- Item-id: lj3h-pt4-excel
-- Type: excel_download_task
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3v-sr3-phone-actions-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Youssefs telefoon is oud, traag en loopt soms vast. Welke drie acties kunnen meestal helpen?
+- Antwoordmogelijkheden/taakconfiguratie: A: Oude of ongebruikte apps en bestanden opruimen. · B: Tijdelijke bestanden of cache opruimen via de instellingen. · C: Beschikbare systeemupdates via de instellingen installeren. · D: De helderheid van het scherm lager zetten. · E: Het toetsenbordgeluid uitzetten. · F: Een andere achtergrondfoto kiezen. · G: Ik weet het niet.
+
+### 12. Gezondheidsinformatie (`lj3v-sr4-health-source`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3v-sr4-health-source-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 21B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Je zoekt basisinformatie over slaaptekort. Welke bron is het meest geschikt om als eerste te gebruiken?
+- Antwoordmogelijkheden/taakconfiguratie: A: Een publieke gezondheidsorganisatie of artsensite met uitleg, datum en bronvermelding. · B: Een webshop die slaapdrankjes verkoopt en klantreviews toont. · C: Een influencer die vertelt wat voor hem persoonlijk werkt. · D: Een forum met veel reacties van onbekende gebruikers. · E: Ik weet het niet.
+
+### 13. Sponsoring herkennen (`lj3v-sr5-sponsored`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `recommendations-ads-v2`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 21B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Milan kijkt vaak gamevideo’s. Daarna ziet hij meer video’s over dezelfde game én reclame voor game-accessoires. Wat is de beste uitleg?
+- Antwoordmogelijkheden/taakconfiguratie: opt_behavior_ads: Zijn kijkgedrag kan worden gebruikt voor aanbevelingen en soms ook voor gerichte reclame. · opt_private_messages: De app gebruikt waarschijnlijk woorden uit Milans privéberichten om de reclame te kiezen. · opt_school_wifi: De reclame wordt vooral afgestemd op het schoolnetwerk dat Milan gebruikt. · opt_game_makers_control: De gamemaker koppelt gamevideo’s rechtstreeks aan advertenties, los van Milans kijkgedrag. · unknown: Ik weet het niet.
+
+### 14. Poll en conclusie (`lj3v-sr6-percent`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3v-sr6-percent-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 21C
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: In een online poll stemmen 12 leerlingen uit klas 3V2. Acht leerlingen kiezen voor “meer pauze”. Een leerling zegt: “De meeste leerlingen van de hele school willen dus meer pauze.” Wat is de beste reactie?
+- Antwoordmogelijkheden/taakconfiguratie: A: Dat kun je niet zomaar zeggen, want de poll gaat maar over 12 leerlingen uit één klas. · B: Dat klopt zeker, want acht stemmen is meer dan de helft. · C: De conclusie wordt overtuigender wanneer de poll via de officiële schoolapp is ingevuld. · D: Een online poll onder meer leerlingen zou deze conclusie waarschijnlijk bevestigen. · E: Ik weet het niet.
+
+### 15. Online game en persoonsgegevens (`lj3v-sr7-online-personal-data`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3v-sr7-online-personal-data-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 1
+- Historische id-alias(sen): `lj3v-sr7-ai-factcheck`
+- Leerlingtekst: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?
+- Antwoordmogelijkheden/taakconfiguratie: A: Je deelt je voornaam en leeftijd, maar houdt je buurt geheim. · B: Je vraagt waarom die persoon dat wil weten en beslist daarna. · C: Je deelt de gevraagde persoonsgegevens niet. · D: Je geeft de gegevens als jullie al een tijdje samen spelen. · E: Ik weet het niet.
+
+### 16. Muziek of afbeelding online gebruiken (`lj3v-sr8-media-rights`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3v-sr8-media-rights-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 22A
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Je maakt een video voor school. Je wilt een bekend liedje of een afbeelding van internet gebruiken. De video komt online. Wat is het best?
+- Antwoordmogelijkheden/taakconfiguratie: A: Controleren of je het materiaal mag gebruiken of kiezen voor rechtenvrij materiaal. · B: Een kort fragment gebruiken, omdat zulke fragmenten vaak als toegestaan worden gezien. · C: De maker niet noemen. Dan valt het minder op. · D: Er een filter overheen zetten. Dan is het nieuw werk. · E: Ik weet het niet.
+
+### 17. Ongewenst gedeelde foto (`lj3v-sr9-photo-shared`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `separate-actions-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: In een groepsapp deelt iemand zonder toestemming een foto van een klasgenoot. De klasgenoot staat er ongemakkelijk op. Welke twee acties zijn passend?
+- Antwoordmogelijkheden/taakconfiguratie: A: De foto niet verder delen. · B: De afzender vragen de foto te verwijderen. · C: De foto doorsturen naar vrienden die de klasgenoot goed kennen. · D: Een grapje maken, zodat het minder serieus voelt. · E: Ik weet het niet.
+
+### 18. Digitaal formulier en kansen (`lj3v-sr10-digital-access`)
+
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3v-sr10-digital-access-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c`
+- Kerndoel/subdoel: 23C
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Een stagebedrijf laat leerlingen alleen reageren via een ingewikkeld online formulier. Wat kan een gevolg zijn?
+- Antwoordmogelijkheden/taakconfiguratie: A: Leerlingen met minder digitale vaardigheden kunnen moeilijker meedoen. · B: Het formulier geeft vergelijkbare kansen, omdat iedere leerling dezelfde stappen doorloopt. · C: Het bedrijf hoeft minder op privacy te letten omdat alles digitaal is. · D: Online solliciteren verloopt meestal sneller en daardoor eerlijker. · E: Ik weet het niet.
+
+## Leerjaar 3 HAVO/VWO (`lj3-hv`)
+
+- Assessment-buildversie: `dg-pilot-2026.08.25.3`
+- Assessment-inhoudshash (SHA-256): `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Maximumscore: 37
+- Aantal items/taken: 18
+
+### 1. Zelfinschatting (`self-assessment`)
+
+- Sectie: `zelfinschatting` — Zelfinschatting
+- Type: `self_assessment`
+- Itemversie: `self-assessment-v1`
+- Scoringversie: `auto-self-assessment-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: niet-scorend
+- Maximumscore: 0
+- Historische id-alias(sen): geen
+- Leerlingtekst: Hoe digitaal geletterd schat je jezelf in? Schuif het bolletje naar jouw keuze. 0 betekent: ik schat mezelf helemaal niet digitaal geletterd in. 100 betekent: ik schat mezelf heel digitaal geletterd in.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 2. PT1 - Bestanden en mappen beheren (`lj3h-pt1-files`)
+
+- Sectie: `pt1` — PT1 - Bestanden en mappen
+- Type: `file_task_simulation`
+- Itemversie: `lj3h-pt1-files-v1`
+- Scoringversie: `auto-file-task-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Werk in het venster hieronder. Voer de opdrachten uit en klik daarna op Volgende. Werk in OneDrive in Project Onderzoek. Maak daarin de mappen Data, Bronnen, Beelden en Archief. Plaats bestanden op basis van type en versie. Zet alleen de definitieve versie in Project Onderzoek en archiveer de oude versie.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 3. E-mail opstellen (`lj3h-pt2-mail`)
+
+- Sectie: `pt2` — PT2 - Mail opstellen
+- Type: `outlook_mail_simulation`
+- Itemversie: `lj3h-pt2-mail-v1`
+- Scoringversie: `auto-outlook-mail-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Stuur een projectmail naar je docent. 1. Kies de docent als ontvanger in Aan. 2. Zet beide groepsgenoten in Cc. 3. Gebruik het juiste onderwerp: Definitief onderzoeksverslag. 4. Voeg alleen de juiste bijlage toe. 5. Verzend de e-mail.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 4. PT3 - Phishingmail beoordelen (`lj3h-pt3-security`)
+
+- Sectie: `pt3` — PT3 - Account, apparaat en verbinding beveiligen
+- Type: `account_security_simulation`
+- Itemversie: `lj3h-pt3-security-v1`
+- Scoringversie: `auto-account-security-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 23A
+- Maximumscore: 3
+- Historische id-alias(sen): geen
+- Leerlingtekst: Onderzoek de StreamFlix-mail en beantwoord beide vragen.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
+
+### 5. PT4 - Tabelgegevens filteren en sorteren (`lj3h-pt4-excel`)
+
+- Sectie: `pt4` — PT4 - Excel/data sorteren en filteren
+- Type: `excel_download_task`
+- Itemversie: `lj3h-pt4-excel-v1`
+- Scoringversie: `auto-excel-download-task-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
 - Kerndoel/subdoel: 21C, 21A
-- Punten: 4
-- Vaardigheidsdomein: 21C Data
-- Instructie: Download LJ3_HV_OpenData.xlsx. Open het in Excel. Klik op Bewerken inschakelen als Excel daarom vraagt.
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Werk in de tabel hieronder. Stel per deelopdracht het gevraagde filter en de sortering in en klik op Toepassen. Je antwoord wordt beoordeeld op de handelingen in de tabel; je hoeft geen eindcode over te typen.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Bestand: LJ3_HV_OpenData.xlsx
-Werkblad: Energie
+### 6. Schermdelen in videogesprek (`lj3hv-pt6-screen-share`)
 
-Vragen en correcte antwoorden:
-- a (2 pt): Filter op Kosten > 500. Sorteer daarna op Kosten, van hoog naar laag. Welke code staat bovenaan?
-  - Correct antwoord/code: E13
-- b (2 pt): Filter op Woningtype = B. Sorteer daarna op Jaar, van nieuw naar oud. Welke code staat bovenaan?
-  - Correct antwoord/code: E02
-
-#### PT 5: Schermdelen in een online les (lj3hv-pt6-screen-share)
-
-- Sectie: PT6 - Videovergadering en schermdelen (pt6)
-- Item-id: lj3hv-pt6-screen-share
-- Type: teams_share_simulation
+- Sectie: `pt6` — PT6 - Videovergadering en schermdelen
+- Type: `teams_share_simulation`
+- Itemversie: `lj3hv-pt6-screen-share-v1`
+- Scoringversie: `auto-teams-share-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
 - Kerndoel/subdoel: 23A
-- Punten: 3
-- Vaardigheidsdomein: 21A Digitale systemen / 23B Digitaal burgerschap
-- Instructie: Deel het filmfragment zodat de docent het kan zien en horen. Mark Canbers wil niet dat de docent zijn andere vensters kan zien.
+- Maximumscore: 3
+- Historische id-alias(sen): geen
+- Leerlingtekst: Leerling Mark Canbers zit in een online gesprek met zijn docent. Mark wil de docent een filmfragment laten zien en horen. Mark wil niet dat de docent zijn andere vensters kan zien.
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Scenario: Deel alleen het venster met het filmfragment. Gebruik computergeluid, maar deel niet je hele scherm.
-Knoppen: Camera, Microfoon, Chat, Deelnemers, Delen, Meer
-Deelopties: Hele scherm, Venster
-Vensters: Videospeler - filmfragment, Browser - rooster, Word - verslag, Excel - cijfers, Chat - klasgroep
-Correct venster: Videospeler - filmfragment
+### 7. Blokprogrammeren (`lj3h-pt7-programming-teddy-v1`)
 
-Scoringsregels:
-- window-not-screen: deelt een venster in plaats van het hele scherm. (1 pt) | condities=notWholeScreen
-- correct-window: kiest het juiste venster met het filmfragment. (1 pt) | condities=mediaPlayerSelected
-- sound: computergeluid staat aan. (1 pt) | condities=computerSoundOn
-
-#### PT 6: PT7 - Blokprogrammeren (lj3h-pt7-programming)
-
-- Sectie: PT7 - Blokprogrammeren (pt7)
-- Item-id: lj3h-pt7-programming
-- Type: block_programming_task
+- Sectie: `pt7` — Blokprogrammeren
+- Type: `block_programming_task`
+- Itemversie: `lj3h-pt7-programming-teddy-v1-v1`
+- Scoringversie: `auto-block-programming-task-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
 - Kerndoel/subdoel: 22B
-- Punten: 4
-- Vaardigheidsdomein: 22B Programmeren
-- Instructie: Als temperatuur > 25 én raamOpen = ja, toont Bizzy "Koelen". Als dat niet zo is, toont Bizzy "Oké".
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Blokprogrammeren
+- Antwoordmogelijkheden/taakconfiguratie: Zie taakconfiguratie in de canonieke appdefinitie.
 
-Programmeertaak:
-- Intro: Programmeer een waarschuwing met temperatuur en raamstand.
-- Device: sensor
-- Beschikbare blokken:
-  - lees temperatuur (waarnemen)
-  - lees raamOpen (waarnemen)
-  - lees lichtsterkte (waarnemen)
-  - als temperatuur > 25 EN raamOpen = ja dan (besturing; container)
-  - als temperatuur > 25 OF raamOpen = ja dan (besturing; container; kritieke afleider)
-  - als temperatuur < 25 EN raamOpen = ja dan (besturing; container; kritieke afleider)
-  - toon "Koelen" (uiterlijk)
-  - anders (besturing; container)
-  - toon "Oké" (uiterlijk)
-  - toon "Verwarmen" (uiterlijk; kritieke afleider)
-  - wacht 10 seconden (besturing)
-  - speel alarmgeluid (geluid)
-- Correct programma:
-  - lees temperatuur
-  - lees raamOpen
-  - als temperatuur > 25 EN raamOpen = ja dan
-  - toon "Koelen"
-  - anders
-  - toon "Oké"
+### 8. PT8 - Online gedrag: gemanipuleerd schoolbericht (`pt8-lj3h-manipulated-school-post-v5`)
 
-Scoringsregels:
-- inputs: gebruikt twee invoervariabelen correct. (1 pt) | vereist=lees temperatuur, lees raamOpen
-- condition: samengestelde EN-voorwaarde correct. (1 pt) | vereist=als temperatuur > 25 EN raamOpen = ja dan
-- true: juiste actie bij waar. (1 pt) | genest=als temperatuur > 25 EN raamOpen = ja dan > toon "Koelen"
-- else: juiste actie bij anders. (1 pt) | genest=anders > toon "Oké"
+- Sectie: `pt8` — PT8 - Online gedrag
+- Type: `social_action_simulation`
+- Itemversie: `pt8-lj3h-manipulated-school-post-v5-v1`
+- Scoringversie: `auto-social-action-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 4
+- Historische id-alias(sen): geen
+- Leerlingtekst: Weeg signalen, voorkom verspreiding, verifieer en herstel de informatie in de groep.
+- Antwoordmogelijkheden/taakconfiguratie: signals: outside-official-channel: Het bericht ontbreekt in de officiële schoolapp en schoolmail. · unverified-account: Het delende account is niet aan een verifieerbare afzender te koppelen. · school-like-layout: De opmaak gebruikt kleuren en woorden die op schoolcommunicatie lijken. · concrete-rule: Het bericht noemt een concrete regel die de volgende dag zou ingaan. · many-replies: Meerdere leerlingen reageren snel op het bericht. / no-spread: hold-message: Het screenshot niet verder doorsturen. · forward-with-warning: Het screenshot doorsturen met de waarschuwing dat het mogelijk niet klopt. · forward-to-other-class: Het screenshot naar een andere klas sturen om te vragen of zij het herkennen. · edit-question-mark: Een vraagteken op de afbeelding zetten en die versie delen. / verify: official-school-channel: De officiële schoolapp, schoolmail of een verantwoordelijke medewerker. · group-majority: De mening van de meeste leerlingen die al in de groepschat reageren. · image-search: Een zoekmachine die vergelijkbare screenshots op internet toont. · account-history: Eerdere berichten van hetzelfde anonieme account. / repair: share-official-correction: De officiële correctie in dezelfde groepschat delen. · mock-creator: De vermoedelijke maker in de groep belachelijk maken. · keep-example: Het nepbericht bewaren om het later als voorbeeld opnieuw te plaatsen. · make-parody: Een overdreven versie maken zodat anderen begrijpen dat het bericht nep was.
 
-#### PT 7: Whutsupp: video in de groepschat (pt8-whutsupp-sam-video)
+### 9. Mail over accountcontrole (`lj3h-sr1-accountmail`)
 
-- Sectie: PT8 - Online gedrag (pt8)
-- Item-id: pt8-whutsupp-sam-video
-- Type: social_action_simulation
-- Kerndoel/subdoel: 23B / 23B
-- Punten: 4
-- Vaardigheidsdomein: 23B Digitaal burgerschap
-- Instructie: Je zit in een Whutsupp-groep van je klas. Een klasgenoot deelt een video van Sam op het schoolplein. Kies wat jij doet.
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3h-sr1-accountmail-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 23A
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Welke reactie past het best?
+- Antwoordmogelijkheden/taakconfiguratie: A: Ik ga zelf naar de bekende schoolomgeving en controleer daar mijn account. · B: Ik gebruik de knop, omdat de mail meerdere bekende schooldiensten noemt. · C: Ik gebruik de knop als de inlogpagina er hetzelfde uitziet als normaal. · D: Ik antwoord op de mail en vraag of mijn account echt gecontroleerd moet worden. · E: Ik weet het niet.
 
-Schermen en antwoordmogelijkheden:
-- Gemanipuleerde schoolpost (signals)
-  - Instructie: In een groepschat verschijnt een screenshot van een zogenaamd schoolbericht: "Vanaf morgen zijn telefoons verboden. Wie protesteert, krijgt straf." Het bericht komt niet uit de schoolapp. De opmaak lijkt op school, maar het account dat het deelt is anoniem. Sommige leerlingen willen het meteen doorsturen.
-  - Groep signals (multi): Welke signalen maken dat je voorzichtig moet zijn?
-    - Opties: Het bericht komt niet uit de officiële schoolapp of mail.; Het account dat het deelt is anoniem.; Het bericht probeert snelle verspreiding of paniek te veroorzaken.; Het bericht gebruikt woorden die op schooltaal lijken.; Veel leerlingen reageren erop.
-- Handelen (action)
-  - Instructie: Wat is de beste aanpak voordat je iets doorstuurt?
-  - Groep action (single): Aanpak
-    - Opties: Niet doorsturen en eerst controleren via officiële schoolkanalen of mentor/docent.; Doorsturen met "ik weet niet of dit klopt" erbij.; Alleen reacties lezen en dan beslissen.; Zelf een aangepast screenshot maken om te laten zien dat het nep kan zijn.
-- Vervolg (followup)
-  - Instructie: Wat is een goede vervolgstap als blijkt dat het nep is?
-  - Groep followup (single): Vervolgstap
-    - Opties: In de groep melden dat het niet uit een officieel kanaal komt en vragen het niet verder te delen.; De maker online belachelijk maken.; Het screenshot bewaren en later opnieuw delen als voorbeeld.; Een nieuwe versie maken als grap.
+### 10. AI bij stage-selectie (`lj3h-vraag9-ai-stage-training-v5`)
 
-Scoringsregels:
-- risk: minimaal twee juiste signalen. (1 pt) | groep=signals | type=minCorrect | correct=Het bericht komt niet uit de officiële schoolapp of mail., Het account dat het deelt is anoniem., Het bericht probeert snelle verspreiding of paniek te veroorzaken. | minCorrect=2
-- no-spread: niet doorsturen. (1 pt) | groep=action | type=singleCorrect | correct=Niet doorsturen en eerst controleren via officiële schoolkanalen of mentor/docent.
-- official-check: officiële controle/mentor/docent. (1 pt) | groep=action | type=singleCorrect | correct=Niet doorsturen en eerst controleren via officiële schoolkanalen of mentor/docent.
-- safe-followup: corrigerende, niet-escalerende vervolgstap. (1 pt) | groep=followup | type=singleCorrect | correct=In de groep melden dat het niet uit een officieel kanaal komt en vragen het niet verder te delen.
+- Sectie: `sr` — Meerkeuze
+- Type: `social_action_simulation`
+- Itemversie: `vraag9-ai-21d-v5`
+- Scoringversie: `auto-social-action-simulation-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 21D
+- Maximumscore: 2
+- Historische id-alias(sen): geen
+- Leerlingtekst: Bekijk hoe StageMatch met historische keuzes een nieuwe kandidaat beoordeelt.
+- Antwoordmogelijkheden/taakconfiguratie: historical_pattern: pattern_as_suitability: De AI neemt een oud selectiepatroon over als maat voor geschiktheid. · real_means_objective: De gegevens bewijzen dat programmeerclub stagesucces veroorzaakt. · different_means_unsuitable: Kandidaat E is ongeschikt omdat één profielveld afwijkt. · unknown: Ik weet het niet. / improve_and_test: relevant_varied_test: Gebruik relevante criteria, gevarieerde voorbeelden en een aparte testgroep. · more_historical: Train verder met dezelfde historische selecties omdat die echt zijn. · hide_field_only: Verberg alleen het veld programmeerclub en test verder niets. · advice_without_evaluation: Gebruik het AI-oordeel als advies zonder het systeem te evalueren. · unknown: Ik weet het niet.
 
-Scorecaps:
-- harmful-cap: max 2 bij Zelf een aangepast screenshot maken om te laten zien dat het nep kan zijn., De maker online belachelijk maken., Het screenshot bewaren en later opnieuw delen als voorbeeld., Een nieuwe versie maken als grap.
+### 11. Telefoon en onderhoud (`lj3h-sr3-phone-actions`)
 
-Whutsupp-variant: Leerjaar 3 havo/vwo (lj3-hv)
-Taalniveau: medium_plus
-Groep: Klas 3H4 zonder docent
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3h-sr3-phone-actions-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 21A
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Youssefs telefoon wordt traag en loopt vaak vast. Welke drie acties zijn het meest logisch?
+- Antwoordmogelijkheden/taakconfiguratie: A: Onnodige apps en grote bestanden opruimen. · B: Cache of tijdelijke gegevens opruimen via instellingen. · C: Systeem en apps updaten via officiële instellingen. · D: Schermhelderheid lager zetten. · E: Apps toestemming geven om op de achtergrond actief te blijven. · F: Toetsenbordgeluid uitzetten. · G: Ik weet het niet.
 
-Beslismomenten en antwoordmogelijkheden:
-- n1 / risk_boundary: Wat doe jij eerst?
-  - Bericht Noah: Haha kijk Sam 😂
-  - Bericht Noah: [videoCard: samStumbleVideo]
-  - Bericht Jay: Maak er een sticker van.
-  - Bericht Mila: Ik stuur hem ook naar de andere klas.
-  - Bericht Sam: Stop. Ik wil dit niet online.
-  - n1_safe_boundary: Ik stuur: ‘Niet doorsturen. Sam zegt dat hij dit niet wil.’ (correct; weet ik niet; score=1)
-  - n1_ridicule: Ik reageer met 😂, maar stuur de video niet door. (niet correct; weet ik niet; score=0; flags=ridicule_reaction)
-  - n1_forward_friend: Ik stuur de video alleen privé door naar één vriend. (niet correct; weet ik niet; score=0; flags=harmful_share)
-  - n1_wait: Ik wacht af; misschien stopt het vanzelf. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_report: Ik stop met reageren, deel niets verder en vraag hulp via een veilige route. (veilig herstel; flags=recovery_safe)
-    - recovery_public_proof: Ik stuur de video in de groep als bewijs dat het echt gebeurt. (niet veilig; flags=unsafe_evidence_share)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n2 / no_spread: Welke reactie past nu het best?
-  - Bericht Noah: Rustig, dit is gewoon een grap.
-  - Bericht Mila: Zal ik hem in de parallelklas zetten?
-  - Bericht Sam: Nee. Haal de video weg.
-  - Bericht Jay: Als hij niet online wil, had hij maar niet moeten vallen.
-  - n2_safe_no_spread: Ik stuur: ‘Haal de video weg en stuur hem niet verder.’ (correct; weet ik niet; score=1)
-  - n2_sticker: Ik stel voor er een sticker of meme van te maken. (niet correct; weet ik niet; score=0; flags=harmful_share, ridicule_reaction)
-  - n2_only_known: Ik zeg dat doorsturen alleen mag naar mensen die Sam goed kennen. (niet correct; weet ik niet; score=0; flags=harmful_share)
-  - n2_teacher_later: Ik laat het staan tot school of een docent reageert. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_report: Ik stop met reageren, deel niets verder en vraag hulp via een veilige route. (veilig herstel; flags=recovery_safe)
-    - recovery_public_proof: Ik stuur de video in de groep als bewijs dat het echt gebeurt. (niet veilig; flags=unsafe_evidence_share)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n3 / support_target: Wat stuur je naar Sam?
-  - Bericht Sam: Ik vind dit echt vervelend. Ik wil niet dat iedereen dit ziet.
-  - Bericht Sam: Ik durf niks meer in de groep te zetten.
-  - n3_safe_support: Ik stuur Sam: ‘Ik deel niets. Wil je dat ik met je meega naar de mentor of help met melden?’ (correct; weet ik niet; score=1)
-  - n3_minimize: Ik stuur: ‘Laat maar, morgen is iedereen het vergeten.’ (niet correct; weet ik niet; score=0; flags=victim_blaming_or_minimizing)
-  - n3_leave_chat: Ik adviseer Sam om zelf uit de groepschat te gaan. (niet correct; weet ik niet; score=0; flags=victim_blaming_or_minimizing)
-  - n3_ask_more: Ik vraag Sam of er nog meer video’s zijn, zodat ik kan zien hoe erg het is. (niet correct; weet ik niet; score=0; flags=ridicule_reaction)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_report: Ik stop met reageren, deel niets verder en vraag hulp via een veilige route. (veilig herstel; flags=recovery_safe)
-    - recovery_public_proof: Ik stuur de video in de groep als bewijs dat het echt gebeurt. (niet veilig; flags=unsafe_evidence_share)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
-- n4 / help_report: Wat doe je nu?
-  - Bericht Elin: De video staat nu ook in een andere groepschat.
-  - Bericht Sam: Ze blijven hem sturen. Ik wil dat dit stopt.
-  - Bericht Mila: Iemand wil hem straks op story zetten.
-  - Bericht Jay: Ik heb er al tekst bij gezet: ‘Sam faalt weer’.
-  - n4_safe_help_report: Ik deel niets verder, maak veilig melding bij mentor/platform en bewaar bewijs alleen volgens schoolafspraak. (correct; weet ik niet; score=1)
-  - n4_unsafe_evidence: Ik zet de video met uitleg in de groep, zodat iedereen bewijs heeft. (niet correct; weet ik niet; score=0; flags=unsafe_evidence_share)
-  - n4_retaliate: Ik maak een gênante post over Noah terug. (niet correct; weet ik niet; score=0; flags=retaliation)
-  - n4_wait: Ik doe niets; misschien zakt het vanzelf weg. (niet correct; weet ik niet; score=0; flags=passive)
-  - unknown: Ik weet het niet. (niet correct; weet ik niet; score=0; flags=unknown)
-  - Herstelvraag: Je merkt dat dit niet helpt. Wat doe je nu?
-    - recovery_safe_report: Ik stop met reageren, deel niets verder en vraag hulp via een veilige route. (veilig herstel; flags=recovery_safe)
-    - recovery_public_proof: Ik stuur de video in de groep als bewijs dat het echt gebeurt. (niet veilig; flags=unsafe_evidence_share)
-    - unknown: Ik weet het niet. (niet veilig; flags=unknown)
+### 12. Claim controleren (`lj3h-sr4-triangulation`)
 
-### Selected-response vragen
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3h-sr4-triangulation-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 21B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Je vindt een opvallende claim over een nieuwe schoolregel. Welke controle is het sterkst?
+- Antwoordmogelijkheden/taakconfiguratie: A: Controleren of de school zelf of meerdere betrouwbare bronnen dezelfde regel melden. · B: Kijken of de post veel gedeeld is. · C: Kijken of de tekst boos klinkt. · D: De claim geloven als er een screenshot bij staat. · E: Ik weet het niet.
 
-### Vraag 1: Mail over accountcontrole (lj3h-sr1-accountmail)
+### 13. Filterbubbel (`lj3h-sr5-filterbubble`)
 
-- Kerndoel/subdoel:  / 23A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Stimulus: e-mailbericht
-  - Van: Schoolaccount beheer <beheer@schoolaccount-citadel.nl>
-  - Aan: sanne@leerling.citadelcollege.nl
-  - Onderwerp: Controle van je schoolaccount
-  - Tekst: Hallo Sanne,
-  - Tekst: We controleren deze week de toegang tot schoolaccounts. Bevestig je account om zonder onderbreking Teams, OneDrive en Magister te blijven gebruiken.
-  - Link: Account bevestigen (https://schoolaccount-citadel.nl/controle)
-- Vraag: Welke reactie past het best?
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3h-sr5-filterbubble-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 21B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Sara ziet in haar nieuwsfeed vooral berichten die haar mening over een nieuwe schoolregel bevestigen. Ze denkt: “Zie je wel, bijna iedereen denkt er zo over.” Wat is de beste reactie?
+- Antwoordmogelijkheden/taakconfiguratie: opt_careful_broaden: Voorzichtig zijn met die conclusie en actief betrouwbare bronnen of andere invalshoeken zoeken. · opt_feed_neutral: De conclusie klopt waarschijnlijk, want een feed laat meestal een neutraal beeld zien. · opt_comments_enough: Reacties onder de berichten zijn genoeg om te weten wat de meeste mensen vinden. · opt_block_other_views: Bronnen met een andere mening kun je beter blokkeren om je feed duidelijk te houden. · unknown: Ik weet het niet.
 
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Ik ga zelf naar de bekende schoolomgeving en controleer daar mijn account. | ja |  |
-| B | Ik gebruik de knop, omdat de mail meerdere bekende schooldiensten noemt. | nee |  |
-| C | Ik gebruik de knop als de inlogpagina er hetzelfde uitziet als normaal. | nee |  |
-| D | Ik antwoord op de mail en vraag of mijn account echt gecontroleerd moet worden. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
+### 14. Klachten naar verhouding (`lj3h-sr6-graph-scale`)
 
-- Interne onderbouwing: Meet keuze voor bekende schoolomgeving bij accountcontrolecontext; afleiders richten op bekende diensten, uiterlijk van inlogpagina en antwoorden op afzender.
-- Reviewstatus: V3.7-review: accountcontrolemail aangescherpt met bekende diensten, professioneel klinkende afzender en realistische afleiders.
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `normalized-graph-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 21C
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: De grafiek vergelijkt het aantal klachten per 1.000 gebruikers. Welke conclusie wordt door de grafiek ondersteund?
+- Antwoordmogelijkheden/taakconfiguratie: A: App A heeft naar verhouding meer klachten dan App B. · B: App B heeft naar verhouding meer klachten, omdat het totale aantal klachten daar hoger is. · C: De apps verschillen weinig, omdat beide aantallen binnen dezelfde schaal vallen. · D: De balken zijn nog niet vergelijkbaar, omdat de apps verschillende aantallen gebruikers hebben. · E: Ik weet het niet.
 
-### Vraag 2: Wachtwoordlek en hergebruik (lj3h-sr2-datalek)
+### 15. Online game en persoonsgegevens (`lj3h-sr7-online-personal-data`)
 
-- Kerndoel/subdoel:  / 23A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Een website waar jij een account hebt, meldt een datalek. Je gebruikte daar hetzelfde wachtwoord als voor school. Wat is de beste actie?
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3h-sr7-online-personal-data-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 1
+- Historische id-alias(sen): `lj3h-sr7-ai-source-check`
+- Leerlingtekst: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste eerste reactie?
+- Antwoordmogelijkheden/taakconfiguratie: A: Je deelt je voornaam en leeftijd, maar houdt je buurt geheim. · B: Je vraagt waarom die persoon dat wil weten en beslist daarna. · C: Je deelt de gevraagde persoonsgegevens niet. · D: Je geeft de gegevens als jullie al een tijdje samen spelen. · E: Ik weet het niet.
 
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Het schoolwachtwoord direct wijzigen en waar mogelijk tweestapsverificatie controleren. | ja |  |
-| B | Alleen het wachtwoord van de gelekte website wijzigen. | nee |  |
-| C | Wachten tot school zegt dat er iets mis is. | nee |  |
-| D | Hetzelfde wachtwoord houden als het sterk genoeg lijkt. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
+### 16. Afbeelding aanpassen en delen (`lj3h-sr8-remix-rights`)
 
-- Interne onderbouwing: Meet hergebruik, lekimpact en beveiligingsactie.
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `lj3h-sr8-remix-rights-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 22A
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Je wilt een afbeelding van internet aanpassen voor een online poster. Wat controleer je eerst?
+- Antwoordmogelijkheden/taakconfiguratie: A: Of bewerken en delen mag, en welke bronvermelding nodig is. · B: Of de afbeelding groot genoeg is; dan hoef je de maker niet te noemen. · C: Of je de kleuren sterk verandert; dan lijkt het voldoende op nieuw werk. · D: Of je de poster in een kleine groepsapp deelt; dat lijkt minder op openbaar publiceren. · E: Ik weet het niet.
 
-### Vraag 3: Telefoon en onderhoud (lj3h-sr3-phone-actions)
+### 17. Privéfoto in besloten groep (`lj3h-sr9-private-photo`)
 
-- Kerndoel/subdoel:  / 21A
-- Vraagtype: multiple select
-- Correct antwoord: A, B, C
-- Weet-ik-niet-optie: G
-- Schadelijke afleider(s): geen
-- Vraag: Youssefs telefoon wordt traag en loopt vaak vast. Welke drie acties zijn het meest logisch?
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `separate-actions-v1`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 23B
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Welke twee acties zijn passend?
+- Antwoordmogelijkheden/taakconfiguratie: A: De foto niet verder delen. · B: De foto via de veilige meldroute van het platform rapporteren. · C: De foto doorsturen naar een kleiner groepje dat je vertrouwt. · D: Reageren met een grap, zodat de spanning daalt. · E: Ik weet het niet.
 
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Onnodige apps en grote bestanden opruimen. | ja |  |
-| B | Cache of tijdelijke gegevens opruimen via instellingen. | ja |  |
-| C | Systeem en apps updaten via officiële instellingen. | ja |  |
-| D | Schermhelderheid lager zetten. | nee |  |
-| E | Alle meldingen aanzetten. | nee |  |
-| F | Toetsenbordgeluid uitzetten. | nee |  |
-| G | Ik weet het niet. | nee | weet ik niet |
+### 18. Afhankelijk van één platform (`lj3h-sr10-platform-dependence`)
 
-- Interne onderbouwing: Zelfde ankerconcept, passend complexer door drie acties.
+- Sectie: `sr` — Meerkeuze
+- Type: `multiple_choice`
+- Itemversie: `platform-dependence-v2`
+- Scoringversie: `auto-multiple-choice-v1`
+- Assessment-build: `dg-pilot-2026.08.25.3`
+- Inhoudshash: `62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9`
+- Kerndoel/subdoel: 23C
+- Maximumscore: 1
+- Historische id-alias(sen): geen
+- Leerlingtekst: Een school regelt bijna alles via één digitaal platform: rooster, huiswerk, cijfers en berichten. Welke twee risico’s horen daarbij?
+- Antwoordmogelijkheden/taakconfiguratie: A: Bij een storing kan veel schoolinformatie tegelijk onbereikbaar zijn. · B: Leerlingen zonder goede toegang kunnen sneller informatie missen. · C: Een storing raakt vermoedelijk eerst de berichten, terwijl rooster en huiswerk beschikbaar blijven. · D: Een centraal platform vergroot vooral het risico dat verschillende vakken tegenstrijdige gegevens bewaren. · E: Een veelgebruikt platform kan roostergegevens van verschillende scholen door elkaar halen. · F: Ik weet het niet.
 
-### Vraag 4: Claim controleren (lj3h-sr4-triangulation)
+## Machinecontrole
 
-- Kerndoel/subdoel:  / 21B
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je vindt een opvallende claim over een nieuwe schoolregel. Welke controle is het sterkst?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Controleren of de school zelf of meerdere betrouwbare bronnen dezelfde regel melden. | ja |  |
-| B | Kijken of de post veel gedeeld is. | nee |  |
-| C | Kijken of de tekst boos klinkt. | nee |  |
-| D | De claim geloven als er een screenshot bij staat. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet triangulatie.
-
-### Vraag 5: Filterbubbel (lj3h-sr5-filterbubble)
-
-- Kerndoel/subdoel:  / 21B
-- Vraagtype: single choice
-- Correct antwoord: opt_careful_broaden
-- Weet-ik-niet-optie: unknown
-- Schadelijke afleider(s): geen
-- Vraag: Sara ziet in haar nieuwsfeed vooral berichten die haar mening over een nieuwe schoolregel bevestigen. Ze denkt: “Zie je wel, bijna iedereen denkt er zo over.” Wat is de beste reactie?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| opt_careful_broaden | Voorzichtig zijn met die conclusie en actief betrouwbare bronnen of andere invalshoeken zoeken. | ja |  |
-| opt_feed_neutral | De conclusie klopt waarschijnlijk, want een feed laat meestal een neutraal beeld zien. | nee |  |
-| opt_comments_enough | Reacties onder de berichten zijn genoeg om te weten wat de meeste mensen vinden. | nee |  |
-| opt_block_other_views | Bronnen met een andere mening kun je beter blokkeren om je feed duidelijk te houden. | nee |  |
-| unknown | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet filterbubbelbewustzijn en handelingsbekwaamheid: een feed is geen bewijs voor wat bijna iedereen vindt; zoek betrouwbare andere invalshoeken.
-- Reviewstatus: V3.6-review: vervangen volgens aangeleverde v3.6 SR21B-bijlage.
-
-### Vraag 6: Klachten naar verhouding (lj3h-sr6-graph-scale)
-
-- Kerndoel/subdoel:  / 21C
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Een grafiek vergelijkt klachten over twee apps. App A: 20 klachten bij 1.000 gebruikers. App B: 50 klachten bij 10.000 gebruikers. Welke conclusie past het best bij deze data?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | App A heeft naar verhouding meer klachten dan App B. | ja |  |
-| B | App B heeft naar verhouding meer klachten, want 50 is meer dan 20. | nee |  |
-| C | De apps hebben evenveel klachten, want beide apps hebben klachten. | nee |  |
-| D | Je kunt nooit naar verhouding kijken bij gebruikersaantallen. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet dataconclusie met verhouding; pilot moet controleren of rekenbelasting passend is.
-
-### Vraag 7: Online game en persoonsgegevens (lj3h-sr7-ai-source-check)
-
-- Kerndoel/subdoel: 23 / 23B
-- Vraagtype: single choice
-- Correct antwoord: C
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je speelt een online game. Iemand die je alleen uit de game kent, vraagt: “Hoe heet je echt, hoe oud ben je en in welke buurt woon je?” Wat is de beste reactie?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Je geeft alleen je voornaam en leeftijd, maar niet je adres. | nee |  |
-| B | Je vraagt waarom die persoon dat wil weten en beslist daarna. | nee |  |
-| C | Je deelt de gegevens niet en vraagt hulp aan een ouder, verzorger of mentor als de persoon blijft aandringen. | ja |  |
-| D | Je geeft de gegevens als jullie al een tijdje samen spelen. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet veilig omgaan met persoonlijke gegevens in contact met iemand die de leerling alleen online kent.
-
-### Vraag 8: Afbeelding aanpassen en delen (lj3h-sr8-remix-rights)
-
-- Kerndoel/subdoel: 22 / 22A
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Je wilt een afbeelding van internet aanpassen voor een online poster. Wat controleer je eerst?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Of bewerken en delen mag, en welke bronvermelding nodig is. | ja |  |
-| B | Of de afbeelding groot genoeg is; dan hoef je de maker niet te noemen. | nee |  |
-| C | Of je de kleuren sterk verandert; dan is het automatisch eigen werk. | nee |  |
-| D | Of je de poster alleen in een groepsapp deelt; dan gelden geen regels. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet gebruik, remix, delen en bronvermelding.
-
-### Vraag 9: Privéfoto in besloten groep (lj3h-sr9-private-photo)
-
-- Kerndoel/subdoel: 23 / 23B
-- Vraagtype: single choice
-- Correct antwoord: A
-- Weet-ik-niet-optie: E
-- Schadelijke afleider(s): geen
-- Vraag: Iemand deelt zonder toestemming een privéfoto van een klasgenoot in een besloten groep. Wat is de beste eerste reactie?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Niet verder delen en via een veilige route hulp inschakelen of rapporteren. | ja |  |
-| B | De foto bewaren om later te bewijzen dat je hem gezien hebt. | nee |  |
-| C | De foto doorsturen naar een kleiner groepje dat je vertrouwt. | nee |  |
-| D | Reageren met een grap, zodat de spanning daalt. | nee |  |
-| E | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Meet verantwoord handelen bij schade, groepsdruk en privacy.
-
-### Vraag 10: Afhankelijk van één platform (lj3h-sr10-platform-dependence)
-
-- Kerndoel/subdoel: 23 / 23C
-- Vraagtype: multiple select
-- Correct antwoord: A, B
-- Weet-ik-niet-optie: F
-- Schadelijke afleider(s): C, D, E
-- Vraag: Een school regelt bijna alles via één digitaal platform: rooster, huiswerk, cijfers en berichten. Welke twee risico’s horen daarbij?
-
-| Optie | Antwoord | Correct | Opmerking |
-| --- | --- | --- | --- |
-| A | Bij een storing kan veel schoolinformatie tegelijk onbereikbaar zijn. | ja |  |
-| B | Leerlingen zonder goede toegang kunnen sneller informatie missen. | ja |  |
-| C | Leerlingen hoeven minder apps te installeren. | nee | schadelijke afleider |
-| D | Berichten staan overzichtelijker op één plek. | nee | schadelijke afleider |
-| E | De school hoeft minder uitleg te geven. | nee | schadelijke afleider |
-| F | Ik weet het niet. | nee | weet ik niet |
-
-- Interne onderbouwing: Leerlingen onderscheiden voordelen van risico’s bij platformafhankelijkheid.
-
+- Actieve SR-schema: `dg-nulmetingen-v3.7`
+- Actieve SR-items: 40
+- Gegenereerde documentatiebestanden: 7
+- Controlecommando: `npm run verify:content-sync`

@@ -378,6 +378,12 @@ export const createPt1EventLogs = (
   instrumentId: InstrumentId,
   blockId: string,
   state: Pt1State,
+  provenance: {
+    itemVersion: string;
+    scoringVersion: string;
+    assessmentBuildVersion: string;
+    assessmentContentHash: string;
+  },
 ): EventLog[] =>
   state.actionLogs.map((log) => ({
     sessionId,
@@ -386,6 +392,7 @@ export const createPt1EventLogs = (
     itemId: blockId,
     timestamp: log.timestamp,
     actionType: log.actionType,
+    ...provenance,
     sourcePath: log.sourcePath,
     targetPath: log.targetPath,
     oldName: log.oldName,

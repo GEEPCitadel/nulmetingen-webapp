@@ -1,5 +1,7 @@
 # Nulmetingen Digitale Geletterdheid v4
 
+> **VEROUDERD — NIET GEBRUIKEN ALS ACTUELE BRON.** Dit bestand is een historische momentopname en is niet opnieuw gegenereerd uit assessment-build `dg-pilot-2026.08.25.1`.
+
 Gegenereerd vanuit de actieve repo/data op 2026-06-09T15:22:06.158Z.
 
 ## 1. Status

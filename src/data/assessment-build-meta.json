@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "dg-assessment-build-provenance-v1",
+  "assessmentBuildVersion": "dg-pilot-2026.08.25.3",
+  "canonicalSource": "src/data/assessments.ts#assessments",
+  "contentHashAlgorithm": "sha256",
+  "assessmentContentHashes": {
+    "lj1-vmbo": "273c59101fba048ff4ec42141f0046919e7cb6691c4e502943390c0b523e6089",
+    "lj1-hv": "e2376c9b98dd785e0e39945e458cf192e30e50e543b3cd220d931a85a1b8e257",
+    "lj3-vmbo": "a7d4750a5800e6010d3dbe42c28f03b194c7c3a5c09bc9e0fa7001bd15691e6c",
+    "lj3-hv": "62763fff8307c9b8c0e12c01ec118fcbebbd343f8cb3f3bdadd0af8dd36dd2e9"
+  },
+  "sourceDirectionMarkdown": "nulmetingen_dg_herontwerp_v3_5_codex.md",
+  "activeSelectedResponseJson": "nulmetingen_selected_response_herontwerp_v3.json",
+  "generatedDocumentation": [
+    "docs/alle_vragen_en_afleiders_huidig.md",
+    "docs/huidige_geimplementeerde_nulmeting.md",
+    "docs/huidige_vragenlijsten_specificatie.md",
+    "docs/analysis/nulmetingen_alle_vragen_antwoordmogelijkheden.md",
+    "docs/analysis/nulmetingen_vragen_antwoorden_overzicht.md",
+    "docs/analysis/nulmetingen_vragen_antwoorden_pt_overzicht.md",
+    "docs/assessment-toetsmatrijs.md"
+  ],
+  "buildContentHash": "09fc01f801f440515804723497832569bd2aca2168d489b404c056b386882c37",
+  "generatedForBuildVersion": "dg-pilot-2026.08.25.3",
+  "generatedItemDocumentation": [
+    "docs/alle_vragen_en_afleiders_huidig.md",
+    "docs/huidige_geimplementeerde_nulmeting.md",
+    "docs/huidige_vragenlijsten_specificatie.md",
+    "docs/analysis/nulmetingen_alle_vragen_antwoordmogelijkheden.md",
+    "docs/analysis/nulmetingen_vragen_antwoorden_overzicht.md",
+    "docs/analysis/nulmetingen_vragen_antwoorden_pt_overzicht.md"
+  ],
+  "generatedBlueprintDocumentation": [
+    "docs/assessment-toetsmatrijs.md"
+  ],
+  "assessmentBlueprint": "src/data/assessment-blueprint.json",
+  "blueprintVersion": "2026.08.25.2",
+  "blueprintHash": "39a613033e9338e62528b54ba5b8c1a9a4f258f96da87a8df3cf6a8be97a340d"
+}
