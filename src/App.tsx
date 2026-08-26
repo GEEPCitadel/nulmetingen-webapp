@@ -663,6 +663,84 @@ const escapeHtml = (value: string) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
+const levelLabelForCodeSheet = (student: ApiStudent) => {
+  if (student.gradeLevel === "lj1") {
+    const streamByClassPrefix: Record<string, string> = {
+      "1a": "BK",
+      "1b": "KT",
+      "1c": "TH",
+      "1d": "HV",
+      "1e": "V+",
+    };
+    return streamByClassPrefix[student.classCode.trim().toLowerCase().slice(0, 2)] ?? "";
+  }
+  return "";
+};
+
+const createMentorCodeSheetHtml = (students: ApiStudent[], mentorCode: string) => {
+  const first = students[0];
+  if (!first) return "";
+
+  const classCode = first.classCode;
+  const classLabel = classCode.toUpperCase();
+  const levelLabel = levelLabelForCodeSheet(first);
+  const assessmentLabel = assessmentLabels[first.versionId] ?? first.versionId;
+  const codePages = Array.from({ length: Math.ceil(students.length / 33) }, (_, index) => students.slice(index * 33, index * 33 + 33));
+  const logoUrl = `${window.location.origin}/brand/logos/citadel-logo-3-fc.png`;
+  const cardPages = codePages.map((pageStudents, pageIndex) => {
+    const cards = pageStudents
+      .map((student, index) => `
+        <article class="code-card">
+          <strong>Nulmeting Digitale Geletterdheid</strong>
+          <small>Klas ${escapeHtml(classLabel)} · kaart ${String(pageIndex * 33 + index + 1).padStart(2, "0")}</small>
+          <b>${escapeHtml(student.accessCode)}</b>
+          <small>Ga naar <strong>nulmetingen-webapp.vercel.app</strong> en vul deze code in.</small>
+          <em>Werk zelfstandig. Geen internet om antwoorden op te zoeken, AI of andere hulp.</em>
+        </article>`,
+      )
+      .join("");
+    return `
+      <section class="page codes-page">
+        <header class="codes-header">
+          <div><h1>Nulmeting Digitale Geletterdheid</h1><p>Knip de kaarten los en deel ze willekeurig uit.</p></div>
+          <img src="${logoUrl}" alt="Citadel College" />
+        </header>
+        <p class="metadata"><strong>Klas ${escapeHtml(classLabel)}</strong>${levelLabel ? ` · niveau ${escapeHtml(levelLabel)}` : ""} · ${escapeHtml(assessmentLabel)} · cohort ${escapeHtml(first.cohort ?? "-")} · afname ${escapeHtml(first.assessmentWindow ?? "-")}</p>
+        <aside><strong>Alleen voor de mentor</strong><span>Inloggen in de beheeromgeving met mentorcode:</span><b>${escapeHtml(mentorCode)}</b><small>Bewaar deze code voor jezelf.</small></aside>
+        <p class="mentor-login-path">Ga naar <strong>nulmetingen-webapp.vercel.app</strong>, kies <strong>Beheeromgeving openen</strong> en vul je mentorcode in.</p>
+        <div class="codes-grid">${cards}</div>
+        <footer>Citadel College · nulmeting Digitale Geletterdheid <span>Pagina ${pageIndex + 2}</span></footer>
+      </section>`;
+  }).join("");
+
+  return `<!doctype html><html lang="nl"><head><meta charset="utf-8"><title>Mentorblad ${escapeHtml(classLabel)}</title><style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; } body { margin: 0; color: #253746; font-family: Arial, sans-serif; }
+    .page { width: 210mm; min-height: 297mm; padding: 14mm; position: relative; break-after: page; page-break-after: always; }
+    .page:last-child { break-after: auto; page-break-after: auto; }
+    .logo { position: absolute; right: 14mm; top: 9mm; width: 37mm; max-height: 24mm; object-fit: contain; }
+    h1 { color: #0d4580; font-size: 21pt; margin: 0 0 5mm; } h2 { font-size: 10pt; margin: 0; } p { font-size: 10pt; line-height: 1.42; }
+    .intro { border-bottom: 2px solid #91d4ed; padding: 0 45mm 5mm 0; margin-bottom: 7mm; } .intro p { margin: 0; }
+    .purpose { margin: 0 0 7mm; max-width: 165mm; }
+    .instruction { margin: 0 0 5mm; } .instruction h2 { color: #fff; background: #0d4580; border-radius: 3mm; padding: 2.4mm 4mm; }
+    .instruction ul { margin: 2.5mm 0 0; padding-left: 6mm; } .instruction li { font-size: 9pt; line-height: 1.4; margin: 1.4mm 0; } .instruction strong { color: #0d4580; }
+    .codes-page { padding-top: 12mm; } .codes-header { height: 20mm; display: flex; justify-content: space-between; align-items: center; color: #fff; background: #0d4580; border-radius: 4mm; padding: 3mm 5mm; }
+    .codes-header h1 { color: #fff; font-size: 15pt; margin: 0 0 1mm; } .codes-header p { font-size: 8pt; margin: 0; } .codes-header img { width: 31mm; max-height: 18mm; background: #fff; border-radius: 2mm; object-fit: contain; }
+    .metadata { font-size: 8.3pt; margin: 3mm 0; } aside { height: 11mm; border-radius: 3mm; background: #f3efe7; display: flex; align-items: center; gap: 4mm; padding: 2mm 4mm; font-size: 8pt; } aside b { font-size: 10pt; } aside small { margin-left: auto; } .mentor-login-path { font-size: 7.2pt; margin: 1.8mm 0 0; }
+    .codes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5mm; margin-top: 7mm; } .code-card { min-height: 20mm; border: .35mm solid #8797a3; padding: 1.4mm 2mm; display: flex; flex-direction: column; } .code-card > strong { color: #0d4580; background: #e7f2f8; margin: -1.4mm -2mm 1.1mm; padding: 1mm 2mm; font-size: 5.5pt; } .code-card small { font-size: 4.8pt; line-height: 1.2; } .code-card b { color: #0d4580; font-size: 15pt; text-align: center; margin: 1.1mm 0; letter-spacing: .3mm; } .code-card em { font-style: normal; font-weight: 700; font-size: 4.5pt; line-height: 1.2; margin-top: auto; }
+    footer { position: absolute; left: 14mm; right: 14mm; bottom: 8mm; color: #53636f; font-size: 7pt; } footer span { float: right; }
+    @media screen { body { background: #e8edf0; padding: 8mm 0; } .page { background: #fff; margin: 0 auto 8mm; box-shadow: 0 1mm 5mm #0002; } }
+  </style></head><body>
+    <section class="page"><img class="logo" src="${logoUrl}" alt="Citadel College"><div class="intro"><h1>Nulmeting Digitale Geletterdheid</h1><p>Korte afname-instructie voor mentor ${escapeHtml(classLabel)}</p></div>
+      <p class="purpose">Deze nulmeting vindt ieder jaar plaats aan het begin van leerjaar 1 en leerjaar 3. De meting wordt anoniem afgenomen en laat zien wat klassen en leerjaren al beheersen op het gebied van digitale geletterdheid en waar nog extra aandacht nodig is. Zo kunnen we lessen en begeleiding beter laten aansluiten.</p>
+      <p class="purpose">Het monitoren van de voortgang is belangrijk vanuit de subsidie Basisvaardigheden en de kerndoelen digitale geletterdheid. De werkgroep Digitale Geletterdheid gebruikt deze meting als hulpmiddel daarbij. De meting is bedoeld om het onderwijs te verbeteren, niet om individuele leerlingen te beoordelen.</p>
+      <div class="instruction"><h2>Vooraf</h2><ul><li>Plan ongeveer 30 minuten.</li><li>Knip de codekaartjes uit.</li><li>Zorg, als dat kan, voor een leenlaptop en een mogelijk inhaalmoment.</li></ul></div>
+      <div class="instruction"><h2>In de klas</h2><ul><li>Vertel dat leerlingen zelfstandig werken, zonder internet om antwoorden op te zoeken, AI of andere hulp. Zij zien na afloop hun eigen uitslag; vergelijken hoeft niet.</li><li>Laat leerlingen naar <strong>nulmetingen-webapp.vercel.app</strong> gaan en hun code invullen.</li><li>Deel de geknipte kaartjes met codes willekeurig uit.</li><li>Je mag technische hulp geven, maar niet helpen met antwoorden.</li><li>Kan een leerling niet inloggen, werkt een laptop niet of sluit de browser? Laat de leerling later met dezelfde code verdergaan. De voortgang blijft bewaard.</li><li>Is een leerling klaar? Laat die in stilte iets voor zichzelf doen.</li></ul><p>Wie meer tijd nodig heeft, kan later met dezelfde code verder.</p></div>
+      <div class="instruction"><h2>Na afloop</h2><ul><li>Log in in de beheeromgeving. Controleer of iedereen klaar is en bekijk het klasoverzicht.</li><li>Het is heel fijn als je feedback wilt verzamelen van leerlingen en jezelf. Daarmee kunnen we de meting beter maken. Mail je feedback naar de coördinator van de meting.</li></ul></div>
+      <footer>Citadel College · nulmeting Digitale Geletterdheid <span>Pagina 1</span></footer>
+    </section>${cardPages}</body></html>`;
+};
+
 const formatTime = (totalSeconds: number) => {
   const minutes = Math.floor(Math.max(totalSeconds, 0) / 60);
   const seconds = Math.max(totalSeconds, 0) % 60;
@@ -1977,16 +2055,38 @@ const AdminScreen = ({
     downloadFile(`${createdCodesExportBaseName()}.doc`, html, "application/msword");
   };
 
-  const exportCreatedCodesPdf = () => {
-    const rows = getCreatedCodeExportRows();
-    const lines = [
-      "Nieuwe anonieme inlogcodes",
-      rows[0] ? `Cohort: ${rows[0].Cohort} | Afnamevenster: ${rows[0].Afnamevenster}` : "",
-      "Deel de codes willekeurig uit. Houd geen koppeling met namen bij.",
-      "",
-      ...rows.map((row) => `${row.Klas} | ${row.Inlogcode} | ${row.Status}`),
-    ];
-    downloadFile(`${createdCodesExportBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
+  const openCreatedMentorCodeSheet = async () => {
+    if (createdCodeRows.length === 0) return;
+    const classCodes = Array.from(new Set(createdCodeRows.map((student) => student.classCode.trim().toLowerCase())));
+    if (classCodes.length !== 1) {
+      setError("Maak een mentorblad steeds voor één klas tegelijk.");
+      return;
+    }
+
+    const sheetWindow = window.open("", "_blank");
+    if (!sheetWindow) {
+      setError("Het mentorblad kon niet worden geopend. Sta pop-ups voor deze website toe.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await requestJson<{ ok: boolean; mentorCode: string }>(
+        `/api/mentor-code?classCode=${encodeURIComponent(classCodes[0])}`,
+        { headers: adminHeaders },
+      );
+      sheetWindow.document.open();
+      sheetWindow.document.write(createMentorCodeSheetHtml(createdCodeRows, response.mentorCode));
+      sheetWindow.document.close();
+      sheetWindow.focus();
+      setMessage("Het mentorblad is geopend. Kies in het printvenster eventueel 'Opslaan als pdf'.");
+      setError("");
+    } catch (caught) {
+      sheetWindow.close();
+      setError(caught instanceof Error ? caught.message : "Het mentorblad kon niet worden gemaakt.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getGroupAnalysisExportRows = (rows: AnalysisGroup[]) =>
@@ -2760,7 +2860,6 @@ const AdminScreen = ({
             <datalist id="known-cohort-codes">
               {knownCohorts.map((knownCohort) => <option key={knownCohort} value={knownCohort} />)}
             </datalist>
-            <small id="cohort-code-help">Kies een bestaande code of maak bij de eerste afname COHORT-2026. Gebruik precies dezelfde code opnieuw in leerjaar 3; namen en klasnamen horen hier niet thuis.</small>
           </label>
           <label>
             <span>Klas</span>
@@ -2780,10 +2879,13 @@ const AdminScreen = ({
               onChange={(event) => setCodeCount(Number(event.target.value))}
             />
           </label>
-          <button className="btn-import" type="button" onClick={() => void importStudents([])} disabled={isLoading}>
-            {isLoading ? "Maken..." : "Anonieme codes maken"}
-          </button>
         </div>
+        <p id="cohort-code-help" className="help codepool-cohort-help">
+          Cohortcode: kies een bestaande code of maak bij de eerste afname COHORT-2026. Gebruik precies dezelfde code opnieuw in leerjaar 3; namen en klasnamen horen hier niet thuis.
+        </p>
+        <button className="btn-import" type="button" onClick={() => void importStudents([])} disabled={isLoading}>
+          {isLoading ? "Maken..." : "Anonieme codes maken"}
+        </button>
         {message ? (
           <div className="success-banner-inline">{message}</div>
         ) : null}
@@ -2807,8 +2909,8 @@ const AdminScreen = ({
                 <button className="filter-chip" type="button" onClick={exportCreatedCodesWord}>
                   Word
                 </button>
-                <button className="filter-chip" type="button" onClick={exportCreatedCodesPdf}>
-                  PDF
+                <button className="filter-chip" type="button" onClick={() => void openCreatedMentorCodeSheet()}>
+                  Mentorblad (print/PDF)
                 </button>
               </div>
             </details> : null}

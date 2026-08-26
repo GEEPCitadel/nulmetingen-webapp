@@ -37,6 +37,16 @@ export const accessForPassword = (candidate) => {
   return mentor ? { role: "mentor", classCodes: mentor.classCodes } : null;
 };
 
+export const mentorPasswordForClass = (classCode) => {
+  const normalizedClassCode = String(classCode ?? "").trim().toLowerCase();
+  if (!normalizedClassCode) return null;
+
+  const mentor = mentorAccessFromEnvironment().find((entry) =>
+    entry.classCodes.some((allowedClassCode) => allowedClassCode.toLowerCase() === normalizedClassCode),
+  );
+  return mentor?.password ?? null;
+};
+
 export const accessForRequest = (request) => {
   const headerPassword = request.headers["x-admin-password"];
   return accessForPassword(typeof headerPassword === "string" ? headerPassword : "");

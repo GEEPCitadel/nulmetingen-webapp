@@ -1293,6 +1293,10 @@ body {
 }
 .import-panel .grid label { display: flex; flex-direction: column; gap: 6px; }
 .import-panel .grid label:has(textarea) { grid-column: span 2; }
+.codepool-cohort-help {
+  margin: 12px 0 16px !important;
+  max-width: 760px;
+}
 .admin-import-options {
   align-self: stretch;
   border: 1px solid var(--c-line);
