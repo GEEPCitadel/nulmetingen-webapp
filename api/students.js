@@ -4,6 +4,7 @@ import { neon } from "@neondatabase/serverless";
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
 const codeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const removedLegacyCodes = ["1001", "1002", "1003", "1004"];
+const cohortCodePattern = /^COHORT-\d{4}(?:-[A-Z0-9]+)*$/;
 
 const metadataForVersion = (versionId) => {
   const [gradePart = "", trackPart = ""] = String(versionId).split("-");
@@ -118,10 +119,15 @@ const normalizeStudentRows = (students, versionId, importBatch) => {
     const assessmentId = String(student.assessmentId ?? versionId).trim();
     const gradeLevel = String(student.gradeLevel ?? fallbackMetadata.gradeLevel).trim().toLowerCase();
     const track = String(student.track ?? fallbackMetadata.track).trim().toLowerCase();
-    const cohort = String(student.cohort ?? importBatch).trim();
-    const assessmentWindow = String(student.assessmentWindow ?? importBatch).trim();
+    const cohort = String(student.cohort ?? "").trim().toUpperCase();
+    const assessmentWindow = String(student.assessmentWindow ?? "").trim();
 
     if (!classCode) throw new Error(`Rij ${index + 1}: klas ontbreekt.`);
+    if (!cohort) throw new Error(`Rij ${index + 1}: blijvende cohortcode ontbreekt.`);
+    if (!cohortCodePattern.test(cohort)) {
+      throw new Error(`Rij ${index + 1}: gebruik een naamvrije cohortcode als COHORT-2026.`);
+    }
+    if (!assessmentWindow) throw new Error(`Rij ${index + 1}: afnamevenster ontbreekt.`);
     return {
       classCode,
       versionId,

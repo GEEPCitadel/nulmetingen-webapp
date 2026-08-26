@@ -1507,6 +1507,32 @@ body {
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
+.analysis-advanced-filters {
+  display: grid;
+  gap: 8px;
+  min-width: 230px;
+}
+.analysis-advanced-filters .admin-filter-select {
+  width: 100%;
+}
+.code-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  color: var(--c-ink-soft);
+  font-size: .9rem;
+}
+.code-pagination > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-pagination .filter-chip:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
 .rd-student-row {
   display: grid;
   grid-template-columns: 34px 110px minmax(160px, 1fr) 110px 130px 120px 80px 180px;
@@ -1652,6 +1678,32 @@ body {
 .analysis-row.head {
   font-weight: 800;
   color: var(--c-ink);
+}
+
+.mentor-profile-row {
+  grid-template-columns: minmax(110px, 1fr) minmax(88px, .6fr) minmax(110px, .8fr) repeat(5, minmax(118px, 1fr));
+  min-width: 1040px;
+}
+.analysis-row.head small,
+.growth-score small {
+  display: block;
+  margin-top: 3px;
+  color: var(--c-ink-soft);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.growth-score {
+  display: grid;
+  gap: 2px;
+}
+.analysis-focus-list {
+  margin: 0;
+  padding-left: 20px;
+}
+.analysis-focus-list li + li {
+  margin-top: 7px;
 }
 
 .danger-text {

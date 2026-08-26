@@ -175,6 +175,7 @@ type AnalysisGroup = {
   createdCodes: number;
   startedCount: number;
   completedCount: number;
+  reportable: boolean;
   completionPercentage: number;
   averageTotalScore: number | null;
   averageSrScore: number | null;
@@ -182,6 +183,7 @@ type AnalysisGroup = {
   averageSelfAssessment: number | null;
   averageSelfAssessmentDifference: number | null;
   goalScores: Record<string, number | null>;
+  goalSignals: Record<string, { achievedCount: number; completedCount: number; maxScore: number } | null>;
 };
 
 type ItemAnalysisRow = {
@@ -192,7 +194,7 @@ type ItemAnalysisRow = {
   correctRate: number | null;
   discrimination: number | null;
   unknownRate: number | null;
-  topDistractor: string;
+  topIncorrectResponse: string;
   distribution: Record<string, number>;
   harmfulOptionRate: number | null;
   ptErrorCategories: Record<string, number>;
@@ -203,24 +205,29 @@ type GrowthWindowScore = {
   assessmentWindow: string;
   completedCount: number;
   averageAnchorScore: number | null;
+  averageTotalScore: number | null;
 };
 
-type GrowthClassRow = {
-  classCode: string;
-  gradeLevel: string;
-  track: string;
+type GrowthCohortRow = {
+  cohort: string;
   windows: GrowthWindowScore[];
   delta: number | null;
+  totalDelta: number | null;
 };
 
 type GrowthAnalysis = {
   windows: string[];
   overall: GrowthWindowScore[];
   overallDelta: number | null;
-  byClass: GrowthClassRow[];
+  overallTotalDelta: number | null;
+  byCohort: GrowthCohortRow[];
 };
 
 type ResultsAnalysis = {
+  privacy: {
+    minimumReportingCount: number;
+    performanceSuppressed: boolean;
+  };
   filters: {
     assessmentWindows: string[];
     gradeLevels: string[];
@@ -229,7 +236,7 @@ type ResultsAnalysis = {
     cohorts: string[];
     assessmentIds: string[];
   };
-  overview: Omit<AnalysisGroup, "assessmentId" | "classCode" | "classId" | "gradeLevel" | "track" | "cohort" | "assessmentWindow" | "versionId" | "goalScores">;
+  overview: Omit<AnalysisGroup, "assessmentId" | "classCode" | "classId" | "gradeLevel" | "track" | "cohort" | "assessmentWindow" | "versionId" | "goalScores" | "goalSignals" | "reportable">;
   byClass: AnalysisGroup[];
   byGrade: AnalysisGroup[];
   itemAnalysis: ItemAnalysisRow[];
@@ -239,6 +246,11 @@ type ResultsAnalysis = {
 type AnalysisResponse = {
   ok: boolean;
   analysis: ResultsAnalysis;
+};
+
+type AdminAccess = {
+  role: "admin" | "mentor";
+  classCodes: string[];
 };
 
 // P1 (rainbow on cream) is used for the entry / admin / fallback screens.
@@ -730,6 +742,7 @@ const App = () => {
   const [learnerCodeError, setLearnerCodeError] = useState("");
   const [adminCode, setAdminCode] = useState("");
   const [adminToken, setAdminToken] = useState("");
+  const [adminAccess, setAdminAccess] = useState<AdminAccess | null>(null);
   const [adminError, setAdminError] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   const [isUnlockingAdmin, setIsUnlockingAdmin] = useState(false);
@@ -842,11 +855,12 @@ const App = () => {
 
     setIsUnlockingAdmin(true);
     try {
-      await requestJson<{ ok: boolean }>("/api/admin-login", {
+      const response = await requestJson<{ ok: boolean; access: AdminAccess }>("/api/admin-login", {
         method: "POST",
         body: JSON.stringify({ password }),
       });
       setAdminToken(password);
+      setAdminAccess(response.access);
       setAdminError("");
       setAdminCode("");
       setEntryView("admin");
@@ -1112,6 +1126,7 @@ const App = () => {
       {!session && entryView === "admin" ? (
         <AdminScreen
           adminPassword={adminToken}
+          access={adminAccess ?? { role: "admin", classCodes: [] }}
           onBack={() => setEntryView("intro")}
         />
       ) : null}
@@ -1457,9 +1472,11 @@ const AdminAccessScreen = ({
 
 const AdminScreen = ({
   adminPassword,
+  access,
   onBack,
 }: {
   adminPassword: string;
+  access: AdminAccess;
   onBack: () => void;
 }) => {
   const [students, setStudents] = useState<ApiStudent[]>([]);
@@ -1476,8 +1493,8 @@ const AdminScreen = ({
   const [previewRows, setPreviewRows] = useState<ImportStudentRow[]>([]);
   const [createdCodeRows, setCreatedCodeRows] = useState<ApiStudent[]>([]);
   const [analysis, setAnalysis] = useState<ResultsAnalysis | null>(null);
-  const [analysisTab, setAnalysisTab] = useState<"groups" | "items" | "growth">("groups");
-  const [adminTab, setAdminTab] = useState<"codes" | "results">("codes");
+  const [analysisTab, setAnalysisTab] = useState<"mentor" | "technical" | "growth">("mentor");
+  const [adminTab, setAdminTab] = useState<"codes" | "results">(access.role === "mentor" ? "results" : "codes");
   const [analysisFilters, setAnalysisFilters] = useState({
     assessmentWindow: "",
     gradeLevel: "",
@@ -1494,6 +1511,14 @@ const AdminScreen = ({
 
   const adminHeaders = { "x-admin-password": adminPassword };
   const goalColumns = ["21A", "21B", "21C", "21D", "22A", "22B", "23A", "23B", "23C"];
+  const profileGoals = [
+    ["21A", "Digitale systemen"],
+    ["21B", "Media en informatie"],
+    ["21C", "Data"],
+    ["23A", "Veiligheid en privacy"],
+    ["23B", "Bewust mediagebruik"],
+  ] as const;
+  const signalGoalIds = ["21D", "22A", "22B", "23C"] as const;
   const formatMetric = (value: number | null | undefined, suffix = "%") =>
     value === null || value === undefined ? "n.v.t." : `${value}${suffix}`;
   const formatRate = (value: number | null | undefined) =>
@@ -1527,8 +1552,30 @@ const AdminScreen = ({
     Object.entries(categories).map(([key, value]) => `${key}: ${value}`).join(", ") || "n.v.t.";
   const versionForMetadata = (nextGradeLevel = gradeLevel, nextTrack = track) =>
     `${nextGradeLevel}-${nextTrack}` as AssessmentVersion["id"];
+  const primaryAnalysisFilters = [
+    ["assessmentWindow", "Afnamevenster", analysis?.filters.assessmentWindows ?? []],
+    ["classCode", "Klas", analysis?.filters.classCodes ?? []],
+    ["cohort", "Cohort", analysis?.filters.cohorts ?? []],
+  ] as const;
+  const advancedAnalysisFilters = [
+    ["gradeLevel", "Leerjaar", analysis?.filters.gradeLevels ?? []],
+    ["track", "Niveau / meting", analysis?.filters.tracks ?? []],
+    ["assessmentId", "Leerjaar/niveau", versionFilterOptions.map(([value]) => value)],
+  ] as const;
+  const reportableClassGroups = (analysis?.byClass ?? []).filter((row) => row.reportable);
+  const focusRows = reportableClassGroups
+    .flatMap((row) =>
+      profileGoals.flatMap(([goalId, label]) => {
+        const score = row.goalScores[goalId];
+        return score === null ? [] : [{ classCode: row.classCode, label, score }];
+      }),
+    )
+    .sort((left, right) => left.score - right.score)
+    .slice(0, 3);
+  const cohortsWithDevelopment = (analysis?.growth?.byCohort ?? []).filter((row) => row.delta !== null).length;
 
   const loadStudents = async () => {
+    if (access.role !== "admin") return;
     setIsLoading(true);
     try {
       const data = await requestJson<StudentsResponse>("/api/students", {
@@ -1555,13 +1602,15 @@ const AdminScreen = ({
         headers: adminHeaders,
       });
       setAnalysis(data.analysis);
+      setLastUpdatedAt(new Date());
+      setError("");
     } catch {
       setError("Resultatenanalyse ophalen is niet gelukt.");
     }
   };
 
   useEffect(() => {
-    void loadStudents();
+    if (access.role === "admin") void loadStudents();
   }, []);
 
   useEffect(() => {
@@ -1627,9 +1676,18 @@ const AdminScreen = ({
   const createAnonymousCodeRows = (): ImportStudentRow[] => {
     const classCode = classCodeInput.trim().toLowerCase();
     const windowLabel = assessmentWindow.trim();
-    const cohortLabel = cohort.trim() || windowLabel;
+    const cohortLabel = cohort.trim().toUpperCase();
     if (!gradeLevel || !track || !classCode || !versionId) {
       throw new Error("Vul leerjaar, niveau/meting en klas in.");
+    }
+    if (!cohortLabel) {
+      throw new Error("Vul een blijvende cohortcode in, bijvoorbeeld COHORT-2026.");
+    }
+    if (!/^COHORT-\d{4}(?:-[A-Z0-9]+)*$/.test(cohortLabel)) {
+      throw new Error("Gebruik een naamvrije cohortcode als COHORT-2026 of COHORT-2026-VMBO.");
+    }
+    if (!windowLabel) {
+      throw new Error("Vul het afnamevenster in, bijvoorbeeld najaar-2026.");
     }
     if (!Number.isInteger(codeCount) || codeCount < 1 || codeCount > 250) {
       throw new Error("Vul een aantal tussen 1 en 250 in.");
@@ -1645,6 +1703,18 @@ const AdminScreen = ({
       assessmentWindow: windowLabel,
     }));
   };
+
+  const codePoolImportBatch = () =>
+    [
+      "codepool",
+      cohort.trim().toUpperCase(),
+      assessmentWindow.trim(),
+      classCodeInput.trim().toLowerCase(),
+      versionId,
+      new Date().toISOString().slice(0, 10),
+    ]
+      .filter(Boolean)
+      .join("-");
 
   const prepareBulkPreview = () => {
     try {
@@ -1771,7 +1841,7 @@ const AdminScreen = ({
         headers: adminHeaders,
         body: JSON.stringify({
           versionId,
-          importBatch: cohort.trim() || assessmentWindow.trim(),
+          importBatch: codePoolImportBatch(),
           students: rows,
         }),
       });
@@ -1808,7 +1878,7 @@ const AdminScreen = ({
         headers: adminHeaders,
         body: JSON.stringify({
           versionId,
-          importBatch: cohort.trim() || assessmentWindow.trim(),
+          importBatch: codePoolImportBatch(),
           students: rows,
         }),
       });
@@ -1829,9 +1899,10 @@ const AdminScreen = ({
     filteredStudents.map((student) => ({
       Inlogcode: student.accessCode,
       Klas: student.classCode,
+      Cohort: student.cohort ?? "",
+      Afnamevenster: student.assessmentWindow ?? "",
       Nulmeting: assessmentLabels[student.versionId] ?? student.versionId,
       Status: statusLabel(student.status),
-      "Import-batch": student.importBatch ?? "",
       "Afgerond op": student.completedAt ? new Date(student.completedAt).toLocaleString("nl-NL") : "",
     }));
 
@@ -1854,10 +1925,10 @@ const AdminScreen = ({
     const htmlRows = rows
       .map(
         (row) =>
-          `<tr><td>${escapeHtml(row.Inlogcode)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td><td>${escapeHtml(row["Import-batch"])}</td></tr>`,
+          `<tr><td>${escapeHtml(row.Inlogcode)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Cohort)}</td><td>${escapeHtml(row.Afnamevenster)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td></tr>`,
       )
       .join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Inlogcodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Anonieme inlogcodes nulmeting</h1><table><thead><tr><th>Inlogcode</th><th>Klas</th><th>Nulmeting</th><th>Status</th><th>Import-batch</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Inlogcodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Anonieme inlogcodes nulmeting</h1><table><thead><tr><th>Inlogcode</th><th>Klas</th><th>Cohort</th><th>Afnamevenster</th><th>Nulmeting</th><th>Status</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     downloadFile(`${exportBaseName()}.doc`, html, "application/msword");
   };
 
@@ -1867,7 +1938,7 @@ const AdminScreen = ({
       "Inlogcodes nulmeting Digitale Geletterdheid",
       "",
       ...rows.flatMap((row) => [
-        `${row.Klas} | ${row.Inlogcode} | ${row.Status}`,
+        `${row.Klas} | ${row.Cohort} | ${row.Afnamevenster} | ${row.Inlogcode} | ${row.Status}`,
       ]),
     ];
     downloadFile(`${exportBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
@@ -1877,9 +1948,10 @@ const AdminScreen = ({
     createdCodeRows.map((student) => ({
       Inlogcode: student.accessCode,
       Klas: student.classCode,
+      Cohort: student.cohort ?? "",
+      Afnamevenster: student.assessmentWindow ?? "",
       Nulmeting: assessmentLabels[student.versionId] ?? student.versionId,
       Status: statusLabel(student.status),
-      "Import-batch": student.importBatch ?? "",
     }));
 
   const createdCodesExportBaseName = () =>
@@ -1898,10 +1970,10 @@ const AdminScreen = ({
     const htmlRows = rows
       .map(
         (row) =>
-          `<tr><td>${escapeHtml(row.Inlogcode)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td><td>${escapeHtml(row["Import-batch"])}</td></tr>`,
+          `<tr><td>${escapeHtml(row.Inlogcode)}</td><td>${escapeHtml(row.Klas)}</td><td>${escapeHtml(row.Cohort)}</td><td>${escapeHtml(row.Afnamevenster)}</td><td>${escapeHtml(row.Nulmeting)}</td><td>${escapeHtml(row.Status)}</td></tr>`,
       )
       .join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Nieuwe inlogcodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Nieuwe anonieme inlogcodes</h1><table><thead><tr><th>Inlogcode</th><th>Klas</th><th>Nulmeting</th><th>Status</th><th>Import-batch</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Nieuwe inlogcodes</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px;text-align:left}th{background:#eee}</style></head><body><h1>Nieuwe anonieme inlogcodes</h1><p>Deel de codes willekeurig uit. Houd geen koppeling met namen bij.</p><table><thead><tr><th>Inlogcode</th><th>Klas</th><th>Cohort</th><th>Afnamevenster</th><th>Nulmeting</th><th>Status</th></tr></thead><tbody>${htmlRows}</tbody></table></body></html>`;
     downloadFile(`${createdCodesExportBaseName()}.doc`, html, "application/msword");
   };
 
@@ -1909,6 +1981,8 @@ const AdminScreen = ({
     const rows = getCreatedCodeExportRows();
     const lines = [
       "Nieuwe anonieme inlogcodes",
+      rows[0] ? `Cohort: ${rows[0].Cohort} | Afnamevenster: ${rows[0].Afnamevenster}` : "",
+      "Deel de codes willekeurig uit. Houd geen koppeling met namen bij.",
       "",
       ...rows.map((row) => `${row.Klas} | ${row.Inlogcode} | ${row.Status}`),
     ];
@@ -1933,6 +2007,10 @@ const AdminScreen = ({
       "Gemiddelde zelfinschatting": formatMetric(row.averageSelfAssessment),
       "Verschil zelfinschatting-score": formatMetric(row.averageSelfAssessmentDifference, " pt"),
       ...Object.fromEntries(goalColumns.map((goalId) => [`Kerndoel ${goalId}`, formatMetric(row.goalScores[goalId])])),
+      ...Object.fromEntries(signalGoalIds.map((goalId) => {
+        const signal = row.goalSignals[goalId];
+        return [`Itemsignaal ${goalId}`, signal ? `${signal.achievedCount}/${signal.completedCount} volledig behaald` : "n.v.t."];
+      })),
     }));
 
   const getItemAnalysisExportRows = () =>
@@ -1944,7 +2022,7 @@ const AdminScreen = ({
       "Percentage goed": formatRate(item.correctRate),
       "Discriminatie (rit)": formatDiscrimination(item.discrimination),
       "Percentage ik weet het niet": formatRate(item.unknownRate),
-      "Meest gekozen onjuist antwoord": item.topDistractor || "n.v.t.",
+      "Meest gekozen antwoord bij onjuiste respons": item.topIncorrectResponse || "n.v.t.",
       "Alle gekozen antwoorden": formatDistribution(item.distribution),
       "Percentage risicovolle keuze": formatRate(item.harmfulOptionRate),
       "Foutcategorieen bij taken": formatErrorCategories(item.ptErrorCategories),
@@ -1958,28 +2036,30 @@ const AdminScreen = ({
     const growth = analysis?.growth;
     if (!growth || growth.windows.length === 0) return [];
     const rowFor = (
-      label: string,
-      gradeLevel: string,
-      track: string,
+      cohort: string,
       windowScores: GrowthWindowScore[],
       delta: number | null,
+      totalDelta: number | null,
     ) => ({
-      Groep: label,
-      Leerjaar: gradeLevel ? readableFilterOption("gradeLevel", gradeLevel) : "-",
-      Niveau: track ? readableFilterOption("track", track) : "-",
+      Cohort: cohort,
       ...Object.fromEntries(
-        windowScores.map((window) => [
-          `Ankerscore ${window.assessmentWindow}`,
-          `${formatMetric(window.averageAnchorScore)} (n=${window.completedCount})`,
+        windowScores.flatMap((window) => [
+          [
+            `Ankerscore ${window.assessmentWindow}`,
+            `${formatMetric(window.averageAnchorScore)} (n=${window.completedCount})`,
+          ],
+          [
+            `Itemsetscore ${window.assessmentWindow}`,
+            `${formatMetric(window.averageTotalScore)} (n=${window.completedCount})`,
+          ],
         ]),
       ),
-      "Groei (ankerblok)": formatGrowthDelta(delta),
+      "Ankerontwikkeling": formatGrowthDelta(delta),
+      "Verschil itemsetscore (beschrijvend)": formatGrowthDelta(totalDelta),
     });
     return [
-      rowFor("Alle klassen", "", "", growth.overall, growth.overallDelta),
-      ...growth.byClass.map((row) =>
-        rowFor(row.classCode || "Onbekend", row.gradeLevel, row.track, row.windows, row.delta),
-      ),
+      rowFor("Alle geselecteerde cohorten", growth.overall, growth.overallDelta, growth.overallTotalDelta),
+      ...growth.byCohort.map((row) => rowFor(row.cohort, row.windows, row.delta, row.totalDelta)),
     ];
   };
 
@@ -2001,7 +2081,7 @@ const AdminScreen = ({
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getItemAnalysisExportRows()), "Itemanalyse");
     const growthRows = getGrowthExportRows();
     if (growthRows.length > 0) {
-      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(growthRows), "Groei (ankerblok)");
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(growthRows), "Cohortontwikkeling");
     }
     XLSX.writeFile(workbook, `${analysisBaseName()}.xlsx`);
   };
@@ -2015,7 +2095,7 @@ const AdminScreen = ({
     const itemRows = getItemAnalysisExportRows();
     const growthRows = getGrowthExportRows();
     const growthSection = growthRows.length > 0
-      ? `<h2>Groei per meetmoment (ankerblok)</h2><p>Vergelijking op basis van ankeritems; groei is laatste min eerste meetmoment.</p>${renderRows(growthRows)}`
+      ? `<h2>Cohortontwikkeling (ankerblok)</h2><p>De ankerontwikkeling vergelijkt identieke items. De itemsetscore staat daarnaast beschrijvend vermeld; de volledige itemsets kunnen tussen leerjaren verschillen.</p>${renderRows(growthRows)}`
       : "";
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>Resultatenanalyse</title><style>body{font-family:Arial,sans-serif;color:#1b1d22}h1,h2{margin-bottom:8px}table{border-collapse:collapse;width:100%;margin:12px 0 24px}td,th{border:1px solid #999;padding:6px;text-align:left;vertical-align:top}th{background:#eee}</style></head><body><h1>Resultatenanalyse nulmeting Digitale Geletterdheid</h1><p>Exportdatum: ${new Date().toLocaleDateString("nl-NL")}</p><h2>Samenvatting</h2>${renderRows([{
       "Aangemaakte inlogcodes": analysis?.overview.createdCodes ?? 0,
@@ -2043,12 +2123,12 @@ const AdminScreen = ({
         `${row.Klas} | ${row.Leerjaar} | ${row.Niveau} | afgerond: ${row["Afgeronde afnames"]} | itemsetscore: ${row["Gemiddelde itemsetscore"]}`,
       ),
       "",
-      "Groei per meetmoment (ankerblok)",
+      "Cohortontwikkeling (ankerblok)",
       ...((analysis?.growth && analysis.growth.windows.length > 0)
         ? [
-            `Alle klassen | ${analysis.growth.overall.map((window) => `${window.assessmentWindow}: ${formatMetric(window.averageAnchorScore)} (n=${window.completedCount})`).join(" | ")} | groei: ${formatGrowthDelta(analysis.growth.overallDelta)}`,
-            ...analysis.growth.byClass.map((row) =>
-              `${row.classCode || "Onbekend"} | ${row.windows.map((window) => `${window.assessmentWindow}: ${formatMetric(window.averageAnchorScore)} (n=${window.completedCount})`).join(" | ")} | groei: ${formatGrowthDelta(row.delta)}`,
+            `Alle geselecteerde cohorten | ${analysis.growth.overall.map((window) => `${window.assessmentWindow}: anker ${formatMetric(window.averageAnchorScore)}, itemset ${formatMetric(window.averageTotalScore)} (n=${window.completedCount})`).join(" | ")} | ankerontwikkeling: ${formatGrowthDelta(analysis.growth.overallDelta)} | verschil itemsetscore: ${formatGrowthDelta(analysis.growth.overallTotalDelta)}`,
+            ...analysis.growth.byCohort.map((row) =>
+              `${row.cohort} | ${row.windows.map((window) => `${window.assessmentWindow}: anker ${formatMetric(window.averageAnchorScore)}, itemset ${formatMetric(window.averageTotalScore)} (n=${window.completedCount})`).join(" | ")} | ankerontwikkeling: ${formatGrowthDelta(row.delta)} | verschil itemsetscore: ${formatGrowthDelta(row.totalDelta)}`,
             ),
           ]
         : ["Nog geen meetmomenten met resultaten."]),
@@ -2101,12 +2181,22 @@ const AdminScreen = ({
   const [yearFilter, setYearFilter] = useState<"all" | "lj1" | "lj3">("all");
   const [classFilter, setClassFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<"all" | "not_started" | "in_progress" | "completed">("all");
+  const [codePage, setCodePage] = useState(0);
+  const codesPerPage = 33;
   const yearFilteredStudents =
     yearFilter === "all"
       ? students
       : students.filter((student) => getYearForVersion(student.versionId) === yearFilter);
   const availableClassCodes = Array.from(
     new Set(yearFilteredStudents.map((student) => student.classCode).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b, "nl"));
+  const knownCohorts = Array.from(
+    new Set(
+      students.flatMap((student) => {
+        const knownCohort = student.cohort?.trim().toUpperCase();
+        return knownCohort ? [knownCohort] : [];
+      }),
+    ),
   ).sort((a, b) => a.localeCompare(b, "nl"));
   const classFilteredStudents =
     classFilter.length === 0
@@ -2117,11 +2207,17 @@ const AdminScreen = ({
       ? classFilteredStudents
       : classFilteredStudents.filter((student) => (student.status ?? "not_started") === statusFilter);
   const filteredAccessCodes = filteredStudents.map((student) => student.accessCode);
-  const selectedVisibleAccessCodes = selectedAccessCodes.filter((code) =>
+  const selectedFilteredAccessCodes = selectedAccessCodes.filter((code) =>
     filteredAccessCodes.includes(code),
   );
-  const allVisibleSelected =
-    filteredAccessCodes.length > 0 && selectedVisibleAccessCodes.length === filteredAccessCodes.length;
+  const pageCount = Math.max(1, Math.ceil(filteredStudents.length / codesPerPage));
+  const currentCodePage = Math.min(codePage, pageCount - 1);
+  const pageStart = currentCodePage * codesPerPage;
+  const pagedStudents = filteredStudents.slice(pageStart, pageStart + codesPerPage);
+  const pagedAccessCodes = pagedStudents.map((student) => student.accessCode);
+  const selectedPageAccessCodes = selectedAccessCodes.filter((code) => pagedAccessCodes.includes(code));
+  const allPageSelected =
+    pagedAccessCodes.length > 0 && selectedPageAccessCodes.length === pagedAccessCodes.length;
   const classFilterLabel =
     classFilter.length === 0
       ? "Alle klassen"
@@ -2170,6 +2266,14 @@ const AdminScreen = ({
     const availableCodes = new Set(students.map((student) => student.accessCode));
     setSelectedAccessCodes((selected) => selected.filter((code) => availableCodes.has(code)));
   }, [students]);
+
+  useEffect(() => {
+    setCodePage(0);
+  }, [yearFilter, classFilter.join("|"), statusFilter]);
+
+  useEffect(() => {
+    setCodePage((page) => Math.min(page, pageCount - 1));
+  }, [pageCount]);
 
   const completedCount = classFilteredStudents.filter((s) => s.status === "completed").length;
   const busyCount = classFilteredStudents.filter((s) => s.status === "in_progress").length;
@@ -2235,7 +2339,7 @@ const AdminScreen = ({
           </span>
         </div>
         <div className="admin-topbar-actions">
-          <button className="filter-chip admin-refresh-button" type="button" onClick={loadStudents} disabled={isLoading}>
+          <button className="filter-chip admin-refresh-button" type="button" onClick={() => void (access.role === "admin" ? loadStudents() : loadAnalysis())} disabled={isLoading}>
             <span aria-hidden="true">↻</span> {isLoading ? "Bijwerken…" : "Vernieuwen"}
           </button>
           <button className="btn btn-ghost" type="button" onClick={onBack}>
@@ -2245,12 +2349,14 @@ const AdminScreen = ({
       </div>
       <section className="admin-hero">
         <div>
-          <span className="badge">Docentomgeving</span>
+          <span className="badge">{access.role === "admin" ? "Beheeromgeving" : "Mentoroverzicht"}</span>
           <h1>
-            Beheer inlogcodes<br />en klasvoortgang
+            {access.role === "admin" ? <>Beheer inlogcodes<br />en klasvoortgang</> : <>Resultaten van<br />toegewezen klassen</>}
           </h1>
           <p className="intro">
-            Vernieuw om per klas te zien hoeveel anonieme afnames bezig of afgerond zijn. Namen en individuele scores zijn niet beschikbaar.
+            {access.role === "admin"
+              ? "Vernieuw om per klas te zien hoeveel anonieme afnames bezig of afgerond zijn. Namen en individuele scores zijn niet beschikbaar."
+              : "Je ziet uitsluitend samengevoegde resultaten van je toegewezen klassen. Namen en individuele scores zijn niet beschikbaar."}
           </p>
         </div>
         <div className="admin-side-card">
@@ -2272,13 +2378,15 @@ const AdminScreen = ({
             </div>
             <div>
               <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: ".95rem" }}>
-                Docentaccount
+                {access.role === "admin" ? "Beheerder" : "Mentoraccount"}
               </div>
-              <div style={{ fontSize: ".82rem", color: "var(--c-ink-soft)" }}>Sessie actief</div>
+              <div style={{ fontSize: ".82rem", color: "var(--c-ink-soft)" }}>
+                {access.role === "admin" ? "Alle klassen" : `${access.classCodes.length} toegewezen klas${access.classCodes.length === 1 ? "" : "sen"}`}
+              </div>
             </div>
           </div>
           <hr style={{ border: 0, borderTop: "1px solid var(--c-line)", margin: "12px 0" }} />
-          <div style={{ display: "flex", gap: 24, fontSize: ".88rem" }}>
+          {access.role === "admin" ? <div style={{ display: "flex", gap: 24, fontSize: ".88rem" }}>
             <div>
               <div style={{ color: "var(--c-ink-soft)", fontWeight: 500 }}>Codes</div>
               <div style={{ fontWeight: 700 }}>{classFilteredStudents.length}</div>
@@ -2291,11 +2399,11 @@ const AdminScreen = ({
               <div style={{ color: "var(--c-ink-soft)", fontWeight: 500 }}>Bezig</div>
               <div style={{ fontWeight: 700 }}>{busyCount}</div>
             </div>
-          </div>
+          </div> : <p className="help">Codebeheer en technische itemanalyse zijn alleen beschikbaar voor de beheerder.</p>}
         </div>
       </section>
 
-      <div className="stats-strip">
+      {access.role === "admin" ? <div className="stats-strip">
         {stats.map((s, i) => (
           <div key={i} className="stat-card">
             <span className="accent-strip" />
@@ -2304,9 +2412,9 @@ const AdminScreen = ({
             <div className={`delta ${s.up ? "up" : "down"}`}>{s.delta}</div>
           </div>
         ))}
-      </div>
+      </div> : null}
 
-      <section className="admin-preview-block">
+      {access.role === "admin" ? <section className="admin-preview-block">
         <h3>Voortgang per klas</h3>
         <p className="help">Ververs deze pagina om de anonieme voortgang bij te werken. Alleen aantallen worden getoond.</p>
         <div className="analysis-table compact">
@@ -2321,12 +2429,12 @@ const AdminScreen = ({
           ))}
           {classProgress.length === 0 ? <p className="help">Er zijn nog geen codepools aangemaakt.</p> : null}
         </div>
-      </section>
+      </section> : null}
 
       <nav className="admin-main-tabs" aria-label="Beheeromgeving">
-        <button className={adminTab === "codes" ? "active" : ""} type="button" onClick={() => setAdminTab("codes")}>
+        {access.role === "admin" ? <button className={adminTab === "codes" ? "active" : ""} type="button" onClick={() => setAdminTab("codes")}>
           Inlogcodes
-        </button>
+        </button> : null}
         <button className={adminTab === "results" ? "active" : ""} type="button" onClick={() => setAdminTab("results")}>
           Resultatenanalyse
         </button>
@@ -2343,7 +2451,7 @@ const AdminScreen = ({
             <button className="filter-chip" type="button" onClick={() => void loadAnalysis()}>
               Vernieuwen
             </button>
-            <details className="admin-export-menu">
+            {access.role === "admin" ? <details className="admin-export-menu">
               <summary className={`filter-chip ${!analysis ? "disabled" : ""}`}>
                 Exporteer resultaten
               </summary>
@@ -2358,18 +2466,11 @@ const AdminScreen = ({
                   PDF
                 </button>
               </div>
-            </details>
+            </details> : null}
           </div>
         </div>
         <div className="analysis-filters">
-          {[
-            ["assessmentWindow", "Afnamevenster", analysis?.filters.assessmentWindows ?? []],
-            ["gradeLevel", "Leerjaar", analysis?.filters.gradeLevels ?? []],
-            ["track", "Niveau / meting", analysis?.filters.tracks ?? []],
-            ["classCode", "Klas", analysis?.filters.classCodes ?? []],
-            ["cohort", "Cohort", analysis?.filters.cohorts ?? []],
-            ["assessmentId", "Leerjaar/niveau", versionFilterOptions.map(([value]) => value)],
-          ].map(([key, label, options]) => (
+          {primaryAnalysisFilters.map(([key, label, options]) => (
             <label className="admin-filter-select" key={String(key)}>
               <span>{String(label)}</span>
               <select
@@ -2387,132 +2488,140 @@ const AdminScreen = ({
               </select>
             </label>
           ))}
+          <details className="admin-filter-menu">
+            <summary className="filter-chip">Extra filters</summary>
+            <div className="admin-filter-popover analysis-advanced-filters">
+              {advancedAnalysisFilters.map(([key, label, options]) => (
+                <label className="admin-filter-select" key={String(key)}>
+                  <span>{String(label)}</span>
+                  <select
+                    value={analysisFilters[key as keyof typeof analysisFilters]}
+                    onChange={(event) =>
+                      setAnalysisFilters((current) => ({ ...current, [String(key)]: event.target.value }))
+                    }
+                  >
+                    <option value="">Alles</option>
+                    {(options as readonly string[]).map((option) => (
+                      <option key={option} value={option}>
+                        {readableFilterOption(String(key), option)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+            </div>
+          </details>
         </div>
         <div className="stats-strip analysis-stats">
           {[
-            ["Aangemaakte inlogcodes", analysis?.overview.createdCodes ?? 0, ""],
-            ["Gestarte afnames", analysis?.overview.startedCount ?? 0, ""],
-            ["Afgeronde afnames", analysis?.overview.completedCount ?? 0, ""],
-            ["Afrondingspercentage", analysis?.overview.completionPercentage ?? 0, "%"],
-            ["Gem. itemsetscore", analysis?.overview.averageTotalScore ?? null, "%"],
-            ["Gem. SR-score", analysis?.overview.averageSrScore ?? null, "%"],
-            ["Gem. PT-score", analysis?.overview.averagePtScore ?? null, "%"],
-            ["Gem. zelfinschatting", analysis?.overview.averageSelfAssessment ?? null, "%"],
-            ["Gem. verschil", analysis?.overview.averageSelfAssessmentDifference ?? null, " pt"],
-          ].map(([label, value, suffix]) => (
+            ["Afnamevoortgang", `${analysis?.overview.completedCount ?? 0}/${analysis?.overview.createdCodes ?? 0}`, `${analysis?.overview.startedCount ?? 0} gestart · ${analysis?.overview.completionPercentage ?? 0}% afgerond`],
+            ["Gem. itemsetscore", formatMetric(analysis?.overview.averageTotalScore), "Alleen beschrijvend; geen cijfer"],
+            ["Bruikbare klasprofielen", String(reportableClassGroups.length), `minimaal n=${analysis?.privacy.minimumReportingCount ?? 5}`],
+            ["Cohortontwikkeling", String(cohortsWithDevelopment), "cohorten met twee meetmomenten"],
+          ].map(([label, value, detail]) => (
             <div className="stat-card compact" key={String(label)}>
               <span className="accent-strip" />
               <div className="label">{String(label)}</div>
-              <div className="value">{typeof value === "number" ? formatMetric(value, String(suffix)) : "n.v.t."}</div>
+              <div className="value">{String(value)}</div>
+              <div className="delta up">{String(detail)}</div>
             </div>
           ))}
         </div>
+        {analysis?.privacy.performanceSuppressed ? (
+          <p className="help">Prestatiegegevens zijn verborgen omdat deze selectie minder dan {analysis.privacy.minimumReportingCount} afgeronde afnames bevat.</p>
+        ) : null}
         <div className="analysis-tabs">
-          <button className={analysisTab === "groups" ? "active" : ""} type="button" onClick={() => setAnalysisTab("groups")}>
-            Klas en leerjaar
+          <button className={analysisTab === "mentor" ? "active" : ""} type="button" onClick={() => setAnalysisTab("mentor")}>
+            Mentoroverzicht
           </button>
-          <button className={analysisTab === "items" ? "active" : ""} type="button" onClick={() => setAnalysisTab("items")}>
-            Itemanalyse
-          </button>
+          {access.role === "admin" ? <button className={analysisTab === "technical" ? "active" : ""} type="button" onClick={() => setAnalysisTab("technical")}>
+            Technische verdieping
+          </button> : null}
           <button className={analysisTab === "growth" ? "active" : ""} type="button" onClick={() => setAnalysisTab("growth")}>
-            Groei (ankerblok)
+            Cohortontwikkeling (ankerblok)
           </button>
         </div>
         {analysisTab === "growth" ? (
           <div className="admin-preview-block">
-            <h4>Groei per meetmoment — alleen ankeritems</h4>
+            <h4>Cohortontwikkeling — alleen ankeritems</h4>
             <p className="help">
-              Vergelijking van nulmeting en voortgangsmeting(en) op basis van het ankerblok (identieke items in beide
-              metingen). Het filter Afnamevenster wordt hier genegeerd; de overige filters blijven actief. Groei is het
-              verschil tussen het eerste en laatste meetmoment.
+              Vergelijking van hetzelfde cohort in leerjaar 1 en later in leerjaar 3 op basis van het ankerblok
+              (identieke items in beide metingen). Alleen het cohortfilter blijft actief: klas, leerjaar, niveau,
+              assessment en afnamevenster kunnen per meetmoment veranderen. Daarnaast staat per meetmoment de
+              itemsetscore. Die is beschrijvend; de ankerontwikkeling is de vergelijkbare hoofdmaat.
             </p>
-            {(analysis?.growth?.windows.length ?? 0) < 2 ? (
+            {!(analysis?.growth?.byCohort ?? []).some((row) => row.delta !== null) ? (
               <p className="help">
-                Er zijn nog geen twee meetmomenten met resultaten. Zodra een voortgangsmeting is afgerond, verschijnt
-                hier de groeivergelijking.
+                Er zijn nog geen twee meetmomenten voor een cohort met resultaten. Zodra een cohort in een volgend
+                leerjaar opnieuw is afgenomen, verschijnt hier de vergelijking.
               </p>
             ) : null}
             <div className="analysis-table">
               <div className="analysis-row head">
-                <span>Groep</span>
-                <span>Leerjaar</span>
-                <span>Niveau</span>
+                <span>Cohort</span>
                 {(analysis?.growth?.windows ?? []).map((label) => (
-                  <span key={label}>{label} (n)</span>
+                  <span key={label}>{label}<small>Anker / itemset (n)</small></span>
                 ))}
-                <span>Groei</span>
+                <span>Ankerontwikkeling</span>
+                <span>Verschil itemsetscore<small>beschrijvend</small></span>
               </div>
               <div className="analysis-row">
-                <span>Alle klassen</span>
-                <span>-</span>
-                <span>-</span>
+                <span>Alle geselecteerde cohorten</span>
                 {(analysis?.growth?.overall ?? []).map((window) => (
-                  <span key={window.assessmentWindow}>
-                    {formatMetric(window.averageAnchorScore)} ({window.completedCount})
+                  <span className="growth-score" key={window.assessmentWindow}>
+                    <strong>Anker: {formatMetric(window.averageAnchorScore)}</strong>
+                    <small>Itemset: {formatMetric(window.averageTotalScore)} (n={window.completedCount})</small>
                   </span>
                 ))}
                 <span>{analysis?.growth?.overallDelta === null || analysis?.growth?.overallDelta === undefined ? "n.v.t." : `${analysis.growth.overallDelta > 0 ? "+" : ""}${analysis.growth.overallDelta} pt`}</span>
+                <span>{analysis?.growth?.overallTotalDelta === null || analysis?.growth?.overallTotalDelta === undefined ? "n.v.t." : `${analysis.growth.overallTotalDelta > 0 ? "+" : ""}${analysis.growth.overallTotalDelta} pt`}</span>
               </div>
-              {(analysis?.growth?.byClass ?? []).map((row) => (
-                <div className="analysis-row" key={`growth-${row.classCode}-${row.gradeLevel}-${row.track}`}>
-                  <span>{row.classCode || "Onbekend"}</span>
-                  <span>{readableFilterOption("gradeLevel", row.gradeLevel)}</span>
-                  <span>{readableFilterOption("track", row.track)}</span>
+              {(analysis?.growth?.byCohort ?? []).map((row) => (
+                <div className="analysis-row" key={`growth-${row.cohort}`}>
+                  <span>{row.cohort}</span>
                   {row.windows.map((window) => (
-                    <span key={window.assessmentWindow}>
-                      {formatMetric(window.averageAnchorScore)} ({window.completedCount})
+                    <span className="growth-score" key={window.assessmentWindow}>
+                      <strong>Anker: {formatMetric(window.averageAnchorScore)}</strong>
+                      <small>Itemset: {formatMetric(window.averageTotalScore)} (n={window.completedCount})</small>
                     </span>
                   ))}
                   <span>{row.delta === null ? "n.v.t." : `${row.delta > 0 ? "+" : ""}${row.delta} pt`}</span>
+                  <span>{row.totalDelta === null ? "n.v.t." : `${row.totalDelta > 0 ? "+" : ""}${row.totalDelta} pt`}</span>
                 </div>
               ))}
             </div>
           </div>
-        ) : analysisTab === "groups" ? (
+        ) : analysisTab === "mentor" || access.role === "mentor" ? (
           <>
-            {[
-              ["Analyse per klas", analysis?.byClass ?? []],
-              ["Analyse per leerjaar", analysis?.byGrade ?? []],
-            ].map(([title, rows]) => (
-              <div className="admin-preview-block" key={String(title)}>
-                <h4>{String(title)}</h4>
-                <div className="analysis-table wide">
-                  <div className="analysis-row head">
-                    <span>Klas</span>
-                    <span>Leerjaar</span>
-                    <span>Niveau</span>
-                    <span>Aantal afgerond</span>
-                    <span>Gemiddelde itemsetscore</span>
-                    <span>Gemiddelde meerkeuzescore</span>
-                    <span>Gemiddelde taakscore</span>
-                    <span>Zelfinschatting</span>
-                    {goalColumns.map((goalId) => <span key={goalId}>{goalId}</span>)}
-                  </div>
-                  {(rows as AnalysisGroup[]).map((row) => (
-                    <div className="analysis-row" key={`${String(title)}-${row.classCode}-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}`}>
-                      <span>{row.classCode || "Alle klassen"}</span>
-                      <span>{readableFilterOption("gradeLevel", row.gradeLevel)}</span>
-                      <span>{readableFilterOption("track", row.track)}</span>
-                      <span>{row.completedCount}</span>
-                      <span>{formatMetric(row.averageTotalScore)}</span>
-                      <span>{formatMetric(row.averageSrScore)}</span>
-                      <span>{formatMetric(row.averagePtScore)}</span>
-                      <span>{formatMetric(row.averageSelfAssessment)}</span>
-                      {goalColumns.map((goalId) => <span key={goalId}>{formatMetric(row.goalScores[goalId])}</span>)}
-                    </div>
-                  ))}
+            <div className="admin-preview-block">
+              <h4>Profiel per klas</h4>
+              <p className="help">Gebruik dit profiel om onderwijsaanbod te bespreken. Het geeft aanwijzingen over deze itemset, geen beheersingsoordeel of cijfer.</p>
+              <div className="analysis-table">
+                <div className="analysis-row mentor-profile-row head">
+                  <span>Klas</span>
+                  <span>Afgerond</span>
+                  <span>Itemsetscore</span>
+                  {profileGoals.map(([goalId, label]) => <span key={goalId}>{goalId}<small>{label}</small></span>)}
                 </div>
+                {(analysis?.byClass ?? []).map((row) => (
+                  <div className="analysis-row mentor-profile-row" key={`mentor-${row.classCode}-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}`}>
+                    <span>{row.classCode || "Onbekend"}</span>
+                    <span>{row.completedCount}</span>
+                    <span>{row.reportable ? formatMetric(row.averageTotalScore) : `n<${analysis?.privacy.minimumReportingCount ?? 5}`}</span>
+                    {profileGoals.map(([goalId]) => <span key={goalId}>{row.reportable ? formatMetric(row.goalScores[goalId]) : "beschermd"}</span>)}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
             <div className="admin-preview-block">
               <h4>Domeinvisualisatie</h4>
-              <div className="heatmap-grid" style={{ gridTemplateColumns: `minmax(120px, 1fr) repeat(${goalColumns.length}, minmax(54px, 1fr))` }}>
+              <div className="heatmap-grid" style={{ gridTemplateColumns: `minmax(160px, 1fr) repeat(${profileGoals.length}, minmax(92px, 1fr))` }}>
                 <strong>Groep</strong>
-                {goalColumns.map((goalId) => <strong key={goalId}>{goalId}</strong>)}
-                {(analysis?.byClass ?? []).map((row) => (
+                {profileGoals.map(([goalId]) => <strong key={goalId}>{goalId}</strong>)}
+                {reportableClassGroups.map((row) => (
                   <div className="heatmap-row" key={`heat-${row.classCode}`}>
                     <span>{row.classCode || row.gradeLevel}</span>
-                    {goalColumns.map((goalId) => {
+                    {profileGoals.map(([goalId]) => {
                       const value = row.goalScores[goalId] ?? 0;
                       return <span key={goalId} style={{ "--heat": value / 100 } as CSSProperties}>{formatMetric(row.goalScores[goalId])}</span>;
                     })}
@@ -2520,8 +2629,56 @@ const AdminScreen = ({
                 ))}
               </div>
             </div>
+            <div className="admin-preview-block">
+              <h4>Aandacht gevraagd</h4>
+              {focusRows.length > 0 ? (
+                <ul className="analysis-focus-list">
+                  {focusRows.map((focus, index) => <li key={`${focus.classCode}-${focus.label}-${index}`}>{focus.classCode}: <strong>{focus.label}</strong> is binnen deze selectie relatief het laagste profiel ({focus.score}%).</li>)}
+                </ul>
+              ) : <p className="help">Er zijn nog onvoldoende afgeronde afnames voor een profielsignaal per klas.</p>}
+            </div>
+            <div className="admin-preview-block">
+              <h4>Itemsignalen per klas</h4>
+              <p className="help">Dit zijn signalen van één item of taak. Daarom tonen we aantallen leerlingen met een volledig behaald signaal, geen percentages.</p>
+              <div className="analysis-table compact">
+                <div className="analysis-row head"><span>Klas</span><span>Afgerond</span><span>Itemsignalen</span></div>
+                {(analysis?.byClass ?? []).map((row) => (
+                  <div className="analysis-row" key={`signals-${row.classCode}-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}`}>
+                    <span>{row.classCode || "Onbekend"}</span>
+                    <span>{row.completedCount}</span>
+                    <span>{row.reportable ? signalGoalIds.map((goalId) => {
+                      const signal = row.goalSignals[goalId];
+                      return signal ? `${goalId}: ${signal.achievedCount}/${signal.completedCount}` : `${goalId}: n.v.t.`;
+                    }).join(" · ") : `Beschermd bij n<${analysis?.privacy.minimumReportingCount ?? 5}`}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </>
         ) : (
+          <>
+          <div className="admin-preview-block">
+            <h4>Technische verdieping</h4>
+            <p className="help">Voor instrumentontwikkeling en kwaliteitscontrole. Discriminatie (rit) verschijnt pas vanaf 10 antwoorden; deze pilot is geen gevalideerd meetinstrument.</p>
+            {[ ["Analyse per klas", analysis?.byClass ?? []], ["Analyse per leerjaar", analysis?.byGrade ?? []] ].map(([title, rows]) => (
+              <div className="admin-preview-block" key={String(title)}>
+                <h5>{String(title)}</h5>
+                <div className="analysis-table wide">
+                  <div className="analysis-row head">
+                    <span>Klas</span><span>Leerjaar</span><span>Niveau</span><span>Afgerond</span><span>Itemset</span><span>SR</span><span>PT</span><span>Zelfinschatting</span>
+                    {goalColumns.map((goalId) => <span key={goalId}>{goalId}</span>)}
+                  </div>
+                  {(rows as AnalysisGroup[]).map((row) => (
+                    <div className="analysis-row" key={`${String(title)}-${row.classCode}-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}`}>
+                      <span>{row.classCode || "Alle klassen"}</span><span>{readableFilterOption("gradeLevel", row.gradeLevel)}</span><span>{readableFilterOption("track", row.track)}</span><span>{row.completedCount}</span>
+                      <span>{row.reportable ? formatMetric(row.averageTotalScore) : `n<${analysis?.privacy.minimumReportingCount ?? 5}`}</span><span>{row.reportable ? formatMetric(row.averageSrScore) : "beschermd"}</span><span>{row.reportable ? formatMetric(row.averagePtScore) : "beschermd"}</span><span>{row.reportable ? formatMetric(row.averageSelfAssessment) : "beschermd"}</span>
+                      {goalColumns.map((goalId) => <span key={goalId}>{row.reportable ? formatMetric(row.goalScores[goalId]) : "beschermd"}</span>)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
           <div className="admin-preview-block">
             <h4>Itemanalyse</h4>
             <div className="analysis-table item-analysis">
@@ -2533,7 +2690,7 @@ const AdminScreen = ({
                 <span>Percentage goed</span>
                 <span>Discriminatie (rit)</span>
                 <span>Percentage ik weet het niet</span>
-                <span>Meest gekozen onjuist antwoord</span>
+                <span>Meest gekozen antwoord bij onjuiste respons</span>
                 <span>Alle gekozen antwoorden</span>
                 <span>Percentage risicovolle keuze</span>
                 <span>Foutcategorieen bij taken</span>
@@ -2548,7 +2705,7 @@ const AdminScreen = ({
                   <span>{formatRate(item.correctRate)}</span>
                   <span>{formatDiscrimination(item.discrimination)}</span>
                   <span>{formatRate(item.unknownRate)}</span>
-                  <span>{item.topDistractor || "n.v.t."}</span>
+                  <span>{item.topIncorrectResponse || "n.v.t."}</span>
                   <span>{formatDistribution(item.distribution)}</span>
                   <span>{formatRate(item.harmfulOptionRate)}</span>
                   <span>{formatErrorCategories(item.ptErrorCategories)}</span>
@@ -2556,7 +2713,9 @@ const AdminScreen = ({
                 </div>
               ))}
             </div>
+            {(analysis?.itemAnalysis ?? []).length === 0 ? <p className="help">Er zijn onvoldoende afgeronde afnames voor technische itemanalyse.</p> : null}
           </div>
+          </>
         )}
       </section>
       ) : null}
@@ -2572,7 +2731,7 @@ const AdminScreen = ({
         <span className="overline">Beheer &gt; Inlogcodes &gt; Anonieme codepool</span>
         <h3>Anonieme codepool aanmaken</h3>
         <p className="help">
-          Kies klas en meting en maak precies genoeg willekeurige codes. Deel de codes willekeurig uit en houd geen koppeling met namen bij.
+          Maak per afnamemoment een nieuwe pool. Deel de codes willekeurig uit en houd geen koppeling met namen bij. Gebruik bij leerjaar 1 en leerjaar 3 steeds dezelfde cohortcode om alleen de ontwikkeling van de groep te kunnen vergelijken.
         </p>
         <div className="grid">
           <label>
@@ -2590,24 +2749,27 @@ const AdminScreen = ({
             </select>
           </label>
           <label>
+            <span>Blijvende cohortcode</span>
+            <input
+              value={cohort}
+              onChange={(event) => setCohort(event.target.value)}
+              list="known-cohort-codes"
+              placeholder="bv. COHORT-2026"
+              aria-describedby="cohort-code-help"
+            />
+            <datalist id="known-cohort-codes">
+              {knownCohorts.map((knownCohort) => <option key={knownCohort} value={knownCohort} />)}
+            </datalist>
+            <small id="cohort-code-help">Kies een bestaande code of maak bij de eerste afname COHORT-2026. Gebruik precies dezelfde code opnieuw in leerjaar 3; namen en klasnamen horen hier niet thuis.</small>
+          </label>
+          <label>
             <span>Klas</span>
             <input value={classCodeInput} onChange={(event) => setClassCodeInput(event.target.value)} placeholder="bv. vmbo1a" />
           </label>
           <label>
-            <span>Meetmoment</span>
+            <span>Afnamevenster</span>
             <input value={assessmentWindow} onChange={(event) => setAssessmentWindow(event.target.value)} placeholder="bv. najaar-2026" />
           </label>
-          <details className="admin-import-options">
-            <summary>Extra gegevens (optioneel)</summary>
-            <label>
-              <span>Cohort</span>
-              <input value={cohort} onChange={(event) => setCohort(event.target.value)} placeholder="standaard: meetmoment" />
-            </label>
-            <label>
-              <span>Import-batch</span>
-              <input value={importBatch} onChange={(event) => setImportBatch(event.target.value)} placeholder="bv. lokaal-1" />
-            </label>
-          </details>
           <label>
             <span>Aantal codes</span>
             <input
@@ -2633,7 +2795,10 @@ const AdminScreen = ({
         {createdCodeRows.length > 0 ? (
           <div className="admin-preview-block printable-code-overview">
             <h4>Overzicht nieuwe inlogcodes</h4>
-            <details className="admin-export-menu">
+            <p className="help">
+              Cohort: <strong>{createdCodeRows[0]?.cohort || "onbekend"}</strong> · Afnamevenster: <strong>{createdCodeRows[0]?.assessmentWindow || "onbekend"}</strong>. Deel de codekaartjes willekeurig uit; dit overzicht bevat geen namen.
+            </p>
+            {access.role === "admin" ? <details className="admin-export-menu">
               <summary className="filter-chip">Exporteer</summary>
               <div className="admin-export-options">
                 <button className="filter-chip" type="button" onClick={() => void exportCreatedCodesExcel()}>
@@ -2646,7 +2811,7 @@ const AdminScreen = ({
                   PDF
                 </button>
               </div>
-            </details>
+            </details> : null}
             <div className="analysis-table compact">
               <div className="analysis-row head">
                 <span>Klas</span>
@@ -2831,11 +2996,11 @@ const AdminScreen = ({
                   onClick={() =>
                     deleteStudents(
                       "deleteStudents",
-                      { accessCodes: selectedVisibleAccessCodes },
-                      `${selectedVisibleAccessCodes.length} geselecteerd`,
+                      { accessCodes: selectedFilteredAccessCodes },
+                      `${selectedFilteredAccessCodes.length} geselecteerd`,
                     )
                   }
-                  disabled={isLoading || selectedVisibleAccessCodes.length === 0}
+                  disabled={isLoading || selectedFilteredAccessCodes.length === 0}
                 >
                   Wis selectie
                 </button>
@@ -2884,19 +3049,49 @@ const AdminScreen = ({
           </div>
         </div>
 
+        {filteredStudents.length > 0 ? (
+          <div className="code-pagination" aria-label="Paginering van anonieme codes">
+            <span>
+              Codes {pageStart + 1}–{Math.min(pageStart + codesPerPage, filteredStudents.length)} van {filteredStudents.length}
+              {selectedFilteredAccessCodes.length > 0 ? ` · ${selectedFilteredAccessCodes.length} geselecteerd` : ""}
+            </span>
+            {pageCount > 1 ? (
+              <div>
+                <button
+                  className="filter-chip"
+                  type="button"
+                  onClick={() => setCodePage((page) => Math.max(0, page - 1))}
+                  disabled={currentCodePage === 0}
+                >
+                  ← Vorige
+                </button>
+                <span>Pagina {currentCodePage + 1} van {pageCount}</span>
+                <button
+                  className="filter-chip"
+                  type="button"
+                  onClick={() => setCodePage((page) => Math.min(pageCount - 1, page + 1))}
+                  disabled={currentCodePage === pageCount - 1}
+                >
+                  Volgende →
+                </button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="rd-student-table">
           <div className="rd-student-row head">
             <span>
               <input
-                aria-label="Selecteer alle zichtbare codes"
+                aria-label="Selecteer alle codes op deze pagina"
                 type="checkbox"
-                checked={allVisibleSelected}
-                disabled={filteredAccessCodes.length === 0}
+                checked={allPageSelected}
+                disabled={pagedAccessCodes.length === 0}
                 onChange={(event) => {
                   setSelectedAccessCodes((selected) =>
                     event.target.checked
-                      ? Array.from(new Set([...selected, ...filteredAccessCodes]))
-                      : selected.filter((code) => !filteredAccessCodes.includes(code)),
+                      ? Array.from(new Set([...selected, ...pagedAccessCodes]))
+                      : selected.filter((code) => !pagedAccessCodes.includes(code)),
                   );
                 }}
               />
@@ -2916,7 +3111,7 @@ const AdminScreen = ({
               </span>
             </div>
           ) : (
-            filteredStudents.map((student) => {
+            pagedStudents.map((student) => {
               const palette = versionToPalette[student.versionId] ?? "p1";
               const meting = assessmentMap[student.versionId]?.level ?? student.versionId;
               const hasScore = false;

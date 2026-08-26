@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+import { accessForPassword } from "./access.js";
 
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === "object") {
@@ -17,17 +17,6 @@ const readJsonBody = async (request) => {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 };
 
-const safeEquals = (candidate, expected) => {
-  const candidateBuffer = Buffer.from(candidate);
-  const expectedBuffer = Buffer.from(expected);
-
-  if (candidateBuffer.length !== expectedBuffer.length) {
-    return false;
-  }
-
-  return crypto.timingSafeEqual(candidateBuffer, expectedBuffer);
-};
-
 export default async function handler(request, response) {
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
@@ -35,8 +24,7 @@ export default async function handler(request, response) {
     return;
   }
 
-  const expectedPassword = process.env.ADMIN_PASSWORD;
-  if (!expectedPassword) {
+  if (!process.env.ADMIN_PASSWORD) {
     response.status(500).json({ ok: false });
     return;
   }
@@ -45,12 +33,13 @@ export default async function handler(request, response) {
     const body = await readJsonBody(request);
     const password = typeof body.password === "string" ? body.password : "";
 
-    if (!safeEquals(password, expectedPassword)) {
+    const access = accessForPassword(password);
+    if (!access) {
       response.status(401).json({ ok: false });
       return;
     }
 
-    response.status(200).json({ ok: true });
+    response.status(200).json({ ok: true, access });
   } catch {
     response.status(400).json({ ok: false });
   }
