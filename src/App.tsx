@@ -1694,8 +1694,8 @@ const AdminScreen = ({
     if (key === "assessmentId") {
       return versionFilterOptions.find(([value]) => value === option)?.[1] ?? assessmentLabels[option as AssessmentVersion["id"]] ?? option;
     }
-    if (key === "gradeLevel") return option === "lj3" ? "Leerjaar 3" : "Leerjaar 1";
-    if (key === "track") return option === "hv" ? "HAVO/VWO" : "VMBO";
+    if (key === "gradeLevel") return option === "lj3" ? "Leerjaar 3" : option === "lj1" ? "Leerjaar 1" : "Alle leerjaren";
+    if (key === "track") return option === "hv" ? "HAVO/VWO" : option === "vmbo" ? "VMBO" : "Alle niveaus";
     return option;
   };
   const readableQuestionLabel = (item: ItemAnalysisRow) => {
