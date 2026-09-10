@@ -1,5 +1,5 @@
 import type { CSSProperties, DragEvent, ReactNode } from "react";
-import { createContext, Fragment, useContext, useEffect, useRef, useState } from "react";
+import { createContext, Fragment, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   assessmentMap,
   defaultCodeMappings,
@@ -182,12 +182,19 @@ type AnalysisGroup = {
   averagePtScore: number | null;
   averageSelfAssessment: number | null;
   averageSelfAssessmentDifference: number | null;
+  medianTotalScore: number | null;
+  q1TotalScore: number | null;
+  q3TotalScore: number | null;
+  standardDeviation: number | null;
   goalScores: Record<string, number | null>;
   goalSignals: Record<string, { achievedCount: number; completedCount: number; maxScore: number } | null>;
 };
 
 type ItemAnalysisRow = {
   itemId: string;
+  versionId: string;
+  assessmentBuildVersion: string;
+  assessmentContentHash: string;
   questionNumber: number | string;
   goalId: string;
   answerCount: number;
@@ -239,6 +246,7 @@ type ResultsAnalysis = {
   overview: Omit<AnalysisGroup, "assessmentId" | "classCode" | "classId" | "gradeLevel" | "track" | "cohort" | "assessmentWindow" | "versionId" | "goalScores" | "goalSignals" | "reportable">;
   byClass: AnalysisGroup[];
   byGrade: AnalysisGroup[];
+  byLevel: AnalysisGroup[];
   itemAnalysis: ItemAnalysisRow[];
   growth?: GrowthAnalysis;
 };
@@ -823,6 +831,8 @@ const App = () => {
   const [adminAccess, setAdminAccess] = useState<AdminAccess | null>(null);
   const [adminError, setAdminError] = useState("");
   const [isStarting, setIsStarting] = useState(false);
+  const [resultSaveStatus, setResultSaveStatus] = useState<"idle" | "saving" | "saved" | "failed">("idle");
+  const [resultRetryNonce, setResultRetryNonce] = useState(0);
   const [isUnlockingAdmin, setIsUnlockingAdmin] = useState(false);
   const [stepStartedAt, setStepStartedAt] = useState(Date.now());
   const [now, setNow] = useState(Date.now());
@@ -833,10 +843,12 @@ const App = () => {
   const activeTheme = getThemeForSession(session, entryView);
   const steps = activeAssessment ? getStepDescriptors(activeAssessment) : [];
   const currentStep = session ? steps[session.currentStepIndex] ?? null : null;
-  const result =
-    session && activeAssessment && session.completedAt
+  const result = useMemo(
+    () => session && activeAssessment && session.completedAt
       ? calculateResult(session, activeAssessment)
-      : null;
+      : null,
+    [session, activeAssessment],
+  );
 
   useEffect(() => {
     saveActiveSession(session);
@@ -845,11 +857,7 @@ const App = () => {
       return;
     }
 
-    if (session.completedAt && result) {
-      void requestJson<{ ok: boolean }>("/api/results", {
-        method: "POST",
-        body: JSON.stringify({ session, result }),
-      }).catch(() => undefined);
+    if (session.completedAt) {
       return;
     }
 
@@ -857,7 +865,50 @@ const App = () => {
       method: "POST",
       body: JSON.stringify({ session }),
     }).catch(() => undefined);
-  }, [session, result]);
+  }, [session]);
+
+  useEffect(() => {
+    if (!session?.completedAt || !session.metadata.classId || !result) return;
+    let cancelled = false;
+    const saveResult = async () => {
+      setResultSaveStatus("saving");
+      for (const delay of [0, 1000, 3000]) {
+        if (delay > 0) await new Promise((resolve) => window.setTimeout(resolve, delay));
+        if (cancelled) return;
+        try {
+          await requestJson<{ ok: boolean }>("/api/results", {
+            method: "POST",
+            body: JSON.stringify({ session, result }),
+          });
+          if (!cancelled) setResultSaveStatus("saved");
+          return;
+        } catch {
+          // Probeer kort opnieuw; de volledige sessie blijft lokaal bewaard.
+        }
+      }
+      if (!cancelled) setResultSaveStatus("failed");
+    };
+    void saveResult();
+    return () => { cancelled = true; };
+  }, [session?.id, session?.completedAt, result, resultRetryNonce]);
+
+  useEffect(() => {
+    const retryWhenOnline = () => {
+      if (resultSaveStatus === "failed") setResultRetryNonce((value) => value + 1);
+    };
+    window.addEventListener("online", retryWhenOnline);
+    return () => window.removeEventListener("online", retryWhenOnline);
+  }, [resultSaveStatus]);
+
+  useEffect(() => {
+    if (!session?.completedAt || resultSaveStatus === "saved") return;
+    const warnBeforeClose = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeClose);
+    return () => window.removeEventListener("beforeunload", warnBeforeClose);
+  }, [session?.completedAt, resultSaveStatus]);
 
   useEffect(() => {
     setStepStartedAt(Date.now());
@@ -1237,7 +1288,13 @@ const App = () => {
       ) : null}
 
       {session && activeAssessment && result && session.completedAt ? (
-        <ResultScreen assessment={activeAssessment} session={session} onClose={resetSession} />
+        <ResultScreen
+          assessment={activeAssessment}
+          session={session}
+          onClose={resetSession}
+          saveStatus={resultSaveStatus}
+          onRetrySave={() => setResultRetryNonce((value) => value + 1)}
+        />
       ) : null}
 
       {exitConfirmOpen ? (
@@ -1583,6 +1640,8 @@ const AdminScreen = ({
   });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [analysisError, setAnalysisError] = useState("");
+  const [analysisLoading, setAnalysisLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
   const [selectedAccessCodes, setSelectedAccessCodes] = useState<string[]>([]);
@@ -1596,6 +1655,13 @@ const AdminScreen = ({
     ["23A", "Veiligheid en privacy"],
     ["23B", "Bewust mediagebruik"],
   ] as const;
+  const goalAdvice: Record<string, string> = {
+    "21A": "Oefen met doelgericht werken in bestanden, applicaties en digitale systemen; laat leerlingen hun stappen hardop toelichten.",
+    "21B": "Plan bron- en mediawijsheidsoefeningen waarin leerlingen afzender, actualiteit, bewijs en bedoeling vergelijken.",
+    "21C": "Laat leerlingen kleine datasets sorteren, filteren en conclusies controleren aan de hand van een concrete vraag.",
+    "23A": "Herhaal herkenbare praktijksituaties rond privacy, toestemming, accounts en veilig delen, gevolgd door klassikale nabespreking.",
+    "23B": "Bespreek bewuste mediakeuzes met scenario's over bereik, groepsdruk, welzijn en gevolgen voor anderen.",
+  };
   const signalGoalIds = ["21D", "22A", "22B", "23C"] as const;
   const formatMetric = (value: number | null | undefined, suffix = "%") =>
     value === null || value === undefined ? "n.v.t." : `${value}${suffix}`;
@@ -1641,15 +1707,24 @@ const AdminScreen = ({
     ["assessmentId", "Leerjaar/niveau", versionFilterOptions.map(([value]) => value)],
   ] as const;
   const reportableClassGroups = (analysis?.byClass ?? []).filter((row) => row.reportable);
-  const focusRows = reportableClassGroups
-    .flatMap((row) =>
-      profileGoals.flatMap(([goalId, label]) => {
+  const benchmarkForClass = (row: AnalysisGroup) =>
+    (analysis?.byGrade ?? []).find((benchmark) =>
+      benchmark.gradeLevel === row.gradeLevel &&
+      benchmark.track === row.track &&
+      benchmark.assessmentWindow === row.assessmentWindow &&
+      benchmark.cohort === row.cohort &&
+      benchmark.assessmentId === row.assessmentId
+    );
+  const classRecommendations = reportableClassGroups.map((row) => ({
+    row,
+    recommendations: profileGoals
+      .flatMap(([goalId, label]) => {
         const score = row.goalScores[goalId];
-        return score === null ? [] : [{ classCode: row.classCode, label, score }];
-      }),
-    )
-    .sort((left, right) => left.score - right.score)
-    .slice(0, 3);
+        return score === null ? [] : [{ goalId, label, score }];
+      })
+      .sort((left, right) => left.score - right.score)
+      .slice(0, 2),
+  }));
   const cohortsWithDevelopment = (analysis?.growth?.byCohort ?? []).filter((row) => row.delta !== null).length;
 
   const loadStudents = async () => {
@@ -1671,6 +1746,7 @@ const AdminScreen = ({
   };
 
   const loadAnalysis = async () => {
+    setAnalysisLoading(true);
     try {
       const params = new URLSearchParams(
         Object.entries(analysisFilters).filter(([, value]) => value.trim()),
@@ -1681,9 +1757,11 @@ const AdminScreen = ({
       });
       setAnalysis(data.analysis);
       setLastUpdatedAt(new Date());
-      setError("");
-    } catch {
-      setError("Resultatenanalyse ophalen is niet gelukt.");
+      setAnalysisError("");
+    } catch (caught) {
+      setAnalysisError(caught instanceof Error ? caught.message : "Resultatenanalyse ophalen is niet gelukt.");
+    } finally {
+      setAnalysisLoading(false);
     }
   };
 
@@ -2102,6 +2180,10 @@ const AdminScreen = ({
       "Afgeronde afnames": row.completedCount,
       "Afronding": formatMetric(row.completionPercentage),
       "Gemiddelde itemsetscore": formatMetric(row.averageTotalScore),
+      "Mediaan itemsetscore": formatMetric(row.medianTotalScore),
+      "Eerste kwartiel": formatMetric(row.q1TotalScore),
+      "Derde kwartiel": formatMetric(row.q3TotalScore),
+      "Standaardafwijking": formatMetric(row.standardDeviation, " pt"),
       "Gemiddelde meerkeuzescore": formatMetric(row.averageSrScore),
       "Gemiddelde taakscore": formatMetric(row.averagePtScore),
       "Gemiddelde zelfinschatting": formatMetric(row.averageSelfAssessment),
@@ -2117,6 +2199,8 @@ const AdminScreen = ({
     (analysis?.itemAnalysis ?? []).map((item) => ({
       Vraag: readableQuestionLabel(item),
       "Gekoppelde item-id": item.itemId,
+      "Toetsversie": item.assessmentBuildVersion || item.versionId,
+      "Content-hash": item.assessmentContentHash,
       Subdoel: item.goalId || "n.v.t.",
       "Aantal antwoorden": item.answerCount,
       "Percentage goed": formatRate(item.correctRate),
@@ -2178,12 +2262,30 @@ const AdminScreen = ({
     }]), "Samenvatting");
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byClass ?? [])), "Per klas");
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byGrade ?? [])), "Per leerjaar");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byLevel ?? [])), "Per niveau");
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getItemAnalysisExportRows()), "Itemanalyse");
     const growthRows = getGrowthExportRows();
     if (growthRows.length > 0) {
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(growthRows), "Cohortontwikkeling");
     }
     XLSX.writeFile(workbook, `${analysisBaseName()}.xlsx`);
+  };
+
+  const exportChatGptAnalysisPackage = async () => {
+    if (!analysis) return;
+    const XLSX = await import("xlsx");
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+      ["Privacyveilig analysepakket Digitale Geletterdheid"],
+      ["Dit bestand bevat uitsluitend groepsaggregaten; geen namen, inlogcodes, sessie-id's of individuele antwoordreeksen."],
+      [`Groepen met minder dan ${analysis.privacy.minimumReportingCount} afgeronde afnames zijn afgeschermd.`],
+      ["Vergelijk alleen rijen met dezelfde toetsversie/content-hash. De nulmeting is formatief en geen gevalideerd meetinstrument."],
+      [`Exportdatum: ${new Date().toLocaleString("nl-NL")}`],
+    ]), "Lees mij");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis.byClass)), "Klassen");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis.byGrade)), "Leerjaar-niveau");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getItemAnalysisExportRows()), "Items geaggregeerd");
+    XLSX.writeFile(workbook, `chatgpt-analysepakket-dg-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const exportAnalysisWord = () => {
@@ -2548,8 +2650,8 @@ const AdminScreen = ({
             <h3 style={{ marginTop: 6 }}>Resultatenanalyse</h3>
           </div>
           <div className="rd-result-actions">
-            <button className="filter-chip" type="button" onClick={() => void loadAnalysis()}>
-              Vernieuwen
+            <button className="filter-chip" type="button" onClick={() => void loadAnalysis()} disabled={analysisLoading}>
+              {analysisLoading ? "Laden…" : "Vernieuwen"}
             </button>
             {access.role === "admin" ? <details className="admin-export-menu">
               <summary className={`filter-chip ${!analysis ? "disabled" : ""}`}>
@@ -2562,6 +2664,9 @@ const AdminScreen = ({
                 <button className="filter-chip" type="button" onClick={exportAnalysisExcel} disabled={!analysis}>
                   Excel
                 </button>
+                <button className="filter-chip" type="button" onClick={() => void exportChatGptAnalysisPackage()} disabled={!analysis}>
+                  ChatGPT-analysepakket
+                </button>
                 <button className="filter-chip" type="button" onClick={exportAnalysisPdf} disabled={!analysis}>
                   PDF
                 </button>
@@ -2569,6 +2674,7 @@ const AdminScreen = ({
             </details> : null}
           </div>
         </div>
+        {analysisError ? <div className="error-banner-inline">Resultatenanalyse kon niet worden geladen: {analysisError}</div> : null}
         <div className="analysis-filters">
           {primaryAnalysisFilters.map(([key, label, options]) => (
             <label className="admin-filter-select" key={String(key)}>
@@ -2694,6 +2800,23 @@ const AdminScreen = ({
         ) : analysisTab === "mentor" || access.role === "mentor" ? (
           <>
             <div className="admin-preview-block">
+              <h4>Overzicht per leerjaar en niveau</h4>
+              <p className="help">De cijfers beschrijven alleen deze itemset. Spreiding toont het middelste kwartielbereik (Q1–Q3).</p>
+              <div className="analysis-table compact">
+                <div className="analysis-row head"><span>Leerjaar</span><span>Niveau</span><span>Afgerond</span><span>Gemiddelde</span><span>Mediaan</span><span>Spreiding</span></div>
+                {(analysis?.byGrade ?? []).map((row) => (
+                  <div className="analysis-row" key={`summary-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}-${row.assessmentId}`}>
+                    <span>{readableFilterOption("gradeLevel", row.gradeLevel)}</span>
+                    <span>{readableFilterOption("track", row.track)}</span>
+                    <span>{row.completedCount}</span>
+                    <span>{row.reportable ? formatMetric(row.averageTotalScore) : "beschermd"}</span>
+                    <span>{row.reportable ? formatMetric(row.medianTotalScore) : "beschermd"}</span>
+                    <span>{row.reportable ? `${formatMetric(row.q1TotalScore)}–${formatMetric(row.q3TotalScore)}` : "beschermd"}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="admin-preview-block">
               <h4>Profiel per klas</h4>
               <p className="help">Gebruik dit profiel om onderwijsaanbod te bespreken. Het geeft aanwijzingen over deze itemset, geen beheersingsoordeel of cijfer.</p>
               <div className="analysis-table">
@@ -2701,6 +2824,7 @@ const AdminScreen = ({
                   <span>Klas</span>
                   <span>Afgerond</span>
                   <span>Itemsetscore</span>
+                  <span>Verschil met leerjaar/niveau</span>
                   {profileGoals.map(([goalId, label]) => <span key={goalId}>{goalId}<small>{label}</small></span>)}
                 </div>
                 {(analysis?.byClass ?? []).map((row) => (
@@ -2708,6 +2832,12 @@ const AdminScreen = ({
                     <span>{row.classCode || "Onbekend"}</span>
                     <span>{row.completedCount}</span>
                     <span>{row.reportable ? formatMetric(row.averageTotalScore) : `n<${analysis?.privacy.minimumReportingCount ?? 5}`}</span>
+                    <span>{(() => {
+                      const benchmark = benchmarkForClass(row);
+                      if (!row.reportable || !benchmark?.reportable || row.averageTotalScore === null || benchmark.averageTotalScore === null) return "n.v.t.";
+                      const difference = Math.round((row.averageTotalScore - benchmark.averageTotalScore) * 10) / 10;
+                      return `${difference > 0 ? "+" : ""}${difference} pt`;
+                    })()}</span>
                     {profileGoals.map(([goalId]) => <span key={goalId}>{row.reportable ? formatMetric(row.goalScores[goalId]) : "beschermd"}</span>)}
                   </div>
                 ))}
@@ -2730,10 +2860,14 @@ const AdminScreen = ({
               </div>
             </div>
             <div className="admin-preview-block">
-              <h4>Aandacht gevraagd</h4>
-              {focusRows.length > 0 ? (
+              <h4>Aandacht en handelingssuggesties</h4>
+              {classRecommendations.length > 0 ? (
                 <ul className="analysis-focus-list">
-                  {focusRows.map((focus, index) => <li key={`${focus.classCode}-${focus.label}-${index}`}>{focus.classCode}: <strong>{focus.label}</strong> is binnen deze selectie relatief het laagste profiel ({focus.score}%).</li>)}
+                  {classRecommendations.flatMap(({ row, recommendations }) => recommendations.map((recommendation) => (
+                    <li key={`${row.classCode}-${recommendation.goalId}`}>
+                      {row.classCode}: <strong>{recommendation.goalId} — {recommendation.label}</strong> is een relatief laag profiel binnen deze klas ({recommendation.score}%). {goalAdvice[recommendation.goalId]}
+                    </li>
+                  )))}
                 </ul>
               ) : <p className="help">Er zijn nog onvoldoende afgeronde afnames voor een profielsignaal per klas.</p>}
             </div>
@@ -2760,7 +2894,7 @@ const AdminScreen = ({
           <div className="admin-preview-block">
             <h4>Technische verdieping</h4>
             <p className="help">Voor instrumentontwikkeling en kwaliteitscontrole. Discriminatie (rit) verschijnt pas vanaf 10 antwoorden; deze pilot is geen gevalideerd meetinstrument.</p>
-            {[ ["Analyse per klas", analysis?.byClass ?? []], ["Analyse per leerjaar", analysis?.byGrade ?? []] ].map(([title, rows]) => (
+            {[ ["Analyse per klas", analysis?.byClass ?? []], ["Analyse per leerjaar", analysis?.byGrade ?? []], ["Analyse per niveau", analysis?.byLevel ?? []] ].map(([title, rows]) => (
               <div className="admin-preview-block" key={String(title)}>
                 <h5>{String(title)}</h5>
                 <div className="analysis-table wide">
@@ -2785,6 +2919,7 @@ const AdminScreen = ({
               <div className="analysis-row head">
                 <span>Vraag</span>
                 <span>Gekoppelde item-id</span>
+                <span>Toetsversie</span>
                 <span>Subdoel</span>
                 <span>Antwoorden</span>
                 <span>Percentage goed</span>
@@ -2800,6 +2935,7 @@ const AdminScreen = ({
                 <div className="analysis-row" key={item.itemId}>
                   <span>{readableQuestionLabel(item)}</span>
                   <span>{item.itemId}</span>
+                  <span>{item.assessmentBuildVersion || item.versionId}</span>
                   <span>{item.goalId}</span>
                   <span>{item.answerCount}</span>
                   <span>{formatRate(item.correctRate)}</span>
@@ -9082,10 +9218,14 @@ const ResultScreen = ({
   assessment,
   session,
   onClose,
+  saveStatus,
+  onRetrySave,
 }: {
   assessment: AssessmentVersion;
   session: AssessmentSession;
   onClose: () => void;
+  saveStatus: "idle" | "saving" | "saved" | "failed";
+  onRetrySave: () => void;
 }) => {
   const [closingConfirmed, setClosingConfirmed] = useState(false);
   const result = calculateResult(session, assessment);
@@ -9263,6 +9403,20 @@ const ResultScreen = ({
 
       <section className="result-section">
         <h3>Scoreoverzicht opslaan</h3>
+        <p role="status" aria-live="polite">
+          {saveStatus === "saved"
+            ? "Je resultaat is veilig en anoniem opgeslagen voor de klassenanalyse."
+            : saveStatus === "failed"
+              ? "Je resultaat staat nog veilig op dit apparaat, maar kon nog niet naar school worden verzonden. Sluit dit scherm nog niet."
+              : "Je resultaat wordt veilig en anoniem opgeslagen…"}
+        </p>
+        {saveStatus === "failed" ? (
+          <div className="rd-result-actions">
+            <button className="btn btn-primary" type="button" onClick={onRetrySave}>
+              Opnieuw proberen met opslaan
+            </button>
+          </div>
+        ) : null}
         <p>
           Download je scoreoverzicht en sla het op. Als je op volgende klikt,
           sluit je de zelfscan af. Je kunt dan niet meer bij je scores en je
@@ -9287,7 +9441,7 @@ const ResultScreen = ({
             className="btn btn-ghost"
             type="button"
             onClick={onClose}
-            disabled={!closingConfirmed}
+            disabled={!closingConfirmed || saveStatus !== "saved"}
           >
             Volgende
           </button>

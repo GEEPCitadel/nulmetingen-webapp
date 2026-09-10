@@ -275,6 +275,31 @@ const goalPercentage = (result, goalId) => {
   return isSignal ? null : Number(goal.percentage ?? 0);
 };
 
+const percentile = (values, fraction) => {
+  const numeric = values.filter((value) => Number.isFinite(value)).sort((a, b) => a - b);
+  if (numeric.length === 0) return null;
+  const position = (numeric.length - 1) * fraction;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  const value = lower === upper
+    ? numeric[lower]
+    : numeric[lower] + (numeric[upper] - numeric[lower]) * (position - lower);
+  return Math.round(value * 10) / 10;
+};
+
+const scoreStatistics = (scores) => {
+  const totals = scores.map((score) => score.total).filter((value) => Number.isFinite(value));
+  if (totals.length === 0) return { medianTotalScore: null, q1TotalScore: null, q3TotalScore: null, standardDeviation: null };
+  const mean = totals.reduce((sum, value) => sum + value, 0) / totals.length;
+  const variance = totals.reduce((sum, value) => sum + (value - mean) ** 2, 0) / totals.length;
+  return {
+    medianTotalScore: percentile(totals, 0.5),
+    q1TotalScore: percentile(totals, 0.25),
+    q3TotalScore: percentile(totals, 0.75),
+    standardDeviation: Math.round(Math.sqrt(variance) * 10) / 10,
+  };
+};
+
 const scoreSummary = (row) => {
   const result = row.result_json?.result ?? {};
   const total = Number(row.percentage ?? result.percentage ?? 0);
@@ -367,16 +392,17 @@ const buildGroups = (students, results, keyFields) => {
       averagePtScore: reportable ? average(scores.map((score) => score.pt)) : null,
       averageSelfAssessment: reportable ? average(scores.map((score) => score.selfAssessment)) : null,
       averageSelfAssessmentDifference: reportable ? average(scores.map((score) => score.selfAssessmentDifference)) : null,
+      ...(reportable ? scoreStatistics(scores) : { medianTotalScore: null, q1TotalScore: null, q3TotalScore: null, standardDeviation: null }),
       goalScores: Object.fromEntries(goalIds.map((goalId) => [goalId, reportable ? average(group._goalScores[goalId]) : null])),
       goalSignals: Object.fromEntries(signalGoalIds.map((goalId) => {
         const signals = group._goalSignals[goalId];
-        return !reportable || signals.length === 0
+        return [goalId, !reportable || signals.length === 0
           ? null
           : {
               achievedCount: signals.filter((signal) => signal.achieved).length,
               completedCount: signals.length,
               maxScore: Math.max(...signals.map((signal) => signal.maxScore)),
-            };
+            }];
       })),
       _scores: undefined,
       _goalScores: undefined,
@@ -520,8 +546,12 @@ const buildItemAnalysis = (results) => {
       const normalizedItemId = canonicalItemId(entry?.itemId);
       const isSelfAssessment = normalizedItemId === "self-assessment";
       if (!entry?.itemId || (!isSelfAssessment && Number(entry.maxScore ?? 0) <= 0)) continue;
-      const item = items.get(normalizedItemId) ?? {
+      const analysisKey = `${row.assessment_content_hash || row.assessment_build_version || row.version_id}||${normalizedItemId}`;
+      const item = items.get(analysisKey) ?? {
         itemId: normalizedItemId,
+        versionId: row.version_id,
+        assessmentBuildVersion: row.assessment_build_version ?? "",
+        assessmentContentHash: row.assessment_content_hash ?? "",
         questionNumber: isSelfAssessment ? "zelfinschatting" : entry.learnerQuestionNumber ?? "",
         goalId: isSelfAssessment ? "" : entry.primarySubgoal ?? "",
         isSelfAssessment,
@@ -563,7 +593,7 @@ const buildItemAnalysis = (results) => {
           item.ptErrorCategories[task.errorCategory] = (item.ptErrorCategories[task.errorCategory] ?? 0) + 1;
         }
       }
-      items.set(normalizedItemId, item);
+      items.set(analysisKey, item);
     }
   }
 
@@ -622,7 +652,7 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
     LIMIT 10000
   `;
   const resultRows = await sql`
-    SELECT class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, percentage, self_assessment_score, completed_at, result_json
+    SELECT class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, assessment_build_version, assessment_content_hash, percentage, self_assessment_score, completed_at, result_json
     FROM assessment_results
     LIMIT 10000
   `;
@@ -684,10 +714,13 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
     },
     byClass: buildGroups(filteredStudents, filteredResults, ["classCode", "gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId"]),
     byGrade: buildGroups(filteredStudents, filteredResults, ["gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId"]),
+    byLevel: buildGroups(filteredStudents, filteredResults, ["track", "assessmentWindow", "assessmentId"]),
     itemAnalysis: performanceSuppressed || !includeTechnical ? [] : buildItemAnalysis(filteredResults),
     growth: buildGrowth(cohortGrowthResults),
   };
 };
+
+export { buildGroups, buildItemAnalysis, scoreStatistics };
 
 export default async function handler(request, response) {
   const databaseUrl = process.env.DATABASE_URL;

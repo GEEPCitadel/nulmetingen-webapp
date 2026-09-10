@@ -1671,8 +1671,8 @@ body {
 }
 
 .analysis-table.item-analysis .analysis-row {
-  grid-template-columns: minmax(130px, .8fr) minmax(240px, 1.8fr) repeat(10, minmax(130px, 1fr));
-  min-width: 1830px;
+  grid-template-columns: minmax(130px, .8fr) minmax(240px, 1.8fr) repeat(11, minmax(130px, 1fr));
+  min-width: 1960px;
 }
 
 .analysis-table.compact .analysis-row {
@@ -1685,8 +1685,8 @@ body {
 }
 
 .mentor-profile-row {
-  grid-template-columns: minmax(110px, 1fr) minmax(88px, .6fr) minmax(110px, .8fr) repeat(5, minmax(118px, 1fr));
-  min-width: 1040px;
+  grid-template-columns: minmax(110px, 1fr) minmax(88px, .6fr) minmax(110px, .8fr) minmax(150px, 1fr) repeat(5, minmax(118px, 1fr));
+  min-width: 1190px;
 }
 .analysis-row.head small,
 .growth-score small {
