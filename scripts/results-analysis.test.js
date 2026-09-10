@@ -66,6 +66,16 @@ test("opslagcontrole toont afgeronde afnames zonder resultaat per klas", () => {
   assert.equal(group.missingResultCount, 1);
 });
 
+test("samengevoegde leerjaarrij neemt geen willekeurige klasnaam over", () => {
+  const students = [
+    { ...metadata, classCode: "1a1", status: "completed" },
+    { ...metadata, classCode: "1a2", status: "completed" },
+  ];
+  const [group] = buildGroups(students, [], ["gradeLevel", "track", "assessmentWindow"]);
+  assert.equal(group.classCode, "");
+  assert.equal(group.classId, "");
+});
+
 test("itemanalyse mengt verschillende toetsbuilds niet", () => {
   const row = (hash) => ({
     version_id: "lj1-vmbo",

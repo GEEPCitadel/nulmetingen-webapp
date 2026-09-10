@@ -3021,7 +3021,7 @@ const AdminScreen = ({
               <p className="help">De cijfers beschrijven alleen deze itemset. Spreiding toont het middelste kwartielbereik (Q1–Q3).</p>
               <div className="analysis-table compact">
                 <div className="analysis-row summary-grade-row head"><span>Leerjaar</span><span>Niveau</span><span>Venster / cohort</span><span>Toetsversie</span><span>Afgerond</span><span>Gemiddelde</span><span>Mediaan</span><span>Spreiding</span></div>
-                {(analysis?.byGrade ?? []).filter((row) => row.createdCodes > 0).map((row) => (
+                {(analysis?.byGrade ?? []).filter((row) => row.completedCount > 0).map((row) => (
                   <div className="analysis-row summary-grade-row" key={`summary-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}-${row.assessmentId}-${row.contentKey}`}>
                     <span>{readableFilterOption("gradeLevel", row.gradeLevel)}</span>
                     <span>{readableFilterOption("track", row.track)}</span>

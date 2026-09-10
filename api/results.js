@@ -367,8 +367,13 @@ const buildGroups = (students, results, keyFields) => {
   const ensureGroup = (metadata) => {
     const key = keyFor(metadata);
     if (!groups.has(key)) {
+      const groupedMetadata = { ...metadata };
+      for (const field of ["assessmentId", "classCode", "gradeLevel", "track", "cohort", "assessmentWindow", "versionId", "contentKey"]) {
+        if (!keyFields.includes(field)) groupedMetadata[field] = "";
+      }
+      if (!keyFields.includes("classCode")) groupedMetadata.classId = "";
       groups.set(key, {
-        ...baseGroup(metadata),
+        ...baseGroup(groupedMetadata),
         _scores: [],
         _goalScores: Object.fromEntries(goalIds.map((goalId) => [goalId, []])),
         _goalSignals: Object.fromEntries(signalGoalIds.map((goalId) => [goalId, []])),
