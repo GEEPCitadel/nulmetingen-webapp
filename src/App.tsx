@@ -186,6 +186,8 @@ type AnalysisGroup = {
   q1TotalScore: number | null;
   q3TotalScore: number | null;
   standardDeviation: number | null;
+  registeredCompletedCount?: number;
+  missingResultCount?: number;
   goalScores: Record<string, number | null>;
   goalSignals: Record<string, { achievedCount: number; completedCount: number; maxScore: number } | null>;
 };
@@ -1756,6 +1758,9 @@ const AdminScreen = ({
         headers: adminHeaders,
       });
       setAnalysis(data.analysis);
+      if (!analysisFilters.assessmentWindow && data.analysis.filters.assessmentWindows.length === 1) {
+        setAnalysisFilters((current) => ({ ...current, assessmentWindow: data.analysis.filters.assessmentWindows[0] }));
+      }
       setLastUpdatedAt(new Date());
       setAnalysisError("");
     } catch (caught) {
@@ -2720,7 +2725,7 @@ const AdminScreen = ({
         </div>
         <div className="stats-strip analysis-stats">
           {[
-            ["Afnamevoortgang", `${analysis?.overview.completedCount ?? 0}/${analysis?.overview.createdCodes ?? 0}`, `${analysis?.overview.startedCount ?? 0} gestart · ${analysis?.overview.completionPercentage ?? 0}% afgerond`],
+            ["Afnamevoortgang", `${analysis?.overview.completedCount ?? 0}/${analysis?.overview.createdCodes ?? 0}`, `${analysis?.overview.startedCount ?? 0} gestart · ${analysis?.overview.completionPercentage ?? 0}% met opgeslagen resultaat`],
             ["Gem. itemsetscore", formatMetric(analysis?.overview.averageTotalScore), "Alleen beschrijvend; geen cijfer"],
             ["Bruikbare klasprofielen", String(reportableClassGroups.length), `minimaal n=${analysis?.privacy.minimumReportingCount ?? 5}`],
             ["Cohortontwikkeling", String(cohortsWithDevelopment), "cohorten met twee meetmomenten"],
@@ -2735,6 +2740,9 @@ const AdminScreen = ({
         </div>
         {analysis?.privacy.performanceSuppressed ? (
           <p className="help">Prestatiegegevens zijn verborgen omdat deze selectie minder dan {analysis.privacy.minimumReportingCount} afgeronde afnames bevat.</p>
+        ) : null}
+        {(analysis?.overview.missingResultCount ?? 0) > 0 ? (
+          <p className="help">{analysis?.overview.missingResultCount} als afgerond gemarkeerde afname(s) hebben nog geen opgeslagen resultaat en tellen daarom niet mee in deze analyse.</p>
         ) : null}
         <div className="analysis-tabs">
           <button className={analysisTab === "mentor" ? "active" : ""} type="button" onClick={() => setAnalysisTab("mentor")}>

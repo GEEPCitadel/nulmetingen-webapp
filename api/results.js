@@ -690,6 +690,7 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
   );
   const allScores = filteredResults.map(scoreSummary);
   const performanceSuppressed = allScores.length < minimumReportingCount;
+  const registeredCompletedCount = filteredStudents.filter((student) => student.status === "completed").length;
   return {
     privacy: {
       minimumReportingCount,
@@ -706,6 +707,8 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
     overview: {
       ...overview,
       completionPercentage: overview.createdCodes > 0 ? Math.round((overview.completedCount / overview.createdCodes) * 1000) / 10 : 0,
+      registeredCompletedCount,
+      missingResultCount: Math.max(0, registeredCompletedCount - overview.completedCount),
       averageTotalScore: performanceSuppressed ? null : average(allScores.map((score) => score.total)),
       averageSrScore: performanceSuppressed ? null : average(allScores.map((score) => score.sr)),
       averagePtScore: performanceSuppressed ? null : average(allScores.map((score) => score.pt)),
