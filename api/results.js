@@ -332,6 +332,8 @@ const baseGroup = (metadata) => ({
   createdCodes: 0,
   startedCount: 0,
   completedCount: 0,
+  registeredCompletedCount: 0,
+  missingResultCount: 0,
   completionPercentage: 0,
   averageTotalScore: null,
   averageSrScore: null,
@@ -362,6 +364,7 @@ const buildGroups = (students, results, keyFields) => {
     const group = ensureGroup(student);
     group.createdCodes += 1;
     if (student.status === "in_progress" || student.status === "completed") group.startedCount += 1;
+    if (student.status === "completed") group.registeredCompletedCount += 1;
   }
 
   for (const row of results) {
@@ -382,11 +385,13 @@ const buildGroups = (students, results, keyFields) => {
     const scores = group._scores;
     const createdCodes = group.createdCodes;
     const completedCount = group.completedCount;
+    const registeredCompletedCount = group.registeredCompletedCount;
     const reportable = completedCount >= minimumReportingCount;
     return {
       ...group,
       reportable,
       completionPercentage: createdCodes > 0 ? Math.round((completedCount / createdCodes) * 1000) / 10 : 0,
+      missingResultCount: Math.max(0, registeredCompletedCount - completedCount),
       averageTotalScore: reportable ? average(scores.map((score) => score.total)) : null,
       averageSrScore: reportable ? average(scores.map((score) => score.sr)) : null,
       averagePtScore: reportable ? average(scores.map((score) => score.pt)) : null,

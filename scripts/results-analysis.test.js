@@ -42,6 +42,30 @@ test("mediaan en spreiding worden berekend", () => {
   });
 });
 
+test("opslagcontrole toont afgeronde afnames zonder resultaat per klas", () => {
+  const students = [
+    ...Array.from({ length: 5 }, () => ({ ...metadata, status: "completed" })),
+    { ...metadata, status: "completed" },
+  ];
+  const results = Array.from({ length: 5 }, () => ({
+    ...metadata,
+    class_code: metadata.classCode,
+    class_id: metadata.classId,
+    assessment_id: metadata.assessmentId,
+    grade_level: metadata.gradeLevel,
+    track: metadata.track,
+    cohort: metadata.cohort,
+    assessment_window: metadata.assessmentWindow,
+    version_id: metadata.versionId,
+    percentage: 60,
+    result_json: { result: { goalScores: [] } },
+  }));
+  const [group] = buildGroups(students, results, ["classCode"]);
+  assert.equal(group.registeredCompletedCount, 6);
+  assert.equal(group.completedCount, 5);
+  assert.equal(group.missingResultCount, 1);
+});
+
 test("itemanalyse mengt verschillende toetsbuilds niet", () => {
   const row = (hash) => ({
     version_id: "lj1-vmbo",

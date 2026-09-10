@@ -1727,6 +1727,9 @@ const AdminScreen = ({
       .sort((left, right) => left.score - right.score)
       .slice(0, 2),
   }));
+  const storageIssueGroups = (analysis?.byClass ?? [])
+    .filter((row) => (row.missingResultCount ?? 0) > 0)
+    .sort((left, right) => (right.missingResultCount ?? 0) - (left.missingResultCount ?? 0));
   const cohortsWithDevelopment = (analysis?.growth?.byCohort ?? []).filter((row) => row.delta !== null).length;
 
   const loadStudents = async () => {
@@ -2546,8 +2549,16 @@ const AdminScreen = ({
           </span>
         </div>
         <div className="admin-topbar-actions">
-          <button className="filter-chip admin-refresh-button" type="button" onClick={() => void (access.role === "admin" ? loadStudents() : loadAnalysis())} disabled={isLoading}>
-            <span aria-hidden="true">↻</span> {isLoading ? "Bijwerken…" : "Vernieuwen"}
+          <button
+            className="filter-chip admin-refresh-button"
+            type="button"
+            onClick={() => {
+              if (access.role === "admin") void loadStudents();
+              void loadAnalysis();
+            }}
+            disabled={isLoading || analysisLoading}
+          >
+            <span aria-hidden="true">↻</span> {isLoading || analysisLoading ? "Bijwerken…" : "Vernieuwen"}
           </button>
           <button className="btn btn-ghost" type="button" onClick={onBack}>
             ← Terug naar leerlingstart
@@ -2620,6 +2631,16 @@ const AdminScreen = ({
           </div>
         ))}
       </div> : null}
+
+      {access.role === "admin" && (analysis?.overview.missingResultCount ?? 0) > 0 ? (
+        <div className="warning-banner-inline storage-alert" role="alert">
+          <strong>Opslagcontrole vereist.</strong> {analysis?.overview.missingResultCount} afname(s) staan als afgerond,
+          maar hebben geen opgeslagen resultaat. De analyse gebruikt ze niet.
+          <button className="filter-chip" type="button" onClick={() => setAdminTab("results")}>
+            Bekijk per klas
+          </button>
+        </div>
+      ) : null}
 
       {access.role === "admin" ? <section className="admin-preview-block">
         <h3>Voortgang per klas</h3>
@@ -2726,6 +2747,7 @@ const AdminScreen = ({
         <div className="stats-strip analysis-stats">
           {[
             ["Afnamevoortgang", `${analysis?.overview.completedCount ?? 0}/${analysis?.overview.createdCodes ?? 0}`, `${analysis?.overview.startedCount ?? 0} gestart · ${analysis?.overview.completionPercentage ?? 0}% met opgeslagen resultaat`],
+            ["Opslagcontrole", `${analysis?.overview.completedCount ?? 0}/${analysis?.overview.registeredCompletedCount ?? 0}`, (analysis?.overview.missingResultCount ?? 0) > 0 ? `${analysis?.overview.missingResultCount} resultaat/resultaten ontbreken` : "Alle afgeronde afnames zijn opgeslagen"],
             ["Gem. itemsetscore", formatMetric(analysis?.overview.averageTotalScore), "Alleen beschrijvend; geen cijfer"],
             ["Bruikbare klasprofielen", String(reportableClassGroups.length), `minimaal n=${analysis?.privacy.minimumReportingCount ?? 5}`],
             ["Cohortontwikkeling", String(cohortsWithDevelopment), "cohorten met twee meetmomenten"],
@@ -2742,7 +2764,43 @@ const AdminScreen = ({
           <p className="help">Prestatiegegevens zijn verborgen omdat deze selectie minder dan {analysis.privacy.minimumReportingCount} afgeronde afnames bevat.</p>
         ) : null}
         {(analysis?.overview.missingResultCount ?? 0) > 0 ? (
-          <p className="help">{analysis?.overview.missingResultCount} als afgerond gemarkeerde afname(s) hebben nog geen opgeslagen resultaat en tellen daarom niet mee in deze analyse.</p>
+          <section className="admin-preview-block storage-control">
+            <h4>Opslagcontrole per klas</h4>
+            <p className="help">
+              Een opgeslagen resultaat is niet te herleiden tot een leerlingcode. Daarom toont deze controle uitsluitend
+              klasaantallen. Controleer de genoemde klas na de afname en laat betrokken leerlingen zo nodig opnieuw
+              afnemen met een nieuwe, anonieme code.
+            </p>
+            <div className="analysis-table compact">
+              <div className="analysis-row head"><span>Klas</span><span>Cohort</span><span>Afgerond gemarkeerd</span><span>Resultaat opgeslagen</span><span>Verschil</span><span>Actie</span></div>
+              {storageIssueGroups.map((row) => (
+                <div className="analysis-row" key={`storage-${row.classCode}-${row.cohort}-${row.assessmentWindow}-${row.assessmentId}`}>
+                  <span>{row.classCode}</span>
+                  <span>{row.cohort || "onbekend"}</span>
+                  <span>{row.registeredCompletedCount ?? 0}</span>
+                  <span>{row.completedCount}</span>
+                  <span>{row.missingResultCount}</span>
+                  <span>
+                    <button
+                      className="filter-chip"
+                      type="button"
+                      onClick={() => setAnalysisFilters((current) => ({
+                        ...current,
+                        classCode: row.classCode,
+                        cohort: row.cohort,
+                        assessmentWindow: row.assessmentWindow,
+                        gradeLevel: "",
+                        track: "",
+                        assessmentId: "",
+                      }))}
+                    >
+                      Filter klas
+                    </button>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
         ) : null}
         <div className="analysis-tabs">
           <button className={analysisTab === "mentor" ? "active" : ""} type="button" onClick={() => setAnalysisTab("mentor")}>

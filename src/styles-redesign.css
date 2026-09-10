@@ -2580,6 +2580,26 @@ body {
   font-weight: 700;
 }
 
+.storage-alert {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.storage-alert .filter-chip {
+  margin-left: auto;
+}
+
+.storage-control .analysis-row {
+  grid-template-columns: minmax(74px, 1fr) minmax(96px, 1.2fr) repeat(3, minmax(110px, 1fr)) minmax(112px, 1fr);
+}
+
+@media (max-width: 720px) {
+  .storage-alert .filter-chip { margin-left: 0; }
+}
+
 .result-close-check {
   margin-top: 18px;
 }
