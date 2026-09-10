@@ -24,7 +24,7 @@ export default async function handler(request, response) {
     return;
   }
 
-  if (!process.env.ADMIN_PASSWORD) {
+  if (!process.env.ADMIN_PASSWORD && !process.env.SCHOOL_LEADERSHIP_PASSWORD && !process.env.MENTOR_ACCESS_JSON) {
     response.status(500).json({ ok: false });
     return;
   }

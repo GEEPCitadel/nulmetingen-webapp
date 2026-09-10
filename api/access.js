@@ -33,6 +33,11 @@ export const accessForPassword = (candidate) => {
     return { role: "admin", classCodes: [] };
   }
 
+  const leadershipPassword = process.env.SCHOOL_LEADERSHIP_PASSWORD;
+  if (leadershipPassword && password && safeEquals(password, leadershipPassword)) {
+    return { role: "leadership", classCodes: [] };
+  }
+
   const mentor = mentorAccessFromEnvironment().find((entry) => safeEquals(password, entry.password));
   return mentor ? { role: "mentor", classCodes: mentor.classCodes } : null;
 };

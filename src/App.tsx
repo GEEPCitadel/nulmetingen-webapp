@@ -122,6 +122,9 @@ type ApiStudent = {
   classCode: string;
   classId?: string;
   versionId: AssessmentVersion["id"];
+  assessmentBuildVersion?: string;
+  assessmentContentHash?: string;
+  contentKey?: string;
   assessmentId?: string;
   gradeLevel?: string;
   track?: string;
@@ -172,6 +175,9 @@ type AnalysisGroup = {
   cohort: string;
   assessmentWindow: string;
   versionId: AssessmentVersion["id"];
+  assessmentBuildVersion?: string;
+  assessmentContentHash?: string;
+  contentKey?: string;
   createdCodes: number;
   startedCount: number;
   completedCount: number;
@@ -189,6 +195,7 @@ type AnalysisGroup = {
   registeredCompletedCount?: number;
   missingResultCount?: number;
   goalScores: Record<string, number | null>;
+  goalSampleCounts?: Record<string, number>;
   goalSignals: Record<string, { achievedCount: number; completedCount: number; maxScore: number } | null>;
 };
 
@@ -200,6 +207,7 @@ type ItemAnalysisRow = {
   questionNumber: number | string;
   goalId: string;
   answerCount: number;
+  reportable?: boolean;
   correctRate: number | null;
   discrimination: number | null;
   unknownRate: number | null;
@@ -245,8 +253,11 @@ type ResultsAnalysis = {
     cohorts: string[];
     assessmentIds: string[];
   };
+  defaults?: { assessmentWindow: string };
   overview: Omit<AnalysisGroup, "assessmentId" | "classCode" | "classId" | "gradeLevel" | "track" | "cohort" | "assessmentWindow" | "versionId" | "goalScores" | "goalSignals" | "reportable">;
   byClass: AnalysisGroup[];
+  storageByClass?: AnalysisGroup[];
+  comparisonClasses?: AnalysisGroup[];
   byGrade: AnalysisGroup[];
   byLevel: AnalysisGroup[];
   itemAnalysis: ItemAnalysisRow[];
@@ -259,7 +270,7 @@ type AnalysisResponse = {
 };
 
 type AdminAccess = {
-  role: "admin" | "mentor";
+  role: "admin" | "mentor" | "leadership";
   classCodes: string[];
 };
 
@@ -443,6 +454,15 @@ const createPdfDocument = (lines: string[]) => {
   pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n`;
   pdf += `startxref\n${xrefOffset}\n%%EOF`;
   return pdf;
+};
+
+const downloadBlob = (filename: string, blob: Blob) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 };
 
 type StudentPdfAssignment = {
@@ -1631,7 +1651,7 @@ const AdminScreen = ({
   const [createdCodeRows, setCreatedCodeRows] = useState<ApiStudent[]>([]);
   const [analysis, setAnalysis] = useState<ResultsAnalysis | null>(null);
   const [analysisTab, setAnalysisTab] = useState<"mentor" | "technical" | "growth">("mentor");
-  const [adminTab, setAdminTab] = useState<"codes" | "results">(access.role === "mentor" ? "results" : "codes");
+  const [adminTab, setAdminTab] = useState<"codes" | "results">(access.role === "admin" ? "codes" : "results");
   const [analysisFilters, setAnalysisFilters] = useState({
     assessmentWindow: "",
     gradeLevel: "",
@@ -1657,13 +1677,6 @@ const AdminScreen = ({
     ["23A", "Veiligheid en privacy"],
     ["23B", "Bewust mediagebruik"],
   ] as const;
-  const goalAdvice: Record<string, string> = {
-    "21A": "Oefen met doelgericht werken in bestanden, applicaties en digitale systemen; laat leerlingen hun stappen hardop toelichten.",
-    "21B": "Plan bron- en mediawijsheidsoefeningen waarin leerlingen afzender, actualiteit, bewijs en bedoeling vergelijken.",
-    "21C": "Laat leerlingen kleine datasets sorteren, filteren en conclusies controleren aan de hand van een concrete vraag.",
-    "23A": "Herhaal herkenbare praktijksituaties rond privacy, toestemming, accounts en veilig delen, gevolgd door klassikale nabespreking.",
-    "23B": "Bespreek bewuste mediakeuzes met scenario's over bereik, groepsdruk, welzijn en gevolgen voor anderen.",
-  };
   const signalGoalIds = ["21D", "22A", "22B", "23C"] as const;
   const formatMetric = (value: number | null | undefined, suffix = "%") =>
     value === null || value === undefined ? "n.v.t." : `${value}${suffix}`;
@@ -1708,15 +1721,40 @@ const AdminScreen = ({
     ["track", "Niveau / meting", analysis?.filters.tracks ?? []],
     ["assessmentId", "Leerjaar/niveau", versionFilterOptions.map(([value]) => value)],
   ] as const;
-  const reportableClassGroups = (analysis?.byClass ?? []).filter((row) => row.reportable);
+  const currentClassGroups = (analysis?.byClass ?? []).filter((row) => row.createdCodes > 0);
+  const reportableClassGroups = currentClassGroups.filter((row) => row.reportable);
   const benchmarkForClass = (row: AnalysisGroup) =>
     (analysis?.byGrade ?? []).find((benchmark) =>
       benchmark.gradeLevel === row.gradeLevel &&
       benchmark.track === row.track &&
       benchmark.assessmentWindow === row.assessmentWindow &&
       benchmark.cohort === row.cohort &&
-      benchmark.assessmentId === row.assessmentId
+      benchmark.assessmentId === row.assessmentId &&
+      benchmark.versionId === row.versionId &&
+      benchmark.contentKey === row.contentKey
     );
+  const focusClassGroup = analysisFilters.classCode || access.role === "mentor"
+    ? [...(analysis?.byClass ?? [])]
+        .filter((row) => !analysisFilters.classCode || row.classCode === analysisFilters.classCode)
+        .sort((left, right) => Number(right.createdCodes > 0) - Number(left.createdCodes > 0) || right.completedCount - left.completedCount)[0] ?? null
+    : null;
+  const focusBenchmark = focusClassGroup ? benchmarkForClass(focusClassGroup) : null;
+  const comparisonClassGroups = (analysis?.comparisonClasses ?? [])
+    .filter((row) => focusClassGroup && row.createdCodes > 0 && row.reportable && row.gradeLevel === focusClassGroup.gradeLevel && row.track === focusClassGroup.track && row.assessmentWindow === focusClassGroup.assessmentWindow && row.cohort === focusClassGroup.cohort && row.assessmentId === focusClassGroup.assessmentId && row.versionId === focusClassGroup.versionId && row.contentKey === focusClassGroup.contentKey)
+    .sort((left, right) => left.classCode.localeCompare(right.classCode, "nl"));
+  const rankedFocusGoals = focusClassGroup
+    ? profileGoals.flatMap(([goalId, label]) => {
+        const score = focusClassGroup.goalScores[goalId];
+        return score === null ? [] : [{ goalId, label, score }];
+      }).sort((left, right) => right.score - left.score)
+    : [];
+  const strongestFocusGoals = rankedFocusGoals.slice(0, 2);
+  const attentionFocusGoals = [...rankedFocusGoals].reverse().slice(0, 2);
+  const rankedGradeGroups = (analysis?.byGrade ?? [])
+    .filter((row) => row.createdCodes > 0 && row.reportable && row.averageTotalScore !== null)
+    .sort((left, right) => (right.averageTotalScore ?? 0) - (left.averageTotalScore ?? 0));
+  const strongestGradeGroup = rankedGradeGroups[0] ?? null;
+  const attentionGradeGroup = rankedGradeGroups[rankedGradeGroups.length - 1] ?? null;
   const classRecommendations = reportableClassGroups.map((row) => ({
     row,
     recommendations: profileGoals
@@ -1727,7 +1765,7 @@ const AdminScreen = ({
       .sort((left, right) => left.score - right.score)
       .slice(0, 2),
   }));
-  const storageIssueGroups = (analysis?.byClass ?? [])
+  const storageIssueGroups = (analysis?.storageByClass ?? analysis?.byClass ?? [])
     .filter((row) => (row.missingResultCount ?? 0) > 0)
     .sort((left, right) => (right.missingResultCount ?? 0) - (left.missingResultCount ?? 0));
   const cohortsWithDevelopment = (analysis?.growth?.byCohort ?? []).filter((row) => row.delta !== null).length;
@@ -1761,8 +1799,8 @@ const AdminScreen = ({
         headers: adminHeaders,
       });
       setAnalysis(data.analysis);
-      if (!analysisFilters.assessmentWindow && data.analysis.filters.assessmentWindows.length === 1) {
-        setAnalysisFilters((current) => ({ ...current, assessmentWindow: data.analysis.filters.assessmentWindows[0] }));
+      if (!analysisFilters.assessmentWindow && data.analysis.defaults?.assessmentWindow) {
+        setAnalysisFilters((current) => ({ ...current, assessmentWindow: data.analysis.defaults?.assessmentWindow ?? "" }));
       }
       setLastUpdatedAt(new Date());
       setAnalysisError("");
@@ -2175,7 +2213,7 @@ const AdminScreen = ({
     }
   };
 
-  const getGroupAnalysisExportRows = (rows: AnalysisGroup[]) =>
+  const getGroupAnalysisExportRows = (rows: AnalysisGroup[], numeric = false) =>
     rows.map((row) => ({
       Klas: row.classCode || "Alle klassen",
       Leerjaar: readableFilterOption("gradeLevel", row.gradeLevel),
@@ -2186,17 +2224,17 @@ const AdminScreen = ({
       "Aangemaakte inlogcodes": row.createdCodes,
       "Gestarte afnames": row.startedCount,
       "Afgeronde afnames": row.completedCount,
-      "Afronding": formatMetric(row.completionPercentage),
-      "Gemiddelde itemsetscore": formatMetric(row.averageTotalScore),
-      "Mediaan itemsetscore": formatMetric(row.medianTotalScore),
-      "Eerste kwartiel": formatMetric(row.q1TotalScore),
-      "Derde kwartiel": formatMetric(row.q3TotalScore),
-      "Standaardafwijking": formatMetric(row.standardDeviation, " pt"),
-      "Gemiddelde meerkeuzescore": formatMetric(row.averageSrScore),
-      "Gemiddelde taakscore": formatMetric(row.averagePtScore),
-      "Gemiddelde zelfinschatting": formatMetric(row.averageSelfAssessment),
-      "Verschil zelfinschatting-score": formatMetric(row.averageSelfAssessmentDifference, " pt"),
-      ...Object.fromEntries(goalColumns.map((goalId) => [`Kerndoel ${goalId}`, formatMetric(row.goalScores[goalId])])),
+      "Afronding": numeric ? row.completionPercentage : formatMetric(row.completionPercentage),
+      "Gemiddelde itemsetscore": numeric ? row.averageTotalScore ?? "" : formatMetric(row.averageTotalScore),
+      "Mediaan itemsetscore": numeric ? row.medianTotalScore ?? "" : formatMetric(row.medianTotalScore),
+      "Eerste kwartiel": numeric ? row.q1TotalScore ?? "" : formatMetric(row.q1TotalScore),
+      "Derde kwartiel": numeric ? row.q3TotalScore ?? "" : formatMetric(row.q3TotalScore),
+      "Standaardafwijking": numeric ? row.standardDeviation ?? "" : formatMetric(row.standardDeviation, " pt"),
+      "Gemiddelde meerkeuzescore": numeric ? row.averageSrScore ?? "" : formatMetric(row.averageSrScore),
+      "Gemiddelde taakscore": numeric ? row.averagePtScore ?? "" : formatMetric(row.averagePtScore),
+      "Gemiddelde zelfinschatting": numeric ? row.averageSelfAssessment ?? "" : formatMetric(row.averageSelfAssessment),
+      "Verschil zelfinschatting-score": numeric ? row.averageSelfAssessmentDifference ?? "" : formatMetric(row.averageSelfAssessmentDifference, " pt"),
+      ...Object.fromEntries(goalColumns.map((goalId) => [`Kerndoel ${goalId}`, numeric ? row.goalScores[goalId] ?? "" : formatMetric(row.goalScores[goalId])])),
       ...Object.fromEntries(signalGoalIds.map((goalId) => {
         const signal = row.goalSignals[goalId];
         return [`Itemsignaal ${goalId}`, signal ? `${signal.achievedCount}/${signal.completedCount} volledig behaald` : "n.v.t."];
@@ -2264,13 +2302,13 @@ const AdminScreen = ({
       "Aangemaakte inlogcodes": analysis?.overview.createdCodes ?? 0,
       "Gestarte afnames": analysis?.overview.startedCount ?? 0,
       "Afgeronde afnames": analysis?.overview.completedCount ?? 0,
-      "Afronding": formatMetric(analysis?.overview.completionPercentage ?? 0),
-      "Gemiddelde itemsetscore": formatMetric(analysis?.overview.averageTotalScore),
-      "Gemiddelde zelfinschatting": formatMetric(analysis?.overview.averageSelfAssessment),
+      "Afronding": analysis?.overview.completionPercentage ?? 0,
+      "Gemiddelde itemsetscore": analysis?.overview.averageTotalScore ?? "",
+      "Gemiddelde zelfinschatting": analysis?.overview.averageSelfAssessment ?? "",
     }]), "Samenvatting");
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byClass ?? [])), "Per klas");
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byGrade ?? [])), "Per leerjaar");
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byLevel ?? [])), "Per niveau");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byClass ?? [], true)), "Per klas");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byGrade ?? [], true)), "Per leerjaar");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getGroupAnalysisExportRows(analysis?.byLevel ?? [], true)), "Per niveau");
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(getItemAnalysisExportRows()), "Itemanalyse");
     const growthRows = getGrowthExportRows();
     if (growthRows.length > 0) {
@@ -2349,6 +2387,60 @@ const AdminScreen = ({
       ),
     ];
     downloadFile(`${analysisBaseName()}.pdf`, createPdfDocument(lines), "application/pdf");
+  };
+
+  const visualReportContext = () => focusClassGroup
+    ? `${focusClassGroup.classCode} · ${readableFilterOption("gradeLevel", focusClassGroup.gradeLevel)} · ${readableFilterOption("track", focusClassGroup.track)}`
+    : `Schooloverzicht${analysisFilters.assessmentWindow ? ` · ${analysisFilters.assessmentWindow}` : ""}`;
+
+  const visualReportRows = () => focusClassGroup
+    ? profileGoals.flatMap(([goalId, label]) => {
+        const value = focusClassGroup.goalScores[goalId];
+        if (value === null) return [];
+        return [{ goalId, label, value, benchmark: focusBenchmark?.goalScores[goalId] ?? null }];
+      })
+    : (analysis?.byGrade ?? []).filter((row) => row.createdCodes > 0 && row.reportable && row.averageTotalScore !== null).map((row) => ({
+        goalId: `${readableFilterOption("gradeLevel", row.gradeLevel)} ${readableFilterOption("track", row.track)}`,
+        label: row.cohort || row.assessmentWindow,
+        value: row.averageTotalScore ?? 0,
+        benchmark: null,
+      }));
+
+  const openVisualReport = () => {
+    const reportWindow = window.open("", "_blank");
+    if (!reportWindow) {
+      setAnalysisError("Het visuele rapport kon niet worden geopend. Sta pop-ups voor deze website toe.");
+      return;
+    }
+    const rows = visualReportRows();
+    const completion = focusClassGroup?.completionPercentage ?? analysis?.overview.completionPercentage ?? 0;
+    const completed = focusClassGroup?.completedCount ?? analysis?.overview.completedCount ?? 0;
+    const created = focusClassGroup?.createdCodes ?? analysis?.overview.createdCodes ?? 0;
+    const strong = strongestFocusGoals.map((item) => `${item.goalId} — ${item.label} (${item.score}%)`).join("<br>") || "Selecteer een klas voor een klasprofiel.";
+    const attention = attentionFocusGoals.map((item) => `${item.goalId} — ${item.label} (${item.score}%)`).join("<br>") || "Nog onvoldoende gegevens voor een aandachtspunt.";
+    const html = `<!doctype html><html lang="nl"><head><meta charset="utf-8"><title>${escapeHtml(visualReportContext())}</title><style>@page{size:A4 landscape;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#18223a;margin:0}h1{font-size:28px;margin:0 0 4px}.sub{color:#5c6475;margin:0 0 20px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{border:1px solid #dce1ea;border-radius:14px;padding:16px;background:#fff}.card h2{font-size:14px;color:#5c6475;margin:0 0 8px;text-transform:uppercase}.big{font-size:30px;font-weight:800;color:#372580}.bar-row{display:grid;grid-template-columns:220px 1fr 56px;gap:12px;align-items:center;margin:13px 0}.bar{height:18px;border-radius:9px;background:#eef0f5;overflow:hidden;position:relative}.fill{height:100%;background:linear-gradient(90deg,#5937bd,#7b61d1);border-radius:9px}.marker{position:absolute;top:-3px;width:3px;height:24px;background:#f08b32}.legend{font-size:12px;color:#5c6475;margin-top:14px}.note{margin-top:20px;padding-top:12px;border-top:1px solid #dce1ea;font-size:12px;color:#5c6475}</style></head><body><h1>Nulmeting digitale geletterdheid</h1><p class="sub">${escapeHtml(visualReportContext())} · ${new Date().toLocaleDateString("nl-NL")}</p><div class="cards"><div class="card"><h2>Afname compleet</h2><div class="big">${completion}%</div><p>${completed} opgeslagen van ${created} aangemaakte codes</p></div><div class="card"><h2>Relatief sterk</h2><p>${strong}</p></div><div class="card"><h2>Vraagt aandacht</h2><p>${attention}</p></div></div><h2>Visueel profiel</h2>${rows.map((row) => `<div class="bar-row"><strong>${escapeHtml(row.goalId)}</strong><div class="bar"><div class="fill" style="width:${Math.max(0, Math.min(100, row.value))}%"></div>${row.benchmark === null ? "" : `<i class="marker" style="left:${Math.max(0, Math.min(100, row.benchmark))}%"></i>`}</div><span>${row.value}%</span></div>`).join("")}<p class="legend">Paars = geselecteerde klas/groep. Oranje markering = gemiddelde van hetzelfde leerjaar en niveau.</p><p class="note">Formatieve nulmeting op basis van deze itemset; geen cijfer en geen volledig beheersingsoordeel. Alleen groepsresultaten vanaf n=${analysis?.privacy.minimumReportingCount ?? 5}.</p><script>window.onload=()=>setTimeout(()=>window.print(),250)</script></body></html>`;
+    reportWindow.document.open();
+    reportWindow.document.write(html);
+    reportWindow.document.close();
+  };
+
+  const exportVisualPng = () => {
+    const rows = visualReportRows().slice(0, 6);
+    const completion = focusClassGroup?.completionPercentage ?? analysis?.overview.completionPercentage ?? 0;
+    const completed = focusClassGroup?.completedCount ?? analysis?.overview.completedCount ?? 0;
+    const created = focusClassGroup?.createdCodes ?? analysis?.overview.createdCodes ?? 0;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675"><rect width="1200" height="675" fill="#f6f3ff"/><rect x="42" y="35" width="1116" height="605" rx="24" fill="white" stroke="#ded8ef"/><text x="78" y="88" font-family="Arial" font-size="30" font-weight="700" fill="#18223a">Nulmeting digitale geletterdheid</text><text x="78" y="119" font-family="Arial" font-size="18" fill="#5c6475">${escapeHtml(visualReportContext())}</text><rect x="78" y="150" width="300" height="120" rx="16" fill="#efeaff"/><text x="100" y="183" font-family="Arial" font-size="16" fill="#5c6475">AFNAME COMPLEET</text><text x="100" y="228" font-family="Arial" font-size="40" font-weight="700" fill="#372580">${completion}%</text><text x="100" y="252" font-family="Arial" font-size="15" fill="#5c6475">${completed} van ${created} opgeslagen</text><text x="420" y="174" font-family="Arial" font-size="18" font-weight="700" fill="#18223a">Relatief sterk</text><text x="420" y="205" font-family="Arial" font-size="16" fill="#315c45">${escapeHtml(strongestFocusGoals[0] ? `${strongestFocusGoals[0].goalId} — ${strongestFocusGoals[0].label} (${strongestFocusGoals[0].score}%)` : "Selecteer een klas")}</text><text x="420" y="244" font-family="Arial" font-size="18" font-weight="700" fill="#18223a">Vraagt aandacht</text><text x="420" y="270" font-family="Arial" font-size="16" fill="#8a3b2b">${escapeHtml(attentionFocusGoals[0] ? `${attentionFocusGoals[0].goalId} — ${attentionFocusGoals[0].label} (${attentionFocusGoals[0].score}%)` : "Nog onvoldoende gegevens")}</text>${rows.map((row, index) => { const y = 330 + index * 48; return `<text x="78" y="${y + 16}" font-family="Arial" font-size="15" fill="#18223a">${escapeHtml(row.goalId)}</text><rect x="310" y="${y}" width="730" height="20" rx="10" fill="#eef0f5"/><rect x="310" y="${y}" width="${Math.max(0, Math.min(100, row.value)) * 7.3}" height="20" rx="10" fill="#6647bf"/>${row.benchmark === null ? "" : `<rect x="${310 + Math.max(0, Math.min(100, row.benchmark)) * 7.3}" y="${y - 4}" width="4" height="28" fill="#f08b32"/>`}<text x="1060" y="${y + 16}" font-family="Arial" font-size="15" font-weight="700" fill="#18223a">${row.value}%</text>`; }).join("")}<text x="78" y="615" font-family="Arial" font-size="13" fill="#5c6475">Formatieve itemset · alleen groepsresultaten vanaf n=${analysis?.privacy.minimumReportingCount ?? 5} · paars = groep · oranje = leerjaar/niveau</text></svg>`;
+    const image = new Image();
+    const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1200;
+      canvas.height = 675;
+      canvas.getContext("2d")?.drawImage(image, 0, 0);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((blob) => blob && downloadBlob(`${analysisBaseName()}-visueel.png`, blob), "image/png");
+    };
+    image.src = url;
   };
 
   const reopenStudent = async (student: ApiStudent) => {
@@ -2567,14 +2659,16 @@ const AdminScreen = ({
       </div>
       <section className="admin-hero">
         <div>
-          <span className="badge">{access.role === "admin" ? "Beheeromgeving" : "Mentoroverzicht"}</span>
+          <span className="badge">{access.role === "admin" ? "Beheeromgeving" : access.role === "leadership" ? "Schooloverzicht" : "Mentoroverzicht"}</span>
           <h1>
-            {access.role === "admin" ? <>Beheer inlogcodes<br />en klasvoortgang</> : <>Resultaten van<br />toegewezen klassen</>}
+            {access.role === "admin" ? <>Beheer inlogcodes<br />en klasvoortgang</> : access.role === "leadership" ? <>Resultaten op<br />schoolniveau</> : <>Resultaten van<br />toegewezen klassen</>}
           </h1>
           <p className="intro">
             {access.role === "admin"
               ? "Vernieuw om per klas te zien hoeveel anonieme afnames bezig of afgerond zijn. Namen en individuele scores zijn niet beschikbaar."
-              : "Je ziet uitsluitend samengevoegde resultaten van je toegewezen klassen. Namen en individuele scores zijn niet beschikbaar."}
+              : access.role === "leadership"
+                ? "Je ziet uitsluitend samengevoegde resultaten op school-, leerjaar- en klasniveau. Namen en individuele scores zijn niet beschikbaar."
+                : "Je ziet uitsluitend samengevoegde resultaten van je toegewezen klassen. Namen en individuele scores zijn niet beschikbaar."}
           </p>
         </div>
         <div className="admin-side-card">
@@ -2596,10 +2690,10 @@ const AdminScreen = ({
             </div>
             <div>
               <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: ".95rem" }}>
-                {access.role === "admin" ? "Beheerder" : "Mentoraccount"}
+                {access.role === "admin" ? "Beheerder" : access.role === "leadership" ? "Schoolleiding" : "Mentoraccount"}
               </div>
               <div style={{ fontSize: ".82rem", color: "var(--c-ink-soft)" }}>
-                {access.role === "admin" ? "Alle klassen" : `${access.classCodes.length} toegewezen klas${access.classCodes.length === 1 ? "" : "sen"}`}
+                {access.role === "admin" || access.role === "leadership" ? "Alle klassen" : `${access.classCodes.length} toegewezen klas${access.classCodes.length === 1 ? "" : "sen"}`}
               </div>
             </div>
           </div>
@@ -2679,25 +2773,25 @@ const AdminScreen = ({
             <button className="filter-chip" type="button" onClick={() => void loadAnalysis()} disabled={analysisLoading}>
               {analysisLoading ? "Laden…" : "Vernieuwen"}
             </button>
-            {access.role === "admin" ? <details className="admin-export-menu">
+            <details className="admin-export-menu">
               <summary className={`filter-chip ${!analysis ? "disabled" : ""}`}>
                 Exporteer resultaten
               </summary>
               <div className="admin-export-options">
-                <button className="filter-chip" type="button" onClick={exportAnalysisWord} disabled={!analysis}>
-                  Word
+                <button className="filter-chip" type="button" onClick={openVisualReport} disabled={!analysis}>
+                  Visueel rapport (print/PDF)
                 </button>
-                <button className="filter-chip" type="button" onClick={exportAnalysisExcel} disabled={!analysis}>
-                  Excel
+                <button className="filter-chip" type="button" onClick={exportVisualPng} disabled={!analysis}>
+                  Afbeelding (PNG)
                 </button>
-                <button className="filter-chip" type="button" onClick={() => void exportChatGptAnalysisPackage()} disabled={!analysis}>
+                {access.role === "admin" ? <button className="filter-chip" type="button" onClick={exportAnalysisWord} disabled={!analysis}>Word (technisch)</button> : null}
+                {access.role === "admin" ? <button className="filter-chip" type="button" onClick={exportAnalysisExcel} disabled={!analysis}>Excel (technisch)</button> : null}
+                {access.role === "admin" ? <button className="filter-chip" type="button" onClick={() => void exportChatGptAnalysisPackage()} disabled={!analysis}>
                   ChatGPT-analysepakket
-                </button>
-                <button className="filter-chip" type="button" onClick={exportAnalysisPdf} disabled={!analysis}>
-                  PDF
-                </button>
+                </button> : null}
+                {access.role === "admin" ? <button className="filter-chip" type="button" onClick={exportAnalysisPdf} disabled={!analysis}>PDF (tekst)</button> : null}
               </div>
-            </details> : null}
+            </details>
           </div>
         </div>
         {analysisError ? <div className="error-banner-inline">Resultatenanalyse kon niet worden geladen: {analysisError}</div> : null}
@@ -2744,6 +2838,63 @@ const AdminScreen = ({
             </div>
           </details>
         </div>
+        <section className="analysis-quickview" aria-labelledby="quickview-title">
+          <div className="analysis-quickview-heading">
+            <div>
+              <span className="overline">In één oogopslag</span>
+              <h4 id="quickview-title">{focusClassGroup ? `Klas ${focusClassGroup.classCode}` : "Schooloverzicht"}</h4>
+            </div>
+            {!focusClassGroup && access.role !== "mentor" ? <p>Kies bij <strong>Klas</strong> een klas voor het volledige klasprofiel.</p> : null}
+          </div>
+          <div className="analysis-answer-cards">
+            <article className="analysis-answer-card progress">
+              <span>Hoe volledig is de afname?</span>
+              <strong>{focusClassGroup?.completionPercentage ?? analysis?.overview.completionPercentage ?? 0}%</strong>
+              <div className="analysis-progress" role="img" aria-label={`${focusClassGroup?.completionPercentage ?? analysis?.overview.completionPercentage ?? 0}% afgerond`}>
+                <i style={{ width: `${Math.min(100, focusClassGroup?.completionPercentage ?? analysis?.overview.completionPercentage ?? 0)}%` }} />
+              </div>
+              <p>{focusClassGroup?.completedCount ?? analysis?.overview.completedCount ?? 0} opgeslagen van {focusClassGroup?.createdCodes ?? analysis?.overview.createdCodes ?? 0} aangemaakte codes.</p>
+            </article>
+            <article className="analysis-answer-card strong">
+              <span>Wat gaat relatief goed?</span>
+              {focusClassGroup && strongestFocusGoals.length > 0 ? strongestFocusGoals.map((goal) => (
+                <p key={`strong-${goal.goalId}`}><strong>{goal.score}%</strong> {goal.goalId} — {goal.label}</p>
+              )) : strongestGradeGroup ? <p><strong>{formatMetric(strongestGradeGroup.averageTotalScore)}</strong> {readableFilterOption("gradeLevel", strongestGradeGroup.gradeLevel)} {readableFilterOption("track", strongestGradeGroup.track)}</p> : <p>Nog onvoldoende groepsgegevens.</p>}
+            </article>
+            <article className="analysis-answer-card attention">
+              <span>Wat vraagt aandacht?</span>
+              {focusClassGroup && attentionFocusGoals.length > 0 ? attentionFocusGoals.map((goal) => (
+                <p key={`attention-${goal.goalId}`}><strong>{goal.score}%</strong> {goal.goalId} — {goal.label}</p>
+              )) : attentionGradeGroup ? <p><strong>{formatMetric(attentionGradeGroup.averageTotalScore)}</strong> {readableFilterOption("gradeLevel", attentionGradeGroup.gradeLevel)} {readableFilterOption("track", attentionGradeGroup.track)}</p> : <p>Nog onvoldoende groepsgegevens.</p>}
+            </article>
+          </div>
+          {focusClassGroup?.reportable ? (
+            <div className="analysis-profile-chart">
+              <div className="analysis-chart-legend"><span><i className="legend-class" />{focusClassGroup.classCode}</span><span><i className="legend-benchmark" />gemiddelde leerjaar/niveau</span></div>
+              {profileGoals.map(([goalId, label]) => {
+                const value = focusClassGroup.goalScores[goalId];
+                const benchmark = focusBenchmark?.goalScores[goalId] ?? null;
+                return <div className="analysis-bar-row" key={`quick-${goalId}`}>
+                  <span><strong>{goalId}</strong><small>{label}</small></span>
+                  <div className="analysis-bar-track">
+                    {value !== null ? <i className="analysis-bar-fill" style={{ width: `${Math.max(0, Math.min(100, value))}%` }} /> : null}
+                    {benchmark !== null ? <i className="analysis-benchmark-marker" style={{ left: `${Math.max(0, Math.min(100, benchmark))}%` }} /> : null}
+                  </div>
+                  <strong>{formatMetric(value)}</strong>
+                </div>;
+              })}
+              <p className="help">Dit zijn aanwijzingen uit deze itemset, geen cijfer of volledig beheersingsoordeel.{focusClassGroup.completedCount < 10 ? " Bij deze kleine groep is extra voorzichtigheid nodig." : ""}</p>
+            </div>
+          ) : focusClassGroup ? <p className="help">Het klasprofiel verschijnt vanaf {analysis?.privacy.minimumReportingCount ?? 5} opgeslagen resultaten.</p> : null}
+          {focusClassGroup && comparisonClassGroups.length > 0 ? <details className="analysis-peer-details">
+            <summary>Vergelijk met herkenbare klassen</summary>
+            <div className="analysis-peer-grid">
+              {comparisonClassGroups.map((row) => <div key={`peer-${row.classCode}-${row.contentKey}`}>
+                <span>{row.classCode}</span><div><i style={{ width: `${Math.max(0, Math.min(100, row.averageTotalScore ?? 0))}%` }} /></div><strong>{formatMetric(row.averageTotalScore)}</strong>
+              </div>)}
+            </div>
+          </details> : null}
+        </section>
         <div className="stats-strip analysis-stats">
           {[
             ["Afnamevoortgang", `${analysis?.overview.completedCount ?? 0}/${analysis?.overview.createdCodes ?? 0}`, `${analysis?.overview.startedCount ?? 0} gestart · ${analysis?.overview.completionPercentage ?? 0}% met opgeslagen resultaat`],
@@ -2761,7 +2912,7 @@ const AdminScreen = ({
           ))}
         </div>
         {analysis?.privacy.performanceSuppressed ? (
-          <p className="help">Prestatiegegevens zijn verborgen omdat deze selectie minder dan {analysis.privacy.minimumReportingCount} afgeronde afnames bevat.</p>
+          <p className="help">Een totaalscore voor deze selectie wordt niet samengevoegd: er zijn minder dan {analysis.privacy.minimumReportingCount} resultaten of er staan verschillende toetsbuilds in de selectie. Kies een klas of specifiekere filters.</p>
         ) : null}
         {(analysis?.overview.missingResultCount ?? 0) > 0 ? (
           <section className="admin-preview-block storage-control">
@@ -2869,11 +3020,13 @@ const AdminScreen = ({
               <h4>Overzicht per leerjaar en niveau</h4>
               <p className="help">De cijfers beschrijven alleen deze itemset. Spreiding toont het middelste kwartielbereik (Q1–Q3).</p>
               <div className="analysis-table compact">
-                <div className="analysis-row head"><span>Leerjaar</span><span>Niveau</span><span>Afgerond</span><span>Gemiddelde</span><span>Mediaan</span><span>Spreiding</span></div>
-                {(analysis?.byGrade ?? []).map((row) => (
-                  <div className="analysis-row" key={`summary-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}-${row.assessmentId}`}>
+                <div className="analysis-row summary-grade-row head"><span>Leerjaar</span><span>Niveau</span><span>Venster / cohort</span><span>Toetsversie</span><span>Afgerond</span><span>Gemiddelde</span><span>Mediaan</span><span>Spreiding</span></div>
+                {(analysis?.byGrade ?? []).filter((row) => row.createdCodes > 0).map((row) => (
+                  <div className="analysis-row summary-grade-row" key={`summary-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}-${row.assessmentId}-${row.contentKey}`}>
                     <span>{readableFilterOption("gradeLevel", row.gradeLevel)}</span>
                     <span>{readableFilterOption("track", row.track)}</span>
+                    <span>{row.assessmentWindow || "—"}<small>{row.cohort || "geen cohort"}</small></span>
+                    <span>{row.assessmentBuildVersion || row.versionId}</span>
                     <span>{row.completedCount}</span>
                     <span>{row.reportable ? formatMetric(row.averageTotalScore) : "beschermd"}</span>
                     <span>{row.reportable ? formatMetric(row.medianTotalScore) : "beschermd"}</span>
@@ -2893,7 +3046,7 @@ const AdminScreen = ({
                   <span>Verschil met leerjaar/niveau</span>
                   {profileGoals.map(([goalId, label]) => <span key={goalId}>{goalId}<small>{label}</small></span>)}
                 </div>
-                {(analysis?.byClass ?? []).map((row) => (
+                {currentClassGroups.map((row) => (
                   <div className="analysis-row mentor-profile-row" key={`mentor-${row.classCode}-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}`}>
                     <span>{row.classCode || "Onbekend"}</span>
                     <span>{row.completedCount}</span>
@@ -2926,12 +3079,12 @@ const AdminScreen = ({
               </div>
             </div>
             <div className="admin-preview-block">
-              <h4>Aandacht en handelingssuggesties</h4>
+              <h4>Concrete aandachtspunten</h4>
               {classRecommendations.length > 0 ? (
                 <ul className="analysis-focus-list">
                   {classRecommendations.flatMap(({ row, recommendations }) => recommendations.map((recommendation) => (
                     <li key={`${row.classCode}-${recommendation.goalId}`}>
-                      {row.classCode}: <strong>{recommendation.goalId} — {recommendation.label}</strong> is een relatief laag profiel binnen deze klas ({recommendation.score}%). {goalAdvice[recommendation.goalId]}
+                      {row.classCode}: <strong>{recommendation.goalId} — {recommendation.label}</strong> is binnen deze itemset een relatief laag profiel ({recommendation.score}%). Bespreek met het vakteam of extra aandacht binnen het bestaande onderwijsaanbod passend is.
                     </li>
                   )))}
                 </ul>
@@ -2942,7 +3095,7 @@ const AdminScreen = ({
               <p className="help">Dit zijn signalen van één item of taak. Daarom tonen we aantallen leerlingen met een volledig behaald signaal, geen percentages.</p>
               <div className="analysis-table compact">
                 <div className="analysis-row head"><span>Klas</span><span>Afgerond</span><span>Itemsignalen</span></div>
-                {(analysis?.byClass ?? []).map((row) => (
+                {currentClassGroups.map((row) => (
                   <div className="analysis-row" key={`signals-${row.classCode}-${row.gradeLevel}-${row.track}-${row.assessmentWindow}-${row.cohort}`}>
                     <span>{row.classCode || "Onbekend"}</span>
                     <span>{row.completedCount}</span>
@@ -2998,7 +3151,7 @@ const AdminScreen = ({
                 <span>Signalen</span>
               </div>
               {(analysis?.itemAnalysis ?? []).map((item) => (
-                <div className="analysis-row" key={item.itemId}>
+                <div className="analysis-row" key={`${item.versionId}-${item.assessmentContentHash || item.assessmentBuildVersion}-${item.itemId}`}>
                   <span>{readableQuestionLabel(item)}</span>
                   <span>{item.itemId}</span>
                   <span>{item.assessmentBuildVersion || item.versionId}</span>

@@ -17,6 +17,7 @@ const legacyItemAliases = new Map([
   ["lj3h-sr7-ai-source-check", "lj3h-sr7-online-personal-data"],
 ]);
 const canonicalItemId = (itemId) => legacyItemAliases.get(String(itemId)) ?? String(itemId);
+let tablesReady = null;
 
 const metadataForVersion = (versionId) => {
   const [gradePart = "", trackPart = ""] = String(versionId).split("-");
@@ -121,6 +122,8 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS access_code`;
   await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS class_token`;
   await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS anonymous_attempt_id`;
+  await sql`CREATE INDEX IF NOT EXISTS students_analysis_idx ON students (assessment_window, class_code, version_id, status)`;
+  await sql`CREATE INDEX IF NOT EXISTS assessment_results_analysis_idx ON assessment_results (assessment_window, class_code, version_id, assessment_content_hash)`;
 };
 
 const aggregateOptionSelections = (session) => {
@@ -224,11 +227,15 @@ const resultMetadata = (row) => {
     assessmentId: row.assessment_id ?? row.version_id,
     classCode: row.class_code ?? "",
     classId: row.class_id ?? row.class_code ?? "",
-    gradeLevel: row.grade_level ?? fallback.gradeLevel,
-    track: row.track ?? fallback.track,
+    gradeLevel: validVersionIds.has(row.version_id) ? fallback.gradeLevel : row.grade_level ?? "unknown",
+    track: validVersionIds.has(row.version_id) ? fallback.track : row.track ?? "unknown",
     cohort: row.cohort ?? "",
     assessmentWindow: row.assessment_window ?? "",
     versionId: row.version_id,
+    assessmentBuildVersion: row.assessment_build_version ?? "",
+    assessmentContentHash: row.assessment_content_hash ?? "",
+    contentKey: row.assessment_content_hash || row.assessment_build_version || "legacy-unknown",
+    completedAt: row.completed_at ? new Date(row.completed_at).getTime() : 0,
   };
 };
 
@@ -238,8 +245,8 @@ const studentMetadata = (row) => {
     assessmentId: row.assessment_id ?? row.version_id,
     classCode: row.class_code ?? "",
     classId: row.class_id ?? row.class_code ?? "",
-    gradeLevel: row.grade_level ?? fallback.gradeLevel,
-    track: row.track ?? fallback.track,
+    gradeLevel: validVersionIds.has(row.version_id) ? fallback.gradeLevel : row.grade_level ?? "unknown",
+    track: validVersionIds.has(row.version_id) ? fallback.track : row.track ?? "unknown",
     cohort: row.cohort ?? row.import_batch ?? "",
     assessmentWindow: row.assessment_window ?? row.import_batch ?? "",
     versionId: row.version_id,
@@ -273,6 +280,16 @@ const goalPercentage = (result, goalId) => {
     goal.itemCount === 1 ||
     (goal.reportingMode === undefined && goal.itemCount === undefined && legacySingleItemGoalIds.has(goalId));
   return isSignal ? null : Number(goal.percentage ?? 0);
+};
+
+const ensureTablesOnce = async (sql) => {
+  if (!tablesReady) {
+    tablesReady = ensureTables(sql).catch((error) => {
+      tablesReady = null;
+      throw error;
+    });
+  }
+  await tablesReady;
 };
 
 const percentile = (values, fraction) => {
@@ -398,10 +415,11 @@ const buildGroups = (students, results, keyFields) => {
       averageSelfAssessment: reportable ? average(scores.map((score) => score.selfAssessment)) : null,
       averageSelfAssessmentDifference: reportable ? average(scores.map((score) => score.selfAssessmentDifference)) : null,
       ...(reportable ? scoreStatistics(scores) : { medianTotalScore: null, q1TotalScore: null, q3TotalScore: null, standardDeviation: null }),
-      goalScores: Object.fromEntries(goalIds.map((goalId) => [goalId, reportable ? average(group._goalScores[goalId]) : null])),
+      goalSampleCounts: Object.fromEntries(goalIds.map((goalId) => [goalId, group._goalScores[goalId].length])),
+      goalScores: Object.fromEntries(goalIds.map((goalId) => [goalId, group._goalScores[goalId].length >= minimumReportingCount ? average(group._goalScores[goalId]) : null])),
       goalSignals: Object.fromEntries(signalGoalIds.map((goalId) => {
         const signals = group._goalSignals[goalId];
-        return [goalId, !reportable || signals.length === 0
+        return [goalId, !reportable || signals.length < minimumReportingCount
           ? null
           : {
               achievedCount: signals.filter((signal) => signal.achieved).length,
@@ -414,6 +432,41 @@ const buildGroups = (students, results, keyFields) => {
       _goalSignals: undefined,
     };
   });
+};
+
+const analysisBaseKey = (metadata) => [
+  metadata.classCode,
+  metadata.gradeLevel,
+  metadata.track,
+  metadata.assessmentWindow,
+  metadata.cohort,
+  metadata.assessmentId,
+  metadata.versionId,
+].map((value) => value || "").join("||");
+
+const attachCurrentContentKey = (students, results) => {
+  const latestContentByGroup = new Map();
+  for (const row of results) {
+    const metadata = resultMetadata(row);
+    const key = analysisBaseKey(metadata);
+    const current = latestContentByGroup.get(key);
+    if (!current || metadata.completedAt >= current.completedAt) {
+      latestContentByGroup.set(key, {
+        contentKey: metadata.contentKey,
+        assessmentBuildVersion: metadata.assessmentBuildVersion,
+        assessmentContentHash: metadata.assessmentContentHash,
+        completedAt: metadata.completedAt,
+      });
+    }
+  }
+  return students.map((student) => ({
+    ...student,
+    ...(latestContentByGroup.get(analysisBaseKey(student)) ?? {
+      contentKey: "legacy-unknown",
+      assessmentBuildVersion: "",
+      assessmentContentHash: "",
+    }),
+  }));
 };
 
 const selectedIdsFrom = (entry) => {
@@ -551,7 +604,7 @@ const buildItemAnalysis = (results) => {
       const normalizedItemId = canonicalItemId(entry?.itemId);
       const isSelfAssessment = normalizedItemId === "self-assessment";
       if (!entry?.itemId || (!isSelfAssessment && Number(entry.maxScore ?? 0) <= 0)) continue;
-      const analysisKey = `${row.assessment_content_hash || row.assessment_build_version || row.version_id}||${normalizedItemId}`;
+      const analysisKey = `${row.version_id}||${row.assessment_content_hash || row.assessment_build_version || "legacy-unknown"}||${normalizedItemId}`;
       const item = items.get(analysisKey) ?? {
         itemId: normalizedItemId,
         versionId: row.version_id,
@@ -603,6 +656,13 @@ const buildItemAnalysis = (results) => {
   }
 
   return Array.from(items.values()).map((item) => {
+    if (item.answerCount < minimumReportingCount) return {
+      itemId: item.itemId, versionId: item.versionId, assessmentBuildVersion: item.assessmentBuildVersion,
+      assessmentContentHash: item.assessmentContentHash, questionNumber: item.questionNumber, goalId: item.goalId,
+      answerCount: item.answerCount, reportable: false, correctRate: null, unknownRate: null,
+      harmfulOptionRate: null, discrimination: null, topIncorrectResponse: "", distribution: {},
+      ptErrorCategories: {}, signals: ["Te weinig antwoorden voor rapportage"],
+    };
     const correctRate = item.isSelfAssessment ? null : item.answerCount > 0 ? Math.round((item.correctCount / item.answerCount) * 1000) / 1000 : 0;
     const unknownRate = item.isSelfAssessment ? null : item.answerCount > 0 ? Math.round((item.unknownCount / item.answerCount) * 1000) / 1000 : 0;
     const harmfulOptionRate = item.isSelfAssessment ? null : item.answerCount > 0 ? Math.round((item.harmfulCount / item.answerCount) * 1000) / 1000 : 0;
@@ -625,6 +685,7 @@ const buildItemAnalysis = (results) => {
     void incorrectDistribution;
     return {
       ...rest,
+      reportable: true,
       discrimination,
       correctRate,
       unknownRate,
@@ -654,19 +715,21 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
   const studentRows = await sql`
     SELECT access_code, class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, import_batch, status
     FROM students
-    LIMIT 10000
   `;
   const resultRows = await sql`
     SELECT class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, assessment_build_version, assessment_content_hash, percentage, self_assessment_score, completed_at, result_json
     FROM assessment_results
-    LIMIT 10000
   `;
   const isAllowedClass = (metadata) => allowedClassCodes === null || allowedClassCodes.includes(metadata.classCode);
-  const students = studentRows
+  const allStudents = studentRows
     .map(studentMetadata)
-    .map((metadata, index) => ({ ...metadata, status: studentRows[index].status }))
-    .filter(isAllowedClass);
+    .map((metadata, index) => ({ ...metadata, status: studentRows[index].status }));
+  const students = attachCurrentContentKey(allStudents, resultRows).filter(isAllowedClass);
   const filteredStudents = students.filter((student) => matchesFilters(student, filters));
+  const comparisonFilters = { ...filters, classCode: "" };
+  const comparisonStudents = attachCurrentContentKey(allStudents, resultRows)
+    .filter((student) => matchesFilters(student, comparisonFilters));
+  const comparisonResults = resultRows.filter((row) => matchesFilters(resultMetadata(row), comparisonFilters));
   const filteredResults = resultRows.filter((row) => {
     const metadata = resultMetadata(row);
     return isAllowedClass(metadata) && matchesFilters(metadata, filters);
@@ -694,8 +757,17 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
     { createdCodes: 0, startedCount: 0, completedCount: 0 },
   );
   const allScores = filteredResults.map(scoreSummary);
-  const performanceSuppressed = allScores.length < minimumReportingCount;
+  const selectedContentKeys = new Set(filteredResults.map((row) => resultMetadata(row).contentKey));
+  const performanceSuppressed = allScores.length < minimumReportingCount || selectedContentKeys.size > 1;
   const registeredCompletedCount = filteredStudents.filter((student) => student.status === "completed").length;
+  const defaultAssessmentWindow = resultRows
+    .map(resultMetadata)
+    .filter((item) => isAllowedClass(item) && item.assessmentWindow)
+    .sort((left, right) => right.completedAt - left.completedAt)[0]?.assessmentWindow
+    ?? Array.from(new Set(students.map((item) => item.assessmentWindow).filter(Boolean))).sort().at(-1)
+    ?? "";
+  const classGroupFields = ["classCode", "gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId", "versionId", "contentKey"];
+  const gradeGroupFields = ["gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId", "versionId", "contentKey"];
   return {
     privacy: {
       minimumReportingCount,
@@ -709,6 +781,7 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
       cohorts: Array.from(new Set(students.map((item) => item.cohort).filter(Boolean))).sort(),
       assessmentIds: Array.from(new Set(students.map((item) => item.assessmentId).filter(Boolean))).sort(),
     },
+    defaults: { assessmentWindow: defaultAssessmentWindow },
     overview: {
       ...overview,
       completionPercentage: overview.createdCodes > 0 ? Math.round((overview.completedCount / overview.createdCodes) * 1000) / 10 : 0,
@@ -720,15 +793,17 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
       averageSelfAssessment: performanceSuppressed ? null : average(allScores.map((score) => score.selfAssessment)),
       averageSelfAssessmentDifference: performanceSuppressed ? null : average(allScores.map((score) => score.selfAssessmentDifference)),
     },
-    byClass: buildGroups(filteredStudents, filteredResults, ["classCode", "gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId"]),
-    byGrade: buildGroups(filteredStudents, filteredResults, ["gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId"]),
-    byLevel: buildGroups(filteredStudents, filteredResults, ["track", "assessmentWindow", "assessmentId"]),
+    byClass: buildGroups(filteredStudents, filteredResults, classGroupFields),
+    storageByClass: buildGroups(filteredStudents, filteredResults, ["classCode", "gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId", "versionId"]),
+    comparisonClasses: buildGroups(comparisonStudents, comparisonResults, classGroupFields),
+    byGrade: buildGroups(comparisonStudents, comparisonResults, gradeGroupFields),
+    byLevel: buildGroups(comparisonStudents, comparisonResults, ["track", "assessmentWindow", "assessmentId", "versionId", "contentKey"]),
     itemAnalysis: performanceSuppressed || !includeTechnical ? [] : buildItemAnalysis(filteredResults),
     growth: buildGrowth(cohortGrowthResults),
   };
 };
 
-export { buildGroups, buildItemAnalysis, scoreStatistics };
+export { attachCurrentContentKey, buildGroups, buildItemAnalysis, scoreStatistics };
 
 export default async function handler(request, response) {
   const databaseUrl = process.env.DATABASE_URL;
@@ -740,7 +815,7 @@ export default async function handler(request, response) {
   const sql = neon(databaseUrl);
 
   try {
-    await ensureTables(sql);
+    await ensureTablesOnce(sql);
 
     if (request.method === "GET") {
       const access = accessForRequest(request);
@@ -833,8 +908,8 @@ export default async function handler(request, response) {
     const versionMetadata = metadataForVersion(versionId);
     const studentMetadataRow = studentRows[0] ?? {};
     const assessmentId = String(studentMetadataRow.assessment_id ?? versionId);
-    const gradeLevel = String(studentMetadataRow.grade_level ?? versionMetadata.gradeLevel);
-    const track = String(studentMetadataRow.track ?? versionMetadata.track);
+    const gradeLevel = versionMetadata.gradeLevel;
+    const track = versionMetadata.track;
     const cohort = String(studentMetadataRow.cohort ?? studentMetadataRow.import_batch ?? "");
     const assessmentWindow = String(studentMetadataRow.assessment_window ?? studentMetadataRow.import_batch ?? "");
 
@@ -915,7 +990,7 @@ export default async function handler(request, response) {
 
     response.status(200).json({ ok: true });
   } catch (error) {
-    response.status(400).json({
+    response.status(request.method === "GET" ? 500 : 400).json({
       ok: false,
       error: error instanceof Error ? error.message : "Resultaat opslaan is mislukt.",
     });
