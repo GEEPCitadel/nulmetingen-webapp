@@ -178,6 +178,27 @@ const listStudents = async (sql) => {
   return storedStudents;
 };
 
+// Results do not contain learner identities. A resumable session does retain
+// the temporary access code, so it can safely repair the rare race where an
+// old autosave reaches the server after the anonymised result was saved.
+const reconcileCompletedSessions = async (sql) => {
+  await sql`
+    UPDATE students AS student
+    SET status = 'completed',
+        completed_at = COALESCE(student.completed_at, result.completed_at),
+        updated_at = NOW()
+    FROM assessment_sessions AS session
+    INNER JOIN assessment_results AS result ON result.session_id = session.id
+    WHERE session.access_code = student.access_code
+      AND student.status <> 'completed'
+  `;
+  await sql`
+    DELETE FROM assessment_sessions AS session
+    USING assessment_results AS result
+    WHERE result.session_id = session.id
+  `;
+};
+
 const normalizeCodeList = (value) =>
   Array.isArray(value)
     ? value
@@ -239,6 +260,7 @@ export default async function handler(request, response) {
         response.status(401).json({ ok: false });
         return;
       }
+      await reconcileCompletedSessions(sql);
       response.status(200).json({ ok: true, students: await listStudents(sql) });
       return;
     }

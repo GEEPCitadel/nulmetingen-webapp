@@ -9662,9 +9662,12 @@ const ResultScreen = ({
             onClick={onClose}
             disabled={!closingConfirmed || saveStatus !== "saved"}
           >
-            Volgende
+            Afronden en naar start
           </button>
         </div>
+        {saveStatus !== "saved" ? (
+          <p className="help">Wacht tot de melding hierboven zegt dat je resultaat veilig is opgeslagen.</p>
+        ) : null}
       </section>
     </>
   );
