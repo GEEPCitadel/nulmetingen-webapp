@@ -880,10 +880,15 @@ export default async function handler(request, response) {
       LIMIT 1
     `;
     const savedSession = sessionRows[0];
+    const savedBuildVersion = String(savedSession?.assessment_build_version ?? "").trim();
+    const savedContentHash = String(savedSession?.assessment_content_hash ?? "").trim().toLowerCase();
+    // Sessions that were already open during the rollout have no stored build
+    // metadata yet. Their client still submits validated metadata; accept that
+    // legacy case while continuing to reject an actual version mismatch.
     if (
       savedSession &&
-      (String(savedSession.assessment_build_version ?? "") !== assessmentBuildVersion ||
-        String(savedSession.assessment_content_hash ?? "").toLowerCase() !== assessmentContentHash)
+      ((savedBuildVersion && savedBuildVersion !== assessmentBuildVersion) ||
+        (savedContentHash && savedContentHash !== assessmentContentHash))
     ) {
       response.status(409).json({ ok: false, error: "Assessmentversie van de afname komt niet overeen met de opgeslagen sessie." });
       return;
