@@ -132,6 +132,7 @@ type ApiStudent = {
   assessmentWindow?: string;
   importBatch?: string;
   status?: "not_started" | "in_progress" | "completed";
+  partialStored?: boolean;
   resultSessionId?: string | null;
   totalScore?: number | null;
   maxScore?: number | null;
@@ -351,13 +352,14 @@ const EXIT_CONFIRMATION_TEXT =
 const requestJson = async <T,>(url: string, options: RequestInit = {}): Promise<T> => {
   const response = await fetch(url, {
     ...options,
+    signal: options.signal ?? AbortSignal.timeout(30000),
     headers: {
       "Content-Type": "application/json",
       ...(options.headers ?? {}),
     },
   });
-  const data = (await response.json().catch(() => ({}))) as { error?: string };
-  if (!response.ok) {
+  const data = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+  if (!response.ok || data.ok !== true) {
     throw new Error(data.error ?? "De server gaf geen geldige reactie.");
   }
   return data as T;
@@ -855,6 +857,10 @@ const App = () => {
   const [isStarting, setIsStarting] = useState(false);
   const [resultSaveStatus, setResultSaveStatus] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [resultRetryNonce, setResultRetryNonce] = useState(0);
+  const [sessionSaveStatus, setSessionSaveStatus] = useState<"idle" | "saving" | "saved" | "failed">("idle");
+  const [sessionRetryNonce, setSessionRetryNonce] = useState(0);
+  const [localCopySaved, setLocalCopySaved] = useState(false);
+  const storageRevision = useRef(Date.now());
   const [isUnlockingAdmin, setIsUnlockingAdmin] = useState(false);
   const [stepStartedAt, setStepStartedAt] = useState(Date.now());
   const [now, setNow] = useState(Date.now());
@@ -873,7 +879,10 @@ const App = () => {
   );
 
   useEffect(() => {
-    saveActiveSession(session);
+    try { saveActiveSession(session); setLocalCopySaved(Boolean(session)); } catch {
+      setLocalCopySaved(false);
+      // A full browser cache must not stop the server upload.
+    }
 
     if (!session?.metadata.classId) {
       return;
@@ -883,11 +892,33 @@ const App = () => {
       return;
     }
 
-    void requestJson<{ ok: boolean }>("/api/sessions", {
-      method: "POST",
-      body: JSON.stringify({ session }),
-    }).catch(() => undefined);
-  }, [session]);
+    let cancelled = false;
+    storageRevision.current = Math.max(Date.now(), storageRevision.current + 1);
+    const body = JSON.stringify({ session: { ...session, storageRevision: storageRevision.current } });
+    const save = async () => {
+      setSessionSaveStatus("saving");
+      for (const delay of [0, 1000, 3000]) {
+        if (delay) await new Promise(resolve => window.setTimeout(resolve, delay));
+        if (cancelled) return;
+        try {
+          await requestJson<{ ok: boolean }>("/api/sessions", { method: "POST", body });
+          if (!cancelled) setSessionSaveStatus("saved");
+          return;
+        } catch { /* Keep the cumulative answers and retry. */ }
+      }
+      if (!cancelled) setSessionSaveStatus("failed");
+    };
+    void save();
+    return () => { cancelled = true; };
+  }, [session, sessionRetryNonce]);
+
+  useEffect(() => {
+    if (sessionSaveStatus !== "failed" || session?.completedAt) return;
+    const retry = () => setSessionRetryNonce(value => value + 1);
+    window.addEventListener("online", retry);
+    const interval = window.setInterval(retry, 15000);
+    return () => { window.removeEventListener("online", retry); window.clearInterval(interval); };
+  }, [sessionSaveStatus, session?.completedAt]);
 
   useEffect(() => {
     if (!session?.completedAt || !session.metadata.classId || !result) return;
@@ -919,18 +950,22 @@ const App = () => {
       if (resultSaveStatus === "failed") setResultRetryNonce((value) => value + 1);
     };
     window.addEventListener("online", retryWhenOnline);
-    return () => window.removeEventListener("online", retryWhenOnline);
+    const interval = resultSaveStatus === "failed" ? window.setInterval(retryWhenOnline, 15000) : null;
+    return () => {
+      window.removeEventListener("online", retryWhenOnline);
+      if (interval !== null) window.clearInterval(interval);
+    };
   }, [resultSaveStatus]);
 
   useEffect(() => {
-    if (!session?.completedAt || resultSaveStatus === "saved") return;
+    if (!session || (session.completedAt ? resultSaveStatus === "saved" : sessionSaveStatus === "saved")) return;
     const warnBeforeClose = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = "";
     };
     window.addEventListener("beforeunload", warnBeforeClose);
     return () => window.removeEventListener("beforeunload", warnBeforeClose);
-  }, [session?.completedAt, resultSaveStatus]);
+  }, [session, resultSaveStatus, sessionSaveStatus]);
 
   useEffect(() => {
     setStepStartedAt(Date.now());
@@ -1179,6 +1214,15 @@ const App = () => {
   };
 
   const resetSession = () => {
+    // All callers, including header navigation, must preserve pending answers.
+    if (session && (session.completedAt ? resultSaveStatus !== "saved" : sessionSaveStatus !== "saved")) {
+      setExitConfirmOpen(true);
+      return;
+    }
+    if (session && !session.completedAt && !exitConfirmOpen) {
+      setExitConfirmOpen(true);
+      return;
+    }
     setSession(null);
     setEntryView("intro");
     setStartContext(getInitialStartContext());
@@ -1227,7 +1271,7 @@ const App = () => {
           ? formatTime(Math.floor((now - new Date(session.startedAt).getTime()) / 1000))
           : undefined
       }
-      onReset={session && !session.completedAt ? resetSession : undefined}
+      onReset={session && !session.completedAt ? exitAssessment : undefined}
     >
       {!session && entryView === "intro" ? (
         <StudentStartScreen
@@ -1282,6 +1326,13 @@ const App = () => {
         />
       ) : null}
 
+      {session && !session.completedAt && sessionSaveStatus === "failed" ? (
+        <div className="warning-banner-inline" role="alert">
+          Je antwoorden zijn nog niet bij school opgeslagen. Laat deze pagina open. We proberen het opnieuw.
+          <button type="button" className="filter-chip" onClick={() => setSessionRetryNonce(value => value + 1)}>Opnieuw opslaan</button>
+        </div>
+      ) : null}
+
       {session && activeAssessment && currentStep && !session.completedAt ? (
         <AssessmentScreen
           session={session}
@@ -1295,7 +1346,7 @@ const App = () => {
           onSkipPerformanceTask={skipPerformanceTask}
           onResetApplicationTask={resetApplicationTask}
           onPrevious={goToPreviousStep}
-          onReset={resetSession}
+          onReset={exitAssessment}
           onExit={exitAssessment}
         />
       ) : null}
@@ -1315,6 +1366,7 @@ const App = () => {
           session={session}
           onClose={resetSession}
           saveStatus={resultSaveStatus}
+          localCopySaved={localCopySaved}
           onRetrySave={() => setResultRetryNonce((value) => value + 1)}
         />
       ) : null}
@@ -1329,6 +1381,7 @@ const App = () => {
           >
             <h3 id="exit-confirm-title">Afsluiten</h3>
             <p>{EXIT_CONFIRMATION_TEXT}</p>
+            {sessionSaveStatus !== "saved" ? <p role="status">Je antwoorden zijn nog niet naar school opgeslagen. Laat dit scherm open; we proberen het opnieuw.</p> : null}
             <div className="exit-confirm-actions">
               <button
                 className="task-nav-skip"
@@ -1340,6 +1393,7 @@ const App = () => {
               <button
                 className="task-nav-primary"
                 type="button"
+                disabled={sessionSaveStatus !== "saved"}
                 onClick={resetSession}
               >
                 Afsluiten en naar startscherm
@@ -2581,7 +2635,7 @@ const AdminScreen = ({
   const busyCount = classFilteredStudents.filter((s) => s.status === "in_progress").length;
   const notStartedCount = classFilteredStudents.filter((s) => !s.status || s.status === "not_started").length;
   const classProgress = Object.values(
-    students.reduce<Record<string, { classCode: string; versionId: AssessmentVersion["id"]; total: number; completed: number; busy: number }>>((groups, student) => {
+    students.reduce<Record<string, { classCode: string; versionId: AssessmentVersion["id"]; total: number; completed: number; busy: number; partialStored: number }>>((groups, student) => {
       const key = `${student.classCode}:${student.versionId}:${student.assessmentWindow ?? ""}`;
       const group = groups[key] ?? {
         classCode: student.classCode,
@@ -2589,10 +2643,12 @@ const AdminScreen = ({
         total: 0,
         completed: 0,
         busy: 0,
+        partialStored: 0,
       };
       group.total += 1;
       if (student.status === "completed") group.completed += 1;
       if (student.status === "in_progress") group.busy += 1;
+      if (student.status !== "completed" && student.partialStored) group.partialStored += 1;
       groups[key] = group;
       return groups;
     }, {}),
@@ -2610,9 +2666,9 @@ const AdminScreen = ({
       up: true,
     },
     {
-      label: "Bezig",
+      label: "Nog niet afgerond",
       value: String(busyCount),
-      delta: busyCount > 0 ? "Actief nu" : "Niemand actief",
+      delta: "Gestart; geen live-activiteitsmeting",
       up: true,
     },
     {
@@ -2740,13 +2796,14 @@ const AdminScreen = ({
         <h3>Voortgang per klas</h3>
         <p className="help">Ververs deze pagina om de anonieme voortgang bij te werken. Alleen aantallen worden getoond.</p>
         <div className="analysis-table compact">
-          <div className="analysis-row head"><span>Klas</span><span>Meting</span><span>Afgerond</span><span>Bezig</span></div>
+          <div className="analysis-row head" style={{ gridTemplateColumns: "1fr 1.5fr 1fr 1fr 1.2fr" }}><span>Klas</span><span>Meting</span><span>Afgerond</span><span>Nog niet afgerond</span><span>Daarvan gedeeltelijk bewaard</span></div>
           {classProgress.map((progress) => (
-            <div className="analysis-row" key={`${progress.classCode}-${progress.versionId}`}>
+            <div className="analysis-row" style={{ gridTemplateColumns: "1fr 1.5fr 1fr 1fr 1.2fr" }} key={`${progress.classCode}-${progress.versionId}`}>
               <span>{progress.classCode}</span>
               <span>{assessmentLabels[progress.versionId]}</span>
               <span>{progress.completed} / {progress.total}</span>
               <span>{progress.busy}</span>
+              <span>{progress.partialStored}</span>
             </div>
           ))}
           {classProgress.length === 0 ? <p className="help">Er zijn nog geen codepools aangemaakt.</p> : null}
@@ -4830,7 +4887,7 @@ const TaskNavFooter = ({
         ← Vorige vraag
       </button>
       <button className="task-nav-exit" type="button" onClick={onExit}>
-        Afsluiten
+                Afsluiten
       </button>
       {onSkip ? (
         <button className="task-nav-skip" type="button" onClick={onSkip}>
@@ -9438,12 +9495,14 @@ const ResultScreen = ({
   session,
   onClose,
   saveStatus,
+  localCopySaved,
   onRetrySave,
 }: {
   assessment: AssessmentVersion;
   session: AssessmentSession;
   onClose: () => void;
   saveStatus: "idle" | "saving" | "saved" | "failed";
+  localCopySaved: boolean;
   onRetrySave: () => void;
 }) => {
   const [closingConfirmed, setClosingConfirmed] = useState(false);
@@ -9626,7 +9685,9 @@ const ResultScreen = ({
           {saveStatus === "saved"
             ? "Je resultaat is veilig en anoniem opgeslagen voor de klassenanalyse."
             : saveStatus === "failed"
-              ? "Je resultaat staat nog veilig op dit apparaat, maar kon nog niet naar school worden verzonden. Sluit dit scherm nog niet."
+              ? localCopySaved
+                ? "Je resultaat staat nog op dit apparaat, maar kon nog niet naar school worden verzonden. We proberen het automatisch opnieuw. Sluit dit scherm nog niet."
+                : "Je resultaat is nog niet veilig opgeslagen. Laat dit scherm open; we proberen het automatisch opnieuw."
               : "Je resultaat wordt veilig en anoniem opgeslagen…"}
         </p>
         {saveStatus === "failed" ? (
