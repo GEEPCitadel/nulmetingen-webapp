@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { accessForRequest } from "./access.js";
+import { ensureRecoveryTable } from "../lib/recovery-schema.js";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
 const testAccessCodes = new Set(["TESTVMBO1", "TESTHV1", "TESTVMBO3", "TESTHV3"]);
@@ -35,6 +36,7 @@ const readJsonBody = async (request) => {
 };
 
 const ensureTables = async (sql) => {
+  await ensureRecoveryTable(sql);
   await sql`
     CREATE TABLE IF NOT EXISTS students (
       id BIGSERIAL PRIMARY KEY,
@@ -59,8 +61,7 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
-  await sql`ALTER TABLE students DROP COLUMN IF EXISTS participant_label`;
-  await sql`ALTER TABLE students DROP COLUMN IF EXISTS student_number`;
+  // Do not destroy legacy evidence as a side effect of initializing storage.
 
   await sql`
     CREATE TABLE IF NOT EXISTS assessment_sessions (
@@ -97,8 +98,8 @@ const ensureTables = async (sql) => {
       version_id TEXT NOT NULL,
       assessment_build_version TEXT NOT NULL,
       assessment_content_hash TEXT NOT NULL,
-      total_score INTEGER NOT NULL,
-      max_score INTEGER NOT NULL,
+      total_score DOUBLE PRECISION NOT NULL,
+      max_score DOUBLE PRECISION NOT NULL,
       percentage INTEGER NOT NULL,
       self_assessment_score INTEGER,
       started_at TIMESTAMPTZ,
@@ -119,9 +120,23 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE assessment_results ADD COLUMN IF NOT EXISTS self_assessment_score INTEGER`;
   await sql`ALTER TABLE assessment_results ADD COLUMN IF NOT EXISTS assessment_build_version TEXT`;
   await sql`ALTER TABLE assessment_results ADD COLUMN IF NOT EXISTS assessment_content_hash TEXT`;
-  await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS access_code`;
-  await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS class_token`;
-  await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS anonymous_attempt_id`;
+  await sql`ALTER TABLE assessment_results ADD COLUMN IF NOT EXISTS recovery_origin TEXT`;
+  await sql`ALTER TABLE assessment_results ADD COLUMN IF NOT EXISTS recovered_at TIMESTAMPTZ`;
+  // Historical recovery has no proven original finishing timestamp.
+  await sql`ALTER TABLE assessment_results ALTER COLUMN completed_at DROP NOT NULL`;
+  // Task scores can be fractional. Preserve them instead of rejecting or rounding.
+  // Existing integer scores convert exactly; repeat cold starts do not rewrite the table.
+  await sql`DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'assessment_results'
+        AND column_name IN ('total_score', 'max_score') AND data_type <> 'double precision') THEN
+      ALTER TABLE public.assessment_results
+        ALTER COLUMN total_score TYPE DOUBLE PRECISION USING total_score::DOUBLE PRECISION,
+        ALTER COLUMN max_score TYPE DOUBLE PRECISION USING max_score::DOUBLE PRECISION;
+    END IF;
+  END $$`;
+  // New results are anonymized on write. Existing legacy fields are never
+  // selected by the reporting API and are preserved for a separate review.
   await sql`CREATE INDEX IF NOT EXISTS students_analysis_idx ON students (assessment_window, class_code, version_id, status)`;
   await sql`CREATE INDEX IF NOT EXISTS assessment_results_analysis_idx ON assessment_results (assessment_window, class_code, version_id, assessment_content_hash)`;
 };
@@ -808,16 +823,16 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
   };
 };
 
-export { attachCurrentContentKey, buildGroups, buildItemAnalysis, scoreStatistics };
+export { attachCurrentContentKey, buildGroups, buildItemAnalysis, scoreStatistics, ensureTables, ensureTablesOnce, anonymizeSession };
 
-export default async function handler(request, response) {
+export const createResultsHandler = (connect = neon) => async function handler(request, response) {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     response.status(500).json({ ok: false, error: "DATABASE_URL ontbreekt." });
     return;
   }
 
-  const sql = neon(databaseUrl);
+  const sql = connect(databaseUrl);
 
   try {
     await ensureTablesOnce(sql);
@@ -926,7 +941,9 @@ export default async function handler(request, response) {
     const anonymousSession = anonymizeSession(session, classCode, classId);
     const persistedEventLogs = (anonymousSession.eventLogs ?? []).map(redactAggregateOnlyAnswer);
 
-    await sql`
+    await sql.transaction([
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${session.id}, 0))`,
+      sql`
       INSERT INTO assessment_results (
         session_id,
         class_code,
@@ -988,15 +1005,15 @@ export default async function handler(request, response) {
         result_json = EXCLUDED.result_json,
         event_logs = EXCLUDED.event_logs,
         updated_at = NOW()
-    `;
-    if (accessCode) {
-      await sql`
+    `,
+    ...(accessCode ? [sql`
         UPDATE students
         SET status = 'completed', completed_at = ${new Date(session.completedAt).toISOString()}, updated_at = NOW()
-        WHERE access_code = ${accessCode}
-      `;
-    }
-    await sql`DELETE FROM assessment_sessions WHERE id = ${session.id}`;
+        WHERE access_code = ${accessCode} AND class_code = ${classCode} AND version_id = ${versionId}
+      `] : []),
+    sql`UPDATE assessment_recoveries SET state = 'completed_later' WHERE session_id = ${session.id} AND state = 'partial'`,
+    sql`DELETE FROM assessment_sessions WHERE id = ${session.id}`,
+    ]);
 
     response.status(200).json({ ok: true });
   } catch (error) {
@@ -1005,4 +1022,6 @@ export default async function handler(request, response) {
       error: error instanceof Error ? error.message : "Resultaat opslaan is mislukt.",
     });
   }
-}
+};
+
+export default createResultsHandler();

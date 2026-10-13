@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run verify:content-sync && tsc -b && vite build",
+    "build": "node scripts/build-recovery-runtime.mjs && npm run verify:content-sync && tsc -b && vite build",
     "preview": "vite preview",
     "verify:anchors": "node scripts/verify-anchors.js",
     "verify:sr-sync": "npm run verify:content-sync",

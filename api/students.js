@@ -3,7 +3,6 @@ import { neon } from "@neondatabase/serverless";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
 const codeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const removedLegacyCodes = ["1001", "1002", "1003", "1004"];
 const cohortCodePattern = /^COHORT-\d{4}(?:-[A-Z0-9]+)*$/;
 
 const metadataForVersion = (versionId) => {
@@ -66,10 +65,8 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
   await sql`ALTER TABLE students DROP CONSTRAINT IF EXISTS students_access_code_key`;
-  // Older versions linked an access code to a name or pupil number. Remove those
-  // columns entirely during migration so new data cannot recreate that link.
-  await sql`ALTER TABLE students DROP COLUMN IF EXISTS participant_label`;
-  await sql`ALTER TABLE students DROP COLUMN IF EXISTS student_number`;
+  // Preserve any legacy evidence during recovery. The application does not
+  // select or write identity fields; any deletion requires a separate decision.
 
   await sql`
     CREATE TABLE IF NOT EXISTS assessment_sessions (
@@ -104,10 +101,6 @@ const ensureTables = async (sql) => {
     )
   `;
 
-  for (const code of removedLegacyCodes) {
-    await sql`DELETE FROM assessment_sessions WHERE access_code = ${code}`;
-    await sql`DELETE FROM students WHERE access_code = ${code}`;
-  }
 };
 
 const normalizeStudentRows = (students, versionId, importBatch) => {
@@ -152,6 +145,12 @@ const createUniqueCode = async (sql) => {
 };
 
 const listStudents = async (sql) => {
+  const recoveryTable = await sql`SELECT to_regclass('public.assessment_recoveries') AS name`;
+  const partialRows = recoveryTable[0]?.name ? await sql`
+    SELECT class_code,version_id,COALESCE(source_session_json->'metadata'->>'accessCode',source_session_json->>'accessCode') AS code
+    FROM assessment_recoveries WHERE state='partial'
+  ` : [];
+  const partialKeys = new Set(partialRows.map(row=>JSON.stringify([row.class_code,row.version_id,row.code])));
   const rows = await sql`
     SELECT access_code, class_code, class_id, version_id, assessment_id, grade_level, track, cohort, assessment_window, import_batch, status, completed_at, updated_at
     FROM students
@@ -172,6 +171,7 @@ const listStudents = async (sql) => {
     assessmentWindow: row.assessment_window ?? row.import_batch ?? "",
     importBatch: row.import_batch ?? "",
     status: row.status ?? "not_started",
+    partialStored: partialKeys.has(JSON.stringify([row.class_code,row.version_id,row.access_code])),
     completedAt: row.completed_at,
     updatedAt: row.updated_at,
   }));
@@ -190,13 +190,10 @@ const reconcileCompletedSessions = async (sql) => {
     FROM assessment_sessions AS session
     INNER JOIN assessment_results AS result ON result.session_id = session.id
     WHERE session.access_code = student.access_code
+      AND session.class_code = student.class_code AND session.version_id = student.version_id
       AND student.status <> 'completed'
   `;
-  await sql`
-    DELETE FROM assessment_sessions AS session
-    USING assessment_results AS result
-    WHERE result.session_id = session.id
-  `;
+  // Reading the administration must never remove the remaining answer evidence.
 };
 
 const normalizeCodeList = (value) =>
