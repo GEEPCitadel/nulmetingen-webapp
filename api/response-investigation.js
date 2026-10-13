@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
+import { createHash } from "node:crypto";
 import { accessForRequest } from "./access.js";
-import { collectInvestigation, databaseLocation } from "../lib/response-investigation.js";
+import { collectInvestigation, collectAnswerBackup, databaseLocation } from "../lib/response-investigation.js";
 
 export const createHandler = (connect = neon) => async (request, response) => {
   response.setHeader("Cache-Control", "no-store, private");
@@ -17,6 +18,25 @@ export const createHandler = (connect = neon) => async (request, response) => {
     return response.status(503).json({ ok: false, error: "Databasekoppeling ontbreekt op de server." });
   }
   try {
+    const parameters = new URL(request.url ?? "/", "https://local.invalid").searchParams;
+    const exportMode = parameters.get("export");
+    if (exportMode && !["manifest", "answers"].includes(exportMode)) {
+      return response.status(400).json({ ok: false, error: "Onbekende leescontrole." });
+    }
+    if (exportMode) {
+      const offset = Number(parameters.get("offset") ?? 0);
+      const limit = Number(parameters.get("limit") ?? 5);
+      if (!Number.isSafeInteger(offset) || offset < 0 || offset > 100000 || !Number.isSafeInteger(limit) || limit < 1 || limit > 5) {
+        return response.status(400).json({ ok: false, error: "Ongeldige pagina voor de antwoordkopie." });
+      }
+      const backup = await collectAnswerBackup(connect(process.env.DATABASE_URL), { manifest: exportMode === "manifest", offset, limit });
+      if (backup.records) backup.records = backup.records.map(row => ({ ...row, sha256: createHash("sha256").update(row.session_text).digest("hex") }));
+      const payload = { ok: true, readOnly: true, format: "citadel-session-backup-v1", ...backup };
+      if (Buffer.byteLength(JSON.stringify(payload)) > 3500000) {
+        return response.status(413).json({ ok: false, error: "Deze antwoordkopie is te groot voor één aanvraag. Er is niets gewijzigd." });
+      }
+      return response.status(200).json(payload);
+    }
     const location = databaseLocation(process.env.DATABASE_URL);
     const report = await collectInvestigation(connect(process.env.DATABASE_URL));
     if (report.identity) report.identity = report.identity.map(({ database_name, observed_at }) => ({ database_name, observed_at }));
