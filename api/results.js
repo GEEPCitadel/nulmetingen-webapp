@@ -61,8 +61,7 @@ const ensureTables = async (sql) => {
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
   await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
-  await sql`ALTER TABLE students DROP COLUMN IF EXISTS participant_label`;
-  await sql`ALTER TABLE students DROP COLUMN IF EXISTS student_number`;
+  // Do not destroy legacy evidence as a side effect of initializing storage.
 
   await sql`
     CREATE TABLE IF NOT EXISTS assessment_sessions (
@@ -136,9 +135,8 @@ const ensureTables = async (sql) => {
         ALTER COLUMN max_score TYPE DOUBLE PRECISION USING max_score::DOUBLE PRECISION;
     END IF;
   END $$`;
-  await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS access_code`;
-  await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS class_token`;
-  await sql`ALTER TABLE assessment_results DROP COLUMN IF EXISTS anonymous_attempt_id`;
+  // New results are anonymized on write. Existing legacy fields are never
+  // selected by the reporting API and are preserved for a separate review.
   await sql`CREATE INDEX IF NOT EXISTS students_analysis_idx ON students (assessment_window, class_code, version_id, status)`;
   await sql`CREATE INDEX IF NOT EXISTS assessment_results_analysis_idx ON assessment_results (assessment_window, class_code, version_id, assessment_content_hash)`;
 };
