@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { ensureTablesOnce } from "./results.js";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
 const testAccessCodes = new Set(["TESTVMBO1", "TESTHV1", "TESTVMBO3", "TESTHV3"]);
@@ -11,54 +12,8 @@ const readJsonBody = async (request) => {
   return chunks.length ? JSON.parse(Buffer.concat(chunks).toString("utf8")) : {};
 };
 
-const ensureTable = async (sql) => {
-  await sql`
-    CREATE TABLE IF NOT EXISTS students (
-      id BIGSERIAL PRIMARY KEY,
-      access_code TEXT NOT NULL,
-      class_code TEXT NOT NULL,
-      version_id TEXT NOT NULL,
-      import_batch TEXT,
-      status TEXT NOT NULL DEFAULT 'not_started',
-      started_at TIMESTAMPTZ,
-      completed_at TIMESTAMPTZ,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `;
-  await sql`
-    CREATE TABLE IF NOT EXISTS assessment_sessions (
-      id UUID PRIMARY KEY,
-      access_code TEXT,
-      class_code TEXT,
-      class_id TEXT,
-      class_token TEXT,
-      anonymous_attempt_id TEXT,
-      version_id TEXT NOT NULL,
-      assessment_build_version TEXT NOT NULL,
-      assessment_content_hash TEXT NOT NULL,
-      session_json JSONB NOT NULL,
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `;
-  await sql`ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS class_id TEXT`;
-  await sql`ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS class_token TEXT`;
-  await sql`ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS anonymous_attempt_id TEXT`;
-  await sql`ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS assessment_build_version TEXT`;
-  await sql`ALTER TABLE assessment_sessions ADD COLUMN IF NOT EXISTS assessment_content_hash TEXT`;
-  await sql`ALTER TABLE assessment_sessions ALTER COLUMN access_code TYPE TEXT`;
-  await sql`ALTER TABLE assessment_sessions ALTER COLUMN access_code DROP NOT NULL`;
-  await sql`ALTER TABLE assessment_sessions ALTER COLUMN class_code DROP NOT NULL`;
-
-  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'not_started'`;
-  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ`;
-  await sql`ALTER TABLE students ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`;
-  await sql`ALTER TABLE students ALTER COLUMN access_code TYPE TEXT`;
-  await sql`ALTER TABLE students DROP COLUMN IF EXISTS participant_label`;
-  await sql`ALTER TABLE students DROP COLUMN IF EXISTS student_number`;
-};
-
-export default async function handler(request, response) {
+const ensureTable = ensureTablesOnce;
+export const createSessionsHandler = (connect = neon) => async function handler(request, response) {
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
     response.status(405).json({ ok: false });
@@ -105,14 +60,21 @@ export default async function handler(request, response) {
       return;
     }
 
-    const sql = neon(databaseUrl);
+    const sql = connect(databaseUrl);
     await ensureTable(sql);
-    // A browser can still have one earlier autosave request in flight when the
-    // final result is stored. Keep that late request from changing a completed
-    // code back to "in_progress".
-    const resultTableRows = await sql`SELECT to_regclass('public.assessment_results') AS table_name`;
-    const hasResultTable = Boolean(resultTableRows[0]?.table_name);
-    await sql`
+    const revision = Number(session.storageRevision ?? Math.max(
+      Date.parse(session.startedAt ?? "") || 0,
+      ...(session.results ?? []).map(entry => Date.parse(entry.timestamp ?? "") || 0),
+    ));
+    if (!Number.isSafeInteger(revision) || revision < 0 || !Array.isArray(session.results)) {
+      response.status(400).json({ ok: false }); return;
+    }
+    const persistedSession = { ...session, storageRevision: revision };
+    // Share the final-save lock. Late and stale autosaves cannot recreate a
+    // finished attempt, roll back its status, or replace a newer answer set.
+    await sql.transaction([
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${session.id}, 0))`,
+      sql`
       INSERT INTO assessment_sessions (
         id,
         access_code,
@@ -125,7 +87,7 @@ export default async function handler(request, response) {
         assessment_content_hash,
         session_json
       )
-      VALUES (
+      SELECT
         ${session.id},
         ${accessCode || null},
         ${classCode || null},
@@ -135,8 +97,8 @@ export default async function handler(request, response) {
         ${versionId},
         ${assessmentBuildVersion},
         ${assessmentContentHash},
-        ${JSON.stringify(session)}::jsonb
-      )
+        ${JSON.stringify(persistedSession)}::jsonb
+      WHERE NOT EXISTS (SELECT 1 FROM assessment_results WHERE session_id = ${session.id})
       ON CONFLICT (id)
       DO UPDATE SET
         session_json = EXCLUDED.session_json,
@@ -146,54 +108,28 @@ export default async function handler(request, response) {
         assessment_build_version = EXCLUDED.assessment_build_version,
         assessment_content_hash = EXCLUDED.assessment_content_hash,
         updated_at = NOW()
-    `;
-
-    if (hasResultTable) {
-      const completedResultRows = await sql`
-        SELECT completed_at
-        FROM assessment_results
-        WHERE session_id = ${session.id}
-        LIMIT 1
-      `;
-      if (completedResultRows.length > 0) {
-        if (accessCode) {
-          await sql`
-            UPDATE students
-            SET status = 'completed',
-                completed_at = COALESCE(completed_at, ${completedResultRows[0].completed_at}),
-                updated_at = NOW()
-            WHERE access_code = ${accessCode}
-          `;
-        }
-        await sql`DELETE FROM assessment_sessions WHERE id = ${session.id}`;
-        response.status(200).json({ ok: true });
-        return;
-      }
-    }
-    if (accessCode) {
-      if (hasResultTable) {
-        await sql`
+      WHERE (EXCLUDED.session_json->>'storageRevision')::bigint >= COALESCE((assessment_sessions.session_json->>'storageRevision')::bigint, 0)
+        AND ((EXCLUDED.session_json->>'storageRevision')::bigint > COALESCE((assessment_sessions.session_json->>'storageRevision')::bigint, 0)
+          OR jsonb_array_length(EXCLUDED.session_json->'results') >= jsonb_array_length(assessment_sessions.session_json->'results'))
+        AND NOT EXISTS (SELECT 1 FROM assessment_results WHERE session_id = ${session.id})
+    `,
+    ...(accessCode ? [sql`
           UPDATE students
           SET status = 'in_progress', started_at = COALESCE(started_at, NOW()), updated_at = NOW()
-          WHERE access_code = ${accessCode}
+          WHERE access_code = ${accessCode} AND class_code = ${classCode} AND version_id = ${versionId}
             AND status <> 'completed'
             AND NOT EXISTS (
               SELECT 1
               FROM assessment_results
               WHERE session_id = ${session.id}
             )
-        `;
-      } else {
-        await sql`
-          UPDATE students
-          SET status = 'in_progress', started_at = COALESCE(started_at, NOW()), updated_at = NOW()
-          WHERE access_code = ${accessCode} AND status <> 'completed'
-        `;
-      }
-    }
+        `] : []),
+    ]);
 
     response.status(200).json({ ok: true });
   } catch {
     response.status(400).json({ ok: false });
   }
-}
+};
+
+export default createSessionsHandler();
