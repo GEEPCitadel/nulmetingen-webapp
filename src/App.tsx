@@ -856,6 +856,7 @@ const App = () => {
   const [adminError, setAdminError] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   const [resultSaveStatus, setResultSaveStatus] = useState<"idle" | "saving" | "saved" | "failed">("idle");
+  const [resultAlreadySaved, setResultAlreadySaved] = useState(false);
   const [resultRetryNonce, setResultRetryNonce] = useState(0);
   const [sessionSaveStatus, setSessionSaveStatus] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [sessionRetryNonce, setSessionRetryNonce] = useState(0);
@@ -929,11 +930,14 @@ const App = () => {
         if (delay > 0) await new Promise((resolve) => window.setTimeout(resolve, delay));
         if (cancelled) return;
         try {
-          await requestJson<{ ok: boolean }>("/api/results", {
+          const saved = await requestJson<{ ok: boolean; alreadySaved?: boolean }>("/api/results", {
             method: "POST",
             body: JSON.stringify({ session, result }),
           });
-          if (!cancelled) setResultSaveStatus("saved");
+          if (!cancelled) {
+            setResultAlreadySaved(saved.alreadySaved === true);
+            setResultSaveStatus("saved");
+          }
           return;
         } catch {
           // Probeer kort opnieuw; de volledige sessie blijft lokaal bewaard.
@@ -1225,6 +1229,8 @@ const App = () => {
       return;
     }
     setSession(null);
+    setResultSaveStatus("idle");
+    setResultAlreadySaved(false);
     setEntryView("intro");
     setStartContext(getInitialStartContext());
     setPrivacyConsent(false);
@@ -1367,6 +1373,7 @@ const App = () => {
           session={session}
           onClose={resetSession}
           saveStatus={resultSaveStatus}
+          alreadySaved={resultAlreadySaved}
           localCopySaved={localCopySaved}
           onRetrySave={() => setResultRetryNonce((value) => value + 1)}
         />
@@ -9496,6 +9503,7 @@ const ResultScreen = ({
   session,
   onClose,
   saveStatus,
+  alreadySaved,
   localCopySaved,
   onRetrySave,
 }: {
@@ -9503,6 +9511,7 @@ const ResultScreen = ({
   session: AssessmentSession;
   onClose: () => void;
   saveStatus: "idle" | "saving" | "saved" | "failed";
+  alreadySaved: boolean;
   localCopySaved: boolean;
   onRetrySave: () => void;
 }) => {
@@ -9684,7 +9693,9 @@ const ResultScreen = ({
         <h3>Scoreoverzicht opslaan</h3>
         <p role="status" aria-live="polite">
           {saveStatus === "saved"
-            ? "Je resultaat is veilig en anoniem opgeslagen voor de klassenanalyse."
+            ? alreadySaved
+              ? "Deze afname was al veilig opgeslagen. De eerste afronding blijft bewaard. Het scoreoverzicht in dit tabblad kan daarvan verschillen. Je kunt nu afsluiten."
+              : "Je resultaat is veilig en anoniem opgeslagen voor de klassenanalyse."
             : saveStatus === "failed"
               ? localCopySaved
                 ? "Je resultaat staat nog op dit apparaat, maar kon nog niet naar school worden verzonden. We proberen het automatisch opnieuw. Sluit dit scherm nog niet."
