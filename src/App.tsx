@@ -1118,6 +1118,7 @@ const App = () => {
       return {
         ...current,
         results: current.results.filter((resultEntry) => resultEntry.itemId !== item.id),
+        resultResets: { ...current.resultResets, [item.id]: Date.now() },
         pt1States: resetFileState
           ? { ...current.pt1States, [item.id]: resetFileState }
           : current.pt1States,
