@@ -897,6 +897,8 @@ export interface EventLog {
 }
 
 export interface AssessmentSession {
+  /** Explicit task resets; milliseconds since epoch, retained across tab merges. */
+  resultResets?: Record<string, number>;
   id: string;
   accessCode: string;
   versionId: AssessmentVersionId;
