@@ -888,6 +888,16 @@ export const createResultsHandler = (connect = neon) => async function handler(r
       return;
     }
 
+    // A confirmed final result is immutable, including after recovery. A retry
+    // or an old second tab must never replace its answers or completion time.
+    const existingResults = await sql`
+      SELECT session_id FROM assessment_results WHERE session_id = ${session.id} LIMIT 1
+    `;
+    if (existingResults.length) {
+      response.status(200).json({ ok: true, alreadySaved: true });
+      return;
+    }
+
     const sessionRows = await sql`
       SELECT access_code, class_code, class_id, assessment_build_version, assessment_content_hash, session_json
       FROM assessment_sessions
@@ -941,7 +951,7 @@ export const createResultsHandler = (connect = neon) => async function handler(r
     const anonymousSession = anonymizeSession(session, classCode, classId);
     const persistedEventLogs = (anonymousSession.eventLogs ?? []).map(redactAggregateOnlyAnswer);
 
-    await sql.transaction([
+    const writes = await sql.transaction([
       sql`SELECT pg_advisory_xact_lock(hashtextextended(${session.id}, 0))`,
       sql`
       INSERT INTO assessment_results (
@@ -986,36 +996,20 @@ export const createResultsHandler = (connect = neon) => async function handler(r
         ${JSON.stringify({ session: anonymousSession, result })}::jsonb,
         ${JSON.stringify(persistedEventLogs)}::jsonb
       )
-      ON CONFLICT (session_id)
-      DO UPDATE SET
-        class_code = EXCLUDED.class_code,
-        class_id = EXCLUDED.class_id,
-        assessment_id = EXCLUDED.assessment_id,
-        grade_level = EXCLUDED.grade_level,
-        track = EXCLUDED.track,
-        cohort = EXCLUDED.cohort,
-        assessment_window = EXCLUDED.assessment_window,
-        assessment_build_version = EXCLUDED.assessment_build_version,
-        assessment_content_hash = EXCLUDED.assessment_content_hash,
-        total_score = EXCLUDED.total_score,
-        max_score = EXCLUDED.max_score,
-        percentage = EXCLUDED.percentage,
-        self_assessment_score = EXCLUDED.self_assessment_score,
-        completed_at = EXCLUDED.completed_at,
-        result_json = EXCLUDED.result_json,
-        event_logs = EXCLUDED.event_logs,
-        updated_at = NOW()
+      ON CONFLICT (session_id) DO NOTHING
+      RETURNING session_id
     `,
     ...(accessCode ? [sql`
         UPDATE students
         SET status = 'completed', completed_at = ${new Date(session.completedAt).toISOString()}, updated_at = NOW()
         WHERE access_code = ${accessCode} AND class_code = ${classCode} AND version_id = ${versionId}
+          AND status <> 'completed'
       `] : []),
     sql`UPDATE assessment_recoveries SET state = 'completed_later' WHERE session_id = ${session.id} AND state = 'partial'`,
     sql`DELETE FROM assessment_sessions WHERE id = ${session.id}`,
     ]);
 
-    response.status(200).json({ ok: true });
+    response.status(200).json({ ok: true, alreadySaved: writes[1].length === 0 });
   } catch (error) {
     response.status(request.method === "GET" ? 500 : 400).json({
       ok: false,
