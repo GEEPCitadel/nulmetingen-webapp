@@ -35,6 +35,9 @@ import {
   saveActiveSession,
 } from "./lib/storage";
 import { TeddyProgrammingTask } from "./components/pt7/TeddyProgrammingTask";
+import { createGroupReportDocument } from "./lib/group-report-document";
+import { createGroupReportPdf, loadGroupReportLogo } from "./lib/group-report-pdf";
+import type { GroupReports, ReportScope } from "./lib/group-report-document";
 import type {
   AssessmentItem,
   AssessmentSection,
@@ -242,6 +245,7 @@ type GrowthAnalysis = {
 };
 
 type ResultsAnalysis = {
+  groupReports?: GroupReports;
   privacy: {
     minimumReportingCount: number;
     performanceSuppressed: boolean;
@@ -1712,6 +1716,9 @@ const AdminScreen = ({
   const [previewRows, setPreviewRows] = useState<ImportStudentRow[]>([]);
   const [createdCodeRows, setCreatedCodeRows] = useState<ApiStudent[]>([]);
   const [analysis, setAnalysis] = useState<ResultsAnalysis | null>(null);
+  const [groupReportHtml, setGroupReportHtml] = useState<string | null>(null);
+  const [groupReportSnapshot, setGroupReportSnapshot] = useState<{data: GroupReports; scope: ReportScope; filters: Record<string, string>} | null>(null);
+  const [groupPdfLoading, setGroupPdfLoading] = useState(false);
   const [analysisTab, setAnalysisTab] = useState<"mentor" | "technical" | "growth">("mentor");
   const [adminTab, setAdminTab] = useState<"codes" | "results">(access.role === "admin" ? "codes" : "results");
   const [analysisFilters, setAnalysisFilters] = useState({
@@ -2468,6 +2475,44 @@ const AdminScreen = ({
         benchmark: null,
       }));
 
+  const openGroupReport = async (scope: ReportScope) => {
+    // Fetch a fresh snapshot; never present a cached export after a failed refresh.
+    // Keep the report inside beheer so popup blockers cannot hide it.
+    setGroupReportHtml(null);
+    setGroupReportSnapshot(null);
+    const selectedFilters = { ...analysisFilters };
+    setAnalysisLoading(true);
+    try {
+      const params = new URLSearchParams(Object.entries(selectedFilters).filter(([, value]) => value.trim()));
+      const fresh = await requestJson<AnalysisResponse>(`/api/results?${params.toString()}`, { method: "GET", cache: "no-store", headers: adminHeaders });
+      if (!fresh.analysis.groupReports) throw new Error("De nieuwe rapportage is nog niet beschikbaar op deze server.");
+      const document = createGroupReportDocument(fresh.analysis.groupReports, scope, window.location.origin, selectedFilters);
+      setGroupReportHtml(document);
+      setGroupReportSnapshot({data: fresh.analysis.groupReports, scope, filters: selectedFilters});
+      setAnalysisError("");
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : "Rapport genereren is niet gelukt.";
+      setAnalysisError(message);
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
+  const downloadGroupReport = async () => {
+    if (!groupReportSnapshot || groupPdfLoading) return;
+    const report = groupReportSnapshot;
+    setGroupPdfLoading(true);
+    try {
+      const logo = await loadGroupReportLogo();
+      const pdf = createGroupReportPdf(report.data, report.scope, report.filters, logo);
+      const date = report.data.generatedAt.replace(/[^0-9TZ]/g, "-");
+      downloadBlob(`nulmetingen-${report.scope}-${date}.pdf`, new Blob([Uint8Array.from(pdf)], {type: "application/pdf"}));
+      setAnalysisError("");
+    } catch (caught) {
+      setAnalysisError(caught instanceof Error ? caught.message : "De PDF kon niet worden gemaakt. Probeer opnieuw.");
+    } finally { setGroupPdfLoading(false); }
+  };
+
   const openVisualReport = () => {
     const reportWindow = window.open("", "_blank");
     if (!reportWindow) {
@@ -2843,9 +2888,11 @@ const AdminScreen = ({
                 Exporteer resultaten
               </summary>
               <div className="admin-export-options">
-                <button className="filter-chip" type="button" onClick={openVisualReport} disabled={!analysis}>
-                  Visueel rapport (print/PDF)
+                <button className="filter-chip" type="button" onClick={() => void openGroupReport("class")} disabled={analysisLoading}>
+                  Per klas (print/PDF)
                 </button>
+                {access.role !== "mentor" ? <button className="filter-chip" type="button" onClick={() => void openGroupReport("grade")} disabled={analysisLoading}>Per leerjaar (print/PDF)</button> : null}
+                {access.role !== "mentor" ? <button className="filter-chip" type="button" onClick={() => void openGroupReport("measurement")} disabled={analysisLoading}>Per meting (print/PDF)</button> : null}
                 <button className="filter-chip" type="button" onClick={exportVisualPng} disabled={!analysis}>
                   Afbeelding (PNG)
                 </button>
@@ -2860,6 +2907,17 @@ const AdminScreen = ({
           </div>
         </div>
         {analysisError ? <div className="error-banner-inline">Resultatenanalyse kon niet worden geladen: {analysisError}</div> : null}
+        {groupReportHtml ? <section aria-label="Gegenereerd resultatenoverzicht">
+          <p className="help">Dit overzicht is een momentopname van de selectie bij het maken. Maak opnieuw een overzicht om nieuwe resultaten mee te nemen.</p>
+          <button className="filter-chip" type="button" disabled={groupPdfLoading || !groupReportSnapshot} onClick={() => void downloadGroupReport()}>{groupPdfLoading ? "PDF maken…" : "Download dit overzicht als PDF"}</button>
+          <button className="filter-chip" type="button" onClick={() => {setGroupReportHtml(null); setGroupReportSnapshot(null);}}>Rapport sluiten</button>
+          <iframe
+            title="Resultatenoverzicht met afdrukknop"
+            srcDoc={groupReportHtml}
+            sandbox="allow-scripts allow-modals"
+            style={{ width: "100%", height: "1100px", border: "1px solid #dce1ea", borderRadius: 12, marginTop: 12 }}
+          />
+        </section> : null}
         <div className="analysis-filters">
           {primaryAnalysisFilters.map(([key, label, options]) => (
             <label className="admin-filter-select" key={String(key)}>

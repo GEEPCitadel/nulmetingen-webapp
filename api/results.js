@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { accessForRequest } from "./access.js";
 import { ensureRecoveryTable } from "../lib/recovery-schema.js";
+import { buildGroupReports } from "../lib/group-reports.js";
 
 const validVersionIds = new Set(["lj1-vmbo", "lj1-hv", "lj3-vmbo", "lj3-hv"]);
 const testAccessCodes = new Set(["TESTVMBO1", "TESTHV1", "TESTVMBO3", "TESTHV3"]);
@@ -814,6 +815,9 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
       averageSelfAssessmentDifference: performanceSuppressed ? null : average(allScores.map((score) => score.selfAssessmentDifference)),
     },
     byClass: buildGroups(filteredStudents, filteredResults, classGroupFields),
+    // Unlike comparison benchmarks, report snapshots contain only classes
+    // authorized for this user and within the exact active filter selection.
+    groupReports: buildGroupReports(filteredStudents, filteredResults, resultMetadata, minimumReportingCount),
     storageByClass: buildGroups(filteredStudents, filteredResults, ["classCode", "gradeLevel", "track", "assessmentWindow", "cohort", "assessmentId", "versionId"]),
     comparisonClasses: buildGroups(comparisonStudents, comparisonResults, classGroupFields),
     byGrade: buildGroups(comparisonStudents, comparisonResults, gradeGroupFields),
@@ -826,6 +830,7 @@ const listAnalysis = async (sql, query, allowedClassCodes = null, includeTechnic
 export { attachCurrentContentKey, buildGroups, buildItemAnalysis, scoreStatistics, ensureTables, ensureTablesOnce, anonymizeSession };
 
 export const createResultsHandler = (connect = neon) => async function handler(request, response) {
+  if (request.method === "GET") response.setHeader("Cache-Control", "private, no-store");
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     response.status(500).json({ ok: false, error: "DATABASE_URL ontbreekt." });

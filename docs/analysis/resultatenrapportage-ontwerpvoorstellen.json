@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-14",
+  "stage": "2026-10-15: user explicitly authorized publication; publishing the tested clean release, live verification pending",
+  "localImplementation20261015": {
+    "finalFictionalExamples": {"generator":"scripts/create-group-report-examples.cjs", "outputs":["output/pdf/voorbeeld-groepsrapport-klas.pdf", "output/pdf/voorbeeld-groepsrapport-leerjaar.pdf", "output/pdf/voorbeeld-groepsrapport-meting.pdf"], "scope":"Same PDF renderer as the app, wholly fabricated 24-pupil lj3-vmbo results calculated from canonical definitions; self mean 72, points 22/37. All 11 rendered pages visually inspected and text bounds checked."},
+    "files": ["lib/group-reports.js", "api/results.js", "src/lib/group-report-document.ts", "src/lib/group-report-pdf.ts", "src/App.tsx", "scripts/group-reports.test.mjs", "scripts/group-report-document.test.cjs", "scripts/group-report-pdf.test.cjs"],
+    "verification": ["22 automated aggregation, authorization, document and PDF tests pass", "Canonical content synchronization, recovery-runtime generation, TypeScript and production build pass", "Existing storage and recovery integration checks still pass for all four variants, 176 complete and 49 partial source sessions in isolated databases", "Actual handlers with isolated synthetic database: class, year and measurement reports render all four variants separately", "Sandboxed inline report avoids popup blockers; direct PDF download avoids dependence on the native print dialog", "Three PDFs actually downloaded through the app: 9 class pages, 13 year pages, 13 measurement pages; every page rendered and contact sheets visually reviewed; no extracted text outside A4 bounds", "Actual synthetic API completion adds a 25th final result; regenerated class report changes 6 to 7 and self mean 50 to 53.1", "Report GET leaves synthetic students, sessions and results unchanged; private no-store response and client cache bypass verified", "Simulated analysis failure removes old report and download button rather than exporting cached data", "Mentor browser session exposes only authorized class audit1v and no year/measurement export buttons", "Report frame at 320px viewport: body client/scroll widths both 257px, single-column cards", "Keyboard Enter opens and closes generated report; clean mentor browser console"],
+    "testPdfOutputs": ["output/pdf/lokale-controle-klasrapport.pdf", "output/pdf/lokale-controle-leerjaarrapport.pdf", "output/pdf/lokale-controle-metingsrapport.pdf"],
+    "testPdfCaution": "Wholly fictional audit classes, not school results. Native browser print-to-PDF could not be verified in the embedded browser; the direct PDF-download path is the verified export route.",
+    "cleanRelease": {"path":"tmp/report-release-20261015", "base":"8821d65f2cf07f99ae7429a4240100071782422f", "buildAsset":"index-d-0Vo8Ey.js", "checks":["Canonical content synchronization, TypeScript and production build pass", "All 22 report tests pass against the clean release", "Actual clean-release browser renders all four class profiles and downloads a PDF", "Published storage implementation preserved; unrelated root storage edit excluded", "No Herstelverslag/private answer backups in the release copy"]},
+    "publicationAuthorized": true,
+    "stillPending": ["Publish tested release", "Live post-release smoke check after publication"],
+    "productionAccess": "No production pupil records changed; browser tests use only local synthetic classes"
+  },
+  "agreedDesign": {
+    "palette": "Colour spectrum for achieved point share; neutral blue for self-assessment",
+    "higherSelfAssessmentText": "De klas schat zichzelf gemiddeld hoger in dan de score op deze opdrachten. Dit kan wijzen op zelfoverschatting, maar is vooral een aanleiding om het zelfbeeld en de resultaten samen te bespreken.",
+    "nearbyMeansText": "De gemiddelde zelfinschatting en itemsetscore liggen dicht bij elkaar. Op groepsniveau lijken zelfbeeld en prestaties op deze opdrachten redelijk aan te sluiten.",
+    "interpretation": "Comparison is useful as an impression/signal, not conclusive proof. Do not imply every pupil has the group-level discrepancy or that self-assessment and the sampled performance constitute a calibrated identical scale.",
+    "automationNote": "No validated calibration tolerance is claimed. Automated nearby wording is used only when the two displayed one-decimal means are equal; otherwise the report uses a cautious higher/lower comparison."
+  },
+  "revision20261015": {
+    "userDecisions": ["Show mean self-assessment alongside mean itemset score at the top", "Use Kerndoel 21, Kerndoel 22 and Kerndoel 23 instead of Onderdeel 1/2/3", "Remove all teaching recommendations", "Include subgoals", "Show mean points, possible points and number of contributing tasks", "Experiment with small high-contrast donut charts and red-yellow-green score colouring"],
+    "outputs": ["output/pdf/voorbeeld-cirkels-contrast.pdf", "output/pdf/voorbeeld-cirkels-kleurverloop.pdf"],
+    "pagesPerOutput": ["Class overview: self-assessment, itemset score and three core goals", "All nine subgoals"],
+    "prototypeScope": "Fictitious class 3VM-A taking lj3-vmbo; changes must later carry through class/year/measurement reports for all variants",
+    "verification": ["24 fictional scored sessions aggregated with canonical calculateResult and current assessments", "Actual item counts and maximum scores, not invented denominators", "Canonical content-sync check passed", "Self-assessment mean 72 of 100, n=24", "Mean total 22 of 37 points, displayed as 59%", "Every core/subgoal mean within maximum", "Core-goal totals sum to itemset total", "Four one-item subgoals have no percentage or coloured completion arc", "No advice text", "Four final rendered PDF pages visually reviewed after layout repair"],
+    "interpretation": ["Self-assessment always uses a neutral colour: high self-assessment is not automatically favourable", "Self-assessment and performance are not the same construct; their difference is not proof of over/underestimation", "Missing self-assessments must be excluded, not imputed as zero; disclose their own valid-response count", "Colour spectrum is a design experiment, not mastery norms or pass/fail cut-offs", "Single-item subgoals remain point-only itemsignalen even for a class mean", "Follow canonical multi-label mapping: an item can contribute to multiple subgoals, so subgoal points must not be summed"],
+    "dataAccess": "Canonical definitions and wholly fabricated results only; no production pupil responses accessed or changed"
+  },
+  "pdfExamples": [
+    {"design":"Rustig overzicht","path":"output/pdf/voorbeeld-rustig-overzicht.pdf","pages":["Per klas","Per leerjaar","Per meting"],"allThreeRenderedPagesVisuallyReviewed":true},
+    {"design":"Visueel profiel","path":"output/pdf/voorbeeld-visueel-profiel.pdf","pages":["Per klas","Per leerjaar","Per meting"],"allThreeRenderedPagesVisuallyReviewed":true}
+  ],
+  "pdfExampleChecks": {"sameFictitiousDataInBothDesigns":true,"everyPageExplicitlyFictitious":true,"threePagesPerPdf":true,"yearHasNoPooledVmboHvScore":true,"measurementMeanRoundedFromPupilWeightedClassMeans":true,"actualStoredResponsesNotRead":true},
+  "request": "Group result pages in student-result style, per class, year and measurement; printable/exportable PDF and repeatable generation from new completed assessments",
+  "exampleFragment": "C:/Users/Pim/.codex/visualizations/2026/09/17/01a0af6a-8651-7fc3-992f-debe6ce9ec0b/resultatenontwerpen.html",
+  "data": "Explicitly fictitious sample classes and scores; no production connection or raw pupil responses",
+  "initialOptionsSupersededByRevision": [
+    {"name":"Rustig overzicht","layout":"Summary, response counts, three plain-language component bars and a teaching discussion suggestion","purpose":"Default mentor report with low reading burden"},
+    {"name":"Visueel profiel","layout":"Three larger component tiles, followed by a teaching discussion suggestion","purpose":"Presenting/discussing group results with teachers or pupils"},
+    {"name":"Overzicht met verdieping","layout":"Calm summary with collapsible assignment details and measurement/version explanations","purpose":"Same accessible starting point with optional specialist detail"}
+  ],
+  "recommendedDirection": "Agreed: two top measures, cautious comparison as an impression of self-image versus sampled performance, colour-spectrum core/subgoal mini-donuts with point denominators and task counts, point-only single-item signals, no teaching advice",
+  "exampleInteractionsVerified": ["All three carousel designs render", "Class/year/measurement selector", "Year keeps VMBO and HAVO/VWO separate without combined score", "Simulated new class and extra final results appear after refresh", "Assignment detail uses points for single-item signals", "Paper preview hides controls and collapsed-detail content", "Back from paper to screen", "Narrow 360px preview no horizontal overflow", "320px header wrap corrected and retested: 273px client width equals 273px scroll width", "No console errors observed"],
+  "productionRequirementsForNextStage": [
+    "Reuse canonical score definitions and existing authorized aggregation; do not change items or scoring",
+    "Class reports show assigned measurement and actual education track separately, especially 2026 VMBO-T classes assigned to HAVO/VWO",
+    "Year reports split by measurement, version/build, content hash, period and cohort; no pooled cross-variant score",
+    "Measurement reports compare compatible classes only; aggregate by pupils/results rather than unweighted class averages",
+    "Denominator explicitly labeled: issued codes are not automatically a verified class roster size",
+    "Completed and partial counts are separate; incomplete responses are not silently scored as zero",
+    "Missing-storage warnings remain visible; do not hide them behind decorative completion percentages",
+    "Protect small groups and complementary inference in screens, PDF, tables and exports using existing privacy policy; no names, codes or individual answers in group reports",
+    "Mentors may generate only authorized class reports; broader year/measurement reports require suitable admin permissions",
+    "Generation retrieves current stored data and creates a dated snapshot with version/content identity and included-class list",
+    "Refresh is idempotent and does not mutate or overwrite pupil responses; earlier downloaded snapshots remain identifiable",
+    "Implement genuine PDF export/print layout after design choice; prototype paper view is not a PDF export implementation",
+    "Verify all four versions, empty/small/incomplete groups, stale data and failure states, keyboard use, narrow screens and actual PDF rendering before release"
+  ],
+  "notImplemented": ["Published group report UI", "Released generation of production class/year/measurement reports"],
+  "productionChanged": false
+}
+
